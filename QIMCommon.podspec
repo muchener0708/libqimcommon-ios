@@ -2,7 +2,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "QIMCommon"
-  s.version      = "1.1.8-gbeta"
+  s.version      = "1.1.9-gbeta"
   s.summary      = "Qunar chat App 9.0+ version QIMCommon"
   s.description  = <<-DESC
                    Qunar QIMCommon解决方案
@@ -16,7 +16,6 @@ Pod::Spec.new do |s|
   s.source       = { :git => "http://gitlab.corp.qunar.com/qchat/libQIMCommon-iOS.git", :tag=> s.version.to_s}
 
   s.ios.deployment_target   = '9.0'
-  s.resource_bundles = {'QIMCommonResource' => ['QIMCommon/QIMKitCommonResource/*.{png,aac,caf,pem}']}
 
   s.platform     = :ios, "9.0"
 

@@ -15,6 +15,7 @@
 #import "QIMManager+Consult.h"
 #import "QIMManager+DB.h"
 #import "QIMManager+UserMedal.h"
+#import "QIMManager+PublicNavUserManager.h"
 #import "QIMManager+Friend.h"
 #import "QIMManager+Group.h"
 #import "QIMManager+GroupMessage.h"

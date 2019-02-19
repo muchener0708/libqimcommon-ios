@@ -108,7 +108,7 @@
 		2C1D0F68215E51B800275225 /* XmppImManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C1D0F66215E51B800275225 /* XmppImManager.m */; };
 		2C2A798F221578D300AF2153 /* QIMManager+PublicNavUserManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C2A798D221578D300AF2153 /* QIMManager+PublicNavUserManager.h */; };
 		2C2A7990221578D300AF2153 /* QIMManager+PublicNavUserManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C2A798E221578D300AF2153 /* QIMManager+PublicNavUserManager.m */; };
-		2C2A79932215791100AF2153 /* QIMKit+QIMPublicNavUserManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C2A79912215791100AF2153 /* QIMKit+QIMPublicNavUserManager.h */; };
+		2C2A79932215791100AF2153 /* QIMKit+QIMPublicNavUserManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C2A79912215791100AF2153 /* QIMKit+QIMPublicNavUserManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2C2A79942215791100AF2153 /* QIMKit+QIMPublicNavUserManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C2A79922215791100AF2153 /* QIMKit+QIMPublicNavUserManager.m */; };
 		2C55D137216F379B00DD156A /* QIMDBLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C55D135216F379B00DD156A /* QIMDBLogger.h */; };
 		2C55D138216F379B00DD156A /* QIMDBLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C55D136216F379B00DD156A /* QIMDBLogger.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -909,8 +909,8 @@
 				2CB8DA6C21494C1800B57B8D /* QIMKit+QIMresetLoginInfo.h in Headers */,
 				2CB8DA7F21494C1800B57B8D /* QIMKit+QIMShareExtension.h in Headers */,
 				2C099BA621BF732C00F7692A /* IMDataManager+QIMUserMedal.h in Headers */,
-				2C1D0F22215E4F5E00275225 /* QIMManager+Session.h in Headers */,
 				2C2A79932215791100AF2153 /* QIMKit+QIMPublicNavUserManager.h in Headers */,
+				2C1D0F22215E4F5E00275225 /* QIMManager+Session.h in Headers */,
 				2CB8DA9221494C1800B57B8D /* QIMKit+QIMDBDataManager.h in Headers */,
 				2CB8DA6421494C1800B57B8D /* QIMNotificationKeys.h in Headers */,
 				2C099BAE21BF8BB700F7692A /* QIMKit+QIMUserMedal.h in Headers */,

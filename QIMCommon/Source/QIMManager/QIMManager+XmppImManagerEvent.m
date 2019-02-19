@@ -1032,9 +1032,11 @@
         }
     } else if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
         NSDictionary *infoDic = [self getQChatUserInfoForUser:from];
-        [[IMDataManager sharedInstance] insertFriendWithUserId:[infoDic objectForKey:@"username"]
-                                                    WithXmppId:[NSString stringWithFormat:@"%@@%@", [infoDic objectForKey:@"username"], [self getDomain]]
-                                                      WithName:[infoDic objectForKey:@"nickname"]
+        NSString *userName = [infoDic objectForKey:@"username"];
+        NSString *userNickName = [infoDic objectForKey:@"nickname"];
+        [[IMDataManager sharedInstance] insertFriendWithUserId:userName ? userName : [[from componentsSeparatedByString:@"@"] firstObject]
+                                                    WithXmppId:from
+                                                      WithName:userNickName ? userNickName : [[from componentsSeparatedByString:@"@"] firstObject]
                                                WithSearchIndex:@""
                                                   WithDescInfo:@""
                                                    WithHeadSrc:[[IMDataManager sharedInstance] getUserHeaderSrcByUserId:from]

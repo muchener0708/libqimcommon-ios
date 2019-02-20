@@ -956,7 +956,7 @@
     NSString *from = [validationDic objectForKey:@"from"];
     NSString *body = [validationDic objectForKey:@"body"];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-        if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
+        if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
             NSDictionary *infoDic = [self getUserInfoByUserId:from];
             NSString *userId = [infoDic objectForKey:@"UserId"];
             NSString *xmppId = [infoDic objectForKey:@"XmppId"];
@@ -1015,7 +1015,7 @@
     NSString *result = [presenceDic objectForKey:@"result"];
     //    NSString *reason = [presenceDic objectForKey:@"reason"];
     [[NSNotificationCenter defaultCenter] postNotificationName:kFriendPresence object:from userInfo:presenceDic];
-    if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
+    if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
         if ([result isEqualToString:@"success"]) {
             NSString *destId = from;//direction==2?from:to;
             NSDictionary *infoDic = [self getUserInfoByUserId:destId];

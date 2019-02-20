@@ -13,6 +13,7 @@
 typedef enum : NSUInteger {
     QIMProjectTypeQTalk = 0,
     QIMProjectTypeQChat,
+    QIMProjectTypeStartalk = 2,
 } QIMProjectType;
 
 typedef enum {

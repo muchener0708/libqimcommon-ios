@@ -265,7 +265,7 @@
         NSDictionary *tempDic = [[IMDataManager sharedInstance] selectUserByID:rtxId];
         if (tempDic) {
             NSMutableDictionary *dic = [NSMutableDictionary dictionaryWithDictionary:tempDic];
-            if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
+            if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
                 NSString *rtxId = [dic objectForKey:@"UserId"];
                 NSString *desc = [self.friendDescDic objectForKey:rtxId];
                 if (desc) {
@@ -330,7 +330,7 @@
                 }
                 [self.userInfoDic setObject:tempDic forKey:nickName];
                 NSMutableDictionary *dic = [NSMutableDictionary dictionaryWithDictionary:tempDic];
-                if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
+                if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
                     
                     NSString *rtxId = [dic objectForKey:@"UserId"];
                     NSString *desc = [self.friendDescDic objectForKey:rtxId];

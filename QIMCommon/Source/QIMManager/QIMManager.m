@@ -493,7 +493,7 @@ static QIMManager *__IMManager = nil;
         QIMVerboseLog(@"同步服务端漫游的个人配置2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime6]);
         QIMVerboseLog(@"同步服务端漫游的个人配置完成2");
         
-        if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
+        if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
             QIMVerboseLog(@"开始获取我的关联账户2");
             CFAbsoluteTime startTime7 = [[QIMWatchDog sharedInstance] startTime];
             [self getRemoteCollectionAccountList];
@@ -581,7 +581,7 @@ static QIMManager *__IMManager = nil;
             });
         }
         
-        if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
+        if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
             
             QIMVerboseLog(@"登录之后请求一下驼圈入口开关");
             [self getCricleCamelEntrance];
@@ -594,7 +594,7 @@ static QIMManager *__IMManager = nil;
             [[QIMManager sharedInstance] getExploreNotReaderCount];
         }
     
-    if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
+    if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
         QIMVerboseLog(@"登录之后请求热线账户列表");
         [self getHotlineShopList];
     }

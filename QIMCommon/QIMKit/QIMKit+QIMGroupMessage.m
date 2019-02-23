@@ -23,8 +23,8 @@
 }
 
 //拉取群翻页历史记录
-- (NSArray *)getMucMsgListWihtGroupId:(NSString *)groupId WithDirection:(int)direction WithLimit:(int)limit WithVersion:(long long)version {
-    return [[QIMManager sharedInstance] getMucMsgListWihtGroupId:groupId WithDirection:direction WithLimit:limit WithVersion:version];
+- (NSArray *)getMucMsgListWithGroupId:(NSString *)groupId WithDirection:(int)direction WithLimit:(int)limit WithVersion:(long long)version {
+    return [[QIMManager sharedInstance] getMucMsgListWithGroupId:groupId WithDirection:direction WithLimit:limit WithVersion:version];
 }
 
 //更新群阅读指针，三次重试

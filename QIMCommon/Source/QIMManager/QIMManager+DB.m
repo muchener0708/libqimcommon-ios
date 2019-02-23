@@ -12,37 +12,37 @@
 
 - (void)initDBWithUserXmppId:(NSString *)userJid {
 
-    NSString *dbPath = [UserDocumentsPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@%@/", [userJid lowercaseString], UserPath]];
+    NSString *dbPath = [UserCachesPath stringByAppendingPathComponent:[NSString stringWithFormat:@"QIMDB/%@%@/", [userJid lowercaseString], UserPath]];
     if (![[NSFileManager defaultManager] fileExistsAtPath:dbPath]) {
         [[NSFileManager defaultManager] createDirectoryAtPath:dbPath withIntermediateDirectories:YES attributes:nil error:nil];
     }
     //UrlWithString 会报CFURLSetResourcePropertyForKey failed because it was passed an URL which has no scheme 错误，使用fileURLWithPath正常
     [self addSkipBackupAttributeToItemAtURL:[NSURL fileURLWithPath:[dbPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
     dbPath = [dbPath stringByAppendingPathComponent:@"data.dat"];
-    [IMDataManager sharedInstanceWihtDBPath:dbPath];
-    [[IMDataManager sharedInstance] setUserId:[QIMManager getLastUserName]];
-    [[IMDataManager sharedInstance] setDomain:[self getDomain]];
+    [IMDataManager qimDB_sharedInstanceWithDBPath:dbPath];
+    [[IMDataManager qimDB_SharedInstance] setDbOwnerId:[QIMManager getLastUserName]];
+    [[IMDataManager qimDB_SharedInstance] setDbOwnerDomain:[self getDomain]];
 }
 
 - (void)initDB {
-    NSString *dbPath = [UserDocumentsPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@%@/", [[self getLastJid] lowercaseString], UserPath]];
+    NSString *dbPath = [UserCachesPath stringByAppendingPathComponent:[NSString stringWithFormat:@"QIMDB/%@%@/", [[self getLastJid] lowercaseString], UserPath]];
     if (![[NSFileManager defaultManager] fileExistsAtPath:dbPath]) {
         [[NSFileManager defaultManager] createDirectoryAtPath:dbPath withIntermediateDirectories:YES attributes:nil error:nil];
     }
     //UrlWithString 会报CFURLSetResourcePropertyForKey failed because it was passed an URL which has no scheme 错误，使用fileURLWithPath正常
     [self addSkipBackupAttributeToItemAtURL:[NSURL fileURLWithPath:[dbPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
     dbPath = [dbPath stringByAppendingPathComponent:@"data.dat"];
-    [IMDataManager sharedInstanceWihtDBPath:dbPath];
-    [[IMDataManager sharedInstance] setUserId:[QIMManager getLastUserName]];
-    [[IMDataManager sharedInstance] setDomain:[self getDomain]];
+    [IMDataManager qimDB_sharedInstanceWithDBPath:dbPath];
+    [[IMDataManager qimDB_SharedInstance] setDbOwnerId:[QIMManager getLastUserName]];
+    [[IMDataManager qimDB_SharedInstance] setDbOwnerDomain:[self getDomain]];
 }
 
 - (void)removeDataBase {
     //关闭数据库
-    [[IMDataManager sharedInstance] closeDataBase];
+    [[IMDataManager qimDB_SharedInstance] qimDB_closeDataBase];
     NSString *workingPath = nil;
     {
-        NSString *dbPath = [UserDocumentsPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@%@/", [[self getLastJid] lowercaseString], UserPath]];
+        NSString *dbPath = [UserCachesPath stringByAppendingPathComponent:[NSString stringWithFormat:@"QIMDB/%@%@/", [[self getLastJid] lowercaseString], UserPath]];
         //UrlWithString 会报CFURLSetResourcePropertyForKey failed because it was passed an URL which has no scheme 错误，使用fileURLWithPath正常
         [self addSkipBackupAttributeToItemAtURL:[NSURL fileURLWithPath:[dbPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
         dbPath = [dbPath stringByAppendingPathComponent:@"data.dat"];
@@ -69,7 +69,7 @@
 
 - (void)closeDataBase {
     QIMErrorLog(@"关闭数据库");
-    [[IMDataManager sharedInstance] closeDataBase];
+    [[IMDataManager qimDB_SharedInstance] qimDB_closeDataBase];
 }
 
 - (void)clearDataBase {

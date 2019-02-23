@@ -63,7 +63,7 @@
 }
 
 - (NSDictionary *)getPublicNumberCardByJid:(NSString *)jid {
-    return [[IMDataManager sharedInstance] getPublicNumberCardByJId:jid];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getPublicNumberCardByJId:jid];
 }
 
 - (NSArray *)updatePublicNumberCardByIds:(NSArray *)publicNumberIdList WithNeedUpdate:(BOOL)flag {
@@ -110,7 +110,7 @@
                     QIMErrorLog(@"updatePublicNumberCardByIds error msg %@", errorMsg);
                 }
                 if (flag) {
-                    [[IMDataManager sharedInstance] bulkInsertPublicNumbers:cardList];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertPublicNumbers:cardList];
                 }
                 return cardList;
             }
@@ -120,7 +120,7 @@
 }
 
 - (void)updateAllPublicNumberCard {
-    NSArray *list = [[IMDataManager sharedInstance] getPublicNumberVersionList];
+    NSArray *list = [[IMDataManager qimDB_SharedInstance] qimDB_getPublicNumberVersionList];
     [self updatePublicNumberCardByIds:list WithNeedUpdate:YES];
 }
 
@@ -197,7 +197,7 @@
 }
 
 - (NSArray *)getPublicNumberList {
-    return [[IMDataManager sharedInstance] getPublicNumberList];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getPublicNumberList];
 }
 
 - (void)updatePublicNumberList {
@@ -229,7 +229,7 @@
                 QIMErrorLog(@"updatePublicNumberList error msg %@", errorMsg);
                 if (errorCode == 0) {
                     NSArray *pubList = [value objectForKey:@"data"];
-                    [[IMDataManager sharedInstance] checkPublicNumbers:pubList];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_checkPublicNumbers:pubList];
                  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                         [self updateAllPublicNumberCard];
                     });
@@ -307,7 +307,7 @@
             NSString *errorMsg = [value objectForKey:@"errmsg"];
             QIMErrorLog(@"cancelFocusOnPublicNumberId error msg %@", errorMsg);
             if (errorCode == 0) {
-                [[IMDataManager sharedInstance] deletePublicNumberId:publicNumberId];
+                [[IMDataManager qimDB_SharedInstance] qimDB_deletePublicNumberId:publicNumberId];
                 return YES;
             }
         }
@@ -337,7 +337,7 @@
     return mesg;
 }
 
-- (Message *)sendMessage:(NSString *)msg ToPublicNumberId:(NSString *)publicNumberId WithMsgId:(NSString *)msgId WihtMsgType:(int)msgType {
+- (Message *)sendMessage:(NSString *)msg ToPublicNumberId:(NSString *)publicNumberId WithMsgId:(NSString *)msgId WithMsgType:(int)msgType {
     
     Message *message = [Message new];
     [message setMessageId:msgId];
@@ -356,9 +356,9 @@
     return message;
 }
 
-- (NSArray *)getPublicNumberMsgListById:(NSString *)publicNumberId WihtLimit:(int)limit WithOffset:(int)offset {
+- (NSArray *)getPublicNumberMsgListById:(NSString *)publicNumberId WithLimit:(int)limit WithOffset:(int)offset {
     NSMutableArray *result = [NSMutableArray array];
-    NSArray *array = [[IMDataManager sharedInstance] getMsgListByPublicNumberId:publicNumberId WithLimit:limit WihtOffset:offset WithFilterType:@[@(PublicNumberMsgType_Action), @(PublicNumberMsgType_PostBackCookie), @(PublicNumberMsgType_ClientCookie)]];
+    NSArray *array = [[IMDataManager qimDB_SharedInstance] qimDB_getMsgListByPublicNumberId:publicNumberId WithLimit:limit WithOffset:offset WithFilterType:@[@(PublicNumberMsgType_Action), @(PublicNumberMsgType_PostBackCookie), @(PublicNumberMsgType_ClientCookie)]];
     if (array.count > 0) {
         for (int i = (int) array.count - 1; i >= 0; i--) {
             NSDictionary *dic = [array objectAtIndex:i];
@@ -370,7 +370,6 @@
             int msgType = [[dic objectForKey:@"Type"] intValue];
             int msgState = [[dic objectForKey:@"State"] intValue];
             int msgDirection = [[dic objectForKey:@"Direction"] intValue];
-            //            int readerTag = [[dic objectForKey:@"ReadedTag"] intValue];
             long long msgDate = [[dic objectForKey:@"LastUpdateTime"] longLongValue];
             Message *msg = [Message new];
             [msg setMessageId:msgId];
@@ -416,7 +415,7 @@
         [self.timeStempDic setObject:@(msgDate) forKey:jid];
         Message *msg = [Message new];
         NSDate *date = [NSDate qim_dateWithTimeIntervalInMilliSecondSince1970:msgDate];
-        [msg setMessageId:[[IMDataManager sharedInstance] getTimeSmtapMsgIdForDate:date WithUserId:jid]];
+        [msg setMessageId:[[IMDataManager qimDB_SharedInstance] qimDB_getTimeSmtapMsgIdForDate:date WithUserId:jid]];
         [msg setChatType:ChatType_PublicNumber];
         [msg setMessageType:QIMMessageType_Time];
         [msg setMessageDate:msgDate - 1];

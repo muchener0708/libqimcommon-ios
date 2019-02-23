@@ -45,7 +45,7 @@
 
 
 @implementation QIMHttpApi
-+ (NSString *)checkFileKeyForFile:(NSString *)fileKey WithFileLength:(long long)fileLength WihtPathExtension:(NSString *)extension{
++ (NSString *)checkFileKeyForFile:(NSString *)fileKey WithFileLength:(long long)fileLength WithPathExtension:(NSString *)extension{
     NSString *method = @"file/v2/inspection/file";
 
     NSString *destUrl = [NSString stringWithFormat:@"%@/%@?key=%@&size=%lld&name=%@&platform=iphone&u=%@&k=%@&version=%@",
@@ -76,7 +76,7 @@
     return nil;
 }
 
-+ (NSString *)checkFileKey:(NSString *)fileKey WithFileLength:(long long)fileLength WihtPathExtension:(NSString *)extension{
++ (NSString *)checkFileKey:(NSString *)fileKey WithFileLength:(long long)fileLength WithPathExtension:(NSString *)extension{
     NSString *method = @"file/v2/inspection/img";
     NSString *destUrl = [NSString stringWithFormat:@"%@/%@?key=%@&size=%lld&name=%@&platform=iphone&u=%@&k=%@&version=%@",
                          [QIMNavConfigManager sharedInstance].innerFileHttpHost, method, fileKey, (long long)ceil(fileLength / 1024.0 / 1024.0), [NSString stringWithFormat:@"%@.%@",fileKey,extension],
@@ -200,7 +200,7 @@ done:
     return result;
 }
 
-+ (NSDictionary *)getUserTokenWithUserName:(NSString *)userName WihtVerifyCode:(NSString *)verifCode{
++ (NSDictionary *)getUserTokenWithUserName:(NSString *)userName WithVerifyCode:(NSString *)verifCode{
     NSDictionary *result = nil;
     NSString *destUrl = [[QIMNavConfigManager sharedInstance] tokenSmsUrl];//@"https://smsauth.qunar.com/api/2.0/token";
     NSURL *requestUrl = [[NSURL alloc] initWithString:destUrl];
@@ -234,7 +234,7 @@ done:
     return result;
 }
 
-+ (NSString *)updateLoadImage:(NSData *)fileData WithMsgId:(NSString *)key WithMsgType:(int)type WihtPathExtension:(NSString *)extension{
++ (NSString *)updateLoadImage:(NSData *)fileData WithMsgId:(NSString *)key WithMsgType:(int)type WithPathExtension:(NSString *)extension{
     NSString *method = @"file/v2/upload/img";
     NSString *fileName =  [NSString stringWithFormat:@"%@.%@",key,extension];
     long long size = ceil(fileData.length / 1024.0 / 1024.0);
@@ -277,18 +277,18 @@ done:
     return nil;
 }
 
-+ (NSString *) updateLoadFile:(NSData *)fileData WithMsgId:(NSString *)key WithMsgType:(int)type WihtPathExtension:(NSString *)extension{
++ (NSString *) updateLoadFile:(NSData *)fileData WithMsgId:(NSString *)key WithMsgType:(int)type WithPathExtension:(NSString *)extension{
     NSString *fileKey = [self getFileDataMD5WithPath:fileData];
     NSString *fileExt = [self getFileExt:fileData];
     if (fileExt.length <= 0) {
         extension = fileExt;
     }
-    NSString *httpUrl = [self checkFileKey:fileKey WithFileLength:fileData.length WihtPathExtension:extension];
+    NSString *httpUrl = [self checkFileKey:fileKey WithFileLength:fileData.length WithPathExtension:extension];
     if (httpUrl == nil) {
         return [QIMHttpApi updateLoadImage:fileData
                                 WithMsgId:fileKey
                               WithMsgType:type
-                        WihtPathExtension:extension];
+                        WithPathExtension:extension];
     }
     return httpUrl;
 }
@@ -332,7 +332,7 @@ done:
 //将voice文件提交到网络上并获取到文件存储的url
 + (NSString *)updateLoadVoiceFile:(NSData *)voiceFileData WithFilePath:(NSString *)filePath {
     NSString *fileKey = [self getFileDataMD5WithPath:voiceFileData];
-    NSString *httpUrl = [self checkFileKeyForFile:fileKey WithFileLength:voiceFileData.length WihtPathExtension:@"amr"];
+    NSString *httpUrl = [self checkFileKeyForFile:fileKey WithFileLength:voiceFileData.length WithPathExtension:@"amr"];
     if (httpUrl == nil) {
         return [QIMHttpApi updateLoadVoiceFile_New:voiceFileData WithFilePath:filePath WithFileKey:fileKey];
     }

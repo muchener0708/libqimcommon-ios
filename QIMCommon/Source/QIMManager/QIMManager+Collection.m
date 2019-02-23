@@ -36,7 +36,7 @@
         }
         NSDictionary *tempDic = [self.collectionUserVCardDict objectForKey:myId];
         if (!tempDic) {
-            tempDic = [[IMDataManager sharedInstance] selectCollectionUserByJID:myId];
+            tempDic = [[IMDataManager qimDB_SharedInstance] qimDB_selectCollectionUserByJID:myId];
             if (tempDic) {
                 [self.collectionUserVCardDict setQIMSafeObject:tempDic forKey:myId];
             } else {
@@ -89,7 +89,7 @@
                 if (ret) {
                     NSArray *list = [result objectForKey:@"data"];
                     if (list.count > 0) {
-                        [[IMDataManager sharedInstance] bulkInsertCollectionUserCards:list];
+                        [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertCollectionUserCards:list];
                         dispatch_async(dispatch_get_main_queue(), ^{
                             [[NSNotificationCenter defaultCenter] postNotificationName:kCollectionUserVCardUpdate object:userIds];
                         });
@@ -117,11 +117,11 @@
 
 //存储代收消息
 - (void)saveCollectionMessage:(NSDictionary *)collectionMsgDic {
-    [[IMDataManager sharedInstance] bulkInsertCollectionMsgWihtMsgDics:@[collectionMsgDic]];
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertCollectionMsgWithMsgDics:@[collectionMsgDic]];
 }
 
 - (Message *)getCollectionMsgListForMsgId:(NSString *)msgId {
-    NSDictionary *infoDic = [[IMDataManager sharedInstance] getCollectionMsgListForMsgId:msgId];
+    NSDictionary *infoDic = [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionMsgListForMsgId:msgId];
     if (infoDic) {
         Message *msg = [Message new];
         [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
@@ -146,7 +146,7 @@
 }
 
 - (NSArray *)getCollectionMsgListForUserId:(NSString *)userId originUserId:(NSString *)originUserId {
-    NSArray *array = [[IMDataManager sharedInstance] getCollectionMsgListWithUserId:userId originUserId:originUserId];
+    NSArray *array = [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionMsgListWithUserId:userId originUserId:originUserId];
     NSMutableArray *list = [NSMutableArray array];
     if (array.count > 0) {
         for (NSDictionary *infoDic in array) {
@@ -174,7 +174,7 @@
 }
 
 - (NSDictionary *)getLastCollectionMsgByMsgId:(NSString *)lastMsgId {
-    return [[IMDataManager sharedInstance] getLastCollectionMsgWithLastMsgId:lastMsgId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getLastCollectionMsgWithLastMsgId:lastMsgId];
 }
 
 /**
@@ -183,7 +183,7 @@
  @param bindId 绑定账号
  */
 - (NSArray *)getCollectionSessionListWithBindId:(NSString *)bindId {
-    return [[IMDataManager sharedInstance] getCollectionSessionListWithBindId:bindId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionSessionListWithBindId:bindId];
 }
 
 /**
@@ -192,7 +192,7 @@
  @param bindId 绑定账号
  */
 - (NSArray *)getCollectionMsgListWithBindId:(NSString *)bindId {
-    return [[IMDataManager sharedInstance] getCollectionMsgListWithBindId:bindId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionMsgListWithBindId:bindId];
 }
 
 /**
@@ -201,7 +201,7 @@
  @return 已代收账号列表
  */
 - (NSArray *)getMyCollectionAccountList {
-    return [[IMDataManager sharedInstance] getCollectionAccountList];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionAccountList];
 }
 
 /**
@@ -225,8 +225,8 @@
                 if (ret) {
                     NSArray *data = [result objectForKey:@"data"];
                     if (data.count > 0) {
-                        [[IMDataManager sharedInstance] bulkinsertCollectionAccountList:data];
-                        [[IMDataManager sharedInstance] bulkInsertCollectionUserCards:data];
+                        [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertCollectionAccountList:data];
+                        [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertCollectionUserCards:data];
                         dispatch_async(dispatch_get_main_queue(), ^{
                             [[NSNotificationCenter defaultCenter] postNotificationName:@"updateCollectionMsgList" object:nil userInfo:nil];
                         });
@@ -245,7 +245,7 @@
  @param jid Jid
  */
 - (void)clearNotReadCollectionMsgByJid:(NSString *)jid {
-    [[IMDataManager sharedInstance] updateCollectionMsgNotReadStateByJid:jid WithMsgState:MessageState_didRead];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateCollectionMsgNotReadStateByJid:jid WithMsgState:MessageState_didRead];
     dispatch_async(dispatch_get_main_queue(), ^{
         NSString *xmppId = [NSString stringWithFormat:@"collection_rbt@%@", [self getDomain]];
         [self.notReadMsgDic removeObjectForKey:xmppId];
@@ -261,7 +261,7 @@
  */
 - (void)clearNotReadCollectionMsgByBindId:(NSString *)bindId WithUserId:(NSString *)userId {
     
-    [[IMDataManager sharedInstance] updateCollectionMsgNotReadStateForBindId:bindId originUserId:userId WithMsgState:MessageState_didRead];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateCollectionMsgNotReadStateForBindId:bindId originUserId:userId WithMsgState:MessageState_didRead];
     dispatch_async(dispatch_get_main_queue(), ^{
         NSString *xmppId = [NSString stringWithFormat:@"collection_rbt@%@", [self getDomain]];
         [self.notReadMsgDic removeObjectForKey:xmppId];
@@ -273,7 +273,7 @@
  获取代收总未读消息数
  */
 - (NSInteger)getNotReadCollectionMsgCount {
-    return [[IMDataManager sharedInstance] getCollectionMsgNotReadCountByDidReadState:MessageState_didRead];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionMsgNotReadCountByDidReadState:MessageState_didRead];
 }
 
 /**
@@ -282,7 +282,7 @@
  @param bindId 绑定账号Id
  */
 - (NSInteger)getNotReadCollectionMsgCountByBindId:(NSString *)bindId {
-    return [[IMDataManager sharedInstance] getCollectionMsgNotReadCountByDidReadState:MessageState_didRead ForBindId:bindId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionMsgNotReadCountByDidReadState:MessageState_didRead ForBindId:bindId];
 }
 
 /**
@@ -292,13 +292,13 @@
  @param userId 用户Id
  */
 - (NSInteger)getNotReadCollectionMsgCountByBindId:(NSString *)bindId WithUserId:(NSString *)userId {
-    return [[IMDataManager sharedInstance] getCollectionMsgNotReadCountgetCollectionMsgNotReadCountByDidReadState:MessageState_didRead ForBindId:bindId originUserId:userId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionMsgNotReadCountgetCollectionMsgNotReadCountByDidReadState:MessageState_didRead ForBindId:bindId originUserId:userId];
 }
 
 #pragma mark - 代收Group
 
 - (NSDictionary *)getCollectionGroupCardByGroupId:(NSString *)groupId {
-    return [[IMDataManager sharedInstance] getCollectionGroupCardByGroupId:groupId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionGroupCardByGroupId:groupId];
 }
 
 - (void)updateCollectionGroupCardByGroupId:(NSString *)groupId {
@@ -345,7 +345,7 @@
                     if (ret) {
                         NSArray *list = [result objectForKey:@"data"];
                         if (list.count > 0) {
-                            [[IMDataManager sharedInstance] bulkInsertCollectionGroupCards:list];
+                            [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertCollectionGroupCards:list];
                             dispatch_async(dispatch_get_main_queue(), ^{
                                 [[NSNotificationCenter defaultCenter] postNotificationName:kCollectionGroupNickNameChanged object:groupIds];
                             });

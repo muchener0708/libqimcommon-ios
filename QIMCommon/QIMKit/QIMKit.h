@@ -216,7 +216,7 @@
 
 - (void)removeAtMeByJid:(NSString *)jid;
 
-- (void)addAtALLByJid:(NSString *)jid WithMsgId:(NSString *)msgId WihtMsg:(Message *)message WithNickName:(NSString *)nickName;
+- (void)addAtALLByJid:(NSString *)jid WithMsgId:(NSString *)msgId WithMsg:(Message *)message WithNickName:(NSString *)nickName;
 
 /**
  移除atall
@@ -318,32 +318,5 @@
 - (BOOL)sendPushTokenWithMyToken:(NSString *)myToken WithDeleteFlag:(BOOL)deleteFlag;
 
 - (void)checkClearCache;
-
-/**
- 获取用户在线状态
- 
- @param sid 用户
- @return 返回状态值
- */
-- (NSString *)userOnlineStatus:(NSString *)sid;
-
-/**
- 判断用户是否在线
- 
- @param userId user di
- @return 返回是否在线
- */
-- (BOOL)isUserOnline:(NSString *)userId;
-
-- (UserPrecenseStatus)getUserPrecenseStatus:(NSString *)jid;
-
-/**
- 获取用户 precense status
- 
- @param jid 用户id
- @param status status指针
- @return 返回status
- */
-- (UserPrecenseStatus)getUserPrecenseStatus:(NSString *)jid status:(NSString **)status;
 
 @end

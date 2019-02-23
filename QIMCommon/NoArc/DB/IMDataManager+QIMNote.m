@@ -16,7 +16,7 @@
 - (BOOL)checkExitsMainItemWithQid:(NSInteger)qid WithCId:(NSInteger)cid {
     __block BOOL existFlag = NO;
     if (cid < 1) {
-        cid = [[IMDataManager sharedInstance] getMaxQTNoteMainItemCid] + 1;
+        cid = [[IMDataManager qimDB_SharedInstance] getMaxQTNoteMainItemCid] + 1;
     }
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = @"Select Count(*) From qcloud_main Where q_id = :q_id Or c_id = :c_id;";
@@ -39,7 +39,7 @@
                    WithQExtendedFlag:(NSInteger)qExtendedFlag {
     
     if (cid < 1) {
-        cid = [[IMDataManager sharedInstance]getMaxQTNoteMainItemCid] + 1;
+        cid = [[IMDataManager qimDB_SharedInstance]getMaxQTNoteMainItemCid] + 1;
     }
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = @"Insert Or Replace into qcloud_main(q_id, c_id, q_type, q_title, q_introduce, q_content, q_time, q_state, q_ExtendedFlag) Values(:q_id, :c_id, :q_type, :q_title, :q_introduce, :q_content, :q_time, :q_state, :q_ExtendedFlag);";
@@ -69,7 +69,7 @@
                  WithQState:(NSInteger)qstate
           WithQExtendedFlag:(NSInteger)qExtendedFlag {
     if (cid < 1) {
-        cid = [[IMDataManager sharedInstance]getMaxQTNoteMainItemCid] + 1;
+        cid = [[IMDataManager qimDB_SharedInstance]getMaxQTNoteMainItemCid] + 1;
     }
     [[self dbInstance] usingTransaction:^(Database *database) {
         NSString *sql = @"Update qcloud_main Set q_id = :q_id, q_title = :q_title, q_introduce = :q_introduce, q_content = :q_content, q_time = :q_time, q_state = :q_state, q_ExtendedFlag = :q_ExtendedFlag Where q_id = :q_id2 OR c_id = :c_id;";
@@ -300,7 +300,7 @@
 - (BOOL)checkExitsSubItemWithQsid:(NSInteger)qsid WithCsid:(NSInteger)csid {
     __block BOOL existFlag = NO;
     if (csid < 1) {
-        csid = [[IMDataManager sharedInstance]getMaxQTNoteSubItemCSid] + 1;
+        csid = [[IMDataManager qimDB_SharedInstance]getMaxQTNoteSubItemCSid] + 1;
     }
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = @"Select Count(*) From qcloud_sub Where qs_id = :qs_id Or cs_id = :cs_id;";
@@ -323,7 +323,7 @@
                          WithQState:(NSInteger)qSstate
                 WithQS_ExtendedFlag:(NSInteger)qs_ExtendedFlag {
     if (csid < 1) {
-        csid = [[IMDataManager sharedInstance] getMaxQTNoteSubItemCSid] + 1;
+        csid = [[IMDataManager qimDB_SharedInstance] getMaxQTNoteSubItemCSid] + 1;
     }
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = @"Insert Or Replace into qcloud_sub(c_id, qs_id, cs_id, qs_type, qs_title, qs_introduce, qs_content, qs_time, qs_state, qs_ExtendedFlag) Values(:c_id, :qs_id, :cs_id, :qs_type, :qs_title, :qs_introduce, :qs_content, :qs_time, :qs_state, :qs_ExtendedFlag);";
@@ -352,7 +352,7 @@
                WithQSState:(NSInteger)qsState
        WithQS_ExtendedFlag:(NSInteger)qs_ExtendedFlag {
     if (csid < 1) {
-        csid = [[IMDataManager sharedInstance] getMaxQTNoteSubItemCSid] + 1;
+        csid = [[IMDataManager qimDB_SharedInstance] getMaxQTNoteSubItemCSid] + 1;
     }
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         

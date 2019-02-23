@@ -75,16 +75,16 @@
     return [[QIMManager sharedInstance] sendControlStateWithMessagesIdArray:messages WithXmppId:xmppId];
 }
 
-- (BOOL)sendReadStateWithMessagesIdArray:(NSArray *)messages WithXmppId:(NSString *)xmppId {
-    return [[QIMManager sharedInstance] sendReadStateWithMessagesIdArray:messages WithXmppId:xmppId];
+- (BOOL)sendReadStateWithMessagesIdArray:(NSArray *)messages WithMessageReadFlag:(QIMMessageReadFlag)msgReadFlag WithXmppId:(NSString *)xmppId {
+    return [[QIMManager sharedInstance] sendReadStateWithMessagesIdArray:messages WithMessageReadFlag:msgReadFlag WithXmppId:xmppId];
 }
 
-- (BOOL)sendReadStateWithMessagesIdArray:(NSArray *)messages WithXmppId:(NSString *)xmppId WithRealJid:(NSString *)realJid {
-    return [[QIMManager sharedInstance] sendReadStateWithMessagesIdArray:messages WithXmppId:xmppId WithRealJid:realJid];
+- (BOOL)sendReadStateWithMessagesIdArray:(NSArray *)messages WithMessageReadFlag:(QIMMessageReadFlag)msgReadFlag WithXmppId:(NSString *)xmppId WithRealJid:(NSString *)realJid {
+    return [[QIMManager sharedInstance] sendReadStateWithMessagesIdArray:messages WithMessageReadFlag:msgReadFlag WithXmppId:xmppId WithRealJid:realJid];
 }
 
 - (BOOL)sendReadstateWithGroupLastMessageTime:(long long) lastTime withGroupId:(NSString *) groupId {
-   return [[QIMManager sharedInstance] sendReadstateWithGroupLastMessageTime:lastTime withGroupId:groupId];
+    return [[QIMManager sharedInstance] sendReadstateWithGroupLastMessageTime:lastTime withGroupId:groupId];
 }
 
 - (Message *)sendShockToUserId:(NSString *)userId {
@@ -107,8 +107,8 @@
     return [[QIMManager sharedInstance] sendMessage:msg ToUserId:userId];
 }
 
-- (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToUserId:(NSString *)userId WihtMsgType:(int)msgType {
-    return [[QIMManager sharedInstance] sendMessage:msg WithInfo:info ToUserId:userId WihtMsgType:msgType];
+- (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToUserId:(NSString *)userId WithMsgType:(int)msgType {
+    return [[QIMManager sharedInstance] sendMessage:msg WithInfo:info ToUserId:userId WithMsgType:msgType];
 }
 
 - (Message *)createNoteReplyMessage:(NSString *)msg ToUserId:(NSString *)user {
@@ -119,12 +119,12 @@
     return [[QIMManager sharedInstance] sendMessage:msg ToGroupId:groupId];
 }
 
-- (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToGroupId:(NSString *)groupId WihtMsgType:(int)msgType {
-    return [[QIMManager sharedInstance] sendMessage:msg WithInfo:info ToGroupId:groupId WihtMsgType:msgType];
+- (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToGroupId:(NSString *)groupId WithMsgType:(int)msgType {
+    return [[QIMManager sharedInstance] sendMessage:msg WithInfo:info ToGroupId:groupId WithMsgType:msgType];
 }
 
-- (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToGroupId:(NSString *)groupId WihtMsgType:(int)msgType WithMsgId:(NSString *)msgId {
-    return [[QIMManager sharedInstance] sendMessage:msg WithInfo:info ToGroupId:groupId WihtMsgType:msgType WithMsgId:msgId];
+- (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToGroupId:(NSString *)groupId WithMsgType:(int)msgType WithMsgId:(NSString *)msgId {
+    return [[QIMManager sharedInstance] sendMessage:msg WithInfo:info ToGroupId:groupId WithMsgType:msgType WithMsgId:msgId];
 }
 
 - (Message *)sendGroupShockToGroupId:(NSString *)groupId {
@@ -139,8 +139,8 @@
     [[QIMManager sharedInstance] revokeGroupMessageWithMessageId:messageId message:message ToJid:jid];
 }
 
-- (void)sendFileJson:(NSString *)fileJson ToGroupId:(NSString *)groupId WihtMsgId:(NSString *)msgId {
-    [[QIMManager sharedInstance] sendFileJson:fileJson ToGroupId:groupId WihtMsgId:msgId];
+- (void)sendFileJson:(NSString *)fileJson ToGroupId:(NSString *)groupId WithMsgId:(NSString *)msgId {
+    [[QIMManager sharedInstance] sendFileJson:fileJson ToGroupId:groupId WithMsgId:msgId];
 }
 
 - (Message *)sendGroupVoiceUrl:(NSString *)voiceUrl withVoiceName:(NSString *)voiceName withSeconds:(int)seconds ToGroupId:(NSString *)groupId {
@@ -193,8 +193,8 @@
 
 #pragma mark - 位置共享
 
-- (Message *)sendShareLocationMessage:(NSString *)msg WithInfo:(NSString *)info ToJid:(NSString *)jid WihtMsgType:(int)msgType {
-    return [[QIMManager sharedInstance] sendShareLocationMessage:msg WithInfo:info ToJid:jid WihtMsgType:msgType];
+- (Message *)sendShareLocationMessage:(NSString *)msg WithInfo:(NSString *)info ToJid:(NSString *)jid WithMsgType:(int)msgType {
+    return [[QIMManager sharedInstance] sendShareLocationMessage:msg WithInfo:info ToJid:jid WithMsgType:msgType];
 }
 
 - (Message *)beginShareLocationToUserId:(NSString *)userId WithShareLocationId:(NSString *)shareLocationId {
@@ -324,28 +324,20 @@
     return [[QIMManager sharedInstance] getNotReadMsgIdListByUserId:userId WithRealJid:realJid];
 }
 
-- (void)getMsgListByUserId:(NSString *)userId WithRealJid:(NSString *)realJid WihtLimit:(int)limit WithOffset:(int)offset WihtComplete:(void (^)(NSArray *))complete {
-    [[QIMManager sharedInstance] getMsgListByUserId:userId WithRealJid:realJid WihtLimit:limit WithOffset:offset WihtComplete:complete];
+- (void)getMsgListByUserId:(NSString *)userId WithRealJid:(NSString *)realJid WithLimit:(int)limit WithOffset:(int)offset WithComplete:(void (^)(NSArray *))complete {
+    [[QIMManager sharedInstance] getMsgListByUserId:userId WithRealJid:realJid WithLimit:limit WithOffset:offset WithComplete:complete];
 }
 
-- (void)getMsgListByUserId:(NSString *)userId FromTimeStamp:(long long)timeStamp WihtComplete:(void (^)(NSArray *))complete {
-    [[QIMManager sharedInstance] getMsgListByUserId:userId FromTimeStamp:timeStamp WihtComplete:complete];
+- (void)getMsgListByUserId:(NSString *)userId FromTimeStamp:(long long)timeStamp WithComplete:(void (^)(NSArray *))complete {
+    [[QIMManager sharedInstance] getMsgListByUserId:userId FromTimeStamp:timeStamp WithComplete:complete];
 }
 
-- (void)getMsgListByUserId:(NSString *)userId WithRealJid:(NSString *)realJid FromTimeStamp:(long long)timeStamp WihtComplete:(void (^)(NSArray *))complete {
-    [[QIMManager sharedInstance] getMsgListByUserId:userId WithRealJid:realJid FromTimeStamp:timeStamp WihtComplete:complete];
+- (void)getMsgListByUserId:(NSString *)userId WithRealJid:(NSString *)realJid FromTimeStamp:(long long)timeStamp WithComplete:(void (^)(NSArray *))complete {
+    [[QIMManager sharedInstance] getMsgListByUserId:userId WithRealJid:realJid FromTimeStamp:timeStamp WithComplete:complete];
 }
 
 - (void)getConsultServerMsgLisByUserId:(NSString *)userId WithVirtualId:(NSString *)virtualId WithLimit:(int)limit WithOffset:(int)offset WithComplete:(void (^)(NSArray *))complete {
     [[QIMManager sharedInstance] getConsultServerMsgLisByUserId:userId WithVirtualId:virtualId WithLimit:limit WithOffset:offset WithComplete:complete];
-}
-
-- (NSArray *)getFSMsgByXmppId:(NSString *)xmppId {
-    return [[QIMManager sharedInstance] getFSMsgByXmppId:xmppId];
-}
-
-- (NSDictionary *)getFSMsgByMsgId:(NSString *)msgId {
-    return [[QIMManager sharedInstance] getFSMsgByMsgId:msgId];
 }
 
 - (void)checkOfflineMsg {

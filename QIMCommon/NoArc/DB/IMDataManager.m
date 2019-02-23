@@ -12,7 +12,6 @@
 #import "Message.pb.h"
 #import "QIMDBLogger.h"
 #import "QIMWatchDog.h"
-#import "QIMPublicRedefineHeader.h"
 
 static IMDataManager *__global_data_manager = nil;
 @interface IMDataManager()
@@ -24,7 +23,7 @@ static IMDataManager *__global_data_manager = nil;
     NSDateFormatter *_timeSmtapFormatter;
 }
 
-+ (IMDataManager *) sharedInstance {
++ (IMDataManager *) qimDB_SharedInstance {
     return __global_data_manager;
 }
 
@@ -33,7 +32,7 @@ static IMDataManager *__global_data_manager = nil;
     _dbPath = [dbPath retain];
 }
 
-+(IMDataManager *) sharedInstanceWihtDBPath:(NSString *)dbPath{
++ (IMDataManager *)qimDB_sharedInstanceWithDBPath:(NSString *)dbPath{
     
     if (__global_data_manager) {
         __global_data_manager = [[IMDataManager alloc] initWithDBPath:dbPath];
@@ -109,7 +108,7 @@ static IMDataManager *__global_data_manager = nil;
         }
         
 //        [self initSQLiteLog];
-        [self updateMsgTimeToMillSecond];
+        [self qimDB_updateMsgTimeToMillSecond];
         
     }
     return self;
@@ -146,6 +145,7 @@ static IMDataManager *__global_data_manager = nil;
 - (BOOL)createDb:(Database *)database {
     BOOL result = NO;
     
+    //创建用户表
     result = [database executeNonQuery: @"CREATE TABLE IF NOT EXISTS IM_User(\
               UserId                TEXT,\
               XmppId                TEXT PRIMARY KEY,\
@@ -161,19 +161,14 @@ static IMDataManager *__global_data_manager = nil;
                         withParameters:nil];
     if (result) {
         result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_USER_USERID ON \
-                  IM_User(UserId);"
-                            withParameters:nil];
+                  IM_User(UserId);" withParameters:nil];
         result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_USER_XMPPID ON \
-                  IM_User(XmppId);"
-                            withParameters:nil];
+                  IM_User(XmppId);" withParameters:nil];
         result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_USER_NAME ON \
-                  IM_User(Name);"
-                            withParameters:nil];
-        if ([database checkExistsOnTable:@"IM_User" withColumn:@"IncrementVersion"] == NO) {
-            [database executeNonQuery:@"ALTER TABLE IM_User ADD IncrementVersion INTEGER;" withParameters:nil];
-        }
+                  IM_User(Name);" withParameters:nil];
     }
     
+    //创建群组列表
     result = [database executeNonQuery: @"CREATE TABLE IF NOT EXISTS IM_Group(\
               GroupId               TEXT PRIMARY KEY,\
               Name                  TEXT,\
@@ -183,17 +178,12 @@ static IMDataManager *__global_data_manager = nil;
               LastUpdateTime        INTEGER,\
               MsgState              INTEGER,\
               ExtendedFlag          BLOB\
-              );"
-                        withParameters:nil];
+              );" withParameters:nil];
     if (result) {
-        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_GROUP_GROUPID ON \
-                  IM_Group(GroupId);"
-                            withParameters:nil];
-        if ([database checkExistsOnTable:@"IM_Group" withColumn:@"PushState"] == NO) {
-            [database executeNonQuery:@"ALTER TABLE IM_Group ADD PushState INTEGER;" withParameters:nil];
-        }
+       
     }
     
+    //创建群成员列表
     result = [database executeNonQuery: @"CREATE TABLE IF NOT EXISTS IM_Group_Member(\
               MemberId              TEXT PRIMARY KEY,\
               GroupId               TEXT,\
@@ -202,8 +192,7 @@ static IMDataManager *__global_data_manager = nil;
               Affiliation           TEXT,\
               LastUpdateTime        INTEGER,\
               ExtendedFlag          BLOB\
-              );"
-                        withParameters:nil];
+              );" withParameters:nil];
     if (result) {
         result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_GROUP_MEMBER_MEMBERID ON \
                   IM_Group_Member(MemberId);"
@@ -216,6 +205,7 @@ static IMDataManager *__global_data_manager = nil;
                             withParameters:nil];
     }
     
+    //创建消息列表
     result = [database executeNonQuery: @"CREATE TABLE IF NOT EXISTS IM_SessionList(\
               XmppId                TEXT,\
               RealJid               TEXT,\
@@ -224,51 +214,15 @@ static IMDataManager *__global_data_manager = nil;
               LastUpdateTime        INTEGER,\
               ChatType              INTEGER,\
               ExtendedFlag          BLOB,\
+              UnreadCount           INTEGER DEFAULT 0,\
               primary key (XmppId,RealJid));" withParameters:nil];
     if (result) {
         result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_SESSION_MESSAGEID ON \
                   IM_SessionList(LastMessageId);"
                             withParameters:nil];
-        
-        if ([database checkExistsOnTable:@"IM_SessionList" withColumn:@"RealJid"] == NO) {
-            [database executeNonQuery:@"ALTER TABLE IM_SessionList ADD RealJid TEXT;" withParameters:nil];
-            // 修改主键
-            // BEGIN TRANSACTION;
-            //            CREATE TEMPORARY TABLE t1_backup(a,b);
-            //            INSERT INTO t1_backup SELECT a,b FROM t1;
-            //            DROP TABLE t1;
-            //            CREATE TABLE t1(a,b);
-            //            INSERT INTO t1 SELECT a,b FROM t1_backup;
-            //            DROP TABLE t1_backup;
-            //            COMMIT;
-            [database executeNonQuery:@"CREATE TEMPORARY TABLE t1_backup(\
-             XmppId                TEXT,\
-             RealJid               TEXT,\
-             UserId                TEXT,\
-             LastMessageId         TEXT,\
-             LastUpdateTime        INTEGER,\
-             ChatType              INTEGER,\
-             ExtendedFlag          BLOB,\
-             primary key (XmppId,RealJid));" withParameters:nil];
-            [database executeNonQuery:@"INSERT INTO t1_backup SELECT XmppId,XmppId,UserId,LastMessageId,LastUpdateTime,ChatType,ExtendedFlag FROM IM_SessionList;" withParameters:nil];
-            [database executeNonQuery:@"DROP TABLE IM_SessionList;" withParameters:nil];
-            [database executeNonQuery:@"CREATE TABLE IM_SessionList(\
-             XmppId                TEXT,\
-             RealJid               TEXT,\
-             UserId                TEXT,\
-             LastMessageId         TEXT,\
-             LastUpdateTime        INTEGER,\
-             ChatType              INTEGER,\
-             ExtendedFlag          BLOB,\
-             primary key (XmppId,RealJid));" withParameters:nil];
-            [database executeNonQuery:@"INSERT INTO IM_SessionList SELECT * FROM t1_backup;" withParameters:nil];
-            [database executeNonQuery:@"DROP TABLE t1_backup;" withParameters:nil];
-            result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_SESSION_MESSAGEID ON \
-                      IM_SessionList(LastMessageId);"
-                                withParameters:nil];
-        }
     }
     
+    //创建消息表
     result = [database executeNonQuery: @"CREATE TABLE IF NOT EXISTS IM_Message(\
               MsgId                 TEXT PRIMARY KEY,\
               XmppId                TEXT,\
@@ -276,62 +230,37 @@ static IMDataManager *__global_data_manager = nil;
               'From'                TEXT,\
               'To'                  TEXT,\
               Content               TEXT,\
+              ExtendInfo            TEXT,\
               Type                  INTEGER,\
               State                 INTEGER,\
               Direction             INTEGER,\
               ContentResolve        TEXT,\
-              ReadedTag             INTEGER DEFAULT 0,\
+              ReadState             INTEGER DEFAULT 0,\
               LastUpdateTime        INTEGER,\
+              MessageRaw            TEXT,\
+              RealJid               TEXT,\
               ExtendedFlag          BLOB\
               );" withParameters:nil];
     if (result) {
-        ///这里做update操作： DROP索引
-        result = [database executeNonQuery:@"DROP INDEX IF EXISTS IX_IM_MESSAGE_XMPPID;" withParameters:nil];
-        result = [database executeNonQuery:@"DROP INDEX IF EXISTS IX_IM_MESSAGE_FROM;" withParameters:nil];
-        result = [database executeNonQuery:@"DROP INDEX IF EXISTS IX_IM_MESSAGE_TO;" withParameters:nil];
-        result = [database executeNonQuery:@"DROP INDEX IF EXISTS IX_IM_MESSAGE_STATE;" withParameters:nil];
-        result = [database executeNonQuery:@"DROP INDEX IF EXISTS IX_IM_MESSAGE_STATE_DIRECTION;" withParameters:nil];
-        result = [database executeNonQuery:@"DROP INDEX IF EXISTS IX_IM_MESSAGE_XMPPID_LastUpdateTime;" withParameters:nil];
-        result = [database executeNonQuery:@"DROP INDEX IF EXISTS IX_IM_MESSAGE_REALJID;" withParameters:nil];
-        result = [database executeNonQuery:@"DROP INDEX IF EXISTS IX_IM_MESSAGE_REALJID_XMPPID_LastUpdateTime;" withParameters:nil];
-        result = [database executeNonQuery:@"DROP INDEX IF EXISTS IX_IM_MESSAGE_XMPPID;" withParameters:nil];
-        result = [database executeNonQuery:@"DROP INDEX IF EXISTS IX_IM_MESSAGE_MODIFYSTATE" withParameters:nil];
-        result = [database executeNonQuery:@"DROP INDEX IF EXISTS IX_IM_MESSAGE_XMPPID_LastUpdateTime_ReadedTag_State" withParameters:nil];
-        result = [database executeNonQuery:@"DROP INDEX IF EXISTS IX_MESSAGE_LASTUPDATEIME_XMPPID" withParameters:nil];
-        
-        if ([database checkExistsOnTable:@"IM_Message" withColumn:@"MessageRaw"] == NO) {
-            [database executeNonQuery:@"ALTER TABLE IM_Message ADD MessageRaw TEXT;" withParameters:nil];
-        }
-        
-        if ([database checkExistsOnTable:@"IM_Message" withColumn:@"RealJid"] == NO) {
-            [database executeNonQuery:@"ALTER TABLE IM_Message ADD RealJid TEXT;" withParameters:nil];
-        }
-        
-        if ([database checkExistsOnTable:@"IM_Message" withColumn:@"ChatType"] == NO) {
-            [database executeNonQuery:@"ALTER TABLE IM_Message ADD ChatType INTEGER;" withParameters:nil];
-        }
-        
-        if ([database checkExistsOnTable:@"IM_Message" withColumn:@"ExtendInfo"] == NO) {
-            [database executeNonQuery:@"ALTER TABLE IM_Message ADD ExtendInfo TEXT;" withParameters:nil];
-        }
         
         result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_MESSAGE_XMPPID_LastUpdateTime ON \
                   IM_Message(XmppId, LastUpdateTime);"
                             withParameters:nil];
-        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_MESSAGE_ChatType_State ON \
-                  IM_Message(ChatType, State);"
-                            withParameters:nil];
+        
+        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_MESSAGE_XMPPID_REALJID ON \
+                  IM_Message(XmppId, RealJid);" withParameters:nil];
+        
+        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_MESSAGE_STATE ON \
+                  IM_Message(State);" withParameters:nil];
+        
+        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_MESSAGE_TO ON \
+                  IM_Message('To');" withParameters:nil];
+        
+        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_MESSAGE_TO ON \
+                  IM_Message('From');" withParameters:nil];
     }
     
-    result = [database executeNonQuery: @"CREATE TABLE IF NOT EXISTS IM_Recent_Contacts(\
-              XmppId                TEXT PRIMARY KEY,\
-              Type                  INTEGER,\
-              LastUpdateTime        INTEGER,\
-              ExtendedFlag          BLOB\
-              );"
-                        withParameters:nil];
-    
-    
+    //创建公众号表
     result = [database executeNonQuery: @"CREATE TABLE IF NOT EXISTS IM_Public_Number(\
               XmppId                TEXT PRIMARY KEY,\
               PublicNumberId        TEXT,\
@@ -345,15 +274,12 @@ static IMDataManager *__global_data_manager = nil;
               ExtendedFlag          BLOB\
               );" withParameters:nil];
     if (result) {
-        if ([database checkExistsOnTable:@"IM_Public_Number" withColumn:@"PublicNumberId"] == NO) {
-            [database executeNonQuery:@"Delete From IM_Public_Number;" withParameters:nil];
-            [database executeNonQuery:@"ALTER TABLE IM_Public_Number ADD PublicNumberID TEXT;" withParameters:nil];
-        }
         result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_PUBLIC_NUMBER_PNID ON \
                   IM_Public_Number(PublicNumberId);"
                             withParameters:nil];
     }
     
+    //创建公众号消息表
     result = [database executeNonQuery: @"CREATE TABLE IF NOT EXISTS IM_Public_Number_Message(\
               MsgId                 TEXT PRIMARY KEY,\
               XmppId                TEXT,\
@@ -381,12 +307,11 @@ static IMDataManager *__global_data_manager = nil;
                             withParameters:nil];
     }
     
-    //    IM_Collection_User 已绑定的账号
+    //创建IM_Collection_User 已绑定的账号
     result = [database executeNonQuery: @"CREATE TABLE IF NOT EXISTS IM_Collection_User(\
               XmppId                TEXT PRIMARY KEY,\
               BIND                  BLOB\
-              );"
-                        withParameters:nil];
+              );" withParameters:nil];
     if (result) {
         result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_COLLECTION_USER_XMPPID ON \
                   IM_Collection_User(XmppId);"
@@ -396,7 +321,7 @@ static IMDataManager *__global_data_manager = nil;
                             withParameters:nil];
     }
     
-    //    IM_Collection_User_Card 代收用户名片
+    //创建IM_Collection_User_Card 代收用户名片
     result = [database executeNonQuery: @"CREATE TABLE IF NOT EXISTS IM_Collection_User_Card(\
               UserId                TEXT,\
               XmppId                TEXT PRIMARY KEY,\
@@ -417,24 +342,9 @@ static IMDataManager *__global_data_manager = nil;
         result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_COLLECTION_USER_CARD_NAME ON \
                   IM_Collection_User_Card(Name);"
                             withParameters:nil];
-        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_COLLECTION_USER_CARD_DESCINFO ON \
-                  IM_Collection_User_Card(DescInfo);"
-                            withParameters:nil];
-        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_COLLECTION_USER_CARD_SEARCHINDEX ON \
-                  IM_Collection_User_Card(SearchIndex);"
-                            withParameters:nil];
-        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_COLLECTION_USER_CARD_USERINFO ON \
-                  IM_Collection_User_Card(UserInfo);"
-                            withParameters:nil];
-        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_COLLECTION_USER_CARD_INCREMENTVERSION ON \
-                  IM_Collection_User_Card(IncrementVersion);"
-                            withParameters:nil];
-        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_COLLECTION_USER_CARD_EXTENDEDFLAG ON \
-                  IM_Collection_User_Card(ExtendedFlag);"
-                            withParameters:nil];
     }
     
-    //    IM_Collection_Group_Card 代收群名片
+    //创建IM_Collection_Group_Card 代收群名片
     result = [database executeNonQuery: @"CREATE TABLE IF NOT EXISTS IM_Collection_Group_Card(\
               GroupId               TEXT PRIMARY KEY,\
               Name                  TEXT,\
@@ -454,6 +364,7 @@ static IMDataManager *__global_data_manager = nil;
                             withParameters:nil];
     }
     
+    //创建代收消息列表
     result = [database executeNonQuery: @"CREATE TABLE IF NOT EXISTS IM_Collection_SessionList(\
               XmppId                TEXT,\
               BindId                TEXT,\
@@ -470,7 +381,7 @@ static IMDataManager *__global_data_manager = nil;
                             withParameters:nil];
     }
     
-    //    IM_Message_Collection 代收消息附属表
+    //创建IM_Message_Collection 代收消息附属表
     result = [database executeNonQuery: @"CREATE TABLE IF NOT EXISTS IM_Message_Collection(\
               MsgId                 TEXT PRIMARY KEY,\
               Originfrom            TEXT,\
@@ -491,6 +402,7 @@ static IMDataManager *__global_data_manager = nil;
                             withParameters:nil];
     }
     
+    //创建回复表
     result = [database executeNonQuery: @"CREATE TABLE IF NOT EXISTS IM_Friendster_Message(\
               MsgId                 TEXT PRIMARY KEY,\
               XmppId                TEXT,\
@@ -512,6 +424,7 @@ static IMDataManager *__global_data_manager = nil;
                             withParameters:nil];
     }
     
+    //创建好友列表
     result = [database executeNonQuery: @"CREATE TABLE IF NOT EXISTS IM_Friend_List(\
               UserId                TEXT,\
               XmppId                TEXT PRIMARY KEY,\
@@ -536,6 +449,7 @@ static IMDataManager *__global_data_manager = nil;
                             withParameters:nil];
     }
     
+    //创建好友通知表
     result = [database executeNonQuery: @"CREATE TABLE IF NOT EXISTS IM_Friend_Notify(\
               UserId                TEXT ,\
               XmppId                TEXT PRIMARY KEY,\
@@ -625,12 +539,14 @@ static IMDataManager *__global_data_manager = nil;
                             withParameters:nil];
     }
     
-    result = [database executeNonQuery:@"CREATE TABLE IF NOT EXISTS IM_User_BackInfo(\
+    //创建用户直属Leader表
+    result = [database executeNonQuery:@"CREATE TABLE IF NOT EXISTS IM_UserWorkInfo(\
               XmppId                 TEXT PRIMARY KEY, \
               UserWorkInfo           TEXT,\
               LastUpdateTime         INTEGER\
               );" withParameters:nil];
     
+    //创建客户端配置表
     result = [database executeNonQuery:@"CREATE TABLE IF NOT EXISTS IM_Client_Config(\
                ConfigKey             TEXT,\
                ConfigSubKey          TEXT,\
@@ -660,6 +576,7 @@ static IMDataManager *__global_data_manager = nil;
         result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_QUICK_REPLY_GROUP_GROUPSEQ ON \
                   IM_QUICK_REPLY_GROUP(groupseq);" withParameters:nil];
     }
+    
     //快捷回复单条记录表
     result = [database executeNonQuery:@"CREATE TABLE IF NOT EXISTS IM_QUICK_REPLY_CONTENT(\
               sid             LONG,\
@@ -675,7 +592,7 @@ static IMDataManager *__global_data_manager = nil;
                   IM_QUICK_REPLY_CONTENT(contentseq);" withParameters:nil];
     }
     
-    //行程区域表
+    //创建行程区域表
     result = [database executeNonQuery:@"CREATE TABLE IF NOT EXISTS IM_TRIP_AREA (\
               AreaID TEXT PRIMARY KEY,\
               Enable TEXT,\
@@ -684,7 +601,7 @@ static IMDataManager *__global_data_manager = nil;
               EveningEnds TEXT,\
               Description TEXT);" withParameters:nil];
     
-    //行程详情表
+    //创建行程详情表
     result = [database executeNonQuery:@"CREATE TABLE IF NOT EXISTS IM_TRIP_INFO (\
               tripId TEXT PRIMARY KEY,\
               tripName TEXT,\
@@ -709,8 +626,9 @@ static IMDataManager *__global_data_manager = nil;
               level integer,\
               message text,\
               timestamp double);" withParameters:nil];
-    
-    result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS timestamp ON logs (timestamp);" withParameters:nil];
+    if (result) {
+        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS timestamp ON logs (timestamp);" withParameters:nil];
+    }
     
     //创建用户勋章表
     result = [database executeNonQuery:@"CREATE TABLE IF NOT EXISTS IM_User_Medal (\
@@ -720,8 +638,9 @@ static IMDataManager *__global_data_manager = nil;
               URLDesc               TEXT,\
               LastUpdateTime        INTEGER DEFAULT 0,\
               primary key (XmppId,Type));" withParameters:nil];
-    
-    result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IM_USER_MEDAL_XMPPID ON IM_User_Medal (XmppId);" withParameters:nil];
+    if (result) {
+        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IM_USER_MEDAL_XMPPID ON IM_User_Medal (XmppId);" withParameters:nil];
+    }
     
     
     //创建工作圈表
@@ -742,7 +661,6 @@ static IMDataManager *__global_data_manager = nil;
               likeNum               INTEGER,\
               commentsNum           INTEGER,\
               review_status         INTEGER);" withParameters:nil];
-    
     
     //创建工作圈评论表
     result = [database executeNonQuery:@"create table IF NOT EXISTS IM_Work_Comment (\
@@ -786,8 +704,9 @@ static IMDataManager *__global_data_manager = nil;
               createTime            INTEGER,\
               userFromHost          TEXT,\
               fromAnonymousName     TEXT);" withParameters:nil];
+    
     //创建一个缓存表
-    result = [database executeNonQuery:@"CREATE TABLE IM_Cache_Data(\
+    result = [database executeNonQuery:@"create table IF NOT EXISTS IM_Cache_Data(\
               key           TEXT,\
               type          INTEGER,\
               value         TEXT,\
@@ -797,7 +716,26 @@ static IMDataManager *__global_data_manager = nil;
     return result;
 }
 
-- (NSInteger)parserplatForm:(NSString *)platFormStr {
+- (void)qimDB_closeDataBase{
+    __global_data_manager = nil;
+    BOOL result = [DatabaseManager CloseByFullPath:_dbPath];
+    if (result) {
+        __global_data_manager = nil;
+    }
+}
+
++ (void)qimDB_clearDataBaseCache{
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"dbVersion"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+- (void)qimDB_dbCheckpoint {
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        [database dbCheckpoint];
+    }];
+}
+
+- (NSInteger)qimDB_parserplatForm:(NSString *)platFormStr {
     NSInteger platForm = 2;
     if ([platFormStr isEqualToString:@"ClientTypeMac"]) {
         platForm = 1;
@@ -815,19 +753,6 @@ static IMDataManager *__global_data_manager = nil;
         platForm = 2;
     }
     return platForm;
-}
-
-- (void)updateMsgTimeToMillSecond{
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:@"UpdateMsgTimeToMillSecond"] == nil) {
-        [[self dbInstance] syncUsingTransaction:^(Database *database) {
-            NSString *sql = @"Update IM_Message Set LastUpdateTime = LastUpdateTime * 1000 Where LastUpdateTime < 140000000000;";
-            [database executeNonQuery:sql withParameters:nil];
-            NSString *sql1 = @"Update IM_Public_Number_Message Set LastUpdateTime = LastUpdateTime * 1000 Where LastUpdateTime < 140000000000;";
-            [database executeNonQuery:sql1 withParameters:nil];
-        }];
-        [[NSUserDefaults standardUserDefaults] setObject:@(YES) forKey:@"UpdateMsgTimeToMillSecond"];
-        [[NSUserDefaults standardUserDefaults] synchronize];
-    }
 }
 
 - (void)clearUserDescInfo{
@@ -915,7 +840,7 @@ static IMDataManager *__global_data_manager = nil;
 - (void)bulkUpdateUserBackInfo:(NSDictionary *)userBackInfo WithXmppId:(NSString *)xmppId {
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         
-        NSString *insertSql = @"insert or replace into IM_User_BackInfo(XmppId, UserWorkInfo, LastUpdateTime) values(:XmppId, :UserWorkInfo, :LastUpdateTime);";
+        NSString *insertSql = @"insert or replace into IM_UserWorkInfo(XmppId, UserWorkInfo, LastUpdateTime) values(:XmppId, :UserWorkInfo, :LastUpdateTime);";
         NSString *userWorkInfoStr = [userBackInfo objectForKey:@"UserWorkInfo"];
         NSDate *nowDate = [NSDate dateWithTimeIntervalSinceNow:0];//获取当前时间0秒后的时间
         NSTimeInterval time=[nowDate timeIntervalSince1970]*1000;// *1000 是精确到毫秒，不乘就是精确到秒
@@ -1142,11 +1067,11 @@ static IMDataManager *__global_data_manager = nil;
     return [headerSrc autorelease];
 }
 
-//- (void)insertUserInfoWihtUserId:(NSString *)userId
+//- (void)insertUserInfoWithUserId:(NSString *)userId
 //                        WithName:(NSString *)name
 //                    WithDescInfo:(NSString *)descInfo
 //                     WithHeadSrc:(NSString *)headerSrc
-//                    WihtUserInfo:(NSData *)userInfo{
+//                    WithUserInfo:(NSData *)userInfo{
 //    if (userId.length > 0) {
 //        [[self dbInstance] syncUsingTransaction:^(Database *database) {
 //            NSString *sql = @"insert or replace into IM_User(UserId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime) values(:UserID, :Domain, :NickName, :Header, :UserInfo, :LastUpdateTime);";
@@ -1208,7 +1133,7 @@ static IMDataManager *__global_data_manager = nil;
     }
     __block NSMutableDictionary *userBackInfo = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"SELECT *from IM_User_BackInfo Where XmppId = :XmppId;";
+        NSString *sql = @"SELECT *from IM_UserWorkInfo Where XmppId = :XmppId;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:xmppId];
         DataReader *reader = [database executeReader:sql withParameters:param];
@@ -1980,7 +1905,7 @@ static IMDataManager *__global_data_manager = nil;
 }
 
 - (void)updateGroup:(NSString *)groupId
-       WihtNickName:(NSString *)nickName
+       WithNickName:(NSString *)nickName
           WithTopic:(NSString *)topic
            WithDesc:(NSString *)desc
       WithHeaderSrc:(NSString *)headerSrc
@@ -2002,7 +1927,7 @@ static IMDataManager *__global_data_manager = nil;
     }];
 }
 
-- (void)updateGroup:(NSString *)groupId WihtNickName:(NSString *)nickName{
+- (void)updateGroup:(NSString *)groupId WithNickName:(NSString *)nickName{
     
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = @"Update IM_Group Set Name=:Name Where GroupId = :GroupId;";
@@ -2087,7 +2012,7 @@ static IMDataManager *__global_data_manager = nil;
     return [infoDic autorelease];
 }
 
-- (BOOL)checkGroupMember:(NSString *)nickName WihtGroupId:(NSString *)groupId{
+- (BOOL)checkGroupMember:(NSString *)nickName WithGroupId:(NSString *)groupId{
     __block BOOL flag = NO;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = @"Select 1 From IM_Group_Member Where MemberId = :MemberId;";
@@ -2402,7 +2327,7 @@ static IMDataManager *__global_data_manager = nil;
     return timeStamp;
 }
 
-- (void)updateMessageWihtMsgId:(NSString *)msgId
+- (void)updateMessageWithMsgId:(NSString *)msgId
                  WithSessionId:(NSString *)sessionId
                       WithFrom:(NSString *)from
                         WithTo:(NSString *)to
@@ -2411,14 +2336,14 @@ static IMDataManager *__global_data_manager = nil;
                    WithMsgType:(int)msgType
                   WithMsgState:(int)msgState
               WithMsgDirection:(int)msgDirection
-                   WihtMsgDate:(long long)msgDate
+                   WithMsgDate:(long long)msgDate
                  WithReadedTag:(int)readedTag
                   ExtendedFlag:(int)ExtendedFlag {
-    [self updateMessageWihtMsgId:msgId WithSessionId:sessionId WithFrom:from WithTo:to WithContent:content WithPlatform:platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WihtMsgDate:msgDate WithReadedTag:readedTag ExtendedFlag:ExtendedFlag WithMsgRaw:nil];
+    [self updateMessageWithMsgId:msgId WithSessionId:sessionId WithFrom:from WithTo:to WithContent:content WithPlatform:platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:readedTag ExtendedFlag:ExtendedFlag WithMsgRaw:nil];
 }
 
 
-- (void)updateMessageWihtMsgId:(NSString *)msgId
+- (void)updateMessageWithMsgId:(NSString *)msgId
                  WithSessionId:(NSString *)sessionId
                       WithFrom:(NSString *)from
                         WithTo:(NSString *)to
@@ -2428,13 +2353,13 @@ static IMDataManager *__global_data_manager = nil;
                    WithMsgType:(int)msgType
                   WithMsgState:(int)msgState
               WithMsgDirection:(int)msgDirection
-                   WihtMsgDate:(long long)msgDate
+                   WithMsgDate:(long long)msgDate
                  WithReadedTag:(int)readedTag
                   ExtendedFlag:(int)ExtendedFlag
                     WithMsgRaw:(NSString *)msgRaw{
     
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"Update IM_Message Set XmppId=:XmppId, \"From\"=:from, \"To\"=:to, Content=:content, ExtendInfo=:ExtendInfo, Platform=:platform, Type=:type, State=:state, Direction=:Direction,LastUpdateTime=:LastUpdateTime,ReadedTag=:ReadedTag,ExtendedFlag=:ExtendedFlag,MessageRaw=:MessageRaw Where MsgId=:MsgId;";
+        NSString *sql = @"Update IM_Message Set XmppId=:XmppId, \"From\"=:from, \"To\"=:to, Content=:content, ExtendInfo=:ExtendInfo, Platform=:platform, Type=:type, State=:state, Direction=:Direction,LastUpdateTime=:LastUpdateTime,ReadState=:ReadState,ExtendedFlag=:ExtendedFlag,MessageRaw=:MessageRaw Where MsgId=:MsgId;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:sessionId];
         [param addObject:from?from:@":NULL"];
@@ -2478,7 +2403,7 @@ static IMDataManager *__global_data_manager = nil;
 }
 
 - (void)revokeMessageByMsgId:(NSString *)msgId
-                 WihtContent:(NSString *)content
+                 WithContent:(NSString *)content
                  WithMsgType:(int)msgType{
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = @"Update IM_Message Set Content=:content,Type=:type Where MsgId=:MsgId;";
@@ -2526,7 +2451,7 @@ static IMDataManager *__global_data_manager = nil;
     }];
 }
 
-- (void)insertMessageWihtMsgId:(NSString *)msgId
+- (void)insertMessageWithMsgId:(NSString *)msgId
                     WithXmppId:(NSString *)xmppId
                       WithFrom:(NSString *)from
                         WithTo:(NSString *)to
@@ -2536,13 +2461,13 @@ static IMDataManager *__global_data_manager = nil;
                    WithMsgType:(int)msgType
                   WithMsgState:(int)msgState
               WithMsgDirection:(int)msgDirection
-                   WihtMsgDate:(long long)msgDate
+                   WithMsgDate:(long long)msgDate
                  WithReadedTag:(int)readedTag
                   WithChatType:(NSInteger)chatType{
-    return [self insertMessageWihtMsgId:msgId WithXmppId:xmppId WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WihtMsgDate:msgDate WithReadedTag:readedTag WithMsgRaw:nil WithChatType:chatType];
+    return [self insertMessageWithMsgId:msgId WithXmppId:xmppId WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:readedTag WithMsgRaw:nil WithChatType:chatType];
 }
 
-- (void)insertMessageWihtMsgId:(NSString *)msgId
+- (void)insertMessageWithMsgId:(NSString *)msgId
                     WithXmppId:(NSString *)xmppId
                       WithFrom:(NSString *)from
                         WithTo:(NSString *)to
@@ -2552,14 +2477,14 @@ static IMDataManager *__global_data_manager = nil;
                    WithMsgType:(int)msgType
                   WithMsgState:(int)msgState
               WithMsgDirection:(int)msgDirection
-                   WihtMsgDate:(long long)msgDate
+                   WithMsgDate:(long long)msgDate
                  WithReadedTag:(int)readedTag
                     WithMsgRaw:(NSString *)msgRaw
                   WithChatType:(NSInteger)chatType{
-    return [self insertMessageWihtMsgId:msgId WithXmppId:xmppId WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WihtMsgDate:msgDate WithReadedTag:readedTag WithMsgRaw:msgRaw WithRealJid:nil WithChatType:chatType];
+    return [self insertMessageWithMsgId:msgId WithXmppId:xmppId WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:readedTag WithMsgRaw:msgRaw WithRealJid:nil WithChatType:chatType];
 }
 
-- (void) insertMessageWihtMsgId:(NSString *)msgId
+- (void) insertMessageWithMsgId:(NSString *)msgId
                      WithXmppId:(NSString *)xmppId
                        WithFrom:(NSString *)from
                          WithTo:(NSString *)to
@@ -2569,7 +2494,7 @@ static IMDataManager *__global_data_manager = nil;
                     WithMsgType:(int)msgType
                    WithMsgState:(int)msgState
                WithMsgDirection:(int)msgDirection
-                    WihtMsgDate:(long long)msgDate
+                    WithMsgDate:(long long)msgDate
                   WithReadedTag:(int)readedTag
                      WithMsgRaw:(NSString *)msgRaw
                     WithRealJid:(NSString *)realJid
@@ -2649,7 +2574,7 @@ static IMDataManager *__global_data_manager = nil;
 }
 
 #pragma mark - 插入群JSON消息
-- (NSDictionary *)bulkInsertIphoneHistoryGroupJSONMsg:(NSArray *)list WihtMyNickName:(NSString *)myNickName WithReadMarkT:(long long)readMarkT WithDidReadState:(int)didReadState WihtMyRtxId:(NSString *)rtxId WithAtAllMsgList:(NSMutableArray<NSDictionary *> **)atAllMsgList WithNormaleAtMsgList:(NSMutableArray <NSDictionary *> **)normalMsgList{
+- (NSDictionary *)bulkInsertIphoneHistoryGroupJSONMsg:(NSArray *)list WithMyNickName:(NSString *)myNickName WithReadMarkT:(long long)readMarkT WithDidReadState:(int)didReadState WithMyRtxId:(NSString *)rtxId WithAtAllMsgList:(NSMutableArray<NSDictionary *> **)atAllMsgList WithNormaleAtMsgList:(NSMutableArray <NSDictionary *> **)normalMsgList{
     
     QIMVerboseLog(@"群消息插入本地数据库数量 : %lld", list.count);
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
@@ -2815,7 +2740,7 @@ static IMDataManager *__global_data_manager = nil;
 }
 
 //群翻页消息
-- (NSArray *)bulkInsertIphoneMucJSONMsg:(NSArray *)list WihtMyNickName:(NSString *)myNickName WithReadMarkT:(long long)readMarkT WithDidReadState:(int)didReadState WihtMyRtxId:(NSString *)rtxId{
+- (NSArray *)bulkInsertIphoneMucJSONMsg:(NSArray *)list WithMyNickName:(NSString *)myNickName WithReadMarkT:(long long)readMarkT WithDidReadState:(int)didReadState WithMyRtxId:(NSString *)rtxId{
     
     NSMutableArray *msgList = [[NSMutableArray alloc] init];
     NSMutableArray *fsMsgList = [[NSMutableArray alloc] init];
@@ -3278,7 +3203,7 @@ static IMDataManager *__global_data_manager = nil;
         [self revokeMessageByMsgList:updateMsgList];
     }
     if (collectionOriginMsgList.count > 0) {
-        [self bulkInsertCollectionMsgWihtMsgDics:collectionOriginMsgList];
+        [self bulkInsertCollectionMsgWithMsgDics:collectionOriginMsgList];
     }
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"插入单人历史消息%ld条， 耗时 = %f s", insertMsgList.count, end - start); //s
@@ -3384,7 +3309,7 @@ static IMDataManager *__global_data_manager = nil;
             if (isConsult) {
                 NSString *realXmppFrom = [[[message objectForKey:@"realfrom"] componentsSeparatedByString:@"@"] firstObject];
                 NSString *realXmppTo = [message objectForKey:@"realto"];
-                if ([realXmppFrom isEqualToString:self.userId]) {
+                if ([realXmppFrom isEqualToString:self.dbOwnerId]) {
                     //自己发的
                     if (chatId.intValue == 4) {
                         key = [[NSString stringWithFormat:@"%@-%@",toJid,toJid] retain];
@@ -3592,7 +3517,7 @@ static IMDataManager *__global_data_manager = nil;
             [msgList addObject:msgDic];
         }
     }
-    [self bulkInsertMessage:msgList WihtSessionId:xmppId];
+    [self bulkInsertMessage:msgList WithSessionId:xmppId];
     return [msgList autorelease];
 }
 
@@ -3649,7 +3574,7 @@ static IMDataManager *__global_data_manager = nil;
 }
 
 // msg Key
-- (void)bulkInsertMessage:(NSArray *)msgList WihtSessionId:(NSString *)sessionId{
+- (void)bulkInsertMessage:(NSArray *)msgList WithSessionId:(NSString *)sessionId{
     
     CFAbsoluteTime startTime = [[QIMWatchDog sharedInstance] startTime];
     [[self dbInstance] usingTransaction:^(Database *database) {
@@ -3778,7 +3703,7 @@ static IMDataManager *__global_data_manager = nil;
     }];
 }
 
-- (void)updateSessionLastMsgIdWihtSessionId:(NSString *)sessionId
+- (void)updateSessionLastMsgIdWithSessionId:(NSString *)sessionId
                               WithLastMsgId:(NSString *)lastMsgId{
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = @"Update IM_SessionList Set LastMessageId = :LastMessageId Where XmppId = :XmppId;";
@@ -3788,7 +3713,7 @@ static IMDataManager *__global_data_manager = nil;
 
 - (void)insertSessionWithSessionId:(NSString *)sessinId
                         WithUserId:(NSString *)userId
-                     WihtLastMsgId:(NSString *)lastMsgId
+                     WithLastMsgId:(NSString *)lastMsgId
                 WithLastUpdateTime:(long long)lastUpdateTime
                           ChatType:(int)ChatType
                        WithRealJid:(id)realJid{
@@ -4117,7 +4042,7 @@ static IMDataManager *__global_data_manager = nil;
     return [result autorelease];
 }
 
-- (long long)getReadedTimeStampForUserId:(NSString *)userId WihtMsgDirection:(int)msgDirection WithReadedState:(int)readedState{
+- (long long)getReadedTimeStampForUserId:(NSString *)userId WithMsgDirection:(int)msgDirection WithReadedState:(int)readedState{
     __block long long timeStamp = 0;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = @"Select Max(LastUpdateTime) From IM_Message Where  XmppId = :XmppId And State = :State And Direction = :MsgDirection And Type <> 101;";
@@ -4305,7 +4230,7 @@ static IMDataManager *__global_data_manager = nil;
 - (NSDictionary *)getLastMessage {
     __block NSMutableArray *tempList = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql =[NSString stringWithFormat:@"Select XmppId, UserId, LastMessageId, ChatType, LastUpdateTime From IM_SessionList Order By LastUpdateTime DESC Limit 1;"];
+        NSString *sql =[NSString stringWithFormat:@"Select XmppId, UserId, LastMessageId, LastUpdateTime From IM_SessionList Order By LastUpdateTime DESC Limit 1;"];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         
         while ([reader read]) {
@@ -4328,7 +4253,7 @@ static IMDataManager *__global_data_manager = nil;
     
 }
 
-- (NSArray *)qimDB_getMgsListBySessionId:(NSString *)sesId WithRealJid:(NSString *)realJid WithLimit:(int)limit WihtOffset:(int)offset{
+- (NSArray *)qimDB_getMgsListBySessionId:(NSString *)sesId WithRealJid:(NSString *)realJid WithLimit:(int)limit WithOffset:(int)offset{
     CFAbsoluteTime startTime = [[QIMWatchDog sharedInstance] startTime];
     if (sesId == nil) {
         return nil;
@@ -4601,7 +4526,7 @@ static IMDataManager *__global_data_manager = nil;
     __block NSMutableDictionary *chatSession = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         
-        NSString *sql = @"select XmppId, UserId, LastMessageId, LastUpdateTime, ChatType, RealJid from IM_SessionList where XmppId=:XmppId And RealJid=:RealJid;";
+        NSString *sql = @"select XmppId, UserId, LastMessageId, LastUpdateTime, RealJid from IM_SessionList where XmppId=:XmppId And RealJid=:RealJid;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:userId];
         DataReader *reader = [database executeReader:sql withParameters:param];
@@ -5262,7 +5187,7 @@ static IMDataManager *__global_data_manager = nil;
     
 }
 
-- (void)insetPublicNumberMsgWihtMsgId:(NSString *)msgId
+- (void)insetPublicNumberMsgWithMsgId:(NSString *)msgId
                         WithSessionId:(NSString *)sessionId
                              WithFrom:(NSString *)from
                                WithTo:(NSString *)to
@@ -5271,7 +5196,7 @@ static IMDataManager *__global_data_manager = nil;
                           WithMsgType:(int)msgType
                          WithMsgState:(int)msgState
                      WithMsgDirection:(int)msgDirection
-                          WihtMsgDate:(long long)msgDate
+                          WithMsgDate:(long long)msgDate
                         WithReadedTag:(int)readedTag{
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         
@@ -5297,7 +5222,7 @@ static IMDataManager *__global_data_manager = nil;
 
 - (NSArray *)getMsgListByPublicNumberId:(NSString *)publicNumberId
                               WithLimit:(int)limit
-                             WihtOffset:(int)offset
+                             WithOffset:(int)offset
                          WithFilterType:(NSArray *)actionTypes{
     __block NSMutableArray *resultList = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
@@ -5695,7 +5620,7 @@ static IMDataManager *__global_data_manager = nil;
     return flag;
 }
 
-- (void)bulkInsertCollectionMsgWihtMsgDics:(NSArray *)msgs {
+- (void)bulkInsertCollectionMsgWithMsgDics:(NSArray *)msgs {
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = @"INSERT OR IGNORE INTO IM_Message_Collection(MsgId, Originfrom, Originto, Origintype) VALUES(:MsgId, :Originfrom, :Originto, :Origintype);";
         NSMutableArray *paramList = [[NSMutableArray alloc] init];
@@ -5862,201 +5787,7 @@ static IMDataManager *__global_data_manager = nil;
     return [result autorelease];
 }
 
-/****************** FriendSter Msg *******************/
-- (void)insertFSMsgWithMsgId:(NSString *)msgId
-                  WithXmppId:(NSString *)xmppId
-                WithFromUser:(NSString *)fromUser
-              WithReplyMsgId:(NSString *)replyMsgId
-               WithReplyUser:(NSString *)replyUser
-                 WithContent:(NSString *)content
-                 WihtMsgDate:(long long)msgDate
-            WithExtendedFlag:(NSData *)etxtenedFlag{
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"insert or IGNORE into IM_Friendster_Message(MsgId, XmppId, FromUser,ReplyMsgId,ReplyUser,Content,LastUpdateTime,ExtendedFlag) values(:MsgId,:XmppId,:FromUser,:ReplyMsgId,:ReplyUser,:Content,:LastUpdateTime,:ExtendedFlag);";
-        NSMutableArray *param = [[NSMutableArray alloc] init];
-        [param addObject:msgId?msgId:@":NULL"];
-        [param addObject:xmppId?xmppId:@":NULL"];
-        [param addObject:fromUser?fromUser:@":NULL"];
-        [param addObject:replyMsgId?replyMsgId:@":NULL"];
-        [param addObject:replyUser?replyUser:@":NULL"];
-        [param addObject:content?content:@":NULL"];
-        [param addObject:[NSNumber numberWithLongLong:msgDate]];
-        [param addObject:etxtenedFlag?etxtenedFlag:@":NULL"];
-        [database executeNonQuery:sql withParameters:param];
-        [param release];
-        param = nil;
-    }];
-}
-
-- (void)bulkInsertFSMsgWithMsgList:(NSArray *)msgList{
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"insert or IGNORE into IM_Friendster_Message(MsgId, XmppId,FromUser, ReplyMsgId,ReplyUser,Content,LastUpdateTime,ExtendedFlag) values(:MsgId, :XmppId, :FromUser,:ReplyMsgId, :ReplyUser, :Content, :LastUpdateTime, :ExtendedFlag);";
-        NSMutableArray *paramList = [[NSMutableArray alloc] init];
-        for (NSDictionary *msgDic in msgList) {
-            NSString *msgId = [msgDic objectForKey:@"MsgId"];
-            NSString *xmppId = [msgDic objectForKey:@"XmppId"];
-            NSString *fromUser = [msgDic objectForKey:@"FromUser"];
-            NSString *replyMsgId = [msgDic objectForKey:@"ReplyMsgId"];
-            NSString *replyUser = [msgDic objectForKey:@"ReplyUser"];
-            NSString *content = [msgDic objectForKey:@"Content"];
-            NSNumber *msgDate = [msgDic objectForKey:@"MsgDate"];
-            NSMutableArray *param = [[NSMutableArray alloc] init];
-            [param addObject:msgId?msgId:@":NULL"];
-            [param addObject:xmppId?xmppId:@":NULL"];
-            [param addObject:fromUser?fromUser:@":NULL"];
-            [param addObject:replyMsgId?replyMsgId:@":NULL"];
-            [param addObject:replyUser?replyUser:@":NULL"];
-            [param addObject:content?content:@":NULL"];
-            [param addObject:msgDate];
-            [param addObject:@":NULL"];
-            [paramList addObject:param];
-            [param release];
-            param = nil;
-        }
-        [database executeBulkInsert:sql withParameters:paramList];
-        [paramList release];
-        paramList = nil;
-    }];
-}
-
-- (NSArray *)getFSMsgListByXmppId:(NSString *)xmppId{
-    if (xmppId == nil) {
-        return nil;
-    }
-    __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSMutableDictionary *mainMsgDic = [[NSMutableDictionary alloc] init];
-        NSString *sql = [NSString stringWithFormat:@"Select  b.MsgId,b.XmppId,b.'From',b.'To',b.Content,b.Type,b.State,b.Direction,b.ReadedTag,b.LastUpdateTime from  (Select ReplyMsgId From IM_Friendster_Message Where XmppId='%@' Group By ReplyMsgId) as a Left Join IM_Message as b on a.ReplyMsgId = b.MsgId;",xmppId];
-        DataReader *reader = [database executeReader:sql withParameters:nil];
-        while ([reader read]) {
-            NSString *msgId = [reader objectForColumnIndex:0];
-            NSString *xmppId = [reader objectForColumnIndex:1];
-            NSString *from = [reader objectForColumnIndex:2];
-            NSString *to = [reader objectForColumnIndex:3];
-            NSString *content = [reader objectForColumnIndex:4];
-            NSNumber *type = [reader objectForColumnIndex:5];
-            NSNumber *state = [reader objectForColumnIndex:6];
-            NSNumber *direction = [reader objectForColumnIndex:7];
-            NSNumber *readerTag = [reader objectForColumnIndex:8];
-            NSNumber *lastUpdateTime = [reader objectForColumnIndex:9];
-            NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
-            [IMDataManager safeSaveForDic:dic setObject:msgId forKey:@"MsgId"];
-            [IMDataManager safeSaveForDic:dic setObject:xmppId forKey:@"XmppId"];
-            [IMDataManager safeSaveForDic:dic setObject:from forKey:@"From"];
-            [IMDataManager safeSaveForDic:dic setObject:to forKey:@"To"];
-            [IMDataManager safeSaveForDic:dic setObject:content forKey:@"Content"];
-            [IMDataManager safeSaveForDic:dic setObject:type forKey:@"Type"];
-            [IMDataManager safeSaveForDic:dic setObject:state forKey:@"State"];
-            [IMDataManager safeSaveForDic:dic setObject:direction forKey:@"Direction"];
-            [IMDataManager safeSaveForDic:dic setObject:readerTag forKey:@"ReaderTag"];
-            [IMDataManager safeSaveForDic:dic setObject:lastUpdateTime forKey:@"MsgDate"];
-            [IMDataManager safeSaveForDic:dic setObject:[NSMutableArray array] forKey:@"ReplyMsgList"];
-            [mainMsgDic setObject:dic forKey:msgId ? msgId : @""];
-        }
-        {
-            NSString *sql = @"Select MsgId, XmppId, FromUser,ReplyMsgId,ReplyUser,Content,LastUpdateTime From IM_Friendster_Message Where XmppId=:XmppId Order By LastUpdateTime Desc;";
-            DataReader *reader = [database executeReader:sql withParameters:@[xmppId]];
-            while ([reader read]) {
-                if (resultList == nil) {
-                    resultList = [[NSMutableArray alloc] init];
-                }
-                NSString *msgId = [reader objectForColumnIndex:0];
-                NSString *xmppId = [reader objectForColumnIndex:1];
-                NSString *fromUser = [reader objectForColumnIndex:2];
-                NSString *replyMsgId = [reader objectForColumnIndex:3];
-                NSString *replyUser = [reader objectForColumnIndex:4];
-                NSString *content = [reader objectForColumnIndex:5];
-                NSNumber *lastUpdateTeim = [reader objectForColumnIndex:6];
-                NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
-                [IMDataManager safeSaveForDic:msgDic setObject:msgId forKey:@"MsgId"];
-                [IMDataManager safeSaveForDic:msgDic setObject:xmppId forKey:@"xmppId"];
-                [IMDataManager safeSaveForDic:msgDic setObject:fromUser forKey:@"fromUser"];
-                [IMDataManager safeSaveForDic:msgDic setObject:replyMsgId forKey:@"replyMsgId"];
-                [IMDataManager safeSaveForDic:msgDic setObject:replyUser forKey:@"replyUser"];
-                [IMDataManager safeSaveForDic:msgDic setObject:content forKey:@"content"];
-                [IMDataManager safeSaveForDic:msgDic setObject:lastUpdateTeim forKey:@"MsgDate"];
-                NSMutableDictionary *dic = [mainMsgDic objectForKey:replyMsgId];
-                if (dic) {
-                    if ([resultList containsObject:dic] == NO) {
-                        [resultList addObject:dic];
-                    }
-                    NSMutableArray *array = [dic objectForKey:@"ReplyMsgList"];
-                    [array insertObject:msgDic atIndex:0];
-                }
-                [msgDic release];
-                msgDic = nil;
-            }
-        }
-    }];
-    return  [resultList autorelease];
-}
-
-- (NSDictionary *)getFSMsgListByReplyMsgId:(NSString *)replyMsgId{
-    if (replyMsgId == nil) {
-        return nil;
-    }
-    __block NSMutableDictionary *resultDic = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        
-        NSString *sql = @"Select MsgId,XmppId,\"From\",\"To\",Content,Type,State,Direction,ReadedTag,LastUpdateTime, ExtendInfo from IM_Message Where MsgId = :MsgId;";
-        DataReader *reader = [database executeReader:sql withParameters:@[replyMsgId]];
-        if ([reader read]) {
-            resultDic = [[NSMutableDictionary alloc] init];
-            NSString *msgId = [reader objectForColumnIndex:0];
-            NSString *xmppId = [reader objectForColumnIndex:1];
-            NSString *from = [reader objectForColumnIndex:2];
-            NSString *to = [reader objectForColumnIndex:3];
-            NSString *content = [reader objectForColumnIndex:4];
-            NSNumber *type = [reader objectForColumnIndex:5];
-            NSNumber *state = [reader objectForColumnIndex:6];
-            NSNumber *direction = [reader objectForColumnIndex:7];
-            NSNumber *readerTag = [reader objectForColumnIndex:8];
-            NSNumber *lastUpdateTime = [reader objectForColumnIndex:9];
-            NSString *extendInfo = [reader objectForColumnIndex:10];
-            [IMDataManager safeSaveForDic:resultDic setObject:msgId forKey:@"MsgId"];
-            [IMDataManager safeSaveForDic:resultDic setObject:xmppId forKey:@"XmppId"];
-            [IMDataManager safeSaveForDic:resultDic setObject:from forKey:@"From"];
-            [IMDataManager safeSaveForDic:resultDic setObject:to forKey:@"To"];
-            [IMDataManager safeSaveForDic:resultDic setObject:content forKey:@"Content"];
-            [IMDataManager safeSaveForDic:resultDic setObject:type forKey:@"Type"];
-            [IMDataManager safeSaveForDic:resultDic setObject:state forKey:@"State"];
-            [IMDataManager safeSaveForDic:resultDic setObject:direction forKey:@"Direction"];
-            [IMDataManager safeSaveForDic:resultDic setObject:readerTag forKey:@"ReaderTag"];
-            [IMDataManager safeSaveForDic:resultDic setObject:lastUpdateTime forKey:@"MsgDate"];
-            [IMDataManager safeSaveForDic:resultDic setObject:extendInfo forKey:@"ExtendInfo"];
-            [IMDataManager safeSaveForDic:resultDic setObject:[NSMutableArray array] forKey:@"ReplyMsgList"];
-        }
-        if (resultDic) {
-            NSMutableArray *replyMsgList = [resultDic objectForKey:@"ReplyMsgList"];
-            NSString *sql = @"Select MsgId, XmppId, FromUser, ReplyMsgId,ReplyUser,Content,LastUpdateTime From IM_Friendster_Message Where ReplyMsgId=:ReplyMsgId;";
-            DataReader *reader = [database executeReader:sql withParameters:@[replyMsgId]];
-            while ([reader read]) {
-                NSString *msgId = [reader objectForColumnIndex:0];
-                NSString *xmppId = [reader objectForColumnIndex:1];
-                NSString *fromUser = [reader objectForColumnIndex:2];
-                NSString *replyMsgId = [reader objectForColumnIndex:3];
-                NSString *replyUser = [reader objectForColumnIndex:4];
-                NSString *content = [reader objectForColumnIndex:5];
-                NSNumber *lastUpdateTeim = [reader objectForColumnIndex:6];
-                NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
-                [IMDataManager safeSaveForDic:msgDic setObject:msgId forKey:@"MsgId"];
-                [IMDataManager safeSaveForDic:msgDic setObject:xmppId forKey:@"xmppId"];
-                [IMDataManager safeSaveForDic:msgDic setObject:fromUser forKey:@"fromUser"];
-                [IMDataManager safeSaveForDic:msgDic setObject:replyMsgId forKey:@"replyMsgId"];
-                [IMDataManager safeSaveForDic:msgDic setObject:replyUser forKey:@"replyUser"];
-                [IMDataManager safeSaveForDic:msgDic setObject:content forKey:@"content"];
-                [IMDataManager safeSaveForDic:msgDic setObject:lastUpdateTeim forKey:@"MsgDate"];
-                [replyMsgList addObject:msgDic];
-                [msgDic release];
-                msgDic = nil;
-            }
-        }
-        
-    }];
-    return [resultDic autorelease];
-}
-
-- (long long)qimDB_updateGroupMsgWihtMsgState:(int)msgState ByGroupMsgList:(NSArray *)groupMsgList{
+- (long long)qimDB_updateGroupMsgWithMsgState:(int)msgState ByGroupMsgList:(NSArray *)groupMsgList{
     __block long long maxReadMarkTime = 0;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = @"Update IM_Message Set State = :State1 Where LastUpdateTime <= :LastUpdateTime And XmppId=:XmppId And State < :State2 And Direction = 1 And State != 1 And State != 3;";
@@ -6079,7 +5810,7 @@ static IMDataManager *__global_data_manager = nil;
     return maxReadMarkTime;
 }
 
-- (void)updateUserMsgWihtMsgState:(int)msgState ByMsgList:(NSArray *)userMsgList{
+- (void)updateUserMsgWithMsgState:(int)msgState ByMsgList:(NSArray *)userMsgList{
     
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = @"Update IM_Message Set State = :State1 Where LastUpdateTime <= :LastUpdateTime And XmppId=:XmppId And State <> :State2;";
@@ -6221,12 +5952,6 @@ static IMDataManager *__global_data_manager = nil;
 + (void)clearDataBaseCache{
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"dbVersion"];
     [[NSUserDefaults standardUserDefaults] synchronize];
-}
-
-- (void)qimDB_dbCheckpoint {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        [database dbCheckpoint];
-    }];
 }
 
 /*************** Friend List *************/
@@ -6544,15 +6269,15 @@ static IMDataManager *__global_data_manager = nil;
         [params release];
     }];
 }
-- (void)insertFriendNotifyWihtUserId:(NSString *)userId
+- (void)insertFriendNotifyWithUserId:(NSString *)userId
                           WithXmppId:(NSString *)xmppId
                             WithName:(NSString *)name
                         WithDescInfo:(NSString *)descInfo
                          WithHeadSrc:(NSString *)headerSrc
                      WithSearchIndex:(NSString *)searchIndex
-                        WihtUserInfo:(NSString *)userInfo
+                        WithUserInfo:(NSString *)userInfo
                          WithVersion:(int)version
-                           WihtState:(int)state
+                           WithState:(int)state
                   WithLastUpdateTime:(long long)lastUpdateTime{
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = @"Insert Or Replace Into IM_Friend_Notify(UserId,XmppId,Name,DescInfo,HeaderSrc,SearchIndex,UserInfo,Version,State,LastUpdateTime) values(:UserId,:XmppId,:Name,:DescInfo,:HeaderSrc,:SearchIndex,:UserInfo,:Version,:State,:LastUpdateTime);";
@@ -6668,14 +6393,14 @@ static IMDataManager *__global_data_manager = nil;
     return FriendNotifyCount;
 }
 
-- (void)updateFriendNotifyWithXmppId:(NSString *)xmppId WihtState:(int)state{
+- (void)updateFriendNotifyWithXmppId:(NSString *)xmppId WithState:(int)state{
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = @"Update IM_Friend_Notify Set State = :State Where XmppId=:XmppId;";
         [database executeNonQuery:sql withParameters:@[@(state),xmppId]];
     }];
 }
 
-- (void)updateFriendNotifyWithUserId:(NSString *)userId WihtState:(int)state{
+- (void)updateFriendNotifyWithUserId:(NSString *)userId WithState:(int)state{
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = @"Update IM_Friend_Notify Set State = :State Where UserId=:UserId;";
         [database executeNonQuery:sql withParameters:@[@(state),userId]];
@@ -6777,196 +6502,5 @@ static IMDataManager *__global_data_manager = nil;
         [database executeNonQuery:sql withParameters:@[@(pushState),groupId]];
     }];
 }
-
-
-#pragma mark - 本地消息搜索
-
-- (NSArray *)qimDB_getLocalMediaByXmppId:(NSString *)xmppId ByReadJid:(NSString *)realJid {
-    __block NSMutableArray * msgs = [NSMutableArray arrayWithCapacity:1];
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"";
-        if (realJid.length > 0) {
-            sql = [NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime,XmppId, ExtendInfo From IM_Message Where XmppId = '%@' And RealJid = '%@' And (Type = 32 Or Content Like '%%%@%%') Order By LastUpdateTime DESC;", xmppId, realJid, [NSString stringWithFormat:@"obj type=\"image"]];
-        } else {
-            sql = [NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime,XmppId, ExtendInfo From IM_Message Where XmppId = '%@' And (Type = 32 Or Content Like '%%%@%%') Order By LastUpdateTime DESC;", xmppId, [NSString stringWithFormat:@"obj type=\"image"]];
-        }
-        DataReader *reader = [database executeReader:sql withParameters:nil];
-        while ([reader read]) {
-            NSMutableDictionary * result = [[NSMutableDictionary alloc] init];
-            NSString *msgId = [reader objectForColumnIndex:0];
-            NSString *from = [reader objectForColumnIndex:1];
-            NSString *to = [reader objectForColumnIndex:2];
-            NSString *content = [reader objectForColumnIndex:3];
-            NSNumber *platform = [reader objectForColumnIndex:4];
-            NSNumber *msgType = [reader objectForColumnIndex:5];
-            NSNumber *msgState = [reader objectForColumnIndex:6];
-            NSNumber *msgDirection = [reader objectForColumnIndex:7];
-            NSNumber *msgDateTime = [reader objectForColumnIndex:8];
-            NSString *xmppId = [reader objectForColumnIndex:9];
-            NSString *extendInfo = [reader objectForColumnIndex:10];
-            [IMDataManager safeSaveForDic:result setObject:xmppId forKey:@"XmppId"];
-            [IMDataManager safeSaveForDic:result setObject:msgId forKey:@"MsgId"];
-            [IMDataManager safeSaveForDic:result setObject:from forKey:@"From"];
-            [IMDataManager safeSaveForDic:result setObject:to forKey:@"To"];
-            [IMDataManager safeSaveForDic:result setObject:content forKey:@"Content"];
-            [IMDataManager safeSaveForDic:result setObject:platform forKey:@"Platform"];
-            [IMDataManager safeSaveForDic:result setObject:msgType forKey:@"MsgType"];
-            [IMDataManager safeSaveForDic:result setObject:msgState forKey:@"MsgState"];
-            [IMDataManager safeSaveForDic:result setObject:msgDirection forKey:@"MsgDirection"];
-            [IMDataManager safeSaveForDic:result setObject:msgDateTime forKey:@"MsgDateTime"];
-            [IMDataManager safeSaveForDic:result setObject:extendInfo forKey:@"ExtendInfo"];
-            [msgs addObject:result];
-        }
-    }];
-    return msgs;
-}
-
-- (NSArray *)qimDB_getMsgsByKeyWord:(NSString *)keywords ByXmppId:(NSString *)xmppId ByReadJid:(NSString *)realJid {
-    
-    __block NSMutableArray * msgs = [NSMutableArray arrayWithCapacity:1];
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"";
-        if (realJid.length > 0) {
-            sql = [NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime,XmppId, ExtendInfo From IM_Message Where XmppId = '%@' And RealJid = '%@' And Content like '%%%@%%'  Order By LastUpdateTime DESC limit(1000);", xmppId, realJid, keywords];
-        } else {
-            sql = [NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime,XmppId, ExtendInfo From IM_Message Where XmppId = '%@' And Content like '%%%@%%' Order By LastUpdateTime DESC limit(1000);", xmppId, keywords];
-        }
-        DataReader *reader = [database executeReader:sql withParameters:nil];
-        
-        while ([reader read]) {
-            NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
-            NSString *msgId = [reader objectForColumnIndex:0];
-            NSString *from = [reader objectForColumnIndex:1];
-            NSString *to = [reader objectForColumnIndex:2];
-            NSString *content = [reader objectForColumnIndex:3];
-            NSNumber *platform = [reader objectForColumnIndex:4];
-            NSNumber *msgType = [reader objectForColumnIndex:5];
-            NSNumber *msgState = [reader objectForColumnIndex:6];
-            NSNumber *msgDirection = [reader objectForColumnIndex:7];
-            NSNumber *msgDateTime = [reader objectForColumnIndex:8];
-            NSString *xmppId = [reader objectForColumnIndex:9];
-            NSString *extendInfo = [reader objectForColumnIndex:10];
-            [IMDataManager safeSaveForDic:result setObject:xmppId forKey:@"XmppId"];
-            [IMDataManager safeSaveForDic:result setObject:msgId forKey:@"MsgId"];
-            [IMDataManager safeSaveForDic:result setObject:from forKey:@"From"];
-            [IMDataManager safeSaveForDic:result setObject:to forKey:@"To"];
-            [IMDataManager safeSaveForDic:result setObject:content forKey:@"Content"];
-            [IMDataManager safeSaveForDic:result setObject:platform forKey:@"Platform"];
-            [IMDataManager safeSaveForDic:result setObject:msgType forKey:@"MsgType"];
-            [IMDataManager safeSaveForDic:result setObject:msgState forKey:@"MsgState"];
-            [IMDataManager safeSaveForDic:result setObject:msgDirection forKey:@"MsgDirection"];
-            [IMDataManager safeSaveForDic:result setObject:msgDateTime forKey:@"MsgDateTime"];
-            [IMDataManager safeSaveForDic:result setObject:extendInfo forKey:@"ExtendInfo"];
-            [msgs addObject:result];
-        }
-    }];
-    return msgs;
-}
-
-- (NSArray *)qimDB_getMsgsByMsgType:(NSArray *)msgTypes ByXmppId:(NSString *)xmppId ByReadJid:(NSString *)realJid {
-    
-    __block NSMutableArray * msgs = [NSMutableArray arrayWithCapacity:1];
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"";
-        if (realJid.length > 0) {
-            sql = [NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime,XmppId, ExtendInfo From IM_Message Where XmppId = '%@' And RealJid = '%@' And (", xmppId, realJid];
-            for (NSInteger i = 0; i < msgTypes.count; i++) {
-                NSInteger msgType = [[msgTypes objectAtIndex:i] integerValue];
-                if (i == 0) {
-                   sql = [sql stringByAppendingFormat:[NSString stringWithFormat:@"Type = %d", msgType]];
-                } else {
-                   sql = [sql stringByAppendingFormat:[NSString stringWithFormat:@" Or Type = %d", msgType]];
-                }
-            }
-            sql = [sql stringByAppendingFormat:@") Order By LastUpdateTime DESC;"];
-        } else {
-            sql = [NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime,XmppId, ExtendInfo From IM_Message Where XmppId = '%@' And (", xmppId];
-            for (NSInteger i = 0; i < msgTypes.count; i++) {
-                NSInteger msgType = [[msgTypes objectAtIndex:i] integerValue];
-                if (i == 0) {
-                    sql = [sql stringByAppendingFormat:[NSString stringWithFormat:@"Type = %d", msgType]];
-                } else {
-                    sql = [sql stringByAppendingFormat:[NSString stringWithFormat:@" Or Type = %d", msgType]];
-                }
-            }
-            sql = [sql stringByAppendingFormat:@") Order By LastUpdateTime DESC;"];
-        }
-        DataReader *reader = [database executeReader:sql withParameters:nil];
-        
-        while ([reader read]) {
-            NSMutableDictionary * result = [[NSMutableDictionary alloc] init];
-            NSString *msgId = [reader objectForColumnIndex:0];
-            NSString *from = [reader objectForColumnIndex:1];
-            NSString *to = [reader objectForColumnIndex:2];
-            NSString *content = [reader objectForColumnIndex:3];
-            NSNumber *platform = [reader objectForColumnIndex:4];
-            NSNumber *msgType = [reader objectForColumnIndex:5];
-            NSNumber *msgState = [reader objectForColumnIndex:6];
-            NSNumber *msgDirection = [reader objectForColumnIndex:7];
-            NSNumber *msgDateTime = [reader objectForColumnIndex:8];
-            NSString *xmppId = [reader objectForColumnIndex:9];
-            NSString *extendInfo = [reader objectForColumnIndex:10];
-            [IMDataManager safeSaveForDic:result setObject:xmppId forKey:@"XmppId"];
-            [IMDataManager safeSaveForDic:result setObject:msgId forKey:@"MsgId"];
-            [IMDataManager safeSaveForDic:result setObject:from forKey:@"From"];
-            [IMDataManager safeSaveForDic:result setObject:to forKey:@"To"];
-            [IMDataManager safeSaveForDic:result setObject:content forKey:@"Content"];
-            [IMDataManager safeSaveForDic:result setObject:platform forKey:@"Platform"];
-            [IMDataManager safeSaveForDic:result setObject:msgType forKey:@"MsgType"];
-            [IMDataManager safeSaveForDic:result setObject:msgState forKey:@"MsgState"];
-            [IMDataManager safeSaveForDic:result setObject:msgDirection forKey:@"MsgDirection"];
-            [IMDataManager safeSaveForDic:result setObject:msgDateTime forKey:@"MsgDateTime"];
-            [IMDataManager safeSaveForDic:result setObject:extendInfo forKey:@"ExtendInfo"];
-            [msgs addObject:result];
-        }
-    }];
-    return msgs;
-}
-
-- (NSArray *)qimDB_getMsgsByMsgType:(NSArray *)msgTypes ByXmppId:(NSString *)xmppId {
-    return [self qimDB_getMsgsByMsgType:msgTypes ByXmppId:xmppId ByReadJid:nil];
-}
-
-- (NSArray *)qimDB_getMsgsByMsgType:(int)msgType{
-    __block NSMutableArray * msgs = [NSMutableArray arrayWithCapacity:1];
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        
-        NSString *sql =@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime,XmppId, ExtendInfo From IM_Message Where Type=:Type Order By LastUpdateTime DESC;";
-        NSMutableArray *param = [[NSMutableArray alloc] init];
-        [param addObject:[NSNumber numberWithInt:msgType]];
-        DataReader *reader = [database executeReader:sql withParameters:param];
-        [param release];
-        param = nil;
-        
-        while ([reader read]) {
-            NSMutableDictionary * result = [[NSMutableDictionary alloc] init];
-            NSString *msgId = [reader objectForColumnIndex:0];
-            NSString *from = [reader objectForColumnIndex:1];
-            NSString *to = [reader objectForColumnIndex:2];
-            NSString *content = [reader objectForColumnIndex:3];
-            NSNumber *platform = [reader objectForColumnIndex:4];
-            NSNumber *msgType = [reader objectForColumnIndex:5];
-            NSNumber *msgState = [reader objectForColumnIndex:6];
-            NSNumber *msgDirection = [reader objectForColumnIndex:7];
-            NSNumber *msgDateTime = [reader objectForColumnIndex:8];
-            NSString *xmppId = [reader objectForColumnIndex:9];
-            NSString *extendInfo = [reader objectForColumnIndex:10];
-            [IMDataManager safeSaveForDic:result setObject:xmppId forKey:@"XmppId"];
-            [IMDataManager safeSaveForDic:result setObject:msgId forKey:@"MsgId"];
-            [IMDataManager safeSaveForDic:result setObject:from forKey:@"From"];
-            [IMDataManager safeSaveForDic:result setObject:to forKey:@"To"];
-            [IMDataManager safeSaveForDic:result setObject:content forKey:@"Content"];
-            [IMDataManager safeSaveForDic:result setObject:platform forKey:@"Platform"];
-            [IMDataManager safeSaveForDic:result setObject:msgType forKey:@"MsgType"];
-            [IMDataManager safeSaveForDic:result setObject:msgState forKey:@"MsgState"];
-            [IMDataManager safeSaveForDic:result setObject:msgDirection forKey:@"MsgDirection"];
-            [IMDataManager safeSaveForDic:result setObject:msgDateTime forKey:@"MsgDateTime"];
-            [IMDataManager safeSaveForDic:result setObject:extendInfo forKey:@"ExtendInfo"];
-            [msgs addObject:result];
-        }
-    }];
-    return msgs;
-}
-
 
 @end

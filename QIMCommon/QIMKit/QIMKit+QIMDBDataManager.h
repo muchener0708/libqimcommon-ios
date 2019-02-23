@@ -11,7 +11,7 @@
 
 @interface QIMKit (QIMDBDataManager)
 
-+ (void) sharedInstanceWihtDBPath:(NSString *)dbPath;
++ (void) sharedInstanceWithDBPath:(NSString *)dbPath;
 
 - (id) dbInstance;
 - (void)setDomain:(NSString*)domain;
@@ -36,12 +36,12 @@
 - (NSArray *)getGroupListMsgMaxTime;
 - (void)bulkUpdateGroupCards:(NSArray *)array;
 - (void)updateGroup:(NSString *)groupId
-       WihtNickName:(NSString *)nickName
+       WithNickName:(NSString *)nickName
           WithTopic:(NSString *)topic
            WithDesc:(NSString *)desc
       WithHeaderSrc:(NSString *)headerSrc
         WithVersion:(NSString *)version;
-- (void)updateGroup:(NSString *)groupId WihtNickName:(NSString *)nickName;
+- (void)updateGroup:(NSString *)groupId WithNickName:(NSString *)nickName;
 - (void)updateGroup:(NSString *)groupId WithTopic:(NSString *)topic;
 - (void)updateGroup:(NSString *)groupId WithDesc:(NSString *)desc;
 - (void)updateGroup:(NSString *)groupId WithHeaderSrc:(NSString *)headerSrc;
@@ -52,7 +52,7 @@
 - (NSDictionary *)getGroupMemberInfoByNickName:(NSString *)nickName;
 - (NSDictionary *)getGroupMemberInfoByJid:(NSString *)jid WithGroupId:(NSString *)groupId;
 //- (NSDictionary *)getGroupMemberInfo:(NSString *)nickName WithGroupId:(NSString *)groupId;
-- (BOOL)checkGroupMember:(NSString *)nickName WihtGroupId:(NSString *)groupId;
+- (BOOL)checkGroupMember:(NSString *)nickName WithGroupId:(NSString *)groupId;
 - (void)insertGroupMember:(NSDictionary *)memberDic WithGroupId:(NSString *)groupId;
 - (void)bulkInsertGroupMember:(NSArray *)members WithGroupId:(NSString *)groupId;
 - (NSArray *)getQChatGroupMember:(NSString *)groupId;
@@ -79,11 +79,11 @@
 - (void)bulkInsertUserInfos:(NSArray *)userInfos;
 - (void)InsertOrUpdateUserInfos:(NSArray *)userInfos;
 
-//- (void)insertUserInfoWihtUserId:(NSString *)userId
+//- (void)insertUserInfoWithUserId:(NSString *)userId
 //                        WithName:(NSString *)name
 //                    WithDescInfo:(NSString *)descInfo
 //                     WithHeadSrc:(NSString *)headerSrc
-//                    WihtUserInfo:(NSData *)userInfo;
+//                    WithUserInfo:(NSData *)userInfo;
 /**
  获取用户BackInfo信息
  */
@@ -114,7 +114,7 @@
  */
 - (void)bulkUpdateUserBackInfo:(NSDictionary *)userBackInfo WithXmppId:(NSString *)xmppId;
 - (NSString *)getUserHeaderSrcByUserId:(NSString *)userId;
-//- (void)updateUser:(NSString *)userId WihtVersion:(int)version;
+//- (void)updateUser:(NSString *)userId WithVersion:(int)version;
 - (BOOL)checkExitsUser;
 - (int)getMaxUserIncrementVersion;
 
@@ -123,7 +123,7 @@
 - (void)deleteMessageByMessageId:(NSString *)messageId ByJid:(NSString *)sid;
 // 插入消息
 
-- (void)insertMessageWihtMsgId:(NSString *)msgId
+- (void)insertMessageWithMsgId:(NSString *)msgId
                     WithXmppId:(NSString *)xmppId
                       WithFrom:(NSString *)from
                         WithTo:(NSString *)to
@@ -133,11 +133,11 @@
                    WithMsgType:(int)msgType
                   WithMsgState:(int)msgState
               WithMsgDirection:(int)msgDirection
-                   WihtMsgDate:(long long)msgDate
+                   WithMsgDate:(long long)msgDate
                  WithReadedTag:(int)readedTag
                   WithChatType:(NSInteger)chatType;
 
-- (void)insertMessageWihtMsgId:(NSString *)msgId
+- (void)insertMessageWithMsgId:(NSString *)msgId
                     WithXmppId:(NSString *)xmppId
                       WithFrom:(NSString *)from
                         WithTo:(NSString *)to
@@ -147,12 +147,12 @@
                    WithMsgType:(int)msgType
                   WithMsgState:(int)msgState
               WithMsgDirection:(int)msgDirection
-                   WihtMsgDate:(long long)msgDate
+                   WithMsgDate:(long long)msgDate
                  WithReadedTag:(int)readedTag
                     WithMsgRaw:(NSString *)msgRaw
                   WithChatType:(NSInteger)chatType;
 
-- (void) insertMessageWihtMsgId:(NSString *)msgId
+- (void) insertMessageWithMsgId:(NSString *)msgId
                      WithXmppId:(NSString *)xmppId
                        WithFrom:(NSString *)from
                          WithTo:(NSString *)to
@@ -162,7 +162,7 @@
                     WithMsgType:(int)msgType
                    WithMsgState:(int)msgState
                WithMsgDirection:(int)msgDirection
-                    WihtMsgDate:(long long)msgDate
+                    WithMsgDate:(long long)msgDate
                   WithReadedTag:(int)readedTag
                      WithMsgRaw:(NSString *)msgRaw
                     WithRealJid:(NSString *)realJid
@@ -178,7 +178,7 @@
 - (NSDictionary *)getMsgsByMsgId:(NSString *)msgId;
 
 //更新消息
-- (void)updateMessageWihtMsgId:(NSString *)msgId
+- (void)updateMessageWithMsgId:(NSString *)msgId
                  WithSessionId:(NSString *)sessionId
                       WithFrom:(NSString *)from
                         WithTo:(NSString *)to
@@ -187,11 +187,11 @@
                    WithMsgType:(int)msgType
                   WithMsgState:(int)msgState
               WithMsgDirection:(int)msgDirection
-                   WihtMsgDate:(long long)msgDate
+                   WithMsgDate:(long long)msgDate
                  WithReadedTag:(int)readedTag
                   ExtendedFlag:(int)ExtendedFlag;
 
-- (void)updateMessageWihtMsgId:(NSString *)msgId
+- (void)updateMessageWithMsgId:(NSString *)msgId
                  WithSessionId:(NSString *)sessionId
                       WithFrom:(NSString *)from
                         WithTo:(NSString *)to
@@ -201,13 +201,13 @@
                    WithMsgType:(int)msgType
                   WithMsgState:(int)msgState
               WithMsgDirection:(int)msgDirection
-                   WihtMsgDate:(long long)msgDate
+                   WithMsgDate:(long long)msgDate
                  WithReadedTag:(int)readedTag
                   ExtendedFlag:(int)ExtendedFlag
                     WithMsgRaw:(NSString *)msgRaw;
 
 - (void)revokeMessageByMsgId:(NSString *)msgId
-                 WihtContent:(NSString *)content
+                 WithContent:(NSString *)content
                  WithMsgType:(int)msgType;
 
 - (BOOL)checkMsgId:(NSString *)msgId;
@@ -216,22 +216,22 @@
  插入群聊JSON消息
  */
 - (NSArray *)bulkInsertIphoneHistoryGroupJSONMsg:(NSArray *)list
-                                  WihtMyNickName:(NSString *)myNickName
+                                  WithMyNickName:(NSString *)myNickName
                                    WithReadMarkT:(long long)readMarkT
                                 WithDidReadState:(int)didReadState
-                                     WihtMyRtxId:(NSString *)rtxId;
+                                     WithMyRtxId:(NSString *)rtxId;
 
 /**
  插入群聊JSON翻页消息
  */
-- (NSArray *)bulkInsertIphoneMucJSONMsg:(NSArray *)list WihtMyNickName:(NSString *)myNickName WithReadMarkT:(long long)readMarkT WithDidReadState:(int)didReadState WihtMyRtxId:(NSString *)rtxId;
+- (NSArray *)bulkInsertIphoneMucJSONMsg:(NSArray *)list WithMyNickName:(NSString *)myNickName WithReadMarkT:(long long)readMarkT WithDidReadState:(int)didReadState WithMyRtxId:(NSString *)rtxId;
 
 /**
  插入群聊离线XML消息
  */
-- (NSArray *)bulkInsertIphoneHistoryGroupMsg:(NSArray *)list WithXmppId:(NSString *)xmppId WihtMyNickName:(NSString *)myNickName WithReadMarkT:(long long)readMarkT WithDidReadState:(int)didReadState WihtMyRtxId:(NSString *)rtxId;
+- (NSArray *)bulkInsertIphoneHistoryGroupMsg:(NSArray *)list WithXmppId:(NSString *)xmppId WithMyNickName:(NSString *)myNickName WithReadMarkT:(long long)readMarkT WithDidReadState:(int)didReadState WithMyRtxId:(NSString *)rtxId;
 
-- (NSArray *)bulkInsertHistoryGroupMsg:(NSArray *)list WithXmppId:(NSString *)xmppId WihtMyNickName:(NSString *)myNickName WithReadMarkT:(long long)readMarkT WithDidReadState:(int)didReadState;
+- (NSArray *)bulkInsertHistoryGroupMsg:(NSArray *)list WithXmppId:(NSString *)xmppId WithMyNickName:(NSString *)myNickName WithReadMarkT:(long long)readMarkT WithDidReadState:(int)didReadState;
 
 - (NSDictionary *)dictionaryWithJsonString:(NSString *)jsonString;
 
@@ -265,7 +265,7 @@
                          WithDidReadState:(int)didReadState;
 
 // msg Key
-- (void)bulkInsertMessage:(NSArray *)msgList WihtSessionId:(NSString *)sessionId;
+- (void)bulkInsertMessage:(NSArray *)msgList WithSessionId:(NSString *)sessionId;
 
 // update message state
 - (void)updateMsgState:(int)msgState WithMsgId:(NSString *)msgId;
@@ -280,13 +280,13 @@
 - (void)updateMessageReadStateWithSessionId:(NSString *)sessionId;
 
 // 更新会话列表最后一条消息ID
-- (void)updateSessionLastMsgIdWihtSessionId:(NSString *)sessionId
+- (void)updateSessionLastMsgIdWithSessionId:(NSString *)sessionId
                               WithLastMsgId:(NSString *)lastMsgId;
 
 // 创建会话列表记录
 - (void)insertSessionWithSessionId:(NSString *)sessinId
                         WithUserId:(NSString *)userId
-                     WihtLastMsgId:(NSString *)lastMsgId
+                     WithLastMsgId:(NSString *)lastMsgId
                 WithLastUpdateTime:(long long)lastUpdateTime
                           ChatType:(int)ChatType
                        WithRealJid:(id)realJid;
@@ -307,12 +307,12 @@
 - (NSArray *)getSessionListXMPPIDWithSingleChatType:(int)singleChatType;
 - (NSArray *)qimDB_getNotReadMsgListForUserId:(NSString *)userId;
 - (NSArray *)qimDB_getNotReadMsgListForUserId:(NSString *)userId ForRealJid:(NSString *)realJid;
-- (long long)getReadedTimeStampForUserId:(NSString *)userId WihtMsgDirection:(int)msgDirection WithReadedState:(int)readedState;
+- (long long)getReadedTimeStampForUserId:(NSString *)userId WithMsgDirection:(int)msgDirection WithReadedState:(int)readedState;
 // 获取会话消息记录
 - (NSArray *)qimDB_getMgsListBySessionId:(NSString *)sesId;
 
 // 获取会话消息记录 Limit 获取消息条数 倒序的
-- (NSArray *)qimDB_getMgsListBySessionId:(NSString *)sesId WithRealJid:(NSString *)realJid WithLimit:(int)limit WihtOffset:(int)offset;
+- (NSArray *)qimDB_getMgsListBySessionId:(NSString *)sesId WithRealJid:(NSString *)realJid WithLimit:(int)limit WithOffset:(int)offset;
 - (NSArray *)getMsgListByXmppId:(NSString *)xmppId WithRealJid:(NSString *)realJid FromTimeStamp:(long long)timeStamp;
 - (NSArray *)getMsgListByXmppId:(NSString *)xmppId FromTimeStamp:(long long)timeStamp;
 
@@ -350,7 +350,7 @@
               WithReplyMsgId:(NSString *)replyMsgId
                WithReplyUser:(NSString *)replyUser
                  WithContent:(NSString *)content
-                 WihtMsgDate:(long long)msgDate
+                 WithMsgDate:(long long)msgDate
             WithExtendedFlag:(NSData *)etxtenedFlag;
 
 - (void)bulkInsertFSMsgWithMsgList:(NSArray *)msgList;
@@ -361,9 +361,9 @@
 
 
 /****************** readmark *********************/
-- (long long)qimDB_updateGroupMsgWihtMsgState:(int)msgState ByGroupMsgList:(NSArray *)groupMsgList;
+- (long long)qimDB_updateGroupMsgWithMsgState:(int)msgState ByGroupMsgList:(NSArray *)groupMsgList;
 
-- (void)updateUserMsgWihtMsgState:(int)msgState ByMsgList:(NSArray *)userMsgList;
+- (void)updateUserMsgWithMsgState:(int)msgState ByMsgList:(NSArray *)userMsgList;
 
 - (void)bulkUpdateChatMsgWithMsgState:(int)msgState ByMsgIdList:(NSArray *)msgIdList;
 
@@ -415,20 +415,20 @@
 - (NSDictionary *)selectFriendInfoWithUserId:(NSString *)userId;
 - (NSDictionary *)selectFriendInfoWithXmppId:(NSString *)xmppId;
 - (void)bulkInsertFriendNotifyList:(NSArray *)notifyList;
-- (void)insertFriendNotifyWihtUserId:(NSString *)userId
+- (void)insertFriendNotifyWithUserId:(NSString *)userId
                           WithXmppId:(NSString *)xmppId
                             WithName:(NSString *)name
                         WithDescInfo:(NSString *)descInfo
                          WithHeadSrc:(NSString *)headerSrc
                      WithSearchIndex:(NSString *)searchIndex
-                        WihtUserInfo:(NSString *)userInfo
+                        WithUserInfo:(NSString *)userInfo
                          WithVersion:(int)version
-                           WihtState:(int)state
+                           WithState:(int)state
                   WithLastUpdateTime:(long long)lastUpdateTime;
 - (void)deleteFriendNotifyWithUserId:(NSString *)userId;
 - (NSMutableArray *)selectFriendNotifys;
-- (void)updateFriendNotifyWithXmppId:(NSString *)xmppId WihtState:(int)state;
-- (void)updateFriendNotifyWithUserId:(NSString *)userId WihtState:(int)state;
+- (void)updateFriendNotifyWithXmppId:(NSString *)xmppId WithState:(int)state;
+- (void)updateFriendNotifyWithUserId:(NSString *)userId WithState:(int)state;
 - (long long)getMaxTimeFriendNotify;
 
 // ******************** 公众账号 ***************************** //
@@ -451,7 +451,7 @@
 - (NSInteger)getRnSearchPublicNumberListByKeyStr:(NSString *)keyStr;
 - (NSArray *)rnSearchPublicNumberListByKeyStr:(NSString *)keyStr limit:(NSInteger)limit offset:(NSInteger)offset;
 - (NSDictionary *)getPublicNumberCardByJId:(NSString *)jid;
-- (void)insetPublicNumberMsgWihtMsgId:(NSString *)msgId
+- (void)insetPublicNumberMsgWithMsgId:(NSString *)msgId
                         WithSessionId:(NSString *)sessionId
                              WithFrom:(NSString *)from
                                WithTo:(NSString *)to
@@ -460,12 +460,12 @@
                           WithMsgType:(int)msgType
                          WithMsgState:(int)msgState
                      WithMsgDirection:(int)msgDirection
-                          WihtMsgDate:(long long)msgDate
+                          WithMsgDate:(long long)msgDate
                         WithReadedTag:(int)readedTag;
 
 - (NSArray *)getMsgListByPublicNumberId:(NSString *)publicNumberId
                               WithLimit:(int)limit
-                             WihtOffset:(int)offset
+                             WithOffset:(int)offset
                          WithFilterType:(NSArray *)actionTypes;
 
 /****************** Collection Msg *******************/
@@ -521,7 +521,7 @@
 /**
  插入代收消息原始值
  */
-- (void)bulkInsertCollectionMsgWihtMsgDics:(NSArray *)msgs;
+- (void)bulkInsertCollectionMsgWithMsgDics:(NSArray *)msgs;
 
 - (NSInteger)getCollectionMsgNotReadCountByDidReadState:(NSInteger)readState;
 

@@ -26,7 +26,7 @@
         self.lastSingleMsgTime = errorTime;
         QIMVerboseLog(@"本地单人错误时间戳 : %lld", errorTime);
     } else {
-        self.lastSingleMsgTime = [[IMDataManager sharedInstance] lastestMessageTime];
+        self.lastSingleMsgTime = [[IMDataManager qimDB_SharedInstance] qimDB_lastestMessageTime];
     }
     if (self.lastSingleMsgTime == 0) {
         self.lastSingleMsgTime = defaultTime;
@@ -86,7 +86,7 @@
             if (result && ret && errcode == 0) {
                 NSArray *data = [result objectForKey:@"data"];
 #warning 这里更新本地数据库本人已发送的消息状态
-                [[IMDataManager sharedInstance] bulkUpdateMessageReadStateWithMsg:data];
+                [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateMessageReadStateWithMsg:data];
                 QIMVerboseLog(@"移除已读未读状态时间戳");
                 [[QIMUserCacheManager sharedInstance] removeUserObjectForKey:kGetSingleReadFlagError];
             } else {
@@ -110,7 +110,7 @@
 #warning 这里更新本地数据库已接收的消息状态 ，告诉对方已送达，readFlag=3，更新成功之后更新本地数据库状态
 - (void)sendRecevieMessageState {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-        NSArray *msgs = [[IMDataManager sharedInstance] getReceiveMsgIdListWithMsgState:QIMMessageType_None WithReceiveDirection:MessageDirection_Received];
+        NSArray *msgs = [[IMDataManager qimDB_SharedInstance] qimDB_getReceiveMsgIdListWithMsgReadFlag:QIMMessageRemoteReadStateDidReaded withChatType:ChatType_SingleChat withMsgDirection:QIMMessageDirection_Received];
         if (msgs.count > 0) {
             NSMutableArray *resultArray = [NSMutableArray arrayWithCapacity:5];
             NSMutableArray *faildArray = [NSMutableArray arrayWithCapacity:5];
@@ -123,11 +123,11 @@
                     [reusltMessageIds addObject:@{@"id":messageId}];
                 }
                 NSString *jsonString = [[QIMJSONSerializer sharedInstance] serializeObject:reusltMessageIds];
-                BOOL isSuccess = [[XmppImManager sharedInstance] sendReadStateWithMessagesIdArray:jsonString WithXmppid:xmppId WithTo:xmppId WithReadFlag:MessageReadFlagDidSend];
-                if (isSuccess) {
-                    [[IMDataManager sharedInstance] bulkUpdateChatMsgWithMsgState:MessageState_NotRead ByMsgIdList:resultArray];
+                BOOL success = [self sendReadStateWithMessagesIdArray:msgIds WithMessageReadFlag:QIMMessageReadFlagDidSend WithXmppId:xmppId];
+                if (success) {
+                    QIMVerboseLog(@"这里告诉对方%@消息【%@】已送到 成功", xmppId, msgIds);
                 } else {
-                    [faildArray addObject:jsonString];
+                    QIMVerboseLog(@"这里告诉对方%@消息【%@】已送到 失败", xmppId, msgIds);
                 }
             }
         }
@@ -163,7 +163,7 @@
                 }
                 if ([chatlog count] > 0) {
                     @autoreleasepool {
-                        NSMutableDictionary *msgList = [[IMDataManager sharedInstance] bulkInsertHistoryChatJSONMsg:chatlog to:[self getLastJid] WithDidReadState:MessageState_didRead];
+                        NSMutableDictionary *msgList = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:chatlog to:[self getLastJid] WithDidReadState:MessageState_didRead];
                         for (NSString *key in [msgList allKeys]) {
                             //                        int notReadCount = [self getNotReadMsgCountByJid:key];
                             NSDictionary *value = [msgList objectForKey:key];

@@ -110,7 +110,7 @@
         [self addConsultSessionById:toJid ByRealJid:realToJid WithUserId:realToJid ByMsgId:message.messageId WithOpen:NO WithLastUpdateTime:message.messageDate WithChatType:ChatType_ConsultServer];
     }
     if (msgRaw.length > 0) {
-        [[IMDataManager sharedInstance] updateMessageWithMsgId:msgId WithMsgRaw:msgRaw];
+        [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageWithMsgId:msgId WithMsgRaw:msgRaw];
     }
     return message;
 }

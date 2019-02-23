@@ -188,7 +188,7 @@
  @param userId 接收Id
  @param msgType 消息Type
  */
-- (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToUserId:(NSString *)userId WihtMsgType:(int)msgType;
+- (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToUserId:(NSString *)userId WithMsgType:(int)msgType;
 
 
 // Note消息自动回复消息(您好，我是在线客服xxx，很高兴为您服务)
@@ -214,7 +214,7 @@
  @param groupId 群Id
  @param msgType 消息Type
  */
-- (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToGroupId:(NSString *)groupId WihtMsgType:(int)msgType;
+- (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToGroupId:(NSString *)groupId WithMsgType:(int)msgType;
 
 
 /**
@@ -226,7 +226,7 @@
  @param msgType 消息Type
  @param msgId 消息Id
  */
-- (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToGroupId:(NSString *)groupId WihtMsgType:(int)msgType WithMsgId:(NSString *)msgId;
+- (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToGroupId:(NSString *)groupId WithMsgType:(int)msgType WithMsgId:(NSString *)msgId;
 
 /**
  发送群窗口抖动
@@ -263,7 +263,7 @@
  @param groupId 群Id
  @param msgId 消息Id
  */
-- (void)sendFileJson:(NSString *)fileJson ToGroupId:(NSString *)groupId WihtMsgId:(NSString *)msgId;
+- (void)sendFileJson:(NSString *)fileJson ToGroupId:(NSString *)groupId WithMsgId:(NSString *)msgId;
 
 
 /**
@@ -323,7 +323,7 @@
  @param msgType 消息类型
  @return 返回消息本身
  */
-- (Message *)sendShareLocationMessage:(NSString *)msg WithInfo:(NSString *)info ToJid:(NSString *)jid WihtMsgType:(int)msgType;
+- (Message *)sendShareLocationMessage:(NSString *)msg WithInfo:(NSString *)info ToJid:(NSString *)jid WithMsgType:(int)msgType;
 
 /**
  共享位置开始
@@ -500,7 +500,7 @@
  @param offset   偏移量
  @param complete 回调block
  */
-- (void)getMsgListByUserId:(NSString *)userId WithRealJid:(NSString *)realJid WihtLimit:(int)limit WithOffset:(int)offset WihtComplete:(void (^)(NSArray *))complete;
+- (void)getMsgListByUserId:(NSString *)userId WithRealJid:(NSString *)realJid WithLimit:(int)limit WithOffset:(int)offset WithComplete:(void (^)(NSArray *))complete;
 
 /**
  获取消息列表
@@ -509,7 +509,7 @@
  @param timeStamp 时间戳
  @param complete 回调block
  */
-- (void)getMsgListByUserId:(NSString *)userId FromTimeStamp:(long long)timeStamp WihtComplete:(void (^)(NSArray *))complete;
+- (void)getMsgListByUserId:(NSString *)userId FromTimeStamp:(long long)timeStamp WithComplete:(void (^)(NSArray *))complete;
 
 /**
  获取消息列表
@@ -520,25 +520,9 @@
  @param timeStamp 时间戳
  @param complete 回调block
  */
-- (void)getMsgListByUserId:(NSString *)userId WithRealJid:(NSString *)realJid FromTimeStamp:(long long)timeStamp WihtComplete:(void (^)(NSArray *))complete;
+- (void)getMsgListByUserId:(NSString *)userId WithRealJid:(NSString *)realJid FromTimeStamp:(long long)timeStamp WithComplete:(void (^)(NSArray *))complete;
 
 - (void)getConsultServerMsgLisByUserId:(NSString *)userId WithVirtualId:(NSString *)virtualId WithLimit:(int)limit WithOffset:(int)offset WithComplete:(void (^)(NSArray *))complete;
-
-/**
- FS msg
- 
- @param xmppId user id
- @return 返回结果
- */
-- (NSArray *)getFSMsgByXmppId:(NSString *)xmppId;
-
-/**
- FS msg
- 
- @param msgId 消息表示
- @return 返回结果
- */
-- (NSDictionary *)getFSMsgByMsgId:(NSString *)msgId;
 
 - (void)checkOfflineMsg;
 

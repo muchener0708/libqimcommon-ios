@@ -15,22 +15,22 @@ CFStringRef QIMFileMD5HashCreateWithData(const void *data,long long dataLenght);
 
 @interface QIMHttpApi : NSObject
 
-+ (NSString *)checkFileKeyForFile:(NSString *)fileKey WithFileLength:(long long)fileLength WihtPathExtension:(NSString *)extension;
++ (NSString *)checkFileKeyForFile:(NSString *)fileKey WithFileLength:(long long)fileLength WithPathExtension:(NSString *)extension;
 
-+ (NSString *)checkFileKey:(NSString *)fileKey WithFileLength:(long long)fileLength WihtPathExtension:(NSString *)extension;
++ (NSString *)checkFileKey:(NSString *)fileKey WithFileLength:(long long)fileLength WithPathExtension:(NSString *)extension;
 
 + (NSDictionary *)checkUserToken:(NSString *)verifCode;
 
-+ (NSDictionary *)getUserTokenWithUserName:(NSString *)userName WihtVerifyCode:(NSString *)verifCode;
++ (NSDictionary *)getUserTokenWithUserName:(NSString *)userName WithVerifyCode:(NSString *)verifCode;
 
 + (NSDictionary *)getVerifyCodeWithUserName:(NSString *)userName;
 
-+ (NSString *) updateLoadFile:(NSData *)fileData WithMsgId:(NSString *)key WithMsgType:(int)type WihtPathExtension:(NSString *)extension;
++ (NSString *) updateLoadFile:(NSData *)fileData WithMsgId:(NSString *)key WithMsgType:(int)type WithPathExtension:(NSString *)extension;
 
 + (NSDictionary *)getUserList;
  
 
-+ (NSString *)updateLoadFile:(NSData *)fileData WithMsgId:(NSString *)key WithMsgType:(int)type WihtPathExtension:(NSString *)extension;
++ (NSString *)updateLoadFile:(NSData *)fileData WithMsgId:(NSString *)key WithMsgType:(int)type WithPathExtension:(NSString *)extension;
 
 //add by dan.zheng 15-4-24
 + (NSString *)updateLoadVoiceFile:(NSData *)voiceFileData WithFilePath:(NSString *)filePath;

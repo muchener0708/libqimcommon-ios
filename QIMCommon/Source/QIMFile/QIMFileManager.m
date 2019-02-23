@@ -216,7 +216,7 @@ typedef enum {
                                 self.message.messageType = QIMMessageType_SmallVideo;
 //                            }
                             if (self.message.chatType == ChatType_PublicNumber) {
-                                [[QIMManager sharedInstance] sendMessage:msg ToPublicNumberId:self.toJid WithMsgId:self.message.messageId WihtMsgType:self.message.messageType];
+                                [[QIMManager sharedInstance] sendMessage:msg ToPublicNumberId:self.toJid WithMsgId:self.message.messageId WithMsgType:self.message.messageType];
                             } else if (self.message.chatType == ChatType_Consult || self.message.chatType == ChatType_ConsultServer) {
                                 [[QIMManager sharedInstance] sendConsultMessageId:self.message.messageId WithMessage:self.message.message WithInfo:self.message.extendInformation toJid:self.message.to realToJid:self.message.realJid WithChatType:self.message.chatType WithMsgType:self.message.messageType];
                             } else {
@@ -244,7 +244,7 @@ typedef enum {
 //                            }
 
                             [[QIMManager sharedInstance] sendMessage:self.message ToUserId:self.toJid];
-//                            [[QIMManager sharedInstance] sendMessage:@"此为阅后即焚消息，该终端不支持阅后即焚~~" WithInfo:extendInformation ToGroupId:self.toJid WihtMsgType:QIMMessageType_BurnAfterRead];
+//                            [[QIMManager sharedInstance] sendMessage:@"此为阅后即焚消息，该终端不支持阅后即焚~~" WithInfo:extendInformation ToGroupId:self.toJid WithMsgType:QIMMessageType_BurnAfterRead];
                         }else{
                              NSString *messageContent = [NSString stringWithFormat:@"发送了一段视频. [obj type=\"url\" value=\"%@\"]", [[QIMNavConfigManager sharedInstance].innerFileHttpHost  stringByAppendingFormat:@"/%@", httpUrl]];
                             //QIMSDKTODO
@@ -259,7 +259,7 @@ typedef enum {
                                 self.message.messageType = QIMMessageType_SmallVideo;
 //                            }
                             if (self.message.chatType == ChatType_PublicNumber) {
-                                [[QIMManager sharedInstance] sendMessage:msg ToPublicNumberId:self.toJid WithMsgId:self.message.messageId WihtMsgType:self.message.messageType];
+                                [[QIMManager sharedInstance] sendMessage:msg ToPublicNumberId:self.toJid WithMsgId:self.message.messageId WithMsgType:self.message.messageType];
                             } else if (self.message.chatType == ChatType_Consult || self.message.chatType == ChatType_ConsultServer) {
                                 [[QIMManager sharedInstance] sendConsultMessageId:self.message.messageId WithMessage:self.message.message WithInfo:self.message.extendInformation toJid:self.message.to realToJid:self.message.realJid WithChatType:self.message.chatType WithMsgType:self.message.messageType];
                             } else {
@@ -382,7 +382,7 @@ typedef enum {
                     }
 //                    self.message.messageState = MessageState_Success;
                     if (self.message.chatType == ChatType_PublicNumber) {
-                        [[QIMManager sharedInstance] sendMessage:self.message.message ToPublicNumberId:self.toJid WithMsgId:self.message.messageId WihtMsgType:self.message.messageType];
+                        [[QIMManager sharedInstance] sendMessage:self.message.message ToPublicNumberId:self.toJid WithMsgId:self.message.messageId WithMsgType:self.message.messageType];
                     } else if (self.message.chatType == ChatType_Consult) {
                         NSDictionary *infoDic = [[QIMJSONSerializer sharedInstance] deserializeObject:self.message.ochatJson error:nil];
                         NSMutableDictionary * ochatDic = [NSMutableDictionary dictionaryWithDictionary:infoDic];

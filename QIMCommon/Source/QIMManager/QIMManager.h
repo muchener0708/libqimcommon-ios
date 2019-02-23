@@ -6,6 +6,12 @@
 #import "IMDataManager+QIMDBClientConfig.h"
 #import "IMDataManager+QIMDBQuickReply.h"
 #import "IMDataManager+QIMNote.h"
+#import "IMDataManager+QIMDBGroup.h"
+#import "IMDataManager+QIMDBFriend.h"
+#import "IMDataManager+QIMDBMessage.h"
+#import "IMDataManager+QIMDBCollectionMessage.h"
+#import "IMDataManager+QIMDBPublicNumber.h"
+#import "IMDataManager+QIMDBUser.h"
 #import "IMDataManager+WorkFeed.h"
 #import "IMDataManager+QIMUserMedal.h"
 
@@ -343,7 +349,7 @@
 
 - (void)removeAtMeByJid:(NSString *)jid;
 
-- (void)addAtALLByJid:(NSString *)jid WithMsgId:(NSString *)msgId WihtMsg:(Message *)message WithNickName:(NSString *)nickName;
+- (void)addAtALLByJid:(NSString *)jid WithMsgId:(NSString *)msgId WithMsg:(Message *)message WithNickName:(NSString *)nickName;
 
 - (void)removeAtAllByJid:(NSString *)jid;
 
@@ -388,11 +394,5 @@
 - (BOOL)sendPushTokenWithMyToken:(NSString *)myToken WithDeleteFlag:(BOOL)deleteFlag;
 
 - (void)checkClearCache;
-
-- (NSString *)userOnlineStatus:(NSString *)sid;
-- (BOOL)isUserOnline:(NSString *)userId;    //检查用户是否在线
-
-- (UserPrecenseStatus)getUserPrecenseStatus:(NSString *)jid;
-- (UserPrecenseStatus)getUserPrecenseStatus:(NSString *)jid status:(NSString **)status;
 
 @end

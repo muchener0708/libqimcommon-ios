@@ -66,7 +66,7 @@
 //    [[QIMWatchDog sharedInstance] start];
     __block long long maxRemoteTimeStamp = 0;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *newSql = @"select LastUpdateTime from IM_Message Where ChatType = 1 And (State == 2 Or State == 16) ORDER by LastUpdateTime desc limit(1);";
+        NSString *newSql = @"select LastUpdateTime from IM_Message Where (State == 2 Or State == 16) ORDER by LastUpdateTime desc limit(1);";
         DataReader *newReader = [database executeReader:newSql withParameters:nil];
         if ([newReader read]) {
             maxRemoteTimeStamp = [[newReader objectForColumnIndex:0] longLongValue];
@@ -127,7 +127,7 @@
                           WithMsgRaw:(NSString *)msgRaw {
     
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"Update IM_Message Set XmppId=:XmppId, \"From\"=:from, \"To\"=:to, Content=:content, ExtendInfo=:ExtendInfo, Platform=:platform, Type=:type, State=:state, Direction=:Direction,LastUpdateTime=:LastUpdateTime,ReadedTag=:ReadedTag,ExtendedFlag=:ExtendedFlag,MessageRaw=:MessageRaw Where MsgId=:MsgId;";
+        NSString *sql = @"Update IM_Message Set XmppId=:XmppId, \"From\"=:from, \"To\"=:to, Content=:content, ExtendInfo=:ExtendInfo, Platform=:platform, Type=:type, State=:state, Direction=:Direction,LastUpdateTime=:LastUpdateTime,ReadState=:ReadState,ExtendedFlag=:ExtendedFlag,MessageRaw=:MessageRaw Where MsgId=:MsgId;";
         NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:11];
         [param addObject:sessionId];
         [param addObject:from?from:@":NULL"];
@@ -254,7 +254,7 @@
 - (void)qimDB_insertMessageWithMsgDic:(NSDictionary *)msgDic {
 
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"insert or IGNORE into IM_Message(MsgId, XmppId, \"From\", \"To\", Content, ExtendInfo, Platform, Type, State, Direction,LastUpdateTime,ReadedTag,ExtendedFlag,MessageRaw,RealJid, ReadState, ChatType) values(:MsgId, :XmppId, :From, :To, :Content, :ExtendInfo, :Platform, :Type, :State, :Direction, :LastUpdateTime, :ReadedTag,:ExtendedFlag,:MessageRaw,:RealJid, :ReadState, :ChatType);";
+        NSString *sql = @"insert or IGNORE into IM_Message(MsgId, XmppId, \"From\", \"To\", Content, ExtendInfo, Platform, Type, State, Direction,LastUpdateTime,ExtendedFlag,MessageRaw,RealJid, ReadState) values(:MsgId, :XmppId, :From, :To, :Content, :ExtendInfo, :Platform, :Type, :State, :Direction, :LastUpdateTime,:ExtendedFlag,:MessageRaw,:RealJid, :ReadState);";
         
     }];
 }
@@ -275,7 +275,7 @@
                     WithRealJid:(NSString *)realJid
                    WithChatType:(NSInteger)chatType {
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"insert or IGNORE into IM_Message(MsgId, XmppId, \"From\", \"To\", Content, ExtendInfo, Platform, Type, State, Direction,LastUpdateTime,ReadedTag,ExtendedFlag,MessageRaw,RealJid, ChatType) values(:MsgId, :XmppId, :From, :To, :Content, :ExtendInfo, :Platform, :Type, :State, :Direction, :LastUpdateTime, :ReadedTag,:ExtendedFlag,:MessageRaw,:RealJid, :ChatType);";
+        NSString *sql = @"insert or IGNORE into IM_Message(MsgId, XmppId, \"From\", \"To\", Content, ExtendInfo, Platform, Type, State, Direction,LastUpdateTime,ReadState,ExtendedFlag,MessageRaw,RealJid) values(:MsgId, :XmppId, :From, :To, :Content, :ExtendInfo, :Platform, :Type, :State, :Direction, :LastUpdateTime, :ReadState,:ExtendedFlag,:MessageRaw,:RealJid);";
         NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:11];
         [param addObject:msgId?msgId:@":NULL"];
         [param addObject:xmppId?xmppId:@":NULL"];
@@ -292,7 +292,6 @@
         [param addObject:[NSNumber numberWithInt:0]];
         [param addObject:msgRaw?msgRaw:@":NULL"];
         [param addObject:realJid?realJid:@":NULL"];
-        [param addObject:[NSNumber numberWithInteger:chatType]];
         [database executeNonQuery:sql withParameters:param];
         [param release];
         param = nil;
@@ -1271,7 +1270,7 @@
 //    [[QIMWatchDog sharedInstance] start];
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         
-        NSString *sql = @"insert or IGNORE into IM_Message(MsgId, XmppId, \"From\", \"To\", Content, Platform, Type, State, Direction, LastUpdateTime, ReadState, ReadedTag, MessageRaw, RealJid, ChatType, ExtendInfo) values(:MsgId, :XmppId, :From, :To, :Content, :Platform, :Type, :State, :Direction, :LastUpdateTime, :ReadState, :ReadedTag,:MessageRaw,:RealJid, :ChatType, :ExtendInfo);";
+        NSString *sql = @"insert or IGNORE into IM_Message(MsgId, XmppId, \"From\", \"To\", Content, Platform, Type, State, Direction, LastUpdateTime, ReadState, MessageRaw, RealJid, ExtendInfo) values(:MsgId, :XmppId, :From, :To, :Content, :Platform, :Type, :State, :Direction, :LastUpdateTime, :ReadState,:MessageRaw,:RealJid, :ExtendInfo);";
         NSMutableArray *params = [[NSMutableArray alloc] init];
         for (NSDictionary *msgDic in msgList) {
             NSString *msgId = [msgDic objectForKey:@"MsgId"];
@@ -1285,10 +1284,8 @@
             NSNumber *msgDirection = [msgDic objectForKey:@"MsgDirection"];
             NSNumber *lastUpdateTime = [msgDic objectForKey:@"MsgDateTime"];
             NSNumber *readState = [msgDic objectForKey:@"ReadState"];
-            NSNumber *readedTag = [msgDic objectForKey:@"ReadedTag"];
             NSString *msgRaw = [msgDic objectForKey:@"MsgRaw"];
             NSString *realJid = [msgDic objectForKey:@"RealJid"];
-            NSNumber *chatType = [msgDic objectForKey:@"ChatType"];
             NSString *extendInfo = [msgDic objectForKey:@"ExtendInfo"];
             NSMutableArray *param = [[NSMutableArray alloc] init];
             [param addObject:msgId?msgId:@":NULL"];
@@ -1302,10 +1299,8 @@
             [param addObject:msgDirection];
             [param addObject:lastUpdateTime];
             [param addObject:readState?readState:@(0)];
-            [param addObject:readedTag];
             [param addObject:msgRaw?msgRaw:@":NULL"];
             [param addObject:realJid?realJid:@":NULL"];
-            [param addObject:chatType];
             [param addObject:extendInfo?extendInfo:@":NULL"];
             [params addObject:param];
             [param release];
@@ -1322,7 +1317,7 @@
     
     [[self dbInstance] usingTransaction:^(Database *database) {
         
-        NSString *sql = @"insert or IGNORE into IM_Message(MsgId, XmppId, \"From\", \"To\", Content, Platform, Type, State, Direction, LastUpdateTime, ReadState, ReadedTag, MessageRaw, RealJid, ExtendInfo) values(:MsgId, :XmppId, :From, :To, :Content, :Platform, :Type, :State, :Direction, :LastUpdateTime, :ReadState, :ReadedTag,:MessageRaw, :RealJid, :ExtendInfo);";
+        NSString *sql = @"insert or IGNORE into IM_Message(MsgId, XmppId, \"From\", \"To\", Content, Platform, Type, State, Direction, LastUpdateTime, ReadState, MessageRaw, RealJid, ExtendInfo) values(:MsgId, :XmppId, :From, :To, :Content, :Platform, :Type, :State, :Direction, :LastUpdateTime, :ReadState,:MessageRaw, :RealJid, :ExtendInfo);";
         NSMutableArray *params = [[NSMutableArray alloc] init];
         for (NSDictionary *msgDic in msgList) {
             NSString *msgId = [msgDic objectForKey:@"MsgId"];
@@ -1336,7 +1331,6 @@
             NSNumber *msgDirection = [msgDic objectForKey:@"MsgDirection"];
             NSNumber *lastUpdateTime = [msgDic objectForKey:@"MsgDateTime"];
             NSNumber *readState = [msgDic objectForKey:@"ReadState"];
-            NSNumber *readedTag = [msgDic objectForKey:@"ReadedTag"];
             NSString *msgRaw = [msgDic objectForKey:@"MsgRaw"];
             NSString *realJid = [msgDic objectForKey:@"RealJid"];
             NSString *extendInfo = [msgDic objectForKey:@"ExtendInfo"];
@@ -1353,7 +1347,6 @@
             [param addObject:msgDirection];
             [param addObject:lastUpdateTime];
             [param addObject:readState?readState:@(0)];
-            [param addObject:readedTag];
             [param addObject:msgRaw?msgRaw:@":NULL"];
             [param addObject:realJid?realJid:@":NULL"];
             [param addObject:extendInfo?extendInfo:@":NULL"];
@@ -1504,6 +1497,66 @@
     return [result autorelease];
 }
 
+- (NSArray *)qimDB_getMsgsByMsgType:(NSArray *)msgTypes ByXmppId:(NSString *)xmppId ByReadJid:(NSString *)realJid {
+    
+    __block NSMutableArray * msgs = [NSMutableArray arrayWithCapacity:1];
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = @"";
+        if (realJid.length > 0) {
+            sql = [NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime,XmppId, ExtendInfo From IM_Message Where XmppId = '%@' And RealJid = '%@' And (", xmppId, realJid];
+            for (NSInteger i = 0; i < msgTypes.count; i++) {
+                NSInteger msgType = [[msgTypes objectAtIndex:i] integerValue];
+                if (i == 0) {
+                    sql = [sql stringByAppendingFormat:[NSString stringWithFormat:@"Type = %d", msgType]];
+                } else {
+                    sql = [sql stringByAppendingFormat:[NSString stringWithFormat:@" Or Type = %d", msgType]];
+                }
+            }
+            sql = [sql stringByAppendingFormat:@") Order By LastUpdateTime DESC;"];
+        } else {
+            sql = [NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime,XmppId, ExtendInfo From IM_Message Where XmppId = '%@' And (", xmppId];
+            for (NSInteger i = 0; i < msgTypes.count; i++) {
+                NSInteger msgType = [[msgTypes objectAtIndex:i] integerValue];
+                if (i == 0) {
+                    sql = [sql stringByAppendingFormat:[NSString stringWithFormat:@"Type = %d", msgType]];
+                } else {
+                    sql = [sql stringByAppendingFormat:[NSString stringWithFormat:@" Or Type = %d", msgType]];
+                }
+            }
+            sql = [sql stringByAppendingFormat:@") Order By LastUpdateTime DESC;"];
+        }
+        DataReader *reader = [database executeReader:sql withParameters:nil];
+        
+        while ([reader read]) {
+            NSMutableDictionary * result = [[NSMutableDictionary alloc] init];
+            NSString *msgId = [reader objectForColumnIndex:0];
+            NSString *from = [reader objectForColumnIndex:1];
+            NSString *to = [reader objectForColumnIndex:2];
+            NSString *content = [reader objectForColumnIndex:3];
+            NSNumber *platform = [reader objectForColumnIndex:4];
+            NSNumber *msgType = [reader objectForColumnIndex:5];
+            NSNumber *msgState = [reader objectForColumnIndex:6];
+            NSNumber *msgDirection = [reader objectForColumnIndex:7];
+            NSNumber *msgDateTime = [reader objectForColumnIndex:8];
+            NSString *xmppId = [reader objectForColumnIndex:9];
+            NSString *extendInfo = [reader objectForColumnIndex:10];
+            [IMDataManager safeSaveForDic:result setObject:xmppId forKey:@"XmppId"];
+            [IMDataManager safeSaveForDic:result setObject:msgId forKey:@"MsgId"];
+            [IMDataManager safeSaveForDic:result setObject:from forKey:@"From"];
+            [IMDataManager safeSaveForDic:result setObject:to forKey:@"To"];
+            [IMDataManager safeSaveForDic:result setObject:content forKey:@"Content"];
+            [IMDataManager safeSaveForDic:result setObject:platform forKey:@"Platform"];
+            [IMDataManager safeSaveForDic:result setObject:msgType forKey:@"MsgType"];
+            [IMDataManager safeSaveForDic:result setObject:msgState forKey:@"MsgState"];
+            [IMDataManager safeSaveForDic:result setObject:msgDirection forKey:@"MsgDirection"];
+            [IMDataManager safeSaveForDic:result setObject:msgDateTime forKey:@"MsgDateTime"];
+            [IMDataManager safeSaveForDic:result setObject:extendInfo forKey:@"ExtendInfo"];
+            [msgs addObject:result];
+        }
+    }];
+    return msgs;
+}
+
 - (NSArray *)qimDB_getMsgsByMsgType:(int)msgType ByXmppId:(NSString *)xmppId{
     __block NSMutableArray * msgs = [NSMutableArray arrayWithCapacity:1];
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
@@ -1598,17 +1651,17 @@
         NSMutableArray *param = [[NSMutableArray alloc] init];
         if (realJid) {
             if (limit) {
-                sql = [NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction, LastUpdateTime, ReadedTag, MessageRaw, RealJid, ExtendInfo, ReadState From IM_Message Where XmppId = :XmppId And RealJid = :RealJid Order By LastUpdateTime DESC Limit %d OFFSET %d;",limit,offset];
+                sql = [NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction, LastUpdateTime, MessageRaw, RealJid, ExtendInfo, ReadState From IM_Message Where XmppId = :XmppId And RealJid = :RealJid Order By LastUpdateTime DESC Limit %d OFFSET %d;",limit,offset];
             } else {
-                sql = [NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction, LastUpdateTime, ReadedTag, MessageRaw, RealJid, ExtendInfo, ReadState From IM_Message Where XmppId = :XmppId And RealJid = :RealJid Order By LastUpdateTime DESC;"];
+                sql = [NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction, LastUpdateTime, MessageRaw, RealJid, ExtendInfo, ReadState From IM_Message Where XmppId = :XmppId And RealJid = :RealJid Order By LastUpdateTime DESC;"];
             }
             [param addObject:sesId];
             [param addObject:realJid?realJid:@":NULL"];
         } else {
             if (limit) {
-                sql = [NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction, LastUpdateTime, ReadedTag, MessageRaw, RealJid, ExtendInfo, ReadState From IM_Message Where XmppId = :XmppId Order By LastUpdateTime DESC Limit %d OFFSET %d;",limit,offset];
+                sql = [NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction, LastUpdateTime, MessageRaw, RealJid, ExtendInfo, ReadState From IM_Message Where XmppId = :XmppId Order By LastUpdateTime DESC Limit %d OFFSET %d;",limit,offset];
             } else {
-                sql = [NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction, LastUpdateTime, ReadedTag, MessageRaw, RealJid, ExtendInfo, ReadState From IM_Message Where XmppId = :XmppId Order By LastUpdateTime DESC;"];
+                sql = [NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction, LastUpdateTime, MessageRaw, RealJid, ExtendInfo, ReadState From IM_Message Where XmppId = :XmppId Order By LastUpdateTime DESC;"];
             }
             [param addObject:sesId];
         }
@@ -1632,11 +1685,10 @@
             NSNumber *msgState = [reader objectForColumnIndex:6];
             NSNumber *msgDirection = [reader objectForColumnIndex:7];
             NSNumber *msgDateTime = [reader objectForColumnIndex:8];
-            NSNumber *notReadTag = [reader objectForColumnIndex:9];
-            NSString *msgraw = [reader objectForColumnIndex:10];
-            NSString *realJid = [reader objectForColumnIndex:11];
-            NSString *extendInfo = [reader objectForColumnIndex:12];
-            NSNumber *readState = [reader objectForColumnIndex:13];
+            NSString *msgraw = [reader objectForColumnIndex:9];
+            NSString *realJid = [reader objectForColumnIndex:10];
+            NSString *extendInfo = [reader objectForColumnIndex:11];
+            NSNumber *readState = [reader objectForColumnIndex:12];
             
             NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
             [IMDataManager safeSaveForDic:msgDic setObject:msgId forKey:@"MsgId"];
@@ -1648,7 +1700,6 @@
             [IMDataManager safeSaveForDic:msgDic setObject:msgState forKey:@"MsgState"];
             [IMDataManager safeSaveForDic:msgDic setObject:msgDirection forKey:@"MsgDirection"];
             [IMDataManager safeSaveForDic:msgDic setObject:msgDateTime forKey:@"MsgDateTime"];
-            [IMDataManager safeSaveForDic:msgDic setObject:notReadTag forKey:@"ReadTag"];
             [IMDataManager safeSaveForDic:msgDic setObject:msgraw forKey:@"msgRaw"];
             [IMDataManager safeSaveForDic:msgDic setObject:realJid forKey:@"RealJid"];
             [IMDataManager safeSaveForDic:msgDic setObject:extendInfo forKey:@"ExtendInfo"];
@@ -1675,13 +1726,13 @@
         NSString *sql = nil;
         NSMutableArray *param = nil;
         if (realJid) {
-            sql =[NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime, ReadedTag, ExtendInfo From IM_Message Where XmppId = :XmppId And RealJid = :RealJid And LastUpdateTime >= :LastUpdateTime Order By LastUpdateTime DESC;"];
+            sql =[NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime, ExtendInfo From IM_Message Where XmppId = :XmppId And RealJid = :RealJid And LastUpdateTime >= :LastUpdateTime Order By LastUpdateTime DESC;"];
             param = [[NSMutableArray alloc] init];
             [param addObject:xmppId];
             [param addObject:realJid];
             [param addObject:@(timeStamp)];
         } else {
-            sql =[NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime,ReadedTag, ExtendInfo From IM_Message Where XmppId = :XmppId And RealJid is null And LastUpdateTime >= :LastUpdateTime Order By LastUpdateTime DESC;"];
+            sql =[NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime, ExtendInfo From IM_Message Where XmppId = :XmppId And RealJid is null And LastUpdateTime >= :LastUpdateTime Order By LastUpdateTime DESC;"];
             param = [[NSMutableArray alloc] init];
             [param addObject:xmppId];
             [param addObject:@(timeStamp)];
@@ -1706,8 +1757,7 @@
             NSNumber *msgState = [reader objectForColumnIndex:6];
             NSNumber *msgDirection = [reader objectForColumnIndex:7];
             NSNumber *msgDateTime = [reader objectForColumnIndex:8];
-            NSNumber *notReadTag = [reader objectForColumnIndex:9];
-            NSString *extendInfo = [reader objectForColumnIndex:10];
+            NSString *extendInfo = [reader objectForColumnIndex:9];
             NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
             [IMDataManager safeSaveForDic:msgDic setObject:msgId forKey:@"MsgId"];
             [IMDataManager safeSaveForDic:msgDic setObject:from forKey:@"From"];
@@ -1718,7 +1768,6 @@
             [IMDataManager safeSaveForDic:msgDic setObject:msgState forKey:@"MsgState"];
             [IMDataManager safeSaveForDic:msgDic setObject:msgDirection forKey:@"MsgDirection"];
             [IMDataManager safeSaveForDic:msgDic setObject:msgDateTime forKey:@"MsgDateTime"];
-            [IMDataManager safeSaveForDic:msgDic setObject:notReadTag forKey:@"ReadTag"];
             [IMDataManager safeSaveForDic:msgDic setObject:extendInfo forKey:@"ExtendInfo"];
             [tempList addObject:msgDic];
             [msgDic release];
@@ -1738,7 +1787,7 @@
     __block NSMutableArray *result = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         
-        NSString *sql =[NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime,ReadedTag, ExtendInfo From IM_Message Where XmppId = :XmppId And LastUpdateTime >= :LastUpdateTime Order By LastUpdateTime DESC;"];
+        NSString *sql =[NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime, ExtendInfo From IM_Message Where XmppId = :XmppId And LastUpdateTime >= :LastUpdateTime Order By LastUpdateTime DESC;"];
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:xmppId];
         [param addObject:@(timeStamp)];
@@ -1762,8 +1811,7 @@
             NSNumber *msgState = [reader objectForColumnIndex:6];
             NSNumber *msgDirection = [reader objectForColumnIndex:7];
             NSNumber *msgDateTime = [reader objectForColumnIndex:8];
-            NSNumber *notReadTag = [reader objectForColumnIndex:9];
-            NSString *extendInfo = [reader objectForColumnIndex:10];
+            NSString *extendInfo = [reader objectForColumnIndex:9];
             NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
             [IMDataManager safeSaveForDic:msgDic setObject:msgId forKey:@"MsgId"];
             [IMDataManager safeSaveForDic:msgDic setObject:from forKey:@"From"];
@@ -1774,7 +1822,6 @@
             [IMDataManager safeSaveForDic:msgDic setObject:msgState forKey:@"MsgState"];
             [IMDataManager safeSaveForDic:msgDic setObject:msgDirection forKey:@"MsgDirection"];
             [IMDataManager safeSaveForDic:msgDic setObject:msgDateTime forKey:@"MsgDateTime"];
-            [IMDataManager safeSaveForDic:msgDic setObject:notReadTag forKey:@"ReadTag"];
             [IMDataManager safeSaveForDic:msgDic setObject:extendInfo forKey:@"ExtendInfo"];
             [tempList addObject:msgDic];
             [msgDic release];
@@ -2002,7 +2049,7 @@
 //    [[QIMWatchDog sharedInstance] start];
     __block long long maxRemoteTime = 0;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *newSql = @"select LastUpdateTime from IM_Message Where ChatType=0 And (State == 2 OR State == 16 Or State == 15) ORDER by LastUpdateTime desc limit(1);";
+        NSString *newSql = @"select LastUpdateTime from IM_Message Where (State == 2 OR State == 16 Or State == 15) ORDER by LastUpdateTime desc limit(1);";
         DataReader *newReader = [database executeReader:newSql withParameters:nil];
         if ([newReader read]) {
             maxRemoteTime = [[newReader objectForColumnIndex:0] longLongValue];
@@ -2327,6 +2374,90 @@
             QIMVerboseLog(@"更新消息RemoteState状态的参数成功 : %@", paramList);
         }
     }];
+}
+
+#pragma mark - 本地消息搜索
+
+- (NSArray *)qimDB_getLocalMediaByXmppId:(NSString *)xmppId ByReadJid:(NSString *)realJid {
+    __block NSMutableArray * msgs = [NSMutableArray arrayWithCapacity:1];
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = @"";
+        if (realJid.length > 0) {
+            sql = [NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime,XmppId, ExtendInfo From IM_Message Where XmppId = '%@' And RealJid = '%@' And (Type = 32 Or Content Like '%%%@%%') Order By LastUpdateTime DESC;", xmppId, realJid, [NSString stringWithFormat:@"obj type=\"image"]];
+        } else {
+            sql = [NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime,XmppId, ExtendInfo From IM_Message Where XmppId = '%@' And (Type = 32 Or Content Like '%%%@%%') Order By LastUpdateTime DESC;", xmppId, [NSString stringWithFormat:@"obj type=\"image"]];
+        }
+        DataReader *reader = [database executeReader:sql withParameters:nil];
+        while ([reader read]) {
+            NSMutableDictionary * result = [[NSMutableDictionary alloc] init];
+            NSString *msgId = [reader objectForColumnIndex:0];
+            NSString *from = [reader objectForColumnIndex:1];
+            NSString *to = [reader objectForColumnIndex:2];
+            NSString *content = [reader objectForColumnIndex:3];
+            NSNumber *platform = [reader objectForColumnIndex:4];
+            NSNumber *msgType = [reader objectForColumnIndex:5];
+            NSNumber *msgState = [reader objectForColumnIndex:6];
+            NSNumber *msgDirection = [reader objectForColumnIndex:7];
+            NSNumber *msgDateTime = [reader objectForColumnIndex:8];
+            NSString *xmppId = [reader objectForColumnIndex:9];
+            NSString *extendInfo = [reader objectForColumnIndex:10];
+            [IMDataManager safeSaveForDic:result setObject:xmppId forKey:@"XmppId"];
+            [IMDataManager safeSaveForDic:result setObject:msgId forKey:@"MsgId"];
+            [IMDataManager safeSaveForDic:result setObject:from forKey:@"From"];
+            [IMDataManager safeSaveForDic:result setObject:to forKey:@"To"];
+            [IMDataManager safeSaveForDic:result setObject:content forKey:@"Content"];
+            [IMDataManager safeSaveForDic:result setObject:platform forKey:@"Platform"];
+            [IMDataManager safeSaveForDic:result setObject:msgType forKey:@"MsgType"];
+            [IMDataManager safeSaveForDic:result setObject:msgState forKey:@"MsgState"];
+            [IMDataManager safeSaveForDic:result setObject:msgDirection forKey:@"MsgDirection"];
+            [IMDataManager safeSaveForDic:result setObject:msgDateTime forKey:@"MsgDateTime"];
+            [IMDataManager safeSaveForDic:result setObject:extendInfo forKey:@"ExtendInfo"];
+            [msgs addObject:result];
+        }
+    }];
+    return msgs;
+}
+
+- (NSArray *)qimDB_getMsgsByKeyWord:(NSString *)keywords ByXmppId:(NSString *)xmppId ByReadJid:(NSString *)realJid {
+    
+    __block NSMutableArray * msgs = [NSMutableArray arrayWithCapacity:1];
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = @"";
+        if (realJid.length > 0) {
+            sql = [NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime,XmppId, ExtendInfo From IM_Message Where XmppId = '%@' And RealJid = '%@' And Content like '%%%@%%'  Order By LastUpdateTime DESC limit(1000);", xmppId, realJid, keywords];
+        } else {
+            sql = [NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime,XmppId, ExtendInfo From IM_Message Where XmppId = '%@' And Content like '%%%@%%' Order By LastUpdateTime DESC limit(1000);", xmppId, keywords];
+        }
+        DataReader *reader = [database executeReader:sql withParameters:nil];
+        
+        while ([reader read]) {
+            NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
+            NSString *msgId = [reader objectForColumnIndex:0];
+            NSString *from = [reader objectForColumnIndex:1];
+            NSString *to = [reader objectForColumnIndex:2];
+            NSString *content = [reader objectForColumnIndex:3];
+            NSNumber *platform = [reader objectForColumnIndex:4];
+            NSNumber *msgType = [reader objectForColumnIndex:5];
+            NSNumber *msgState = [reader objectForColumnIndex:6];
+            NSNumber *msgDirection = [reader objectForColumnIndex:7];
+            NSNumber *msgDateTime = [reader objectForColumnIndex:8];
+            NSString *xmppId = [reader objectForColumnIndex:9];
+            NSString *extendInfo = [reader objectForColumnIndex:10];
+            [IMDataManager safeSaveForDic:result setObject:xmppId forKey:@"XmppId"];
+            [IMDataManager safeSaveForDic:result setObject:msgId forKey:@"MsgId"];
+            [IMDataManager safeSaveForDic:result setObject:from forKey:@"From"];
+            [IMDataManager safeSaveForDic:result setObject:to forKey:@"To"];
+            [IMDataManager safeSaveForDic:result setObject:content forKey:@"Content"];
+            [IMDataManager safeSaveForDic:result setObject:platform forKey:@"Platform"];
+            [IMDataManager safeSaveForDic:result setObject:msgType forKey:@"MsgType"];
+            [IMDataManager safeSaveForDic:result setObject:msgState forKey:@"MsgState"];
+            [IMDataManager safeSaveForDic:result setObject:msgDirection forKey:@"MsgDirection"];
+            [IMDataManager safeSaveForDic:result setObject:msgDateTime forKey:@"MsgDateTime"];
+            [IMDataManager safeSaveForDic:result setObject:extendInfo forKey:@"ExtendInfo"];
+            [msgs addObject:result];
+        }
+    }];
+    return msgs;
 }
 
 @end

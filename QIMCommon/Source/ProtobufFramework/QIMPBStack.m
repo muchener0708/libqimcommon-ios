@@ -663,7 +663,7 @@ enum PlaType {
     [_pbXmppStream sendPresenceMessage:[builder build] ToJid:xmppId];
 }
 
-- (void)validationFriendWihtXmppId:(NSString *)xmppId WithReason:(NSString *)reason {
+- (void)validationFriendWithXmppId:(NSString *)xmppId WithReason:(NSString *)reason {
     PresenceMessageBuilder *builder = [PresenceMessage builder];
     [builder setMessageId:[QIMPBStream generateUUID]];
     [builder setKey:@"verify_friend"];
@@ -846,20 +846,20 @@ enum PlaType {
 
 - (BOOL)sendControlStateWithMessagesIdArray:(NSString *)jsonString WithXmppid:(NSString *)xmppId {
     
-    return [self sendReadStateWithMessagesIdArray:jsonString WithXmppid:xmppId WithTo:xmppId WithReadFlag:7];
+    return [self sendReadStateWithMessagesIdArray:jsonString WithMessageReadFlag:7 WithXmppid:xmppId WithTo:xmppId];
 }
 
-- (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithXmppid:(NSString *)xmppId {
+- (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithMessageReadFlag:(NSInteger)msgReadFlag WithXmppid:(NSString *)xmppId {
     
-    return [self sendReadStateWithMessagesIdArray:jsonString WithXmppid:xmppId WithTo:xmppId WithReadFlag:4];
+    return [self sendReadStateWithMessagesIdArray:jsonString WithMessageReadFlag:msgReadFlag WithXmppid:xmppId WithTo:xmppId];
 }
 
-- (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithXmppid:(NSString *)xmppId WithTo:(NSString *)to WithReadFlag:(NSInteger)readFlag {
+- (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithMessageReadFlag:(NSInteger)msgReadFlag WithXmppid:(NSString *)xmppId WithTo:(NSString *)to {
     if (jsonString && [jsonString length] > 0) {
         NSString *readFlagStr = @"3";
-        if (readFlag == 4) {
+        if (msgReadFlag == 4) {
             readFlagStr = @"4";
-        } else if (readFlag == 7) {
+        } else if (msgReadFlag == 7) {
             readFlagStr = @"7";
         } else {
             readFlagStr = @"3";
@@ -1339,7 +1339,9 @@ enum PlaType {
             }
             NSString *nickName = [keyValues objectForKey:@"name"];
             if (nickName.length <= 0) {
-                NSDictionary *infoDic = [[IMDataManager sharedInstance] selectUserByJID:memberJid];
+                
+                /* Mark 改DB
+                NSDictionary *infoDic = [[IMDataManager qimDB_SharedInstance] qimDB_selectUserByJID:memberJid];
                 if ((self.productType == 0 && [memberJid rangeOfString:self.domain].location != NSNotFound) || (self.productType == 1 && [memberJid rangeOfString:self.domain].location == NSNotFound)) {
                     nickName = [infoDic objectForKey:@"Name"];
                 }
@@ -1347,7 +1349,7 @@ enum PlaType {
                 if (nickName.length <= 0) {
                     nickName = [memberJid componentsSeparatedByString:@"@"].firstObject;
                 }
-                
+                */
             }
             NSMutableDictionary *memberInfo = [NSMutableDictionary dictionary];
             [memberInfo setObject:affiliation forKey:@"affiliation"];
@@ -1822,8 +1824,8 @@ enum PlaType {
                 NSString *type = [keyValues objectForKey:@"type"];
                 NSString *result = [keyValues objectForKey:@"result"];
                 NSString *reason = [keyValues objectForKey:@"reason"];
-                if ([[self delegate] respondsToSelector:@selector(verifyFriendPresenceWithFrom:WithTo:WihtDirection:WithResult:WithReason:)]) {
-                    [[self delegate] verifyFriendPresenceWithFrom:destJid.bare WithTo:toJid.bare WihtDirection:2 WithResult:result WithReason:reason];
+                if ([[self delegate] respondsToSelector:@selector(verifyFriendPresenceWithFrom:WithTo:WithDirection:WithResult:WithReason:)]) {
+                    [[self delegate] verifyFriendPresenceWithFrom:destJid.bare WithTo:toJid.bare WithDirection:2 WithResult:result WithReason:reason];
                 }
             } else if ([value isEqualToString:@"confirm_verify_friend"]) {
                 // 人工验证好友
@@ -1921,7 +1923,7 @@ enum PlaType {
                     NSData *data = [NSJSONSerialization dataWithJSONObject:array options:NSJSONWritingPrettyPrinted error:nil];
                     NSString *jsonArray = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
                     NSInteger readFlag = 3;
-                    [self sendReadStateWithMessagesIdArray:jsonArray WithXmppid:realFrom WithTo:realFrom WithReadFlag:readFlag];
+                    [self sendReadStateWithMessagesIdArray:jsonArray WithMessageReadFlag:readFlag WithXmppid:realFrom WithTo:realFrom];
                 }
                 NSString *buAppendKey = @"bu";
                 NSString *cctextAppendKey = @"cctext";
@@ -2051,7 +2053,7 @@ enum PlaType {
                     NSData *data = [NSJSONSerialization dataWithJSONObject:array options:NSJSONWritingPrettyPrinted error:nil];
                     NSString *jsonArray = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
                     NSInteger readFlag = 0x03;
-                    [self sendReadStateWithMessagesIdArray:jsonArray WithXmppid:destJid.bare WithTo:destJid.bare WithReadFlag:readFlag];
+                    [self sendReadStateWithMessagesIdArray:jsonArray WithMessageReadFlag:readFlag WithXmppid:destJid.bare WithTo:destJid.bare];
                 }
                 
                 if  (carbonMessage == NO && (msgType == MessageTypeWebRtcMsgTypeVideo || msgType == MessageTypeWebRtcMsgTypeAudio)){

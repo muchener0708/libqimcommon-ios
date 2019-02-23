@@ -197,7 +197,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
     return [result autorelease];
 }
 
-- (NSArray *)qimDB_getWorkMomentWithXmppId:(NSString *)xmppId WihtLimit:(int)limit WithOffset:(int)offset {
+- (NSArray *)qimDB_getWorkMomentWithXmppId:(NSString *)xmppId WithLimit:(int)limit WithOffset:(int)offset {
     __block NSMutableArray *result = nil;
     CFAbsoluteTime startTime = CFAbsoluteTimeGetCurrent();
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
@@ -420,7 +420,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
     }];
 }
 
-- (NSArray *)qimDB_getWorkCommentsWithMomentId:(NSString *)momentId WihtLimit:(int)limit WithOffset:(int)offset {
+- (NSArray *)qimDB_getWorkCommentsWithMomentId:(NSString *)momentId WithLimit:(int)limit WithOffset:(int)offset {
     __block NSMutableArray *result = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = [NSString stringWithFormat:@"select anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, parentCommentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime from IM_Work_Comment where postUUID='%@' and isDelete=0 order by createTime desc limit %d offset %d;", momentId, limit, offset];
@@ -585,7 +585,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
     return count;
 }
 
-- (NSArray *)qimDB_getWorkNoticeMessagesWihtLimit:(int)limit WithOffset:(int)offset {
+- (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset {
     __block NSMutableArray *result = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = [NSString stringWithFormat:@"select userFrom, readState, postUUID, fromIsAnonymous, toIsAnonymous, eventType, fromAnonymousPhoto, userTo, uuid, content, userToHost, createTime, userFromHost, fromAnonymousName, toAnonymousName, toAnonymousPhoto from IM_Work_NoticeMessage where eventType=1 and readState=0 order by createTime desc limit %d offset %d;", limit, offset];

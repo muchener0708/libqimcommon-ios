@@ -174,8 +174,8 @@
         case QIMCategoryNotifyMsgTypeOrganizational: {
             QIMVerboseLog(@"重新获取组织架构");
             dispatch_async(self.cacheQueue, ^{
-                [[IMDataManager sharedInstance] clearUserList];
-                [[IMDataManager sharedInstance] qimDB_deleteConfigWithConfigKey:@"kLocalIncrementUpdateTime"];
+                [[IMDataManager qimDB_SharedInstance] qimDB_clearUserList];
+                [[IMDataManager qimDB_SharedInstance] qimDB_deleteConfigWithConfigKey:@"kLocalIncrementUpdateTime"];
                 [self checkRosterListWithForceUpdate:YES];
             });
         }
@@ -206,16 +206,16 @@
             BOOL forceUpdate = [[notifyMsg objectForKey:@"force"] boolValue];
             BOOL forceQuickReplyUpdate = [[notifyMsg objectForKey:@"forcequickreply"] boolValue];
             BOOL forceRNUpdate = [[notifyMsg objectForKey:@"forceRN"] boolValue];
-            if ([[IMDataManager sharedInstance] qimDB_getConfigVersion] < version && ![resource isEqualToString:[[XmppImManager sharedInstance] resource]]) {
+            if ([[IMDataManager qimDB_SharedInstance] qimDB_getConfigVersion] < version && ![resource isEqualToString:[[XmppImManager sharedInstance] resource]]) {
                 [self getRemoteClientConfig];
             } else if (forceUpdate) {
                 QIMVerboseLog(@"强制更新个人配置信息");
-                [[IMDataManager sharedInstance] qimDB_clearClientConfig];
+                [[IMDataManager qimDB_SharedInstance] qimDB_clearClientConfig];
                 [self getRemoteClientConfig];
             } else if (forceQuickReplyUpdate) {
                 QIMVerboseLog(@"强制更新快捷回复");
-                [[IMDataManager sharedInstance] qimDB_clearQuickReplyGroup];
-                [[IMDataManager sharedInstance] qimDB_clearQuickReplyContents];
+                [[IMDataManager qimDB_SharedInstance] qimDB_clearQuickReplyGroup];
+                [[IMDataManager qimDB_SharedInstance] qimDB_clearQuickReplyContents];
                 [self getRemoteQuickReply];
             } else if (forceRNUpdate) {
                 QIMVerboseLog(@"收到RN包清除通知");
@@ -238,7 +238,7 @@
         case QIMCategoryNotifyMsgTypeCalendar: {
             QIMVerboseLog(@"收到日历同步通知");
             long long newVersion = [[notifyMsg objectForKey:@"updateTime"] longLongValue];
-            long long oldVersion = [[[IMDataManager sharedInstance] qimDB_getConfigInfoWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalTripUpdateTime] WithSubKey:[[QIMManager sharedInstance] getLastJid] WithDeleteFlag:NO] longLongValue];
+            long long oldVersion = [[[IMDataManager qimDB_SharedInstance] qimDB_getConfigInfoWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalTripUpdateTime] WithSubKey:[[QIMManager sharedInstance] getLastJid] WithDeleteFlag:NO] longLongValue];
             if (newVersion > oldVersion) {
                 QIMVerboseLog(@"本次服务器下发的版本号 大于本地版本号 %lld，更新远程数据", oldVersion);
                 [self getRemoteUserTripList];
@@ -347,7 +347,7 @@
         case QIMCategoryNotifyMsgTypeTickUserWorkWorldNotice: {
             NSString *onlineListStr = [msgDic objectForKey:@"bodyValue"];
             NSDictionary *onlineDict = [[QIMJSONSerializer sharedInstance] deserializeObject:onlineListStr error:nil];
-            [[IMDataManager sharedInstance] qimDB_bulkinsertNoticeMessage:@[onlineDict]];
+            [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertNoticeMessage:@[onlineDict]];
             NSInteger eventType = [[onlineDict objectForKey:@"eventType"] integerValue];
             if (eventType == QIMWorkFeedNotifyTypeComment) {
                 QIMVerboseLog(@"online Comment 通知 : %@", onlineDict);
@@ -393,7 +393,7 @@
         NSString *nickName = [msgDic objectForKey:@"nickName"];
         
         
-        if ([[IMDataManager sharedInstance] checkMsgId:msgId]) {
+        if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
             return;
         }
         
@@ -436,7 +436,7 @@
         NSString *originTo = [msgDic objectForKey:@"Originto"];
         NSString *originType = [msgDic objectForKey:@"Origintype"];
         QIMVerboseLog(@"msgId : %@, originFrom : %@, originTo: %@, originType: %@", msgId, originFrom, originTo, originType);
-        BOOL isExistCollectionMsg = [[IMDataManager sharedInstance] checkCollectionMsgById:msgId];
+        BOOL isExistCollectionMsg = [[IMDataManager qimDB_SharedInstance] qimDB_checkCollectionMsgById:msgId];
         if (!isExistCollectionMsg) {
             [self saveCollectionMessage:msgDic];
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -550,7 +550,7 @@
             NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:videoUrl]];
             [data writeToFile:[[self getDownloadFilePath] stringByAppendingPathComponent:videoName] atomically:YES];
         }
-        BOOL flag = [[IMDataManager sharedInstance] checkMsgId:msgId];
+        BOOL flag = [[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId];
         if (flag) {
             return;
         }
@@ -700,7 +700,7 @@
 - (void)deleteFriend:(NSDictionary *)infoDic{
     NSString *xmppId = [infoDic objectForKey:@"jid"];
     if (xmppId) {
-        [[IMDataManager sharedInstance] deleteFriendListWithXmppId:xmppId];
+        [[IMDataManager qimDB_SharedInstance] qimDB_deleteFriendListWithXmppId:xmppId];
         [[NSNotificationCenter defaultCenter] postNotificationName:kFriendListUpdate object:xmppId userInfo:nil];
     }
 }
@@ -708,15 +708,15 @@
 - (void)pbChatRoomAddMember:(NSDictionary *)infoDic{
     dispatch_async(self.update_group_member_queue, ^{
         NSString *groupId = [infoDic objectForKey:@"groupId"];
-        if ([[IMDataManager sharedInstance] checkGroup:groupId] == NO) {
-            [[IMDataManager sharedInstance] insertGroup:groupId];
+        if ([[IMDataManager qimDB_SharedInstance] qimDB_checkGroup:groupId] == NO) {
+            [[IMDataManager qimDB_SharedInstance] qimDB_insertGroup:groupId];
             [self updateGroupCardByGroupId:groupId];
             [self addSessionByType:ChatType_GroupChat ById:groupId ByMsgId:nil WithMsgTime:[[NSDate date] qim_timeIntervalSince1970InMilliSecond] WithNeedUpdate:YES];
             //[_joinedGroupSet addObject:groupId];
             // 获取群成员列表
             NSArray *members = [[XmppImManager sharedInstance] getChatRoomMembersForGroupId:groupId];
             if (members.count > 0) {
-                [[IMDataManager sharedInstance] bulkInsertGroupMember:members WithGroupId:groupId];
+                [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertGroupMember:members WithGroupId:groupId];
             }
         }
         NSString *memberJid = [infoDic objectForKey:@"jid"];
@@ -733,7 +733,7 @@
             dispatch_async(self.load_user_state_queue, ^{
                 [self.onlineTables setObject:@"online" forKey:memberJid];
             });
-            [[IMDataManager sharedInstance] insertGroupMember:memberInfoDic WithGroupId:groupId];
+            [[IMDataManager qimDB_SharedInstance] qimDB_insertGroupMember:memberInfoDic WithGroupId:groupId];
         }
     });
 }
@@ -756,7 +756,7 @@
             dispatch_async(self.load_user_state_queue, ^{
                 [self.onlineTables setObject:@"online" forKey:memberJid];
             });
-            [[IMDataManager sharedInstance] insertGroupMember:memberInfoDic WithGroupId:groupId];
+            [[IMDataManager qimDB_SharedInstance] qimDB_insertGroupMember:memberInfoDic WithGroupId:groupId];
         }
     });
 }
@@ -777,8 +777,8 @@
             fromNickName = [userInfoDic objectForKey:@"Name"];
         }
         [self removeSessionById:groupId];
-        [[IMDataManager sharedInstance] deleteGroup:groupId];
-        [[IMDataManager sharedInstance] deleteMessageWithXmppId:groupId];
+        [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroup:groupId];
+        [[IMDataManager qimDB_SharedInstance] qimDB_deleteMessageWithXmppId:groupId];
         NSMutableDictionary *userInfoDic = [NSMutableDictionary dictionary];
         if (reason.length > 0) {
             [userInfoDic setObject:reason forKey:@"Reason"];
@@ -821,7 +821,7 @@
                 block();
             else
                 dispatch_sync(self.cacheQueue, block);
-            [[IMDataManager sharedInstance] bulkUpdateGroupCards:@[groupInfoDic]];
+            [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateGroupCards:@[groupInfoDic]];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName: kGroupNickNameChanged object:@[groupId]];
             });
@@ -836,12 +836,12 @@
 - (void)pbChatRoomRegisterDelMember:(NSDictionary *)infoDic{
     NSString *groupId = [infoDic objectForKey:@"groupId"];
     NSString *memberJid = [infoDic objectForKey:@"jid"];
-    [[IMDataManager sharedInstance] deleteGroupMemberJid:memberJid WithGroupId:groupId];
+    [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroupMemberJid:memberJid WithGroupId:groupId];
     if ([memberJid isEqualToString:[self getLastJid]]) {
-        [[IMDataManager sharedInstance] deleteGroup:groupId];
+        [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroup:groupId];
         [self removeSessionById:groupId];
-        [[IMDataManager sharedInstance] deleteGroupMemberWithGroupId:groupId];
-        [[IMDataManager sharedInstance] deleteMessageWithXmppId:groupId];
+        [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroupMemberWithGroupId:groupId];
+        [[IMDataManager qimDB_SharedInstance] qimDB_deleteMessageWithXmppId:groupId];
     }
 }
 
@@ -924,16 +924,17 @@
             NSString *searchIndex = [infoDic objectForKey:@"SearchIndex"];
             long long lastUpdateTime = [[NSDate date] timeIntervalSince1970] - self.serverTimeDiff;
             int state = 0;
-            [[IMDataManager sharedInstance] insertFriendNotifyWihtUserId:userId
-                                                              WithXmppId:xmppId
-                                                                WithName:name
-                                                            WithDescInfo:descInfo
-                                                             WithHeadSrc:headerSrc
-                                                         WithSearchIndex:searchIndex
-                                                            WihtUserInfo:body
-                                                             WithVersion:0
-                                                               WihtState:state
-                                                      WithLastUpdateTime:lastUpdateTime];
+            [[IMDataManager qimDB_SharedInstance] qimDB_insertFriendNotifyWithUserId:userId
+                                                                          WithXmppId:xmppId
+                                                                            WithName:name
+                                                                        WithDescInfo:descInfo
+                                                                         WithHeadSrc:headerSrc
+                                                                     WithSearchIndex:searchIndex
+                                                                        WithUserInfo:body
+                                                                         WithVersion:0
+                                                                           WithState:state
+                                                                  WithLastUpdateTime:lastUpdateTime];
+            
             dispatch_async(dispatch_get_main_queue(), ^{
                 QIMVerboseLog(@"抛出通知 QIMmanger friendValidation1  kNotificationSessionListUpdate");
                 [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSessionListUpdate object:nil];
@@ -944,20 +945,20 @@
             NSString *xmppId = [NSString stringWithFormat:@"%@@%@", [infoDic objectForKey:@"username"], [self getDomain]];
             NSString *name = [infoDic objectForKey:@"nickname"];
             NSString *descInfo = @"";
-            NSString *headerSrc = [[IMDataManager sharedInstance] getUserHeaderSrcByUserId:from];
+            NSString *headerSrc = [[IMDataManager qimDB_SharedInstance] qimDB_getUserHeaderSrcByUserId:from];
             NSString *searchIndex = @"";
             long long lastUpdateTime = [[NSDate date] timeIntervalSince1970] - self.serverTimeDiff;
             int state = 0;
-            [[IMDataManager sharedInstance] insertFriendNotifyWihtUserId:userId
-                                                              WithXmppId:xmppId
-                                                                WithName:name
-                                                            WithDescInfo:descInfo
-                                                             WithHeadSrc:headerSrc
-                                                         WithSearchIndex:searchIndex
-                                                            WihtUserInfo:body
-                                                             WithVersion:0
-                                                               WihtState:state
-                                                      WithLastUpdateTime:lastUpdateTime];
+            [[IMDataManager qimDB_SharedInstance] qimDB_insertFriendNotifyWithUserId:userId
+                                                                          WithXmppId:xmppId
+                                                                            WithName:name
+                                                                        WithDescInfo:descInfo
+                                                                         WithHeadSrc:headerSrc
+                                                                     WithSearchIndex:searchIndex
+                                                                        WithUserInfo:body
+                                                                         WithVersion:0
+                                                                           WithState:state
+                                                                  WithLastUpdateTime:lastUpdateTime];
             dispatch_async(dispatch_get_main_queue(), ^{
                 QIMVerboseLog(@"抛出通知 QIMmanger friendValidation2  kNotificationSessionListUpdate");
                 [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSessionListUpdate object:nil];
@@ -977,8 +978,8 @@
         if ([result isEqualToString:@"success"]) {
             NSString *destId = from;//direction==2?from:to;
             NSDictionary *infoDic = [self getUserInfoByUserId:destId];
-            [[IMDataManager sharedInstance]
-             insertFriendWithUserId:[infoDic objectForKey:@"UserId"]
+            [[IMDataManager qimDB_SharedInstance]
+             qimDB_insertFriendWithUserId:[infoDic objectForKey:@"UserId"]
              WithXmppId:[infoDic objectForKey:@"XmppId"]
              WithName:[infoDic objectForKey:@"Name"]
              WithSearchIndex:[infoDic objectForKey:@"SearchIndex"]
@@ -990,12 +991,12 @@
         }
     } else if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
         NSDictionary *infoDic = [self getQChatUserInfoForUser:from];
-        [[IMDataManager sharedInstance] insertFriendWithUserId:[infoDic objectForKey:@"username"]
+        [[IMDataManager qimDB_SharedInstance] qimDB_insertFriendWithUserId:[infoDic objectForKey:@"username"]
                                                     WithXmppId:[NSString stringWithFormat:@"%@@%@", [infoDic objectForKey:@"username"], [self getDomain]]
                                                       WithName:[infoDic objectForKey:@"nickname"]
                                                WithSearchIndex:@""
                                                   WithDescInfo:@""
-                                                   WithHeadSrc:[[IMDataManager sharedInstance] getUserHeaderSrcByUserId:from]
+                                                   WithHeadSrc:[[IMDataManager qimDB_SharedInstance] qimDB_getUserHeaderSrcByUserId:from]
                                                   WithUserInfo:nil
                                             WithLastUpdateTime:[[NSDate date] timeIntervalSinceNow] - self.serverTimeDiff
                                           WithIncrementVersion:0];
@@ -1017,9 +1018,9 @@
                 for (NSDictionary *myGroup in oldGroupList) {
                     NSString *groupId = [myGroup objectForKey:@"GroupId"];
                     if (![newGroupIds containsObject:groupId]) {
-                        [[IMDataManager sharedInstance] deleteGroup:groupId];
+                        [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroup:groupId];
                         [self removeSessionById:groupId];
-                        [[IMDataManager sharedInstance] deleteGroupMemberWithGroupId:groupId];
+                        [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroupMemberWithGroupId:groupId];
                     }
                 }
             }
@@ -1032,7 +1033,7 @@
                     [groupIds addObject:groupId];
                 }
             }
-            [[IMDataManager sharedInstance] bulkinsertGroups:groups];
+            [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertGroups:groups];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:kMyGroupListUpdate object:nil];
             });
@@ -1086,14 +1087,14 @@
     NSString *msgID = [notify.object objectForKey:@"messageId"];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         long long receivedTime = [[notify.object objectForKey:@"receivedTime"] longLongValue];
-        [[IMDataManager sharedInstance] updateMsgState:MessageState_Success WithMsgId:msgID];
-        [[IMDataManager sharedInstance] updateMsgDate:receivedTime WithMsgId:msgID];
+        [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgState:MessageState_Success WithMsgId:msgID];
+        [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgDate:receivedTime WithMsgId:msgID];
     });
 }
 
 - (void)onMessageSendFaild:(NSNotification *)notify {
     NSString *msgID = [notify.object objectForKey:@"messageId"];
-    [[IMDataManager sharedInstance] updateMsgState:MessageState_Faild WithMsgId:msgID];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgState:MessageState_Faild WithMsgId:msgID];
 }
 
 - (void)onRevoke:(NSDictionary *)infoDic {
@@ -1104,7 +1105,7 @@
         msg = @"该消息被撤回";
     }
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [[IMDataManager sharedInstance] revokeMessageByMsgId:msgId WihtContent:msg WithMsgType:QIMMessageType_Revoke];
+        [[IMDataManager qimDB_SharedInstance] qimDB_revokeMessageByMsgId:msgId WithContent:msg WithMsgType:QIMMessageType_Revoke];
     });
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:kRevokeMsg object:jid userInfo:@{@"MsgId": msgId, @"Content": msg}];
@@ -1116,7 +1117,7 @@
     NSString * jid = [infoDic objectForKey:@"jid"];
     NSString * realJid = [infoDic objectForKey:@"realjid"];
     NSArray * readStateMsgList = [[QIMJSONSerializer sharedInstance] deserializeObject:infoStr error:nil];
-    [[IMDataManager sharedInstance] bulkUpdateChatMsgWithMsgState:MessageState_didRead ByMsgIdList:readStateMsgList];
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateChatMsgWithMsgState:MessageState_didRead ByMsgIdList:readStateMsgList];
     [self.notReadMsgByGroupDic removeObjectForKey:[NSString stringWithFormat:@"%@-%@",jid,realJid]];
     [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:[NSString stringWithFormat:@"%@-%@",jid,realJid]];
 }
@@ -1135,7 +1136,7 @@
         if (readType == 0) {
             NSDictionary *readMarkTDic = [[QIMJSONSerializer sharedInstance] deserializeObject:infoStr error:nil];
             long long readMarkT = [[readMarkTDic objectForKey:@"T"] longLongValue];
-            [[IMDataManager sharedInstance] updateAllMsgWithMsgState:MessageState_didRead ByMsgDirection:MessageDirection_Received ByReadMarkT:readMarkT / 1000];
+            [[IMDataManager qimDB_SharedInstance] qimDB_updateAllMsgWithMsgState:MessageState_didRead ByMsgDirection:MessageDirection_Received ByReadMarkT:readMarkT / 1000];
             [self.notReadMsgByGroupDic removeAllObjects];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:nil];
@@ -1145,35 +1146,35 @@
             if ([jid containsString:@"@conference."]) {
                 //群
                 long long maxMucReadMarkUpdateTime = [[[QIMUserCacheManager sharedInstance] userObjectForKey:@"MaxMucReadMarkTime"] longLongValue];
-                
-                long long maxRemoteTime = [[IMDataManager sharedInstance] qimDB_updateGroupMsgWihtMsgState:MessageState_didRead ByGroupMsgList:readStateMsgList];
+                /*
+                long long maxRemoteTime = [[IMDataManager qimDB_SharedInstance] qimDB_updateGroupMsgWithMsgState:MessageState_didRead ByGroupMsgList:readStateMsgList];
                 if (maxRemoteTime > maxMucReadMarkUpdateTime) {
                     maxMucReadMarkUpdateTime = maxRemoteTime;
                     NSString *jid = [[QIMManager sharedInstance] getLastJid];
                     NSString *updateTime = [NSString stringWithFormat:@"%lld", maxMucReadMarkUpdateTime];
                     NSArray *configArray = @[@{@"subkey":jid?jid:@"", @"configinfo":updateTime}];
-                    [[IMDataManager sharedInstance] qimDB_bulkInsertConfigArrayWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalMucRemarkUpdateTime] WithConfigVersion:0 ConfigArray:configArray];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertConfigArrayWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalMucRemarkUpdateTime] WithConfigVersion:0 ConfigArray:configArray];
                 }
-                
+                */
                 [self decrementNotReadMsgCountByJid:jid];
                 [self updateNotReadCountCacheByJid:jid];
             } else {
                 //单人
                 if (readType == 1) {
-                    [[IMDataManager sharedInstance] bulkUpdateChatMsgWithMsgState:MessageState_NotRead ByMsgIdList:readStateMsgList];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateChatMsgWithMsgState:MessageState_NotRead ByMsgIdList:readStateMsgList];
                     [self updateMessageStateWithNewState:MessageState_NotRead ByMsgIdList:readStateMsgList];
                     [self updateNotReadCountCacheByJid:jid];
                 } else if (readType == 3) {
-                    [[IMDataManager sharedInstance] bulkUpdateChatMsgWithMsgState:MessageState_NotRead ByMsgIdList:readStateMsgList];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateChatMsgWithMsgState:MessageState_NotRead ByMsgIdList:readStateMsgList];
                     [self updateMessageStateWithNewState:MessageState_NotRead ByMsgIdList:readStateMsgList];
                     [self updateNotReadCountCacheByJid:jid];
                 } else if (readType == 4) {
-                    [[IMDataManager sharedInstance] bulkUpdateChatMsgWithMsgState:MessageState_didRead ByMsgIdList:readStateMsgList];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateChatMsgWithMsgState:MessageState_didRead ByMsgIdList:readStateMsgList];
                     [self updateMessageStateWithNewState:MessageState_didRead ByMsgIdList:readStateMsgList];
                     [self updateNotReadCountCacheByJid:jid];
                 } else if (readType == 7) {
                     //已操作
-                    [[IMDataManager sharedInstance] bulkUpdateChatMsgWithMsgState:MessageState_didControl ByMsgIdList:readStateMsgList];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateChatMsgWithMsgState:MessageState_didControl ByMsgIdList:readStateMsgList];
                     [self updateMessageControlStateWithNewState:MessageState_didControl ByMsgIdList:readStateMsgList];
                     [self updateNotReadCountCacheByJid:jid];
                 }
@@ -1287,7 +1288,7 @@
             NSString *msgId = [msgDic objectForKey:@"msgId"];
             NSString *chatId = [msgDic objectForKey:@"chatId"];
             NSString *autoReply = [msgDic objectForKey:@"autoReply"];
-            if ([[IMDataManager sharedInstance] checkMsgId:msgId]) {
+            if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
                 return;
             }
             [self saveChatId:chatId ForUserId:sid];
@@ -1360,8 +1361,7 @@
                 }
             }
             
-            
-            if ([[IMDataManager sharedInstance] checkMsgId:msgId]) {
+            if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
                 return;
             }
             
@@ -1417,7 +1417,7 @@
             NSString *messageId = [msgDic objectForKey:@"msgId"];
             NSString *autoReply = [msgDic objectForKey:@"autoReply"];
             // 消息已存在
-            if ([[IMDataManager sharedInstance] checkMsgId:messageId]) {
+            if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:messageId]) {
                 return;
             }
             [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
@@ -1493,7 +1493,7 @@
                 }
             }
             // 消息已存在
-            if ([[IMDataManager sharedInstance] checkMsgId:messageId]) {
+            if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:messageId]) {
                 return;
             }
             
@@ -1540,7 +1540,7 @@
                             }
                         }
                         if (hasAtAll) {
-                            [self addAtALLByJid:sid WithMsgId:mesg.messageId WihtMsg:mesg WithNickName:nickName];
+                            [self addAtALLByJid:sid WithMsgId:mesg.messageId WithMsg:mesg WithNickName:nickName];
                         }
                         if (hasAt) {
                             [self addAtMeByJid:sid WithNickName:nickName];
@@ -1575,7 +1575,7 @@
         NSString *sid = [NSString stringWithFormat:@"SystemMessage@%@", [[QIMNavConfigManager sharedInstance] domain]];
         NSString *autoReply = [msgDic objectForKey:@"autoReply"];
 
-        if ([[IMDataManager sharedInstance] checkMsgId:msgId]) {
+        if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
             return;
         }
         [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
@@ -1681,7 +1681,7 @@
         
         NSString *msgId = [msgDic objectForKey:@"msgId"];
         NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
-        if ([[IMDataManager sharedInstance] checkMsgId:msgId]) {
+        if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
             return;
         }
         [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
@@ -1741,7 +1741,7 @@
         NSString *msgId = [msgDic objectForKey:@"msgId"];
         NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
         NSString *autoReply = [msgDic objectForKey:@"autoReply"];
-        if ([[IMDataManager sharedInstance] checkMsgId:msgId]) {
+        if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
             return;
         }
         [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
@@ -1787,7 +1787,7 @@
         NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
         NSString *autoReply = [msgDic objectForKey:@"autoReply"];
         MessageDirection direction = [self getGroupMsgDirectionWithSendJid:nickName];
-        if ([[IMDataManager sharedInstance] checkMsgId:msgId]) {
+        if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
             return;
         }
         [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
@@ -1835,7 +1835,7 @@
         
         NSString *msgId = [msgDic objectForKey:@"msgId"];
         NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
-        if ([[IMDataManager sharedInstance] checkMsgId:msgId]) {
+        if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
             return;
         }
         [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
@@ -1926,7 +1926,7 @@
     long long msgDate = [[msgDic objectForKey:@"MsgDate"] timeIntervalSince1970] * 1000;
     
     NSString *extendInfo = [msgDic objectForKey:@"extendInfo"];
-    if ([[IMDataManager sharedInstance] checkPublicNumberMsgById:msgId]) {
+    if ([[IMDataManager qimDB_SharedInstance] qimDB_checkPublicNumberMsgById:msgId]) {
         return;
     }
     BOOL isSystemMsg = NO;
@@ -1960,7 +1960,7 @@
             [dic setObject:enName forKey:@"robotEnName"];
             [dic setObject:enName forKey:@"robotCnName"];
             [dic setObject:enName forKey:@"searchIndex"];
-            [[IMDataManager sharedInstance] bulkInsertPublicNumbers:@[dic]];
+            [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertPublicNumbers:@[dic]];
         }
     }
     Message *c2bFeedBackMessage = [Message new];
@@ -1995,7 +1995,7 @@
         NSMutableDictionary *userDic = [NSMutableDictionary dictionary];
         [userDic setObject:[sessionId componentsSeparatedByString:@"@"].firstObject forKey:@"U"];
         [userDic setObject:name forKey:@"N"];
-        [[IMDataManager sharedInstance] InsertOrUpdateUserInfos:@[userDic]];
+        [[IMDataManager qimDB_SharedInstance] qimDB_InsertOrUpdateUserInfos:@[userDic]];
         if (result) {
             NSString *channelid = [msgDic objectForKey:@"channelid"];
             [self setChannelInfo:channelid ForUserId:sessionId];

@@ -11,298 +11,299 @@
 
 @implementation QIMKit (QIMDBDataManager)
 
-+ (void) sharedInstanceWihtDBPath:(NSString *)dbPath {
-    [IMDataManager sharedInstanceWihtDBPath:dbPath];
++ (void) sharedInstanceWithDBPath:(NSString *)dbPath {
+    [IMDataManager qimDB_sharedInstanceWithDBPath:dbPath];
 }
 
 - (void)setDomain:(NSString*)domain {
-    [[IMDataManager sharedInstance] setDomain:domain];
+//    [[IMDataManager qimDB_SharedInstance] setDomain:domain];
 }
 
 - (void)clearUserDescInfo {
-    [[IMDataManager sharedInstance] clearUserDescInfo];
+//    [[IMDataManager qimDB_SharedInstance] clearUserDescInfo];
 }
 
 - (NSString *)getTimeSmtapMsgIdForDate:(NSDate *)date WithUserId:(NSString *)userId {
-    return [[IMDataManager sharedInstance] getTimeSmtapMsgIdForDate:date WithUserId:userId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getTimeSmtapMsgIdForDate:date WithUserId:userId];
 }
 
 // 群
 - (NSInteger)getRNSearchEjabHost2GroupChatListByKeyStr:(NSString *)keyStr {
-    return [[IMDataManager sharedInstance] getRNSearchEjabHost2GroupChatListByKeyStr:keyStr];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getRNSearchEjabHost2GroupChatListByKeyStr:keyStr];
 }
 
 - (NSArray *)rnSearchEjabHost2GroupChatListByKeyStr:(NSString *)keyStr limit:(NSInteger)limit offset:(NSInteger)offset {
-    return [[IMDataManager sharedInstance] rnSearchEjabHost2GroupChatListByKeyStr:keyStr limit:limit offset:offset];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_rnSearchEjabHost2GroupChatListByKeyStr:keyStr limit:limit offset:offset];
 }
 
 - (BOOL)checkGroup:(NSString *)groupId {
-    return [[IMDataManager sharedInstance] checkGroup:groupId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_checkGroup:groupId];
 }
 
 - (void)insertGroup:(NSString *)groupId {
-    [[IMDataManager sharedInstance] insertGroup:groupId];
+    [[IMDataManager qimDB_SharedInstance] qimDB_insertGroup:groupId];
 }
 
 - (void)bulkinsertGroups:(NSArray *) groups {
-    [[IMDataManager sharedInstance] bulkinsertGroups:groups];
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertGroups:groups];
 }
 
 - (void) removeAllMessages {
-    [[IMDataManager sharedInstance] removeAllMessages];
+//    [[IMDataManager qimDB_SharedInstance] qimDB_removeAllMessages];
 }
 
 - (void)clearGroupCardVersion {
-    [[IMDataManager sharedInstance] clearGroupCardVersion];
+//    [[IMDataManager qimDB_SharedInstance] qimDB_clearGroupCardVersion];
 }
 
 - (NSArray *)getGroupIdList {
-    return [[IMDataManager sharedInstance] getGroupIdList];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getGroupIdList];
 }
 
 - (NSArray *)qimDB_getGroupList {
-    return [[IMDataManager sharedInstance] qimDB_getGroupList];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getGroupList];
 }
 
 - (NSInteger)getLocalGroupTotalCountByUserIds:(NSArray *)userIds {
-    return [[IMDataManager sharedInstance] getLocalGroupTotalCountByUserIds:userIds];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getLocalGroupTotalCountByUserIds:userIds];
 }
 
 - (NSArray *)searchGroupByUserIds:(NSArray *)userIds WithLimit:(NSInteger)limit WithOffset:(NSInteger)offset {
-    return [[IMDataManager sharedInstance] searchGroupByUserIds:userIds WithLimit:limit WithOffset:offset];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_searchGroupByUserIds:userIds WithLimit:limit WithOffset:offset];
 }
 
 - (NSArray *)getGroupListMaxLastUpdateTime {
-    return [[IMDataManager sharedInstance] getGroupListMaxLastUpdateTime];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getGroupListMaxLastUpdateTime];
 }
 
 - (NSArray *)getGroupListMsgMaxTime {
-    return [[IMDataManager sharedInstance] getGroupListMsgMaxTime];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getGroupListMsgMaxTime];
 }
 
 - (void)bulkUpdateGroupCards:(NSArray *)array {
-    [[IMDataManager sharedInstance] bulkUpdateGroupCards:array];
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateGroupCards:array];
 }
 
 - (void)updateGroup:(NSString *)groupId
-       WihtNickName:(NSString *)nickName
+       WithNickName:(NSString *)nickName
           WithTopic:(NSString *)topic
            WithDesc:(NSString *)desc
       WithHeaderSrc:(NSString *)headerSrc
         WithVersion:(NSString *)version {
-    [[IMDataManager sharedInstance] updateGroup:groupId
-                                  WihtNickName:nickName
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateGroup:groupId
+                                  WithNickName:nickName
                                      WithTopic:topic
                                       WithDesc:desc
                                  WithHeaderSrc:headerSrc
                                    WithVersion:version];
 }
 
-- (void)updateGroup:(NSString *)groupId WihtNickName:(NSString *)nickName {
-    [[IMDataManager sharedInstance] updateGroup:groupId WihtNickName:nickName];
+- (void)updateGroup:(NSString *)groupId WithNickName:(NSString *)nickName {
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateGroup:groupId WithNickName:nickName];
 }
 
 - (void)updateGroup:(NSString *)groupId WithTopic:(NSString *)topic {
-    [[IMDataManager sharedInstance] updateGroup:groupId WithTopic:topic];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateGroup:groupId WithTopic:topic];
 }
 
 - (void)updateGroup:(NSString *)groupId WithDesc:(NSString *)desc {
-    [[IMDataManager sharedInstance] updateGroup:groupId WithDesc:desc];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateGroup:groupId WithDesc:desc];
 }
 
 - (void)updateGroup:(NSString *)groupId WithHeaderSrc:(NSString *)headerSrc {
-    [[IMDataManager sharedInstance] updateGroup:groupId WithHeaderSrc:headerSrc];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateGroup:groupId WithHeaderSrc:headerSrc];
 }
 
 - (BOOL)needUpdateGroupImage:(NSString *)groupId {
-    return [[IMDataManager sharedInstance] needUpdateGroupImage:groupId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_needUpdateGroupImage:groupId];
 }
 
 - (NSString *)getGroupHeaderSrc:(NSString *)groupId {
-    return [[IMDataManager sharedInstance] getGroupHeaderSrc:groupId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getGroupHeaderSrc:groupId];
 }
 
 - (void)deleteGroup:(NSString *)groupId {
-    [[IMDataManager sharedInstance] deleteGroup:groupId];
+    [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroup:groupId];
 }
 
 - (NSDictionary *)getGroupMemberInfoByNickName:(NSString *)nickName {
-    return [[IMDataManager sharedInstance] getGroupMemberInfoByNickName:nickName];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getGroupMemberInfoByNickName:nickName];
 }
 
 - (NSDictionary *)getGroupMemberInfoByJid:(NSString *)jid WithGroupId:(NSString *)groupId {
-    return [[IMDataManager sharedInstance] getGroupMemberInfoByJid:jid WithGroupId:groupId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getGroupMemberInfoByJid:jid WithGroupId:groupId];
 }
 
-- (BOOL)checkGroupMember:(NSString *)nickName WihtGroupId:(NSString *)groupId {
-    return [[IMDataManager sharedInstance] checkGroupMember:nickName WihtGroupId:groupId];
+- (BOOL)checkGroupMember:(NSString *)nickName WithGroupId:(NSString *)groupId {
+    return [[IMDataManager qimDB_SharedInstance] qimDB_checkGroupMember:nickName WithGroupId:groupId];
 }
 
 - (void)insertGroupMember:(NSDictionary *)memberDic WithGroupId:(NSString *)groupId {
-    [[IMDataManager sharedInstance] insertGroupMember:memberDic WithGroupId:groupId];
+    [[IMDataManager qimDB_SharedInstance] qimDB_insertGroupMember:memberDic WithGroupId:groupId];
 }
 
 - (void)bulkInsertGroupMember:(NSArray *)members WithGroupId:(NSString *)groupId {
-    [[IMDataManager sharedInstance] bulkInsertGroupMember:members WithGroupId:groupId];
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertGroupMember:members WithGroupId:groupId];
 }
 
 - (NSArray *)getQChatGroupMember:(NSString *)groupId {
-    return [[IMDataManager sharedInstance] getQChatGroupMember:groupId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getQChatGroupMember:groupId];
 }
 
 - (NSArray *)getQChatGroupMember:(NSString *)groupId BySearchStr:(NSString *)searchStr {
-    return [[IMDataManager sharedInstance] getQChatGroupMember:groupId BySearchStr:searchStr];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getQChatGroupMember:groupId BySearchStr:searchStr];
 }
 
 - (NSArray *)qimDB_getGroupMember:(NSString *)groupId {
-    return [[IMDataManager sharedInstance] qimDB_getGroupMember:groupId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getGroupMember:groupId];
 }
 
 - (NSArray *)qimDB_getGroupMember:(NSString *)groupId BySearchStr:(NSString *)searchStr {
-    return [[IMDataManager sharedInstance] qimDB_getGroupMember:groupId BySearchStr:searchStr];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getGroupMember:groupId BySearchStr:searchStr];
 }
 
 - (NSDictionary *)getGroupOwnerInfoForGroupId:(NSString *)groupId {
-    return [[IMDataManager sharedInstance] getGroupOwnerInfoForGroupId:groupId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getGroupOwnerInfoForGroupId:groupId];
 }
 
 - (void)deleteGroupMemberWithGroupId:(NSString *)groupId {
-    [[IMDataManager sharedInstance] deleteGroupMemberWithGroupId:groupId];
+    [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroupMemberWithGroupId:groupId];
 }
 
 - (void)deleteGroupMemberJid:(NSString *)memberJid WithGroupId:(NSString *)groupId {
-    [[IMDataManager sharedInstance] deleteGroupMemberJid:memberJid WithGroupId:groupId];
+    [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroupMemberJid:memberJid WithGroupId:groupId];
 }
 
 - (void)deleteGroupMember:(NSString *)nickname WithGroupId:(NSString *)groupId {
-    [[IMDataManager sharedInstance] deleteGroupMember:nickname WithGroupId:groupId];
+    [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroupMember:nickname WithGroupId:groupId];
 }
 
 - (NSDictionary *)getChatSessionWithUserId:(NSString *)userId chatType:(int)chatType {
-    return [[IMDataManager sharedInstance] getChatSessionWithUserId:userId chatType:chatType];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getChatSessionWithUserId:userId chatType:chatType];
 }
 
 - (long long)getMinMsgTimeStampByXmppId:(NSString *)xmppId {
-    return [[IMDataManager sharedInstance] getMinMsgTimeStampByXmppId:xmppId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getMinMsgTimeStampByXmppId:xmppId];
 }
 
 - (long long)getMaxMsgTimeStampByXmppId:(NSString *)xmppId {
-    return [[IMDataManager sharedInstance] getMaxMsgTimeStampByXmppId:xmppId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getMaxMsgTimeStampByXmppId:xmppId];
 }
 
 - (long long) lastestGroupMessageTime {
-    return [[IMDataManager sharedInstance] lastestGroupMessageTime];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_lastestGroupMessageTime];
 }
 
 - (void)bulkInsertUserInfosNotSaveDescInfo:(NSArray *)userInfos {
-    [[IMDataManager sharedInstance] bulkInsertUserInfosNotSaveDescInfo:userInfos];
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertUserInfosNotSaveDescInfo:userInfos];
 }
 
 - (void)clearUserListForList:(NSArray *)userInfos {
-    [[IMDataManager sharedInstance] clearUserListForList:userInfos];
+    [[IMDataManager qimDB_SharedInstance] qimDB_clearUserListForList:userInfos];
 }
 
 - (void)bulkInsertUserInfos:(NSArray *)userInfos {
-    [[IMDataManager sharedInstance] bulkInsertUserInfos:userInfos];
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertUserInfos:userInfos];
 }
 
 - (void)InsertOrUpdateUserInfos:(NSArray *)userInfos {
-    [[IMDataManager sharedInstance] InsertOrUpdateUserInfos:userInfos];
+    [[IMDataManager qimDB_SharedInstance] qimDB_InsertOrUpdateUserInfos:userInfos];
 }
 
 - (NSDictionary *)selectUserBackInfoByXmppId:(NSString *)xmppId {
-    return [[IMDataManager sharedInstance] selectUserBackInfoByXmppId:xmppId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_selectUserBackInfoByXmppId:xmppId];
 }
 
 - (NSDictionary *)selectUserByID:(NSString *)userId {
-    return [[IMDataManager sharedInstance] selectUserByID:userId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_selectUserByID:userId];
 }
 
 - (NSDictionary *)selectUserByJID:(NSString *)jid {
-    return [[IMDataManager sharedInstance] selectUserByJID:jid];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_selectUserByJID:jid];
 }
 
 - (NSDictionary *)selectUserByIndex:(NSString *)index {
-    return [[IMDataManager sharedInstance] selectUserByIndex:index];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_selectUserByIndex:index];
 }
 
 - (NSArray *)selectXmppIdFromSessionList {
-    return [[IMDataManager sharedInstance] selectXmppIdFromSessionList];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_selectXmppIdFromSessionList];
 }
 
 - (NSArray *)selectXmppIdList {
-    return [[IMDataManager sharedInstance] selectXmppIdList];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_selectXmppIdList];
 }
 
 - (NSArray *)selectUserIdList {
-    return [[IMDataManager sharedInstance] selectUserIdList];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_selectUserIdList];
 }
 
 - (NSArray *)selectUserListBySearchStr:(NSString *)searchStr {
-    return [[IMDataManager sharedInstance] selectUserListBySearchStr:searchStr];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_selectUserListBySearchStr:searchStr];
 }
 
 - (NSInteger)selectUserListTotalCountBySearchStr:(NSString *)searchStr {
-    return [[IMDataManager sharedInstance] selectUserListTotalCountBySearchStr:searchStr];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_selectUserListTotalCountBySearchStr:searchStr];
 }
 
 - (NSArray *)selectUserListBySearchStr:(NSString *)searchStr WithLimit:(NSInteger)limit WithOffset:(NSInteger)offset {
-    return [[IMDataManager sharedInstance] selectUserListBySearchStr:searchStr WithLimit:limit WithOffset:offset];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_selectUserListBySearchStr:searchStr WithLimit:limit WithOffset:offset];
 }
 
 - (NSArray *)selectUserListBySearchStr:(NSString *)searchStr inGroup:(NSString *) groupId {
-    return [[IMDataManager sharedInstance] selectUserListBySearchStr:searchStr inGroup:groupId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_selectUserListBySearchStr:searchStr inGroup:groupId];
 }
 
 - (NSArray *)selectUserListByUserIds:(NSArray *)userIds {
-    return [[IMDataManager sharedInstance] selectUserListByUserIds:userIds];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_selectUserListByUserIds:userIds];
 }
 
 - (NSDictionary *)selectUsersDicByXmppIds:(NSArray *)xmppIds {
-    return [[IMDataManager sharedInstance] selectUsersDicByXmppIds:xmppIds];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_selectUsersDicByXmppIds:xmppIds];
 }
 
 - (void)bulkUpdateUserSearchIndexs:(NSArray *)searchIndexs {
-    [[IMDataManager sharedInstance] bulkUpdateUserSearchIndexs:searchIndexs];
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateUserSearchIndexs:searchIndexs];
 }
 
 - (void)updateUser:(NSString *)userId WithHeaderSrc:(NSString *)headerSrc WithVersion:(NSString *)version {
-    [[IMDataManager sharedInstance] updateUser:userId WithHeaderSrc:headerSrc WithVersion:version];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateUser:userId WithHeaderSrc:headerSrc WithVersion:version];
 }
 
 - (void)bulkUpdateUserCardsV2:(NSArray *)cards {
-    [[IMDataManager sharedInstance] bulkUpdateUserCardsV2:cards];
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateUserCards:cards];
 }
 
 - (void)bulkUpdateUserBackInfo:(NSDictionary *)userBackInfo WithXmppId:(NSString *)xmppId {
-    [[IMDataManager sharedInstance] bulkUpdateUserBackInfo:userBackInfo WithXmppId:xmppId];
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateUserBackInfo:userBackInfo WithXmppId:xmppId];
 }
 
 - (NSString *)getUserHeaderSrcByUserId:(NSString *)userId {
-    return [[IMDataManager sharedInstance] getUserHeaderSrcByUserId:userId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getUserHeaderSrcByUserId:userId];
 }
 
 - (BOOL)checkExitsUser {
-    return [[IMDataManager sharedInstance] checkExitsUser];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_checkExitsUser];
 }
 
 - (int)getMaxUserIncrementVersion {
-    return [[IMDataManager sharedInstance] getMaxUserIncrementVersion];
+    return 0;
+//    return [[IMDataManager qimDB_SharedInstance] qimDB_getMaxUserIncrementVersion];
 }
 
 - (void)updateMessageWithExtendInfo:(NSString *)extendInfo ForMsgId:(NSString *)msgId {
-    [[IMDataManager sharedInstance] updateMessageWithExtendInfo:extendInfo ForMsgId:msgId];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageWithExtendInfo:extendInfo ForMsgId:msgId];
 }
 
 - (void)deleteMessageWithXmppId:(NSString *)xmppId {
-    [[IMDataManager sharedInstance] deleteMessageWithXmppId:xmppId];
+    [[IMDataManager qimDB_SharedInstance] qimDB_deleteMessageWithXmppId:xmppId];
 }
 
 - (void)deleteMessageByMessageId:(NSString *)messageId ByJid:(NSString *)sid {
-    [[IMDataManager sharedInstance] deleteMessageByMessageId:messageId ByJid:sid];
+    [[IMDataManager qimDB_SharedInstance] qimDB_deleteMessageByMessageId:messageId ByJid:sid];
 }
 
-- (void)insertMessageWihtMsgId:(NSString *)msgId
+- (void)insertMessageWithMsgId:(NSString *)msgId
                     WithXmppId:(NSString *)xmppId
                       WithFrom:(NSString *)from
                         WithTo:(NSString *)to
@@ -312,10 +313,10 @@
                    WithMsgType:(int)msgType
                   WithMsgState:(int)msgState
               WithMsgDirection:(int)msgDirection
-                   WihtMsgDate:(long long)msgDate
+                   WithMsgDate:(long long)msgDate
                  WithReadedTag:(int)readedTag
                   WithChatType:(NSInteger)chatType {
-    [[IMDataManager sharedInstance] insertMessageWihtMsgId:msgId
+    [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgId:msgId
                                                 WithXmppId:xmppId
                                                   WithFrom:from
                                                     WithTo:to
@@ -325,12 +326,12 @@
                                                WithMsgType:msgType
                                               WithMsgState:msgState
                                           WithMsgDirection:msgDirection
-                                               WihtMsgDate:msgDate
+                                               WithMsgDate:msgDate
                                              WithReadedTag:readedTag
                                               WithChatType:chatType];
 }
 
-- (void)insertMessageWihtMsgId:(NSString *)msgId
+- (void)insertMessageWithMsgId:(NSString *)msgId
                     WithXmppId:(NSString *)xmppId
                       WithFrom:(NSString *)from
                         WithTo:(NSString *)to
@@ -340,11 +341,11 @@
                    WithMsgType:(int)msgType
                   WithMsgState:(int)msgState
               WithMsgDirection:(int)msgDirection
-                   WihtMsgDate:(long long)msgDate
+                   WithMsgDate:(long long)msgDate
                  WithReadedTag:(int)readedTag
                     WithMsgRaw:(NSString *)msgRaw
                   WithChatType:(NSInteger)chatType {
-    [[IMDataManager sharedInstance] insertMessageWihtMsgId:msgId
+    [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgId:msgId
                                                 WithXmppId:xmppId
                                                   WithFrom:from
                                                     WithTo:to
@@ -354,13 +355,13 @@
                                                WithMsgType:msgType
                                               WithMsgState:msgState
                                           WithMsgDirection:msgDirection
-                                               WihtMsgDate:msgDate
+                                               WithMsgDate:msgDate
                                              WithReadedTag:readedTag
                                                 WithMsgRaw:msgRaw
                                               WithChatType:chatType];
 }
 
-- (void) insertMessageWihtMsgId:(NSString *)msgId
+- (void) insertMessageWithMsgId:(NSString *)msgId
                      WithXmppId:(NSString *)xmppId
                        WithFrom:(NSString *)from
                          WithTo:(NSString *)to
@@ -370,12 +371,12 @@
                     WithMsgType:(int)msgType
                    WithMsgState:(int)msgState
                WithMsgDirection:(int)msgDirection
-                    WihtMsgDate:(long long)msgDate
+                    WithMsgDate:(long long)msgDate
                   WithReadedTag:(int)readedTag
                      WithMsgRaw:(NSString *)msgRaw
                     WithRealJid:(NSString *)realJid
                    WithChatType:(NSInteger)chatType {
-    [[IMDataManager sharedInstance] insertMessageWihtMsgId:msgId
+    [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgId:msgId
                                                 WithXmppId:xmppId
                                                   WithFrom:from
                                                     WithTo:to
@@ -385,7 +386,7 @@
                                                WithMsgType:msgType
                                               WithMsgState:msgState
                                           WithMsgDirection:msgDirection
-                                               WihtMsgDate:msgDate
+                                               WithMsgDate:msgDate
                                              WithReadedTag:readedTag
                                                 WithMsgRaw:msgRaw
                                                WithRealJid:realJid
@@ -394,11 +395,11 @@
 
 - (void)updateMessageWithMsgId:(NSString *)msgId
                     WithMsgRaw:(NSString *)msgRaw {
-    [[IMDataManager sharedInstance] updateMessageWithMsgId:msgId
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageWithMsgId:msgId
                                                WithMsgRaw:msgRaw];
 }
 
-- (void)updateMessageWihtMsgId:(NSString *)msgId
+- (void)updateMessageWithMsgId:(NSString *)msgId
                  WithSessionId:(NSString *)sessionId
                       WithFrom:(NSString *)from
                         WithTo:(NSString *)to
@@ -407,10 +408,10 @@
                    WithMsgType:(int)msgType
                   WithMsgState:(int)msgState
               WithMsgDirection:(int)msgDirection
-                   WihtMsgDate:(long long)msgDate
+                   WithMsgDate:(long long)msgDate
                  WithReadedTag:(int)readedTag
                   ExtendedFlag:(int)ExtendedFlag {
-    [[IMDataManager sharedInstance] updateMessageWihtMsgId:msgId
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageWithMsgId:msgId
                                             WithSessionId:sessionId
                                                  WithFrom:from
                                                    WithTo:to
@@ -419,12 +420,12 @@
                                               WithMsgType:msgType
                                              WithMsgState:msgState
                                          WithMsgDirection:msgDirection
-                                              WihtMsgDate:msgDate
+                                              WithMsgDate:msgDate
                                             WithReadedTag:readedTag
                                              ExtendedFlag:ExtendedFlag];
 }
 
-- (void)updateMessageWihtMsgId:(NSString *)msgId
+- (void)updateMessageWithMsgId:(NSString *)msgId
                  WithSessionId:(NSString *)sessionId
                       WithFrom:(NSString *)from
                         WithTo:(NSString *)to
@@ -434,11 +435,11 @@
                    WithMsgType:(int)msgType
                   WithMsgState:(int)msgState
               WithMsgDirection:(int)msgDirection
-                   WihtMsgDate:(long long)msgDate
+                   WithMsgDate:(long long)msgDate
                  WithReadedTag:(int)readedTag
                   ExtendedFlag:(int)ExtendedFlag
                     WithMsgRaw:(NSString *)msgRaw {
-    [[IMDataManager sharedInstance] updateMessageWihtMsgId:msgId
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageWithMsgId:msgId
                                             WithSessionId:sessionId
                                                  WithFrom:from
                                                    WithTo:to
@@ -448,232 +449,237 @@
                                               WithMsgType:msgType
                                              WithMsgState:msgState
                                          WithMsgDirection:msgDirection
-                                              WihtMsgDate:msgDate
+                                              WithMsgDate:msgDate
                                             WithReadedTag:readedTag
                                              ExtendedFlag:ExtendedFlag
                                                WithMsgRaw:msgRaw];
 }
 
 - (void)revokeMessageByMsgId:(NSString *)msgId
-                 WihtContent:(NSString *)content
+                 WithContent:(NSString *)content
                  WithMsgType:(int)msgType {
-    [[IMDataManager sharedInstance] revokeMessageByMsgId:msgId
-                                            WihtContent:content
+    [[IMDataManager qimDB_SharedInstance] qimDB_revokeMessageByMsgId:msgId
+                                            WithContent:content
                                             WithMsgType:msgType];
 }
 
 - (BOOL)checkMsgId:(NSString *)msgId {
-    return [[IMDataManager sharedInstance] checkMsgId:msgId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId];
 }
 
-- (NSArray *)bulkInsertIphoneMucJSONMsg:(NSArray *)list WihtMyNickName:(NSString *)myNickName WithReadMarkT:(long long)readMarkT WithDidReadState:(int)didReadState WihtMyRtxId:(NSString *)rtxId {
-    return [[IMDataManager sharedInstance] bulkInsertIphoneMucJSONMsg:list
-                                                       WihtMyNickName:myNickName
+- (NSArray *)bulkInsertIphoneMucJSONMsg:(NSArray *)list WithMyNickName:(NSString *)myNickName WithReadMarkT:(long long)readMarkT WithDidReadState:(int)didReadState WithMyRtxId:(NSString *)rtxId {
+    return [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertIphoneMucJSONMsg:list
+                                                       WithMyNickName:myNickName
                                                         WithReadMarkT:readMarkT
                                                      WithDidReadState:didReadState
-                                                          WihtMyRtxId:rtxId];
+                                                          WithMyRtxId:rtxId];
 
 }
 
-- (NSArray *)bulkInsertIphoneHistoryGroupMsg:(NSArray *)list WithXmppId:(NSString *)xmppId WihtMyNickName:(NSString *)myNickName WithReadMarkT:(long long)readMarkT WithDidReadState:(int)didReadState WihtMyRtxId:(NSString *)rtxId {
-    return [[IMDataManager sharedInstance] bulkInsertIphoneHistoryGroupMsg:list WithXmppId:xmppId WihtMyNickName:myNickName WithReadMarkT:readMarkT WithDidReadState:didReadState WihtMyRtxId:rtxId];
+- (NSArray *)bulkInsertIphoneHistoryGroupMsg:(NSArray *)list WithXmppId:(NSString *)xmppId WithMyNickName:(NSString *)myNickName WithReadMarkT:(long long)readMarkT WithDidReadState:(int)didReadState WithMyRtxId:(NSString *)rtxId {
+    return nil;
+//    return [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertIphoneHistoryGroupMsg:list WithXmppId:xmppId WithMyNickName:myNickName WithReadMarkT:readMarkT WithDidReadState:didReadState WithMyRtxId:rtxId];
 }
 
-- (NSArray *)bulkInsertHistoryGroupMsg:(NSArray *)list WithXmppId:(NSString *)xmppId WihtMyNickName:(NSString *)myNickName WithReadMarkT:(long long)readMarkT WithDidReadState:(int)didReadState {
-    return [[IMDataManager sharedInstance] bulkInsertHistoryGroupMsg:list WithXmppId:xmppId WihtMyNickName:myNickName WithReadMarkT:readMarkT WithDidReadState:didReadState];
+- (NSArray *)bulkInsertHistoryGroupMsg:(NSArray *)list WithXmppId:(NSString *)xmppId WithMyNickName:(NSString *)myNickName WithReadMarkT:(long long)readMarkT WithDidReadState:(int)didReadState {
+    return nil;
+//    return [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryGroupMsg:list WithXmppId:xmppId WithMyNickName:myNickName WithReadMarkT:readMarkT WithDidReadState:didReadState];
 }
 
 - (NSDictionary *)dictionaryWithJsonString:(NSString *)jsonString {
-    return [[IMDataManager sharedInstance] dictionaryWithJsonString:jsonString];
+    return [[IMDataManager qimDB_SharedInstance] dictionaryWithJsonString:jsonString];
 }
 
 - (NSMutableDictionary *)bulkInsertHistoryChatJSONMsg:(NSArray *)list
                                                    to:(NSString *)meJid
                                      WithDidReadState:(int)didReadState {
-    return [[IMDataManager sharedInstance] bulkInsertHistoryChatJSONMsg:list
+    return [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:list
                                                                     to:meJid
                                                       WithDidReadState:didReadState];
 }
 
 - (NSString *)getC2BMessageFeedBackWithMsgId:(NSString *)msgId {
-    return [[IMDataManager sharedInstance] getC2BMessageFeedBackWithMsgId:msgId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getC2BMessageFeedBackWithMsgId:msgId];
 }
 
 - (NSArray *)bulkInsertHistoryChatJSONMsg:(NSArray *)list
                                WithXmppId:(NSString *)xmppId
                          WithDidReadState:(int)didReadState {
-    return [[IMDataManager sharedInstance] bulkInsertHistoryChatJSONMsg:list
+    return [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:list
                                                             WithXmppId:xmppId
                                                       WithDidReadState:didReadState];
 }
 
-- (void)bulkInsertMessage:(NSArray *)msgList WihtSessionId:(NSString *)sessionId {
-    [[IMDataManager sharedInstance] bulkInsertMessage:msgList WihtSessionId:sessionId];
+- (void)bulkInsertMessage:(NSArray *)msgList WithSessionId:(NSString *)sessionId {
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertMessage:msgList WithSessionId:sessionId];
 }
 
 - (void)updateMsgState:(int)msgState WithMsgId:(NSString *)msgId {
-    [[IMDataManager sharedInstance] updateMsgState:msgState WithMsgId:msgId];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgState:msgState WithMsgId:msgId];
 }
 
 - (void)updateMessageReadStateWithMsgId:(NSString *)msgId {
-    [[IMDataManager sharedInstance] updateMessageReadStateWithMsgId:msgId];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageReadStateWithMsgId:msgId];
 }
 
 - (void)bulkUpdateMessageReadStateWithMsg:(NSArray *)msgs {
-    [[IMDataManager sharedInstance] bulkUpdateMessageReadStateWithMsg:msgs];
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateMessageReadStateWithMsg:msgs];
 }
 
 - (void)updateMessageReadStateWithSessionId:(NSString *)sessionId {
-    [[IMDataManager sharedInstance] updateMessageReadStateWithSessionId:sessionId];
+//    [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageReadStateWithSessionId:sessionId];
 }
 
-- (void)updateSessionLastMsgIdWihtSessionId:(NSString *)sessionId
+- (void)updateSessionLastMsgIdWithSessionId:(NSString *)sessionId
                               WithLastMsgId:(NSString *)lastMsgId {
-    [[IMDataManager sharedInstance] updateSessionLastMsgIdWihtSessionId:sessionId
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateSessionLastMsgIdWithSessionId:sessionId
                                                          WithLastMsgId:lastMsgId];
 }
 
 - (void)insertSessionWithSessionId:(NSString *)sessinId
                         WithUserId:(NSString *)userId
-                     WihtLastMsgId:(NSString *)lastMsgId
+                     WithLastMsgId:(NSString *)lastMsgId
                 WithLastUpdateTime:(long long)lastUpdateTime
                           ChatType:(int)ChatType
                        WithRealJid:(id)realJid {
-    [[IMDataManager sharedInstance] insertSessionWithSessionId:sessinId
+    [[IMDataManager qimDB_SharedInstance] qimDB_insertSessionWithSessionId:sessinId
                                                    WithUserId:userId
-                                                WihtLastMsgId:lastMsgId
+                                                WithLastMsgId:lastMsgId
                                            WithLastUpdateTime:lastUpdateTime
                                                      ChatType:ChatType
                                                   WithRealJid:realJid];
 }
 
 - (void)deleteSession:(NSString *)xmppId RealJid:(NSString *)realJid {
-    [[IMDataManager sharedInstance] deleteSession:xmppId RealJid:realJid];
+    [[IMDataManager qimDB_SharedInstance] qimDB_deleteSession:xmppId RealJid:realJid];
 }
 
 - (void)deleteSession:(NSString *)xmppId {
-    [[IMDataManager sharedInstance] deleteSession:xmppId];
+    [[IMDataManager qimDB_SharedInstance] qimDB_deleteSession:xmppId];
 }
 
 - (NSDictionary *)getLastedSingleChatSession {
-    return [[IMDataManager sharedInstance] getLastedSingleChatSession];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getLastedSingleChatSession];
 }
 
 - (NSDictionary *)qimDb_getPublicNumberSession {
-    return [[IMDataManager sharedInstance] qimDb_getPublicNumberSession];
+    return nil;
+//    return [[IMDataManager qimDB_SharedInstance] qimDb_getPublicNumberSession];
 }
 
 - (NSArray *)qimDB_getSessionListWithSingleChatType:(int)chatType {
-    return [[IMDataManager sharedInstance] qimDB_getSessionListWithSingleChatType:chatType];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getSessionListWithSingleChatType:chatType];
 }
 
 - (NSArray *)getSessionListXMPPIDWithSingleChatType:(int)singleChatType {
-    return [[IMDataManager sharedInstance] getSessionListXMPPIDWithSingleChatType:singleChatType];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getSessionListXMPPIDWithSingleChatType:singleChatType];
 }
 
 - (NSArray *)qimDB_getNotReadMsgListForUserId:(NSString *)userId {
-    return [[IMDataManager sharedInstance] qimDB_getNotReadMsgListForUserId:userId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getNotReadMsgListForUserId:userId];
 }
 
 - (NSArray *)qimDB_getNotReadMsgListForUserId:(NSString *)userId ForRealJid:(NSString *)realJid {
-    return [[IMDataManager sharedInstance] qimDB_getNotReadMsgListForUserId:userId ForRealJid:realJid];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getNotReadMsgListForUserId:userId ForRealJid:realJid];
 }
 
-- (long long)getReadedTimeStampForUserId:(NSString *)userId WihtMsgDirection:(int)msgDirection WithReadedState:(int)readedState {
-    return [[IMDataManager sharedInstance] getReadedTimeStampForUserId:userId WihtMsgDirection:msgDirection WithReadedState:readedState];
+- (long long)getReadedTimeStampForUserId:(NSString *)userId WithMsgDirection:(int)msgDirection WithReadedState:(int)readedState {
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getReadedTimeStampForUserId:userId WithMsgDirection:msgDirection WithReadedState:readedState];
 }
 
 - (NSArray *)qimDB_getMgsListBySessionId:(NSString *)sesId {
-    return [[IMDataManager sharedInstance] qimDB_getMgsListBySessionId:sesId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getMgsListBySessionId:sesId];
 }
 
-- (NSArray *)qimDB_getMgsListBySessionId:(NSString *)sesId WithRealJid:(NSString *)realJid WithLimit:(int)limit WihtOffset:(int)offset {
-    return [[IMDataManager sharedInstance] qimDB_getMgsListBySessionId:sesId WithRealJid:realJid WithLimit:limit WihtOffset:offset];
+- (NSArray *)qimDB_getMgsListBySessionId:(NSString *)sesId WithRealJid:(NSString *)realJid WithLimit:(int)limit WithOffset:(int)offset {
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getMgsListBySessionId:sesId WithRealJid:realJid WithLimit:limit WithOffset:offset];
 }
 
 - (NSArray *)getMsgListByXmppId:(NSString *)xmppId WithRealJid:(NSString *)realJid FromTimeStamp:(long long)timeStamp {
-    return [[IMDataManager sharedInstance] getMsgListByXmppId:xmppId WithRealJid:realJid FromTimeStamp:timeStamp];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getMsgListByXmppId:xmppId WithRealJid:realJid FromTimeStamp:timeStamp];
 }
 
 - (NSArray *)getMsgListByXmppId:(NSString *)xmppId FromTimeStamp:(long long)timeStamp {
-    return [[IMDataManager sharedInstance] getMsgListByXmppId:xmppId FromTimeStamp:timeStamp];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getMsgListByXmppId:xmppId FromTimeStamp:timeStamp];
 }
 
 - (NSDictionary *)getLastMessage {
-    return [[IMDataManager sharedInstance] getLastMessage];
+    return nil;
+//    return [[IMDataManager qimDB_SharedInstance] qimDB_getLastMessage];
 }
 
 - (void)updateMsgsContent:(NSString *)content ByMsgId:(NSString *)msgId {
-    [[IMDataManager sharedInstance] updateMsgsContent:content ByMsgId:msgId];
+    [[IMDataManager qimDB_SharedInstance] updateMsgsContent:content ByMsgId:msgId];
 }
 
 - (NSDictionary *)getMsgsByMsgId:(NSString *)msgId {
-    return [[IMDataManager sharedInstance] getMsgsByMsgId:msgId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getMsgsByMsgId:msgId];
 }
 
 - (NSDictionary *)getChatSessionWithUserId:(NSString *)userId {
-    return [[IMDataManager sharedInstance] getChatSessionWithUserId:userId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getChatSessionWithUserId:userId];
 }
 
 - (NSInteger)getNotReaderMsgCountByDidReadState:(int)didReadState WidthReceiveDirection:(int)receiveDirection {
-    return [[IMDataManager sharedInstance] getNotReaderMsgCountByDidReadState:didReadState WidthReceiveDirection:receiveDirection];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getNotReaderMsgCountByDidReadState:didReadState WidthReceiveDirection:receiveDirection];
 }
 
 - (NSInteger)getNotReaderMsgCountByJid:(NSString *)jid ByDidReadState:(int)didReadState WidthReceiveDirection:(int)receiveDirection {
-    return [[IMDataManager sharedInstance] getNotReaderMsgCountByJid:jid ByDidReadState:didReadState WidthReceiveDirection:receiveDirection];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getNotReaderMsgCountByJid:jid ByDidReadState:didReadState WidthReceiveDirection:receiveDirection];
 }
 
 - (NSInteger)getNotReaderMsgCountByJid:(NSString *)jid ByRealJid:(NSString *)realJid ByDidReadState:(int)didReadState WidthReceiveDirection:(int)receiveDirection {
-    return [[IMDataManager sharedInstance] getNotReaderMsgCountByJid:jid ByRealJid:realJid ByDidReadState:didReadState WidthReceiveDirection:receiveDirection];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getNotReaderMsgCountByJid:jid ByRealJid:realJid ByDidReadState:didReadState WidthReceiveDirection:receiveDirection];
 }
 
 - (void)updateMessageFromState:(int)fState ToState:(int)tState {
-    return [[IMDataManager sharedInstance] updateMessageFromState:fState ToState:tState];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageFromState:fState ToState:tState];
 }
 
 - (NSArray *)getMsgIdsByMsgState:(int)notReadMsgState WithDirection:(int)receiveDirection {
-    return [[IMDataManager sharedInstance] getMsgIdsByMsgState:notReadMsgState WithDirection:receiveDirection];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getMsgIdsByMsgState:notReadMsgState WithDirection:receiveDirection];
 }
 
 - (NSInteger)getMessageStateWithMsgId:(NSString *)msgId {
-    return [[IMDataManager sharedInstance] getMessageStateWithMsgId:msgId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getMessageStateWithMsgId:msgId];
 }
 
 - (NSArray *)getMsgIdsForDirection:(int)msgDirection WithMsgState:(int)msgState {
-    return [[IMDataManager sharedInstance] getMsgIdsForDirection:msgDirection WithMsgState:msgState];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getMsgIdsForDirection:msgDirection WithMsgState:msgState];
 }
 
 - (void)updateMsgIdToDidreadForNotReadMsgIdList:(NSArray *)notReadList AndSourceMsgIdList:(NSArray *)sourceMsgIdList WithDidReadState:(int)didReadState {
-    [[IMDataManager sharedInstance] updateMsgIdToDidreadForNotReadMsgIdList:notReadList AndSourceMsgIdList:sourceMsgIdList WithDidReadState:didReadState];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgIdToDidreadForNotReadMsgIdList:notReadList AndSourceMsgIdList:sourceMsgIdList WithDidReadState:didReadState];
 }
 
 - (NSArray *)searchMsgHistoryWithKey:(NSString *)key {
-    return [[IMDataManager sharedInstance] searchMsgHistoryWithKey:key];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_searchMsgHistoryWithKey:key];
 }
 
 - (NSArray *)searchMsgIdWithKey:(NSString *)key ByXmppId:(NSString *)xmppId {
-    return [[IMDataManager sharedInstance] searchMsgIdWithKey:key ByXmppId:xmppId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_searchMsgIdWithKey:key ByXmppId:xmppId];
 }
 
 #pragma mark - 消息数据方法
 - (NSArray *) existsMessageUsers {
-    return [[IMDataManager sharedInstance] existsMessageUsers];
+    return nil;
+//    return [[IMDataManager qimDB_SharedInstance] qimDB_existsMessageUsers];
 }
 
 - (long long) lastestMessageTime {
-    return [[IMDataManager sharedInstance] lastestMessageTime];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_lastestMessageTime];
 }
 
 - (long long) lastestSystemMessageTime {
-    return [[IMDataManager sharedInstance] lastestSystemMessageTime];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_lastestSystemMessageTime];
 }
 
 - (long long) lastestMessageTimeWithNotMessageState:(long long) messageState {
-    return [[IMDataManager sharedInstance] lastestMessageTimeWithNotMessageState:messageState];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_lastestMessageTimeWithNotMessageState:messageState];
 }
 
 - (NSString *) getLastMsgIdByJid:(NSString *)jid {
-    return [[IMDataManager sharedInstance] getLastMsgIdByJid:jid];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getLastMsgIdByJid:jid];
 }
 
 /****************** FriendSter Msg *******************/
@@ -683,82 +689,86 @@
               WithReplyMsgId:(NSString *)replyMsgId
                WithReplyUser:(NSString *)replyUser
                  WithContent:(NSString *)content
-                 WihtMsgDate:(long long)msgDate
+                 WithMsgDate:(long long)msgDate
             WithExtendedFlag:(NSData *)etxtenedFlag {
-    [[IMDataManager sharedInstance] insertFSMsgWithMsgId:msgId
-                                             WithXmppId:xmppId
-                                           WithFromUser:fromUser
-                                         WithReplyMsgId:replyMsgId
-                                          WithReplyUser:replyUser
-                                            WithContent:content
-                                            WihtMsgDate:msgDate
-                                       WithExtendedFlag:etxtenedFlag];
+//    [[IMDataManager qimDB_SharedInstance] qimDB_insertFSMsgWithMsgId:msgId
+//                                             WithXmppId:xmppId
+//                                           WithFromUser:fromUser
+//                                         WithReplyMsgId:replyMsgId
+//                                          WithReplyUser:replyUser
+//                                            WithContent:content
+//                                            WithMsgDate:msgDate
+//                                       WithExtendedFlag:etxtenedFlag];
 }
 
 - (void)bulkInsertFSMsgWithMsgList:(NSArray *)msgList {
-    [[IMDataManager sharedInstance] bulkInsertFSMsgWithMsgList:msgList];
+//    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertFSMsgWithMsgList:msgList];
 }
 
 - (NSArray *)getFSMsgListByXmppId:(NSString *)xmppId {
-    return [[IMDataManager sharedInstance] getFSMsgListByXmppId:xmppId];
+    return nil;
+//    return [[IMDataManager qimDB_SharedInstance] qimDB_getFSMsgListByXmppId:xmppId];
 }
 
 - (NSDictionary *)getFSMsgListByReplyMsgId:(NSString *)replyMsgId {
-    return [[IMDataManager sharedInstance] getFSMsgListByReplyMsgId:replyMsgId];
+    return nil;
+//    return [[IMDataManager qimDB_SharedInstance] qimDB_getFSMsgListByReplyMsgId:replyMsgId];
 }
 
 /****************** readmark *********************/
-- (long long)qimDB_updateGroupMsgWihtMsgState:(int)msgState ByGroupMsgList:(NSArray *)groupMsgList {
-    return [[IMDataManager sharedInstance] qimDB_updateGroupMsgWihtMsgState:msgState ByGroupMsgList:groupMsgList];
+- (long long)qimDB_updateGroupMsgWithMsgState:(int)msgState ByGroupMsgList:(NSArray *)groupMsgList {
+    return 0;
+//    return [[IMDataManager qimDB_SharedInstance] qimDB_updateGroupMsgWithMsgState:msgState ByGroupMsgList:groupMsgList];
 }
 
-- (void)updateUserMsgWihtMsgState:(int)msgState ByMsgList:(NSArray *)userMsgList {
-    [[IMDataManager sharedInstance] updateUserMsgWihtMsgState:msgState ByMsgList:userMsgList];
+- (void)updateUserMsgWithMsgState:(int)msgState ByMsgList:(NSArray *)userMsgList {
+//    [[IMDataManager qimDB_SharedInstance] qimDB_updateUserMsgWithMsgState:msgState ByMsgList:userMsgList];
 }
 
 - (void)bulkUpdateChatMsgWithMsgState:(int)msgState ByMsgIdList:(NSArray *)msgIdList {
-    [[IMDataManager sharedInstance] bulkUpdateChatMsgWithMsgState:msgState ByMsgIdList:msgIdList];
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateChatMsgWithMsgState:msgState ByMsgIdList:msgIdList];
 }
 
 - (NSArray *)getReceiveMsgIdListWithMsgState:(int)msgState WithReceiveDirection:(int)receiveDirection {
-    return [[IMDataManager sharedInstance] getReceiveMsgIdListWithMsgState:msgState WithReceiveDirection:receiveDirection];
+    return nil;
+//    return [[IMDataManager qimDB_SharedInstance] qimDB_getReceiveMsgIdListWithMsgState:msgState WithReceiveDirection:receiveDirection];
 }
 
 - (NSArray *)getNotReadMsgListWithMsgState:(int)msgState WithReceiveDirection:(int)receiveDirection {
-    return [[IMDataManager sharedInstance] getNotReadMsgListWithMsgState:msgState WithReceiveDirection:receiveDirection];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getNotReadMsgListWithMsgState:msgState WithReceiveDirection:receiveDirection];
 }
 
 - (void)clearHistoryMsg {
-    [[IMDataManager sharedInstance] clearHistoryMsg];
+    [[IMDataManager qimDB_SharedInstance] qimDB_clearHistoryMsg];
 }
 
 - (void)updateSystemMsgState:(int)msgState WithXmppId:(NSString *)xmppId {
-    [[IMDataManager sharedInstance] updateSystemMsgState:msgState WithXmppId:xmppId];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateSystemMsgState:msgState WithXmppId:xmppId];
 }
 
 - (void)closeDataBase {
-    [[IMDataManager sharedInstance] closeDataBase];
+    [[IMDataManager qimDB_SharedInstance] qimDB_closeDataBase];
 }
 
 + (void)clearDataBaseCache {
-    [IMDataManager clearDataBaseCache];
+//    [IMDataManager clearDataBaseCache];
 }
 
 - (void)qimDB_dbCheckpoint {
-    [[IMDataManager sharedInstance] qimDB_dbCheckpoint];
+    [[IMDataManager qimDB_SharedInstance] qimDB_dbCheckpoint];
 }
 
 - (NSArray *)getPSessionListWithSingleChatType:(int)singleChatType {
-    return [[IMDataManager sharedInstance] getPSessionListWithSingleChatType:singleChatType];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getPSessionListWithSingleChatType:singleChatType];
 }
 
 - (void)updateAllMsgWithMsgState:(int)msgState ByMsgDirection:(int)msgDirection ByReadMarkT:(long long)readMarkT {
-    [[IMDataManager sharedInstance] updateAllMsgWithMsgState:msgState ByMsgDirection:msgDirection ByReadMarkT:readMarkT];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateAllMsgWithMsgState:msgState ByMsgDirection:msgDirection ByReadMarkT:readMarkT];
 }
 
 /*************** Friend List *************/
 - (void)bulkInsertFriendList:(NSArray *)friendList {
-    [[IMDataManager sharedInstance] bulkInsertFriendList:friendList];
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertFriendList:friendList];
 }
 - (void)insertFriendWithUserId:(NSString *)userId
                     WithXmppId:(NSString *)xmppId
@@ -769,7 +779,7 @@
                   WithUserInfo:(NSData *)userInfo
             WithLastUpdateTime:(long long)lastUpdateTime
           WithIncrementVersion:(int)incrementVersion {
-    [[IMDataManager sharedInstance] insertFriendWithUserId:userId
+    [[IMDataManager qimDB_SharedInstance] qimDB_insertFriendWithUserId:userId
                                                WithXmppId:xmppId
                                                  WithName:name
                                           WithSearchIndex:searchIndex
@@ -781,92 +791,92 @@
 }
 
 - (void)deleteFriendListWithXmppId:(NSString *)xmppId {
-    [[IMDataManager sharedInstance] deleteFriendListWithXmppId:xmppId];
+    [[IMDataManager qimDB_SharedInstance] qimDB_deleteFriendListWithXmppId:xmppId];
 }
 
 - (void)deleteFriendListWithUserId:(NSString *)userId {
-    [[IMDataManager sharedInstance] deleteFriendListWithUserId:userId];
+    [[IMDataManager qimDB_SharedInstance] qimDB_deleteFriendListWithUserId:userId];
 }
 
 - (void)deleteFriendList {
-    [[IMDataManager sharedInstance] deleteFriendList];
+    [[IMDataManager qimDB_SharedInstance] qimDB_deleteFriendList];
 }
 - (void)deleteSessionList {
-    [[IMDataManager sharedInstance] deleteSessionList];
+    [[IMDataManager qimDB_SharedInstance] qimDB_deleteSessionList];
 }
 
 - (NSMutableArray *)selectFriendList {
-    return [[IMDataManager sharedInstance] selectFriendList];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_selectFriendList];
 }
 
 - (NSMutableArray *)qimDB_selectFriendListInGroupId:(NSString *)groupId {
-    return [[IMDataManager sharedInstance] qimDB_selectFriendListInGroupId:groupId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_selectFriendListInGroupId:groupId];
 }
 
 - (NSDictionary *)selectFriendInfoWithUserId:(NSString *)userId {
-    return [[IMDataManager sharedInstance] selectFriendInfoWithUserId:userId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_selectFriendInfoWithUserId:userId];
 }
 - (NSDictionary *)selectFriendInfoWithXmppId:(NSString *)xmppId {
-    return [[IMDataManager sharedInstance] selectFriendInfoWithXmppId:xmppId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_selectFriendInfoWithXmppId:xmppId];
 }
 
 - (void)bulkInsertFriendNotifyList:(NSArray *)notifyList {
-    [[IMDataManager sharedInstance] bulkInsertFriendNotifyList:notifyList];
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertFriendNotifyList:notifyList];
 }
 
-- (void)insertFriendNotifyWihtUserId:(NSString *)userId
+- (void)insertFriendNotifyWithUserId:(NSString *)userId
                           WithXmppId:(NSString *)xmppId
                             WithName:(NSString *)name
                         WithDescInfo:(NSString *)descInfo
                          WithHeadSrc:(NSString *)headerSrc
                      WithSearchIndex:(NSString *)searchIndex
-                        WihtUserInfo:(NSString *)userInfo
+                        WithUserInfo:(NSString *)userInfo
                          WithVersion:(int)version
-                           WihtState:(int)state
+                           WithState:(int)state
                   WithLastUpdateTime:(long long)lastUpdateTime {
-    [[IMDataManager sharedInstance] insertFriendNotifyWihtUserId:userId
+    [[IMDataManager qimDB_SharedInstance] qimDB_insertFriendNotifyWithUserId:userId
                                                      WithXmppId:xmppId
                                                        WithName:name
                                                    WithDescInfo:descInfo
                                                     WithHeadSrc:headerSrc
                                                 WithSearchIndex:searchIndex
-                                                   WihtUserInfo:userInfo
+                                                   WithUserInfo:userInfo
                                                     WithVersion:version
-                                                      WihtState:state
+                                                      WithState:state
                                              WithLastUpdateTime:lastUpdateTime];
     
 }
 - (void)deleteFriendNotifyWithUserId:(NSString *)userId {
-    [[IMDataManager sharedInstance] deleteFriendNotifyWithUserId:userId];
+    [[IMDataManager qimDB_SharedInstance] qimDB_deleteFriendNotifyWithUserId:userId];
 }
 
 - (NSMutableArray *)selectFriendNotifys {
-    return [[IMDataManager sharedInstance] selectFriendNotifys];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_selectFriendNotifys];
 }
 
-- (void)updateFriendNotifyWithXmppId:(NSString *)xmppId WihtState:(int)state {
-    [[IMDataManager sharedInstance] updateFriendNotifyWithXmppId:xmppId WihtState:state];
+- (void)updateFriendNotifyWithXmppId:(NSString *)xmppId WithState:(int)state {
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateFriendNotifyWithXmppId:xmppId WithState:state];
 }
 
-- (void)updateFriendNotifyWithUserId:(NSString *)userId WihtState:(int)state {
-    [[IMDataManager sharedInstance] updateFriendNotifyWithUserId:userId WihtState:state];
+- (void)updateFriendNotifyWithUserId:(NSString *)userId WithState:(int)state {
+//    [[IMDataManager qimDB_SharedInstance] qimDB_updateFriendNotifyWithUserId:userId WithState:state];
 }
 
 - (long long)getMaxTimeFriendNotify {
-    return [[IMDataManager sharedInstance] getMaxTimeFriendNotify];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getMaxTimeFriendNotify];
 }
 
 // ******************** 公众账号 ***************************** //
 - (BOOL)checkPublicNumberMsgById:(NSString *)msgId {
-    return [[IMDataManager sharedInstance] checkPublicNumberMsgById:msgId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_checkPublicNumberMsgById:msgId];
 }
 
 - (void)checkPublicNumbers:(NSArray *)publicNumberIds {
-    [[IMDataManager sharedInstance] checkPublicNumbers:publicNumberIds];
+    [[IMDataManager qimDB_SharedInstance] qimDB_checkPublicNumbers:publicNumberIds];
 }
 
 - (void)bulkInsertPublicNumbers:(NSArray *)publicNumberList {
-    [[IMDataManager sharedInstance] bulkInsertPublicNumbers:publicNumberList];
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertPublicNumbers:publicNumberList];
 }
 
 - (void)insertPublicNumberXmppId:(NSString *)xmppId
@@ -878,7 +888,7 @@
                  WithSearchIndex:(NSString *)searchIndex
                   WithPublicInfo:(NSString *)publicInfo
                      WithVersion:(int)version {
-    [[IMDataManager sharedInstance] insertPublicNumberXmppId:xmppId
+    [[IMDataManager qimDB_SharedInstance] qimDB_insertPublicNumberXmppId:xmppId
                                          WithPublicNumberId:publicNumberId
                                        WithPublicNumberType:publicNumberType
                                                    WithName:name
@@ -890,34 +900,34 @@
 }
 
 - (void)deletePublicNumberId:(NSString *)publicNumberId {
-    [[IMDataManager sharedInstance] deletePublicNumberId:publicNumberId];
+    [[IMDataManager qimDB_SharedInstance] qimDB_deletePublicNumberId:publicNumberId];
 }
 
 - (NSArray *)getPublicNumberVersionList {
-    return [[IMDataManager sharedInstance] getPublicNumberVersionList];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getPublicNumberVersionList];
 }
 
 - (NSArray *)getPublicNumberList {
-    return [[IMDataManager sharedInstance] getPublicNumberList];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getPublicNumberList];
 }
 
 - (NSArray *)searchPublicNumberListByKeyStr:(NSString *)keyStr {
-    return [[IMDataManager sharedInstance] searchPublicNumberListByKeyStr:keyStr];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_searchPublicNumberListByKeyStr:keyStr];
 }
 
 - (NSInteger)getRnSearchPublicNumberListByKeyStr:(NSString *)keyStr {
-    return [[IMDataManager sharedInstance] getRnSearchPublicNumberListByKeyStr:keyStr];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getRnSearchPublicNumberListByKeyStr:keyStr];
 }
 
 - (NSArray *)rnSearchPublicNumberListByKeyStr:(NSString *)keyStr limit:(NSInteger)limit offset:(NSInteger)offset {
-    return [[IMDataManager sharedInstance] rnSearchPublicNumberListByKeyStr:keyStr limit:limit offset:offset];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_rnSearchPublicNumberListByKeyStr:keyStr limit:limit offset:offset];
 }
 
 - (NSDictionary *)getPublicNumberCardByJId:(NSString *)jid {
-    return [[IMDataManager sharedInstance] getPublicNumberCardByJId:jid];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getPublicNumberCardByJId:jid];
 }
 
-- (void)insetPublicNumberMsgWihtMsgId:(NSString *)msgId
+- (void)insetPublicNumberMsgWithMsgId:(NSString *)msgId
                         WithSessionId:(NSString *)sessionId
                              WithFrom:(NSString *)from
                                WithTo:(NSString *)to
@@ -926,9 +936,9 @@
                           WithMsgType:(int)msgType
                          WithMsgState:(int)msgState
                      WithMsgDirection:(int)msgDirection
-                          WihtMsgDate:(long long)msgDate
+                          WithMsgDate:(long long)msgDate
                         WithReadedTag:(int)readedTag {
-    [[IMDataManager sharedInstance] insetPublicNumberMsgWihtMsgId:msgId
+    [[IMDataManager qimDB_SharedInstance] qimDB_insetPublicNumberMsgWithMsgId:msgId
                                                    WithSessionId:sessionId
                                                         WithFrom:from
                                                           WithTo:to
@@ -937,103 +947,103 @@
                                                      WithMsgType:msgType
                                                     WithMsgState:msgState
                                                 WithMsgDirection:msgDirection
-                                                     WihtMsgDate:msgDate
+                                                     WithMsgDate:msgDate
                                                    WithReadedTag:readedTag];
 }
 
 - (NSArray *)getMsgListByPublicNumberId:(NSString *)publicNumberId
                               WithLimit:(int)limit
-                             WihtOffset:(int)offset
+                             WithOffset:(int)offset
                          WithFilterType:(NSArray *)actionTypes {
-    return [[IMDataManager sharedInstance] getMsgListByPublicNumberId:publicNumberId WithLimit:limit WihtOffset:offset WithFilterType:actionTypes];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getMsgListByPublicNumberId:publicNumberId WithLimit:limit WithOffset:offset WithFilterType:actionTypes];
 }
 
 /****************** Collection Msg *******************/
 
 - (NSArray *)getCollectionAccountList {
-    return [[IMDataManager sharedInstance] getCollectionAccountList];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionAccountList];
 }
 
 - (void)bulkinsertCollectionAccountList:(NSArray *)accounts {
-    [[IMDataManager sharedInstance] bulkinsertCollectionAccountList:accounts];
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertCollectionAccountList:accounts];
 }
 
 
 - (NSDictionary *)selectCollectionUserByJID:(NSString *)jid {
-    return [[IMDataManager sharedInstance] selectCollectionUserByJID:jid];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_selectCollectionUserByJID:jid];
 }
 
 - (void)bulkInsertCollectionUserCards:(NSArray *)userCards {
-    [[IMDataManager sharedInstance] bulkInsertCollectionUserCards:userCards];
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertCollectionUserCards:userCards];
 }
 
 - (void)bulkInsertCollectionGroupCards:(NSArray *)groupCards {
-    [[IMDataManager sharedInstance] bulkInsertCollectionGroupCards:groupCards];
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertCollectionGroupCards:groupCards];
 }
 
 - (NSDictionary *)getLastCollectionMsgWithLastMsgId:(NSString *)lastMsgId {
-    return [[IMDataManager sharedInstance] getLastCollectionMsgWithLastMsgId:lastMsgId];;
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getLastCollectionMsgWithLastMsgId:lastMsgId];;
 }
 
 - (NSArray *)getCollectionSessionListWithBindId:(NSString *)bindId {
-    return [[IMDataManager sharedInstance] getCollectionSessionListWithBindId:bindId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionSessionListWithBindId:bindId];
 }
 
 - (NSArray *)getCollectionMsgListWithBindId:(NSString *)bindId {
-    return [[IMDataManager sharedInstance] getCollectionMsgListWithBindId:bindId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionMsgListWithBindId:bindId];
 }
 
 - (BOOL)checkCollectionMsgById:(NSString *)msgId {
-    return [[IMDataManager sharedInstance] checkCollectionMsgById:msgId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_checkCollectionMsgById:msgId];
 }
 
-- (void)bulkInsertCollectionMsgWihtMsgDics:(NSArray *)msgs {
-    [[IMDataManager sharedInstance] bulkInsertCollectionMsgWihtMsgDics:msgs];
+- (void)bulkInsertCollectionMsgWithMsgDics:(NSArray *)msgs {
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertCollectionMsgWithMsgDics:msgs];
 }
 
 - (NSInteger)getCollectionMsgNotReadCountByDidReadState:(NSInteger)readState {
-    return [[IMDataManager sharedInstance] getCollectionMsgNotReadCountByDidReadState:readState];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionMsgNotReadCountByDidReadState:readState];
 }
 
 - (NSInteger)getCollectionMsgNotReadCountByDidReadState:(NSInteger)readState ForBindId:(NSString *)bindId {
-    return [[IMDataManager sharedInstance] getCollectionMsgNotReadCountByDidReadState:readState ForBindId:bindId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionMsgNotReadCountByDidReadState:readState ForBindId:bindId];
 }
 
 - (NSInteger)getCollectionMsgNotReadCountgetCollectionMsgNotReadCountByDidReadState:(NSInteger)readState ForBindId:(NSString *)bindId originUserId:(NSString *)originUserId {
-    return [[IMDataManager sharedInstance] getCollectionMsgNotReadCountgetCollectionMsgNotReadCountByDidReadState:readState ForBindId:bindId originUserId:originUserId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionMsgNotReadCountgetCollectionMsgNotReadCountByDidReadState:readState ForBindId:bindId originUserId:originUserId];
 }
 
 - (void)updateCollectionMsgNotReadStateByJid:(NSString *)jid WithMsgState:(NSInteger)msgState {
-    [[IMDataManager sharedInstance] updateCollectionMsgNotReadStateByJid:jid WithMsgState:msgState];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateCollectionMsgNotReadStateByJid:jid WithMsgState:msgState];
 }
 
 - (void)updateCollectionMsgNotReadStateForBindId:(NSString *)bindId originUserId:(NSString *)originUserId WithMsgState:(NSInteger)msgState {
-    [[IMDataManager sharedInstance] updateCollectionMsgNotReadStateForBindId:bindId originUserId:originUserId WithMsgState:msgState];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateCollectionMsgNotReadStateForBindId:bindId originUserId:originUserId WithMsgState:msgState];
 }
 
 - (NSDictionary *)getCollectionMsgListForMsgId:(NSString *)msgId {
-    return [[IMDataManager sharedInstance] getCollectionMsgListForMsgId:msgId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionMsgListForMsgId:msgId];
 }
 
 - (NSArray *)getCollectionMsgListWithUserId:(NSString *)userId originUserId:(NSString *)originUserId {
-    return [[IMDataManager sharedInstance] getCollectionMsgListWithUserId:userId originUserId:originUserId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionMsgListWithUserId:userId originUserId:originUserId];
 }
 
 /*********************** Group Message State **************************/
 - (long long)qimDB_bulkUpdateGroupMessageReadFlag:(NSArray *)mucArray {
-    return [[IMDataManager sharedInstance] qimDB_bulkUpdateGroupMessageReadFlag:mucArray];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateGroupMessageReadFlag:mucArray];
 }
 
 - (void)qimDB_bulkUpdateGroupPushState:(NSArray *)stateList {
-    [[IMDataManager sharedInstance] qimDB_bulkUpdateGroupPushState:stateList];
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateGroupPushState:stateList];
 }
 
 - (int)getGroupPushStateWithGroupId:(NSString *)groupId {
-    return [[IMDataManager sharedInstance] getGroupPushStateWithGroupId:groupId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getGroupPushStateWithGroupId:groupId];
 }
 
 - (void)updateGroup:(NSString *)groupId WithPushState:(int)pushState {
-    [[IMDataManager sharedInstance] updateGroup:groupId WithPushState:pushState];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateGroup:groupId WithPushState:pushState];
 }
 
 /*********************** QTNotes **********************/
@@ -1041,7 +1051,7 @@
 //Main
 
 - (BOOL)checkExitsMainItemWithQid:(NSInteger)qid WithCId:(NSInteger)cid {
-    return [[IMDataManager sharedInstance] checkExitsMainItemWithQid:qid WithCId:cid];
+    return [[IMDataManager qimDB_SharedInstance] checkExitsMainItemWithQid:qid WithCId:cid];
 }
 
 - (void)insertQTNotesMainItemWithQId:(NSInteger)qid
@@ -1053,7 +1063,7 @@
                            WithQTime:(NSInteger)qTime
                           WithQState:(NSInteger)qstate
                    WithQExtendedFlag:(NSInteger)qExtendedFlag {
-    [[IMDataManager sharedInstance] insertQTNotesMainItemWithQId:qid
+    [[IMDataManager qimDB_SharedInstance] insertQTNotesMainItemWithQId:qid
                                                         WithCid:cid
                                                       WithQType:qtype
                                                      WithQTitle:qtitle
@@ -1073,82 +1083,82 @@
                   WithQTime:(NSInteger)qtime
                  WithQState:(NSInteger)qstate
           WithQExtendedFlag:(NSInteger)qExtendedFlag {
-    [[IMDataManager sharedInstance] updateToMainWithQId:qid WithCid:cid WithQType:qtype WithQTitle:qtitle WithQDescInfo:qdescInfo WithQContent:qcontent WithQTime:qtime WithQState:qstate WithQExtendedFlag:qExtendedFlag];
+    [[IMDataManager qimDB_SharedInstance] updateToMainWithQId:qid WithCid:cid WithQType:qtype WithQTitle:qtitle WithQDescInfo:qdescInfo WithQContent:qcontent WithQTime:qtime WithQState:qstate WithQExtendedFlag:qExtendedFlag];
 }
 
 - (void)updateToMainItemWithDicts:(NSArray *)mainItemList {
-    [[IMDataManager sharedInstance] updateToMainItemWithDicts:mainItemList];
+    [[IMDataManager qimDB_SharedInstance] updateToMainItemWithDicts:mainItemList];
 }
 
 - (void)deleteToMainWithQid:(NSInteger)qid {
-    [[IMDataManager sharedInstance] deleteToMainWithQid:qid];
+    [[IMDataManager qimDB_SharedInstance] deleteToMainWithQid:qid];
 }
 
 - (void)deleteToMainWithCid:(NSInteger)cid {
-    [[IMDataManager sharedInstance] deleteToMainWithCid:cid];
+    [[IMDataManager qimDB_SharedInstance] deleteToMainWithCid:cid];
 }
 
 - (void)updateToMainItemTimeWithQId:(NSInteger)qid
                           WithQTime:(NSInteger)qTime
                   WithQExtendedFlag:(NSInteger)qExtendedFlag {
-    [[IMDataManager sharedInstance] updateToMainItemTimeWithQId:qid WithQTime:qTime WithQExtendedFlag:qExtendedFlag];
+    [[IMDataManager qimDB_SharedInstance] updateToMainItemTimeWithQId:qid WithQTime:qTime WithQExtendedFlag:qExtendedFlag];
 }
 
 - (void)updateMainStateWithQid:(NSInteger)qid
                        WithCid:(NSInteger)cid
                     WithQState:(NSInteger)qstate
              WithQExtendedFlag:(NSInteger)qExtendedFlag {
-    [[IMDataManager sharedInstance] updateMainStateWithQid:qid WithCid:cid WithQState:qstate WithQExtendedFlag:qExtendedFlag];
+    [[IMDataManager qimDB_SharedInstance] updateMainStateWithQid:qid WithCid:cid WithQState:qstate WithQExtendedFlag:qExtendedFlag];
 }
 
 - (NSArray *)getQTNotesMainItemWithQType:(NSInteger)qType {
-    return [[IMDataManager sharedInstance] getQTNotesMainItemWithQType:qType];
+    return [[IMDataManager qimDB_SharedInstance] getQTNotesMainItemWithQType:qType];
 }
 
 - (NSArray *)getQTNotesMainItemWithQType:(NSInteger)qType QString:(NSString *)qString {
-    return [[IMDataManager sharedInstance] getQTNotesMainItemWithQType:qType QString:qString];
+    return [[IMDataManager qimDB_SharedInstance] getQTNotesMainItemWithQType:qType QString:qString];
 }
 
 - (NSArray *)getQTNotesMainItemWithQType:(NSInteger)qType WithExceptQState:(NSInteger)qState {
-    return [[IMDataManager sharedInstance] getQTNotesMainItemWithQType:qType WithExceptQState:qState];
+    return [[IMDataManager qimDB_SharedInstance] getQTNotesMainItemWithQType:qType WithExceptQState:qState];
 }
 
 - (NSArray *)getQTNotesMainItemWithQType:(NSInteger)qType WithQState:(NSInteger)qState {
-    return [[IMDataManager sharedInstance] getQTNotesMainItemWithQType:qType WithQState:qState];
+    return [[IMDataManager qimDB_SharedInstance] getQTNotesMainItemWithQType:qType WithQState:qState];
 }
 
 - (NSArray *)getQTNoteMainItemWithQType:(NSInteger)qType WithQDescInfo:(NSString *)descInfo {
-    return [[IMDataManager sharedInstance] getQTNoteMainItemWithQType:qType WithQDescInfo:descInfo];
+    return [[IMDataManager qimDB_SharedInstance] getQTNoteMainItemWithQType:qType WithQDescInfo:descInfo];
 }
 
 - (NSArray *)getQTNotesMainItemWithQExtendFlag:(NSInteger)qExtendFlag {
-    return [[IMDataManager sharedInstance] getQTNotesMainItemWithQExtendFlag:qExtendFlag];
+    return [[IMDataManager qimDB_SharedInstance] getQTNotesMainItemWithQExtendFlag:qExtendFlag];
 }
 
 - (NSArray *)getQTNotesSubItemWithQSExtendedFlag:(NSInteger)qsExtendedFlag {
-    return [[IMDataManager sharedInstance] getQTNotesSubItemWithQSExtendedFlag:qsExtendedFlag];
+    return [[IMDataManager qimDB_SharedInstance] getQTNotesSubItemWithQSExtendedFlag:qsExtendedFlag];
 }
 
 - (NSArray *)getQTNotesMainItemWithQExtendedFlag:(NSInteger)qExtendedFlag needConvertToString:(BOOL)flag {
-    return [[IMDataManager sharedInstance] getQTNotesMainItemWithQExtendedFlag:qExtendedFlag needConvertToString:flag];
+    return [[IMDataManager qimDB_SharedInstance] getQTNotesMainItemWithQExtendedFlag:qExtendedFlag needConvertToString:flag];
 }
 
 - (NSDictionary *)getQTNotesMainItemWithCid:(NSInteger)cid {
-    return [[IMDataManager sharedInstance] getQTNotesMainItemWithCid:cid];
+    return [[IMDataManager qimDB_SharedInstance] getQTNotesMainItemWithCid:cid];
 }
 
 - (NSInteger)getQTNoteMainItemMaxTimeWithQType:(NSInteger)qType {
-    return [[IMDataManager sharedInstance] getQTNoteMainItemMaxTimeWithQType:qType];
+    return [[IMDataManager qimDB_SharedInstance] getQTNoteMainItemMaxTimeWithQType:qType];
 }
 
 - (NSInteger)getMaxQTNoteMainItemCid {
-    return [[IMDataManager sharedInstance] getMaxQTNoteMainItemCid];
+    return [[IMDataManager qimDB_SharedInstance] getMaxQTNoteMainItemCid];
 }
 
 //Sub
 
 - (BOOL)checkExitsSubItemWithQsid:(NSInteger)qsid WithCsid:(NSInteger)csid {
-    return [[IMDataManager sharedInstance] checkExitsSubItemWithQsid:qsid WithCsid:csid];
+    return [[IMDataManager qimDB_SharedInstance] checkExitsSubItemWithQsid:qsid WithCsid:csid];
 }
 
 - (void)insertQTNotesSubItemWithCId:(NSInteger)cid
@@ -1161,7 +1171,7 @@
                          WithQSTime:(NSInteger)qsTime
                          WithQState:(NSInteger)qSstate
                 WithQS_ExtendedFlag:(NSInteger)qs_ExtendedFlag {
-    [[IMDataManager sharedInstance] insertQTNotesSubItemWithCId:cid WithQSId:qsid WithCSId:csid WithQSType:qstype WithQSTitle:qstitle WithQSIntroduce:qsIntroduce WithQSContent:qsContent WithQSTime:qsTime WithQState:qSstate WithQS_ExtendedFlag:qs_ExtendedFlag];
+    [[IMDataManager qimDB_SharedInstance] insertQTNotesSubItemWithCId:cid WithQSId:qsid WithCSId:csid WithQSType:qstype WithQSTitle:qstitle WithQSIntroduce:qsIntroduce WithQSContent:qsContent WithQSTime:qsTime WithQState:qSstate WithQS_ExtendedFlag:qs_ExtendedFlag];
 }
 
 - (void)updateToSubWithCid:(NSInteger)cid
@@ -1173,84 +1183,84 @@
                 WithQSTime:(NSInteger)qsTime
                WithQSState:(NSInteger)qsState
        WithQS_ExtendedFlag:(NSInteger)qs_ExtendedFlag {
-    [[IMDataManager sharedInstance] updateToSubWithCid:cid WithQSid:qsid WithCSid:csid WithQSTitle:qSTitle WithQSDescInfo:qsDescInfo WithQSContent:qsContent WithQSTime:qsTime WithQSState:qsState WithQS_ExtendedFlag:qs_ExtendedFlag];
+    [[IMDataManager qimDB_SharedInstance] updateToSubWithCid:cid WithQSid:qsid WithCSid:csid WithQSTitle:qSTitle WithQSDescInfo:qsDescInfo WithQSContent:qsContent WithQSTime:qsTime WithQSState:qsState WithQS_ExtendedFlag:qs_ExtendedFlag];
 }
 
 - (void)updateToSubItemWithDicts:(NSArray *)subItemList {
-    [[IMDataManager sharedInstance] updateToSubItemWithDicts:subItemList];
+    [[IMDataManager qimDB_SharedInstance] updateToSubItemWithDicts:subItemList];
 }
 
 - (void)deleteToSubWithCId:(NSInteger)cid {
-    [[IMDataManager sharedInstance] deleteToSubWithCId:cid];
+    [[IMDataManager qimDB_SharedInstance] deleteToSubWithCId:cid];
 }
 
 - (void)deleteToSubWithCSId:(NSInteger)Csid {
-    [[IMDataManager sharedInstance] deleteToSubWithCSId:Csid];
+    [[IMDataManager qimDB_SharedInstance] deleteToSubWithCSId:Csid];
 }
 
 - (void)updateSubStateWithCSId:(NSInteger)Csid
                    WithQSState:(NSInteger)qsState
             WithQsExtendedFlag:(NSInteger)qsExtendedFlag {
-    [[IMDataManager sharedInstance] updateSubStateWithCSId:Csid WithQSState:qsState WithQsExtendedFlag:qsExtendedFlag];
+    [[IMDataManager qimDB_SharedInstance] updateSubStateWithCSId:Csid WithQSState:qsState WithQsExtendedFlag:qsExtendedFlag];
 }
 
 - (void)updateToSubItemTimeWithCSId:(NSInteger)csid
                          WithQSTime:(NSInteger)qsTime
                  WithQsExtendedFlag:(NSInteger)qsExtendedFlag {
-    [[IMDataManager sharedInstance] updateToSubItemTimeWithCSId:csid WithQSTime:qsTime WithQsExtendedFlag:qsExtendedFlag];
+    [[IMDataManager qimDB_SharedInstance] updateToSubItemTimeWithCSId:csid WithQSTime:qsTime WithQsExtendedFlag:qsExtendedFlag];
 }
 
 - (NSArray *)getQTNotesSubItemWithMainQid:(NSString *)qid WithQSExtendedFlag:(NSInteger)qsExtendedFlag {
-    return [[IMDataManager sharedInstance] getQTNotesSubItemWithMainQid:qid WithQSExtendedFlag:qsExtendedFlag];
+    return [[IMDataManager qimDB_SharedInstance] getQTNotesSubItemWithMainQid:qid WithQSExtendedFlag:qsExtendedFlag];
 }
 
 - (NSArray *)getQTNotesSubItemWithMainQid:(NSString *)qid WithQSExtendedFlag:(NSInteger)qsExtendedFlag needConvertToString:(BOOL)flag {
-    return [[IMDataManager sharedInstance] getQTNotesSubItemWithMainQid:qid WithQSExtendedFlag:qsExtendedFlag needConvertToString:flag];
+    return [[IMDataManager qimDB_SharedInstance] getQTNotesSubItemWithMainQid:qid WithQSExtendedFlag:qsExtendedFlag needConvertToString:flag];
 }
 
 - (NSArray *)getQTNotesSubItemWithCid:(NSInteger)cid QSExtendedFlag:(NSInteger)qsExtendedFlag {
-    return [[IMDataManager sharedInstance] getQTNotesSubItemWithCid:cid QSExtendedFlag:qsExtendedFlag];
+    return [[IMDataManager qimDB_SharedInstance] getQTNotesSubItemWithCid:cid QSExtendedFlag:qsExtendedFlag];
 }
 
 - (NSArray *)getQTNotesSubItemWithQSState:(NSInteger)qsState {
-    return [[IMDataManager sharedInstance] getQTNotesSubItemWithQSState:qsState];
+    return [[IMDataManager qimDB_SharedInstance] getQTNotesSubItemWithQSState:qsState];
 }
 
 - (NSArray *)getQTNotesSubItemWithExpectQSState:(NSInteger)qsState {
-    return [[IMDataManager sharedInstance] getQTNotesSubItemWithExpectQSState:qsState];
+    return [[IMDataManager qimDB_SharedInstance] getQTNotesSubItemWithExpectQSState:qsState];
 }
 
 - (NSArray *)getQTNotesSubItemWithCid:(NSInteger)cid WithQSState:(NSInteger)qsState {
-    return [[IMDataManager sharedInstance] getQTNotesSubItemWithCid:cid WithQSState:qsState];
+    return [[IMDataManager qimDB_SharedInstance] getQTNotesSubItemWithCid:cid WithQSState:qsState];
 }
 
 - (NSDictionary *)getQTNotesSubItemWithCid:(NSInteger)cid WithUserId:(NSString *)userId {
-    return [[IMDataManager sharedInstance] getQTNotesSubItemWithCid:cid WithUserId:userId];
+    return [[IMDataManager qimDB_SharedInstance] getQTNotesSubItemWithCid:cid WithUserId:userId];
 }
 
 - (NSArray *)getQTNotesSubItemWithCid:(NSInteger)cid WithExpectQSState:(NSInteger)qsState {
-    return [[IMDataManager sharedInstance] getQTNotesSubItemWithCid:cid WithExpectQSState:qsState];
+    return [[IMDataManager qimDB_SharedInstance] getQTNotesSubItemWithCid:cid WithExpectQSState:qsState];
 }
 
 - (NSArray *)getQTNotesSubItemWithCid:(NSInteger)cid WithQSType:(NSInteger)qsType WithQSState:(NSInteger)qsState {
-    return [[IMDataManager sharedInstance] getQTNotesSubItemWithCid:cid WithQSType:qsType WithQSState:qsState];
+    return [[IMDataManager qimDB_SharedInstance] getQTNotesSubItemWithCid:cid WithQSType:qsType WithQSState:qsState];
 }
 
 - (NSArray *)getQTNotesSubItemWithCid:(NSInteger)cid WithQSType:(NSInteger)qsType WithExpectQSState:(NSInteger)qsState {
-    return [[IMDataManager sharedInstance] getQTNotesSubItemWithCid:cid WithQSType:qsType WithExpectQSState:qsType];
+    return [[IMDataManager qimDB_SharedInstance] getQTNotesSubItemWithCid:cid WithQSType:qsType WithExpectQSState:qsType];
 }
 
 - (NSInteger)getQTNoteSubItemMaxTimeWithCid:(NSInteger)cid
                                  WithQSType:(NSInteger)qsType {
-    return [[IMDataManager sharedInstance] getQTNoteSubItemMaxTimeWithCid:cid WithQSType:qsType];
+    return [[IMDataManager qimDB_SharedInstance] getQTNoteSubItemMaxTimeWithCid:cid WithQSType:qsType];
 }
 
 - (NSDictionary *)getQTNoteSubItemWithParmDict:(NSDictionary *)paramDict {
-    return [[IMDataManager sharedInstance] getQTNoteSubItemWithParmDict:paramDict];
+    return [[IMDataManager qimDB_SharedInstance] getQTNoteSubItemWithParmDict:paramDict];
 }
 
 - (NSInteger)getMaxQTNoteSubItemCSid {
-    return [[IMDataManager sharedInstance] getMaxQTNoteSubItemCSid];
+    return [[IMDataManager qimDB_SharedInstance] getMaxQTNoteSubItemCSid];
 }
 
 @end

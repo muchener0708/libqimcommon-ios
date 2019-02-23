@@ -40,7 +40,7 @@
     NSArray *friendList = [[QIMJSONSerializer sharedInstance] deserializeObject:friendJson error:nil];
     if (friendList.count <= 0) {
         
-        [[IMDataManager sharedInstance] deleteFriendList];
+        [[IMDataManager qimDB_SharedInstance] qimDB_deleteFriendList];
         [QIMUUIDTools setUUIDToolsFriendList:nil];
         dispatch_async(dispatch_get_main_queue(), ^{
             
@@ -57,7 +57,7 @@
             NSString *xmppId = [userId stringByAppendingFormat:@"@%@", domain];
             [xmppIds addObject:xmppId];
         }
-        NSDictionary *friendDic = [[IMDataManager sharedInstance] selectUsersDicByXmppIds:xmppIds];
+        NSDictionary *friendDic = [[IMDataManager qimDB_SharedInstance] qimDB_selectUsersDicByXmppIds:xmppIds];
         long long currentTime = [[NSDate date] timeIntervalSince1970] - self.serverTimeDiff;
         NSMutableArray *updateList = [NSMutableArray array];
         dispatch_block_t block = ^{
@@ -110,10 +110,10 @@
         
         
         if (updateList.count > 0) {
-            [[IMDataManager sharedInstance] bulkInsertFriendList:updateList];
+            [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertFriendList:updateList];
         } else {
             
-            [[IMDataManager sharedInstance] deleteFriendList];
+            [[IMDataManager qimDB_SharedInstance] qimDB_deleteFriendList];
             [QIMUUIDTools setUUIDToolsFriendList:nil];
         }
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -127,21 +127,21 @@
     return [[XmppImManager sharedInstance] addFriendPresenceWithXmppId:xmppId WithAnswer:answer];
 }
 
-- (void)validationFriendWihtXmppId:(NSString *)xmppId WithReason:(NSString *)reason {
+- (void)validationFriendWithXmppId:(NSString *)xmppId WithReason:(NSString *)reason {
     
-    return [[XmppImManager sharedInstance] validationFriendWihtXmppId:xmppId WithReason:reason];
+    return [[XmppImManager sharedInstance] validationFriendWithXmppId:xmppId WithReason:reason];
 }
 
 - (void)agreeFriendRequestWithXmppId:(NSString *)xmppId {
     
     [[XmppImManager sharedInstance] agreeFriendRequestWithXmppId:xmppId];
-    [[IMDataManager sharedInstance] updateFriendNotifyWithXmppId:xmppId WihtState:1];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateFriendNotifyWithXmppId:xmppId WithState:1];
 }
 
 - (void)refusedFriendRequestWithXmppId:(NSString *)xmppId {
     
     [[XmppImManager sharedInstance] refusedFriendRequestWithXmppId:xmppId];
-    [[IMDataManager sharedInstance] updateFriendNotifyWithXmppId:xmppId WihtState:2];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateFriendNotifyWithXmppId:xmppId WithState:2];
 }
 
 //1.删除好友,客户端请求，其中mode1为单项删除，mode为2为双项删除
@@ -150,7 +150,7 @@
     BOOL isSuccess = [[XmppImManager sharedInstance] deleteFriendWithXmppId:xmppId WithMode:mode];
     if (isSuccess) {
         
-        [[IMDataManager sharedInstance] deleteFriendListWithXmppId:xmppId];
+        [[IMDataManager qimDB_SharedInstance] qimDB_deleteFriendListWithXmppId:xmppId];
     }
     return isSuccess;
 }
@@ -170,7 +170,7 @@
     if ([QIMManager getLastUserName]) {
         
         NSString *destUrl = [NSString stringWithFormat:@"%@/get_invite_info?server=%@&c=qtalk&u=%@&k=%@&p=iphone&v=%@", [[QIMNavConfigManager sharedInstance] httpHost], [[XmppImManager sharedInstance] domain], [QIMManager getLastUserName], self.remoteKey, [[QIMAppInfo sharedInstance] AppBuildVersion]];
-        long long maxTime = [[IMDataManager sharedInstance] getMaxTimeFriendNotify];
+        long long maxTime = [[IMDataManager qimDB_SharedInstance] qimDB_getMaxTimeFriendNotify];
         NSDictionary *jsonDic = @{@"user": [QIMManager getLastUserName], @"time": @(maxTime), @"d":[[XmppImManager sharedInstance] domain]};
         destUrl = [destUrl stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
         NSURL *requestUrl = [[NSURL alloc] initWithString:destUrl];
@@ -204,7 +204,7 @@
                         }
                         if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
                             
-                            NSArray *list = [[IMDataManager sharedInstance] selectUserListByUserIds:userIds];
+                            NSArray *list = [[IMDataManager qimDB_SharedInstance] qimDB_selectUserListByUserIds:userIds];
                             for (NSMutableDictionary *userInfoDic in list) {
                                 
                                 NSString *userId = [userInfoDic objectForKey:@"UserId"];
@@ -214,16 +214,16 @@
                                 [userInfoDic setObject:b forKey:@"UserInfo"];
                                 [userInfoDic setObject:@(t) forKey:@"LastUpdateTime"];
                             }
-                            [[IMDataManager sharedInstance] bulkInsertFriendNotifyList:list];
+                            [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertFriendNotifyList:list];
                         } else if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
                             
                             NSMutableArray *userList = [NSMutableArray arrayWithCapacity:1];
                             for (NSString *userID in userIds) {
                                 
-                                NSDictionary *userInfoD = [[IMDataManager sharedInstance] selectUserByJID:userID];
+                                NSDictionary *userInfoD = [[IMDataManager qimDB_SharedInstance] qimDB_selectUserByJID:userID];
                                 if (userInfoD == nil) {
                                     
-                                    userInfoD = [[IMDataManager sharedInstance] selectUserByJID:[NSString stringWithFormat:@"%@@%@", userID, [self getDomain]]];
+                                    userInfoD = [[IMDataManager qimDB_SharedInstance] qimDB_selectUserByJID:[NSString stringWithFormat:@"%@@%@", userID, [self getDomain]]];
                                 }
                                 NSMutableDictionary *userInfoDic = [NSMutableDictionary dictionaryWithDictionary:userInfoD];
                                 NSString *userId = [userInfoDic objectForKey:@"UserId"];
@@ -234,7 +234,7 @@
                                 [userInfoDic setQIMSafeObject:@(t) forKey:@"LastUpdateTime"];
                                 [userList addObject:userInfoDic];
                             }
-                            [[IMDataManager sharedInstance] bulkInsertFriendNotifyList:userList];
+                            [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertFriendNotifyList:userList];
                         }
                         if (resultArray.count > 0) {
                             dispatch_async(dispatch_get_main_queue(), ^{
@@ -253,12 +253,12 @@
 }
 
 - (NSDictionary *)getLastFriendNotify {
-    return [[IMDataManager sharedInstance] getLastFriendNotify];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getLastFriendNotify];
 }
 
 - (NSInteger)getFriendNotifyCount {
     
-    return [[IMDataManager sharedInstance] getFriendNotifyCount];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getFriendNotifyCount];
 }
 
 

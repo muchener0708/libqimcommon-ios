@@ -11,7 +11,7 @@
 @implementation QIMManager (UserMedal)
 
 - (NSArray *)getLocalUserMedalWithXmppJid:(NSString *)xmppId {
-    return [[IMDataManager sharedInstance] qimDB_getUserMedalsWithXmppId:xmppId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getUserMedalsWithXmppId:xmppId];
 }
 
 - (void)getRemoteUserMedalWithXmppJid:(NSString *)xmppId {
@@ -29,7 +29,7 @@
             NSArray *data = [responseDic objectForKey:@"data"];
             if ([data isKindOfClass:[NSArray class]]) {
                 NSLog(@"str : %@", data);
-                [[IMDataManager sharedInstance] qimDB_bulkInsertUserMedalsWithData:data];
+                [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertUserMedalsWithData:data];
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateUserMedal object:@{@"UserId":xmppId, @"UserMedals":data}];
                 });

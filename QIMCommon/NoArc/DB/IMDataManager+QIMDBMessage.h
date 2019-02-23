@@ -170,6 +170,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSDictionary *)qimDB_getMsgsByMsgId:(NSString *)msgId;
 
+- (NSArray *)qimDB_getMsgsByMsgType:(NSArray *)msgTypes ByXmppId:(NSString *)xmppId ByReadJid:(NSString *)realJid;
+
 - (NSArray *)qimDB_getMsgsByMsgType:(int)msgType ByXmppId:(NSString *)xmppId;
 
 - (NSArray *)qimDB_getMsgsByMsgType:(int)msgType;
@@ -236,6 +238,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)qimDB_updateGroupMessageRemoteState:(NSInteger)msgRemoteFlag ByGroupReadList:(NSArray *)groupReadList;
 
 - (void)qimDB_updateMsgWithMsgRemoteState:(NSInteger)msgRemoteFlag ByMsgIdList:(NSArray *)msgIdList;
+
+#pragma mark - 本地消息搜索
+
+- (NSArray *)qimDB_getLocalMediaByXmppId:(NSString *)xmppId ByReadJid:(NSString *)realJid;
+
+- (NSArray *)qimDB_getMsgsByKeyWord:(NSString *)keywords ByXmppId:(NSString *)xmppId ByReadJid:(NSString *)realJid;
 
 @end
 

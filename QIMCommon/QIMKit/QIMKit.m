@@ -230,8 +230,8 @@ static QIMKit *__global_QIMKit = nil;
     [[QIMManager sharedInstance] removeAtMeByJid:jid];
 }
 
-- (void)addAtALLByJid:(NSString *)jid WithMsgId:(NSString *)msgId WihtMsg:(Message *)message WithNickName:(NSString *)nickName {
-    [[QIMManager sharedInstance] addAtALLByJid:jid WithMsgId:msgId WihtMsg:message WithNickName:nickName];
+- (void)addAtALLByJid:(NSString *)jid WithMsgId:(NSString *)msgId WithMsg:(Message *)message WithNickName:(NSString *)nickName {
+    [[QIMManager sharedInstance] addAtALLByJid:jid WithMsgId:msgId WithMsg:message WithNickName:nickName];
 }
 
 - (void)removeAtAllByJid:(NSString *)jid {
@@ -314,22 +314,6 @@ static QIMKit *__global_QIMKit = nil;
 
 - (void)checkClearCache {
     [[QIMManager sharedInstance] checkClearCache];
-}
-
-- (NSString *)userOnlineStatus:(NSString *)sid {
-    return [[QIMManager sharedInstance] userOnlineStatus:sid];
-}
-
-- (BOOL)isUserOnline:(NSString *)userId {
-    return [[QIMManager sharedInstance] isUserOnline:userId];
-}
-
-- (UserPrecenseStatus)getUserPrecenseStatus:(NSString *)jid {
-    return [[QIMManager sharedInstance] getUserPrecenseStatus:jid];
-}
-
-- (UserPrecenseStatus)getUserPrecenseStatus:(NSString *)jid status:(NSString **)status {
-    return [[QIMManager sharedInstance] getUserPrecenseStatus:jid status:status];
 }
 
 @end

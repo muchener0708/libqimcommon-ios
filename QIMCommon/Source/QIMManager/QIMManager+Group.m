@@ -82,7 +82,7 @@
     }
     groupVCard = [self.groupVCardDict objectForKey:groupId];
     if (!groupVCard.count) {
-        groupVCard = [[IMDataManager sharedInstance] getGroupCardByGroupId:groupId];
+        groupVCard = [[IMDataManager qimDB_SharedInstance] qimDB_getGroupCardByGroupId:groupId];
         dispatch_block_t block = ^{
 
             [self.groupVCardDict setQIMSafeObject:groupVCard forKey:groupId];
@@ -97,7 +97,7 @@
 
 - (NSArray *)syncgroupMember:(NSString *)groupId {
     NSDictionary *dic = [[XmppImManager sharedInstance] groupMembersByGroupId:groupId];
-    [[IMDataManager sharedInstance] bulkInsertGroupMember:[dic allValues] WithGroupId:groupId];
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertGroupMember:[dic allValues] WithGroupId:groupId];
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:@"QIMGroupMemberWillUpdate" object:groupId];
     });
@@ -117,7 +117,7 @@
  }
  */
 - (NSArray *)getGroupMembersByGroupId:(NSString *)groupId {
-    NSArray *result = [[IMDataManager sharedInstance] qimDB_getGroupMember:groupId];
+    NSArray *result = [[IMDataManager qimDB_SharedInstance] qimDB_getGroupMember:groupId];
     if ([result count] <= 0) {
         return [self syncgroupMember:groupId];
     }
@@ -130,7 +130,7 @@
  *  @param groupId 群ID
  */
 - (BOOL)isGroupMemberByGroupId:(NSString *)groupId {
-    NSDictionary *memberInfo = [[IMDataManager sharedInstance] getGroupMemberInfoByJid:[self getLastJid] WithGroupId:groupId];
+    NSDictionary *memberInfo = [[IMDataManager qimDB_SharedInstance] qimDB_getGroupMemberInfoByJid:[self getLastJid] WithGroupId:groupId];
     return memberInfo ? YES : NO;
 }
 
@@ -250,7 +250,7 @@
             NSDictionary *resultDic = [result firstObject];
             NSString *groupId = [resultDic objectForKey:@"Set Muc-Vcard"];
             NSString *version = [resultDic objectForKey:@"version"];
-            [[IMDataManager sharedInstance] updateGroup:groupId WihtNickName:nickName WithTopic:title WithDesc:desc WithHeaderSrc:headerSrc WithVersion:version];
+            [[IMDataManager qimDB_SharedInstance] qimDB_updateGroup:groupId WithNickName:nickName WithTopic:title WithDesc:desc WithHeaderSrc:headerSrc WithVersion:version];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:kGroupCardChanged object:@[groupId]];
                 if (nickName.length > 0) {
@@ -264,11 +264,11 @@
 }
 
 - (NSArray *)getGroupIdList {
-    return [[IMDataManager sharedInstance] getGroupIdList];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getGroupIdList];
 }
 
 - (NSArray *)getMyGroupList {
-    return [[IMDataManager sharedInstance] qimDB_getGroupList];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getGroupList];
 }
 
 - (void)updateGroupCardByGroupId:(NSString *)groupId {
@@ -288,7 +288,7 @@
         self.load_customEvent_queue = dispatch_queue_create("Load CustomEvent Queue", DISPATCH_QUEUE_SERIAL);
     }
     dispatch_async(self.load_customEvent_queue, ^{
-        NSArray *groupCardList = [[IMDataManager sharedInstance] getGroupVCardByGroupIds:groupIds];
+        NSArray *groupCardList = [[IMDataManager qimDB_SharedInstance] qimDB_getGroupVCardByGroupIds:groupIds];
         NSMutableDictionary *groupIdDic = [NSMutableDictionary dictionary];
         for (NSDictionary *groupDic in groupCardList) {
             NSString *groupId = [groupDic objectForKey:@"GroupId"];
@@ -314,7 +314,7 @@
                 if (![groupId containsString:groupC]) {
                     continue;
                 }
-                [[IMDataManager sharedInstance] insertGroup:groupId];
+                [[IMDataManager qimDB_SharedInstance] qimDB_insertGroup:groupId];
                 NSArray *coms = [groupId componentsSeparatedByString:@"@"];
                 NSString *comsLastStr = [coms lastObject];
                 if (comsLastStr.length >= groupC.length) {
@@ -381,7 +381,7 @@
                         else
                             dispatch_sync(self.cacheQueue, block);
                         
-                        [[IMDataManager sharedInstance] bulkUpdateGroupCards:dataList];
+                        [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateGroupCards:dataList];
                         dispatch_async(dispatch_get_main_queue(), ^{
                             [[NSNotificationCenter defaultCenter] postNotificationName:kGroupNickNameChanged object:groupIds];
                         });
@@ -489,7 +489,7 @@
 
 - (BOOL)isGroupOwner:(NSString *)groupId {
     
-    NSDictionary *myInfoDic = [[IMDataManager sharedInstance] getGroupMemberInfoByJid:[self getLastJid] WithGroupId:groupId];
+    NSDictionary *myInfoDic = [[IMDataManager qimDB_SharedInstance] qimDB_getGroupMemberInfoByJid:[self getLastJid] WithGroupId:groupId];
     NSString *affiliation = [myInfoDic objectForKey:@"affiliation"];
     if ([affiliation isEqualToString:@"owner"]) {
         return YES;
@@ -501,7 +501,7 @@
     if (userId == nil) {
         userId = [self getLastJid];
     }
-    NSDictionary *myInfoDic = [[IMDataManager sharedInstance] getGroupMemberInfoByJid:userId WithGroupId:groupId];
+    NSDictionary *myInfoDic = [[IMDataManager qimDB_SharedInstance] qimDB_getGroupMemberInfoByJid:userId WithGroupId:groupId];
     NSString *affiliation = [myInfoDic objectForKey:@"affiliation"];
     QIMGroupIdentity id_ = QIMGroupIdentityNone;
     if ([affiliation isEqualToString:@"owner"]) {
@@ -515,7 +515,7 @@
 
 - (BOOL)joinGroupId:(NSString *)groupId ByName:(NSString *)name isInitiative:(BOOL)initiative{
     
-    [[IMDataManager sharedInstance] insertGroup:groupId];
+    [[IMDataManager qimDB_SharedInstance] qimDB_insertGroup:groupId];
     
     NSDictionary *dict = [[XmppImManager sharedInstance] groupMembersByGroupId:groupId];
     if (dict.count > 0) {
@@ -546,8 +546,8 @@
     BOOL quitSuccess = [[XmppImManager sharedInstance] quitGroupDelRegister:groupId];
     if (quitSuccess) {
         [self removeSessionById:groupId];
-        [[IMDataManager sharedInstance] deleteGroup:groupId];
-        [[IMDataManager sharedInstance] deleteGroupMemberWithGroupId:groupId];
+        [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroup:groupId];
+        [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroupMemberWithGroupId:groupId];
         [[NSNotificationCenter defaultCenter] postNotificationName:kChatRoomLeave object:groupId];
         [[NSNotificationCenter defaultCenter] postNotificationName:kGroupListUpdate object:nil];
         return YES;
@@ -560,8 +560,8 @@
     BOOL destorySuccess = [[XmppImManager sharedInstance] destoryChatRoom:groupId];
     if (destorySuccess) {
         [self removeSessionById:groupId];
-        [[IMDataManager sharedInstance] deleteGroup:groupId];
-        [[IMDataManager sharedInstance] deleteGroupMemberWithGroupId:groupId];
+        [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroup:groupId];
+        [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroupMemberWithGroupId:groupId];
         return YES;
     } else {
         return NO;
@@ -605,7 +605,7 @@
         NSString *groupId = [NSString stringWithFormat:@"%@@conference.%@",groupName,[self getDomain]];
         [[XmppImManager sharedInstance] registerJoinGroup:groupId];
         [[NSNotificationCenter defaultCenter] postNotificationName:kMyGroupListUpdate object:nil];
-        [[IMDataManager sharedInstance] insertGroup:groupId];
+        [[IMDataManager qimDB_SharedInstance] qimDB_insertGroup:groupId];
         if (members.count > 0) {
             [self joinGroupWithBuddies:groupId groupName:groupNickName WithInviteMember:members withCallback:nil];
         }
@@ -637,7 +637,7 @@
 - (NSInteger)searchGroupTotalCountBySearchStr:(NSString *)searchStr {
     __block NSInteger totalCount = 0;
     dispatch_block_t block = ^{
-        totalCount = [[IMDataManager sharedInstance] getLocalGroupTotalCountByUserIds:@[searchStr]];
+        totalCount = [[IMDataManager qimDB_SharedInstance] qimDB_getLocalGroupTotalCountByUserIds:@[searchStr]];
     };
     if (dispatch_get_specific(self.cacheTag))
         block();
@@ -650,7 +650,7 @@
 - (NSArray *)searchGroupBySearchStr:(NSString *)searchStr  WithLimit:(NSInteger)limit WithOffset:(NSInteger)offset {
     __block NSArray *array = nil;
     dispatch_block_t block = ^{
-        array = [[IMDataManager sharedInstance] searchGroupByUserIds:@[searchStr] WithLimit:limit WithOffset:offset];
+        array = [[IMDataManager qimDB_SharedInstance] qimDB_searchGroupByUserIds:@[searchStr] WithLimit:limit WithOffset:offset];
     };
     if (dispatch_get_specific(self.cacheTag))
         block();
@@ -662,11 +662,11 @@
 
 - (NSArray *)searchGroupUserBySearchStr:(NSString *)searchStr inGroup:(NSString *)groupId {
     
-    return [[IMDataManager sharedInstance] selectUserListBySearchStr:searchStr inGroup:groupId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_selectUserListBySearchStr:searchStr inGroup:groupId];
 }
 
 - (NSArray *)searchUserBySearchStr:(NSString *)searchStr notInGroup:(NSString *)groupId {
-    return [[IMDataManager sharedInstance] searchUserBySearchStr:searchStr notInGroup:groupId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_searchUserBySearchStr:searchStr notInGroup:groupId];
 }
 
 - (MessageDirection)getGroupMsgDirectionWithSendJid:(NSString *)sendJid {
@@ -701,9 +701,9 @@
     for (NSDictionary *myGroup in oldGroupList) {
         NSString *groupName = [myGroup objectForKey:@"GroupId"];
         if (![[groupList valueForKey:@"groupId"] containsObject:groupName]) {
-            [[IMDataManager sharedInstance] deleteGroup:groupName];
+            [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroup:groupName];
             [self removeSessionById:groupName];
-            [[IMDataManager sharedInstance] deleteGroupMemberWithGroupId:groupName];
+            [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroupMemberWithGroupId:groupName];
         }
     }
 }
@@ -723,7 +723,7 @@
     __block NSDictionary *result = nil;
     
     dispatch_block_t block = ^{
-        NSDictionary *tempDic = [[IMDataManager sharedInstance] selectUserByIndex:groupName];
+        NSDictionary *tempDic = [[IMDataManager qimDB_SharedInstance] qimDB_selectUserByIndex:groupName];
         if (tempDic) {
             NSMutableDictionary *dic = [NSMutableDictionary dictionaryWithDictionary:tempDic];
             if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
@@ -786,7 +786,7 @@
                     //flag 为 Ture 新增，NO 为销毁或退出
                     if (flag) {
                         [strongSelf.updateGroupList addObject:newGroupId];
-                        [[IMDataManager sharedInstance] insertGroup:newGroupId];
+                        [[IMDataManager qimDB_SharedInstance] qimDB_insertGroup:newGroupId];
                     } else {
                         NSMutableArray *tempMyGroups = [NSMutableArray arrayWithArray:[strongSelf getMyGroupList]];
                         for (NSDictionary *myGroup in tempMyGroups) {
@@ -795,9 +795,9 @@
                                 [strongSelf.groupList removeObject:myGroup];
                                 NSString *combineGroupId = [NSString stringWithFormat:@"%@<>%@", groupId, groupId];
                                 [strongSelf removeStickWithCombineJid:combineGroupId WithChatType:ChatType_GroupChat];
-                                [[IMDataManager sharedInstance] deleteGroup:groupId];
+                                [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroup:groupId];
                                 [strongSelf removeSessionById:groupId];
-                                [[IMDataManager sharedInstance] deleteGroupMemberWithGroupId:groupId];
+                                [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroupMemberWithGroupId:groupId];
                             }
                         }
                     }

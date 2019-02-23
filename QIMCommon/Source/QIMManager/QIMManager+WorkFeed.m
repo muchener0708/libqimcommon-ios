@@ -18,7 +18,7 @@
         self.lastWorkFeedMsgMsgTime = errorTime;
         QIMVerboseLog(@"本地驼圈错误时间戳 : %lld", errorTime);
     } else {
-        self.lastWorkFeedMsgMsgTime = [[IMDataManager sharedInstance] qimDB_getWorkNoticeMessagesMaxTime];
+        self.lastWorkFeedMsgMsgTime = [[IMDataManager qimDB_SharedInstance] qimDB_getWorkNoticeMessagesMaxTime];
     }
     if (self.lastWorkFeedMsgMsgTime == 0) {
         self.lastWorkFeedMsgMsgTime = defaultTime;
@@ -48,7 +48,7 @@
             
             NSDictionary *momentDic = [result objectForKey:@"data"];
             if ([momentDic isKindOfClass:[NSDictionary class]]) {
-                [[IMDataManager sharedInstance] qimDB_bulkinsertMoments:@[momentDic]];
+                [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertMoments:@[momentDic]];
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (callback) {
                         callback(momentDic);
@@ -122,10 +122,10 @@
                 NSArray *deletePosts = [moments objectForKey:@"deletePost"];
                 NSArray *newPosts = [moments objectForKey:@"newPost"];
                 if ([deletePosts isKindOfClass:[NSArray class]]) {
-                    [[IMDataManager sharedInstance] qimDB_bulkdeleteMoments:deletePosts];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkdeleteMoments:deletePosts];
                 }
                 if ([newPosts isKindOfClass:[NSArray class]]) {
-                    [[IMDataManager sharedInstance] qimDB_bulkinsertMoments:newPosts];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertMoments:newPosts];
                     dispatch_async(dispatch_get_main_queue(), ^{
                         [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyReloadWorkFeed object:newPosts];
                     });
@@ -158,10 +158,10 @@
                 NSArray *deletePosts = [moments objectForKey:@"deletePost"];
                 NSArray *newPosts = [moments objectForKey:@"newPost"];
                 if ([deletePosts isKindOfClass:[NSArray class]]) {
-                    [[IMDataManager sharedInstance] qimDB_bulkdeleteMoments:deletePosts];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkdeleteMoments:deletePosts];
                 }
                 if ([newPosts isKindOfClass:[NSArray class]]) {
-                    [[IMDataManager sharedInstance] qimDB_bulkinsertMoments:newPosts];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertMoments:newPosts];
                     dispatch_async(dispatch_get_main_queue(), ^{
                         if (callback) {
                             callback(newPosts);
@@ -208,7 +208,7 @@
                 BOOL isDeleteFlag = [[data objectForKey:@"isDelete"] boolValue];
                 if (isDeleteFlag == YES) {
                     NSInteger rId = [[data objectForKey:@"id"] integerValue];
-                    [[IMDataManager sharedInstance] qimDB_deleteMomentWithRId:rId];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_deleteMomentWithRId:rId];
                 }
             }
         }
@@ -244,7 +244,7 @@
                 return;
             }
             if ([data isKindOfClass:[NSDictionary class]]) {
-                [[IMDataManager sharedInstance] qimDB_updateMomentLike:@[data]];
+                [[IMDataManager qimDB_SharedInstance] qimDB_updateMomentLike:@[data]];
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (callback) {
                         callback(data);
@@ -298,7 +298,7 @@
                 return;
             }
             if ([data isKindOfClass:[NSDictionary class]]) {
-                [[IMDataManager sharedInstance] qimDB_updateMomentLike:@[data]];
+                [[IMDataManager qimDB_SharedInstance] qimDB_updateMomentLike:@[data]];
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (callback) {
                         callback(data);
@@ -346,15 +346,15 @@
                 dispatch_async(dispatch_get_main_queue(), ^{
                    [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyReloadWorkFeedCommentNum object:postCommentData];
                 });
-                [[IMDataManager sharedInstance] qimDB_updateMomentWithLikeNum:likeNum WithCommentNum:postCommentNum withPostId:[commentDic objectForKey:@"postUUID"]];
+                [[IMDataManager qimDB_SharedInstance] qimDB_updateMomentWithLikeNum:likeNum WithCommentNum:postCommentNum withPostId:[commentDic objectForKey:@"postUUID"]];
                 
                 NSArray *deleteComments = [data objectForKey:@"deleteComments"];
                 if ([deleteComments isKindOfClass:[NSArray class]]) {
-                    [[IMDataManager sharedInstance] qimDB_bulkDeleteComments:deleteComments];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteComments:deleteComments];
                 }
                 NSArray *newComment = [data objectForKey:@"newComment"];
                 if ([newComment isKindOfClass:[NSArray class]]) {
-                    [[IMDataManager sharedInstance] qimDB_bulkinsertComments:newComment];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertComments:newComment];
                     dispatch_async(dispatch_get_main_queue(), ^{
                         [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyReloadWorkComment object:nil];
                         NSInteger likeNum = [[data objectForKey:@"postLikeNum"] integerValue];
@@ -364,7 +364,7 @@
                         NSInteger postCommentNum = [[data objectForKey:@"postCommentNum"] integerValue];
                         NSDictionary *postCommentData = @{@"postId":[commentDic objectForKey:@"postUUID"], @"postCommentNum":@(postCommentNum)};
                         [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyReloadWorkFeedCommentNum object:postCommentData];
-                        [[IMDataManager sharedInstance] qimDB_updateMomentWithLikeNum:likeNum WithCommentNum:postCommentNum withPostId:[commentDic objectForKey:@"postUUID"]];
+                        [[IMDataManager qimDB_SharedInstance] qimDB_updateMomentWithLikeNum:likeNum WithCommentNum:postCommentNum withPostId:[commentDic objectForKey:@"postUUID"]];
                     });
                 }
             } else {
@@ -442,11 +442,11 @@
             if ([data isKindOfClass:[NSDictionary class]]) {
                 NSArray *deteleComments = [data objectForKey:@"deleteComments"];
                 if ([deteleComments isKindOfClass:[NSArray class]]) {
-                    [[IMDataManager sharedInstance] qimDB_bulkDeleteComments:deteleComments];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteComments:deteleComments];
                 }
                 NSArray *newComment = [data objectForKey:@"newComment"];
                 if ([newComment isKindOfClass:[NSArray class]] && newComment.count > 0) {
-                    [[IMDataManager sharedInstance] qimDB_bulkinsertComments:newComment];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertComments:newComment];
                     dispatch_async(dispatch_get_main_queue(), ^{
                         NSInteger likeNum = [[data objectForKey:@"postLikeNum"] integerValue];
                         BOOL isPostLike = [[data objectForKey:@"isPostLike"] boolValue];
@@ -455,13 +455,13 @@
                         NSInteger postCommentNum = [[data objectForKey:@"postCommentNum"] integerValue];
                         NSDictionary *postCommentData = @{@"postId":momentId, @"postCommentNum":@(postCommentNum)};
                         [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyReloadWorkFeedCommentNum object:postCommentData];
-                        [[IMDataManager sharedInstance] qimDB_updateMomentWithLikeNum:likeNum WithCommentNum:postCommentNum withPostId:momentId];
+                        [[IMDataManager qimDB_SharedInstance] qimDB_updateMomentWithLikeNum:likeNum WithCommentNum:postCommentNum withPostId:momentId];
                         if (callback) {
                             callback(newComment);
                         }
                     });
                 } else {
-                    [[IMDataManager sharedInstance] qimDB_bulkDeleteCommentsWithPostId:momentId];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteCommentsWithPostId:momentId];
                     dispatch_async(dispatch_get_main_queue(), ^{
                         if (callback) {
                             callback(@[]);
@@ -510,12 +510,12 @@
             if ([data isKindOfClass:[NSDictionary class]]) {
                 NSArray *deteleComments = [data objectForKey:@"deleteComments"];
                 if ([deteleComments isKindOfClass:[NSArray class]]) {
-                    [[IMDataManager sharedInstance] qimDB_bulkDeleteComments:deteleComments];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteComments:deteleComments];
                 }
                 NSArray *newComment = [data objectForKey:@"newComment"];
                 if ([newComment isKindOfClass:[NSArray class]] && newComment.count > 0) {
                     //插入历史20条
-                    [[IMDataManager sharedInstance] qimDB_bulkinsertComments:newComment];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertComments:newComment];
                     dispatch_async(dispatch_get_main_queue(), ^{
                         if (callback) {
                             callback(newComment);
@@ -523,8 +523,8 @@
                     });
                 } else {
                     //返回空，删除之前的历史
-                    long long commentCreateTime = [[IMDataManager sharedInstance] qimDB_getCommentCreateTimeWithCurCommentId:commentRId];
-                    [[IMDataManager sharedInstance] qimDB_bulkDeleteCommentsWithPostId:momentId withcurCommentCreateTime:commentCreateTime];
+                    long long commentCreateTime = [[IMDataManager qimDB_SharedInstance] qimDB_getCommentCreateTimeWithCurCommentId:commentRId];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteCommentsWithPostId:momentId withcurCommentCreateTime:commentCreateTime];
                     dispatch_async(dispatch_get_main_queue(), ^{
                         if (callback) {
                             callback(@[]);
@@ -565,7 +565,7 @@
             
                 NSInteger postCommentNum = [[data objectForKey:@"postCommentNum"] integerValue];
                 NSInteger likeNum = [[data objectForKey:@"postLikeNum"] integerValue];
-                [[IMDataManager sharedInstance] qimDB_updateMomentWithLikeNum:likeNum WithCommentNum:postCommentNum withPostId:postUUId];
+                [[IMDataManager qimDB_SharedInstance] qimDB_updateMomentWithLikeNum:likeNum WithCommentNum:postCommentNum withPostId:postUUId];
                 NSDictionary *postCommentData = @{@"postId":postUUId, @"postCommentNum":@(postCommentNum)};
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyReloadWorkFeedCommentNum object:postCommentData];
@@ -576,7 +576,7 @@
                     NSString *commentUUID = [data objectForKey:@"commentUUID"];
                     if (commentUUID.length > 0) {
                         NSDictionary *deleteCommentDic = @{@"uuid":commentUUID, @"isDelete":@(YES)};
-                        [[IMDataManager sharedInstance] qimDB_bulkDeleteComments:@[deleteCommentDic]];
+                        [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteComments:@[deleteCommentDic]];
                         dispatch_async(dispatch_get_main_queue(), ^{
                             if (callback) {
                                 callback(YES);
@@ -640,7 +640,7 @@
 //    {@"messageTime":0, "user":"lilulucas.li", "userHost":"ejabhost1", "messageId":"123"}
     NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/message/getMessageList", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
     NSMutableDictionary *bodyDic = [[NSMutableDictionary alloc] init];
-    long long maxTime = [[IMDataManager sharedInstance] qimDB_getWorkNoticeMessagesMaxTime];
+    long long maxTime = [[IMDataManager qimDB_SharedInstance] qimDB_getWorkNoticeMessagesMaxTime];
     [bodyDic setObject:@(self.lastWorkFeedMsgMsgTime) forKey:@"messageTime"];
     [bodyDic setObject:[QIMManager getLastUserName] forKey:@"user"];
     [bodyDic setObject:[[QIMManager sharedInstance] getDomain] forKey:@"userHost"];
@@ -658,7 +658,7 @@
             if ([data isKindOfClass:[NSDictionary class]]) {
                 NSArray *msgList = [data objectForKey:@"msgList"];
                 if ([msgList isKindOfClass:[NSArray class]]) {
-                    [[IMDataManager sharedInstance] qimDB_bulkinsertNoticeMessage:msgList];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertNoticeMessage:msgList];
                     dispatch_async(dispatch_get_main_queue(), ^{
                         //发送驼圈离线消息通知
                         [[NSNotificationCenter defaultCenter] postNotificationName:kPBPresenceCategoryNotifyWorkNoticeMessage object:nil];
@@ -733,7 +733,7 @@
                 NSArray *deletePosts = [moments objectForKey:@"deletePost"];
                 NSArray *newPosts = [moments objectForKey:@"newPost"];
                 if ([deletePosts isKindOfClass:[NSArray class]]) {
-                    [[IMDataManager sharedInstance] qimDB_bulkdeleteMoments:deletePosts];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkdeleteMoments:deletePosts];
                 }
                 if ([newPosts isKindOfClass:[NSArray class]]) {
                     if (newPosts.count > 0) {
@@ -841,18 +841,18 @@
 }
 
 - (NSDictionary *)getLastWorkMoment {
-    NSDictionary *result = [[IMDataManager sharedInstance] qimDB_getLastWorkMoment];
+    NSDictionary *result = [[IMDataManager qimDB_SharedInstance] qimDB_getLastWorkMoment];
     return [self getLastWorkMomentWithDic:result];
 }
 
-- (NSDictionary *)getWorkMomentWihtMomentId:(NSString *)momentId {
-    return [[IMDataManager sharedInstance] qimDB_getWorkMomentWithMomentId:momentId];
+- (NSDictionary *)getWorkMomentWithMomentId:(NSString *)momentId {
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getWorkMomentWithMomentId:momentId];
 }
 
-- (void)getWorkMomentWithLastMomentTime:(long long)lastMomentTime withUserXmppId:(NSString *)xmppId WihtLimit:(int)limit WithOffset:(int)offset withFirstLocalMoment:(BOOL)firstLocal WihtComplete:(void (^)(NSArray *))complete{
+- (void)getWorkMomentWithLastMomentTime:(long long)lastMomentTime withUserXmppId:(NSString *)xmppId WithLimit:(int)limit WithOffset:(int)offset withFirstLocalMoment:(BOOL)firstLocal WithComplete:(void (^)(NSArray *))complete{
     if (firstLocal) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-            NSArray *array = [[IMDataManager sharedInstance] qimDB_getWorkMomentWithXmppId:xmppId WihtLimit:limit WithOffset:offset];
+            NSArray *array = [[IMDataManager qimDB_SharedInstance] qimDB_getWorkMomentWithXmppId:xmppId WithLimit:limit WithOffset:offset];
             if (array.count > 0) {
                 __block NSMutableArray *list = [NSMutableArray arrayWithArray:array];
                 if (list.count >= limit) {
@@ -895,7 +895,7 @@
                         complete(moments);
                     });
                 } else {
-                    NSArray *array = [[IMDataManager sharedInstance] qimDB_getWorkMomentWithXmppId:xmppId WihtLimit:limit WithOffset:offset];
+                    NSArray *array = [[IMDataManager qimDB_SharedInstance] qimDB_getWorkMomentWithXmppId:xmppId WithLimit:limit WithOffset:offset];
                     dispatch_async(dispatch_get_main_queue(), ^{
                         complete(array);
                     });
@@ -907,10 +907,10 @@
 
 #pragma mark - Local Comments
 
-- (void)getWorkCommentWithLastCommentRId:(NSInteger)lastCommentRId withMomentId:(NSString *)momentId WihtLimit:(int)limit WithOffset:(int)offset withFirstLocalComment:(BOOL)firstLocal WihtComplete:(void (^)(NSArray *))complete{
+- (void)getWorkCommentWithLastCommentRId:(NSInteger)lastCommentRId withMomentId:(NSString *)momentId WithLimit:(int)limit WithOffset:(int)offset withFirstLocalComment:(BOOL)firstLocal WithComplete:(void (^)(NSArray *))complete{
     if (firstLocal) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-            NSArray *array = [[IMDataManager sharedInstance] qimDB_getWorkCommentsWithMomentId:momentId WihtLimit:limit WithOffset:offset];
+            NSArray *array = [[IMDataManager qimDB_SharedInstance] qimDB_getWorkCommentsWithMomentId:momentId WithLimit:limit WithOffset:offset];
             if (array.count > 0) {
                 __block NSMutableArray *list = [NSMutableArray arrayWithArray:array];
                 if (list.count >= limit) {
@@ -943,7 +943,7 @@
                         complete(comments);
                     });
                 } else {
-                    NSArray *array = [[IMDataManager sharedInstance] qimDB_getWorkCommentsWithMomentId:momentId WihtLimit:limit WithOffset:offset];
+                    NSArray *array = [[IMDataManager qimDB_SharedInstance] qimDB_getWorkCommentsWithMomentId:momentId WithLimit:limit WithOffset:offset];
                     dispatch_async(dispatch_get_main_queue(), ^{
                         complete(array);
                     });
@@ -954,15 +954,15 @@
 }
 
 - (NSInteger)getWorkNoticeMessagesCount {
-    return [[IMDataManager sharedInstance] qimDB_getWorkNoticeMessagesCount];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getWorkNoticeMessagesCount];
 }
 
-- (NSArray *)getWorkNoticeMessagesWihtLimit:(int)limit WithOffset:(int)offset {
-    return [[IMDataManager sharedInstance] qimDB_getWorkNoticeMessagesWihtLimit:limit WithOffset:offset];
+- (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset {
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getWorkNoticeMessagesWithLimit:limit WithOffset:offset];
 }
 
 - (void)updateLocalWorkNoticeMsgReadStateWithTime:(long long)time {
-    [[IMDataManager sharedInstance] qimDB_updateWorkNoticeMessageReadStateWithTime:time];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateWorkNoticeMessageReadStateWithTime:time];
 }
 
 @end

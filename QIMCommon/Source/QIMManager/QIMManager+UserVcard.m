@@ -262,7 +262,7 @@
     __block NSDictionary *result = nil;
     
     dispatch_block_t block = ^{
-        NSDictionary *tempDic = [[IMDataManager sharedInstance] selectUserByID:rtxId];
+        NSDictionary *tempDic = [[IMDataManager qimDB_SharedInstance] qimDB_selectUserByID:rtxId];
         if (tempDic) {
             NSMutableDictionary *dic = [NSMutableDictionary dictionaryWithDictionary:tempDic];
             if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
@@ -293,7 +293,7 @@
     }
     NSDictionary *tempDic = [self.userVCardDict objectForKey:myId];
     if (!tempDic) {
-        tempDic = [[IMDataManager sharedInstance] selectUserByJID:myId];
+        tempDic = [[IMDataManager qimDB_SharedInstance] qimDB_selectUserByJID:myId];
         
         dispatch_block_t block = ^{
             [self.userVCardDict setQIMSafeObject:tempDic forKey:myId];
@@ -322,7 +322,7 @@
         if (memUserInfo.count && userHeaderSrc.length > 0) {
             result = memUserInfo;
         } else {
-            NSDictionary *tempDic = [[IMDataManager sharedInstance] selectUserByIndex:nickName];
+            NSDictionary *tempDic = [[IMDataManager qimDB_SharedInstance] qimDB_selectUserByIndex:nickName];
             if (tempDic) {
                 
                 if (!self.userInfoDic) {
@@ -364,7 +364,7 @@
     NSDictionary *infoDic = [self getUserInfoByUserId:userId];
     if (!infoDic) {
         
-        infoDic = [[IMDataManager sharedInstance] selectUserByJID:userId];
+        infoDic = [[IMDataManager qimDB_SharedInstance] qimDB_selectUserByJID:userId];
     }
     NSString *fileUrl = [infoDic objectForKey:@"HeaderSrc"];
     if (fileUrl.length > 0) {
@@ -373,7 +373,7 @@
     return @"";
 }
 
-- (void)updateUserBigHeaderImageUrl:(NSString *)url WihtVersion:(NSString *)version ForUserId:(NSString *)userId {
+- (void)updateUserBigHeaderImageUrl:(NSString *)url WithVersion:(NSString *)version ForUserId:(NSString *)userId {
     if (url.length > 0) {
         /*
         NSDictionary *temp = [self.userBigHeaderDic objectForKey:userId];
@@ -396,7 +396,7 @@
             [[QIMUserCacheManager sharedInstance] setUserObject:self.userBigHeaderDic forKey:kUserBigHeaderDic];
         }
         */
-        [[IMDataManager sharedInstance] updateUser:userId WithHeaderSrc:url WithVersion:version];
+        [[IMDataManager qimDB_SharedInstance] qimDB_updateUser:userId WithHeaderSrc:url WithVersion:version];
     }
 }
 
@@ -447,7 +447,7 @@
                     NSString *contentType = @"jpeg";
                     if ([infoDic objectForKey:@"imageurl"]) {
                         
-                        NSString *fileName = [[IMDataManager sharedInstance] getUserHeaderSrcByUserId:user];
+                        NSString *fileName = [[IMDataManager qimDB_SharedInstance] qimDB_getUserHeaderSrcByUserId:user];
                         if (fileName.length <= 0) {
                             
                             fileName = [NSString stringWithFormat:@"%@.%@", [infoDic objectForKey:@"username"], contentType];
@@ -458,7 +458,7 @@
                     }
                 }
             }
-            [[IMDataManager sharedInstance] InsertOrUpdateUserInfos:members];
+            [[IMDataManager qimDB_SharedInstance] qimDB_InsertOrUpdateUserInfos:members];
             dispatch_async(dispatch_get_main_queue(), ^{
                 
                 for (NSDictionary *memberDic in members) {
@@ -493,7 +493,7 @@
         return ;
     }
     dispatch_async(self.load_customEvent_queue, ^{
-        NSDictionary *usersDic = [[IMDataManager sharedInstance] selectUsersDicByXmppIds:xmppIds];
+        NSDictionary *usersDic = [[IMDataManager qimDB_SharedInstance] qimDB_selectUsersDicByXmppIds:xmppIds];
         NSMutableDictionary *xmppIdDic = [NSMutableDictionary dictionary];
         for (NSString *xmppId in xmppIds) {
             NSDictionary *userDic = [usersDic objectForKey:xmppId];
@@ -584,7 +584,7 @@
                         else
                             dispatch_sync(self.cacheQueue, block);
                         
-                        [[IMDataManager sharedInstance] bulkUpdateUserCardsV2:dataList];
+                        [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateUserCards:dataList];
                         dispatch_async(dispatch_get_main_queue(), ^{
                             [[NSNotificationCenter defaultCenter] postNotificationName:kUserVCardUpdate object:xmppIds];
                         });
@@ -644,7 +644,7 @@
                 NSArray *resultData = [result objectForKey:@"data"];
                 if ([resultData isKindOfClass:[NSArray class]]) {
                     NSDictionary *resultDic = [resultData firstObject];
-                    [strongSelf updateUserBigHeaderImageUrl:myPhotoUrl WihtVersion:[resultDic objectForKey:@"version"] ForUserId:[QIMManager getLastUserName]];
+                    [strongSelf updateUserBigHeaderImageUrl:myPhotoUrl WithVersion:[resultDic objectForKey:@"version"] ForUserId:[QIMManager getLastUserName]];
                     NSString *headerUrl = myPhotoUrl;
                     if (![myPhotoUrl qim_hasPrefixHttpHeader]) {
                         headerUrl = [NSString stringWithFormat:@"%@/%@", [[QIMNavConfigManager sharedInstance] innerFileHttpHost], myPhotoUrl];
@@ -670,7 +670,7 @@
 - (NSDictionary *)getUserWorkInfoByUserId:(NSString *)userId {
     __block NSDictionary *result = nil;
     dispatch_block_t block = ^{
-        NSDictionary *tempDic = [[IMDataManager sharedInstance] selectUserBackInfoByXmppId:userId];
+        NSDictionary *tempDic = [[IMDataManager qimDB_SharedInstance] qimDB_selectUserBackInfoByXmppId:userId];
         if (tempDic) {
             NSString *userWorkInfoStr = [tempDic objectForKey:@"UserWorkInfo"];
             result = [[QIMJSONSerializer sharedInstance] deserializeObject:userWorkInfoStr error:nil];
@@ -715,10 +715,10 @@
             NSDictionary *data = [dic objectForKey:@"data"];
             QIMVerboseLog(@"查看用户%@直属领导结果 ： %@", userId, dic);
             if (data.count) {
-                //插入数据库IM_User_BackInfo
+                //插入数据库IM_UserWorkInfo
                 NSString *workInfo = [[QIMJSONSerializer sharedInstance] serializeObject:data];
                 NSDictionary *userBackInfo = @{@"UserWorkInfo":workInfo?workInfo:@""};
-                [[IMDataManager sharedInstance] bulkUpdateUserBackInfo:userBackInfo WithXmppId:userId];
+                [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateUserBackInfo:userBackInfo WithXmppId:userId];
                 
                 userWorkInfo = [NSDictionary dictionaryWithDictionary:data];
                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -795,7 +795,7 @@
     __block NSArray *array = nil;
     dispatch_block_t block = ^{
         
-        array = [[IMDataManager sharedInstance] selectUserListBySearchStr:searchStr];
+        array = [[IMDataManager qimDB_SharedInstance] qimDB_selectUserListBySearchStr:searchStr];
         for (NSMutableDictionary *userDic in array) {
             NSString *rtxId = [userDic objectForKey:@"UserId"];
             NSString *desc = [self.friendDescDic objectForKey:rtxId];
@@ -816,7 +816,7 @@
 - (NSInteger)searchUserListTotalCountBySearchStr:(NSString *)searchStr {
     __block NSInteger totalCount = 0;
     dispatch_block_t block = ^{
-        totalCount = [[IMDataManager sharedInstance] selectUserListTotalCountBySearchStr:searchStr];
+        totalCount = [[IMDataManager qimDB_SharedInstance] qimDB_selectUserListTotalCountBySearchStr:searchStr];
     };
     if (dispatch_get_specific(self.cacheTag))
         block();
@@ -830,7 +830,7 @@
     __block NSArray *array = nil;
     dispatch_block_t block = ^{
         
-        array = [[IMDataManager sharedInstance] selectUserListBySearchStr:searchStr WithLimit:limit WithOffset:offset];
+        array = [[IMDataManager qimDB_SharedInstance] qimDB_selectUserListBySearchStr:searchStr WithLimit:limit WithOffset:offset];
     };
     
     if (dispatch_get_specific(self.cacheTag))

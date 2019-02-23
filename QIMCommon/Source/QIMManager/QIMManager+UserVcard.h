@@ -40,7 +40,7 @@
  */
 - (NSString *)getUserBigHeaderImageUrlWithUserId:(NSString *)userId;
 
-- (void)updateUserBigHeaderImageUrl:(NSString *)url WihtVersion:(NSString *)version ForUserId:(NSString *)userId ;
+- (void)updateUserBigHeaderImageUrl:(NSString *)url WithVersion:(NSString *)version ForUserId:(NSString *)userId ;
 
 
 /**

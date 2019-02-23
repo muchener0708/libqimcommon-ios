@@ -64,6 +64,32 @@ typedef enum {
 } MessageReadFlag;
 
 typedef enum {
+    QIMMessageRemoteReadStateNotSent = 0x00,       //发送到服务器
+    QIMMessageRemoteReadStateDidSent = 0x01,         //已送达，对方已接受
+    QIMMessageRemoteReadStateDidReaded = QIMMessageRemoteReadStateDidSent << 1,    //0x02已阅读，对方已读
+    QIMMessageRemoteReadStateGroupReaded = 0x03,  //群消息已读
+    QIMMessageRemoteReadStateDidOperated = 0x04,  //已操作
+} QIMMessageRemoteReadState; //消息操作状态
+
+typedef enum {
+    QIMMessageReadFlagClearAllUnRead = 0,    //向服务器清空所有未读
+    QIMMessageReadFlagGroupReaded = 2, //向服务器发送群消息已读
+    QIMMessageReadFlagDidSend = 3,     //向服务器发送已送达
+    QIMMessageReadFlagDidRead = 4,     //向服务器发送已阅读
+    QIMMessageReadFlagDidControl = 7,  //向服务器发送已操作
+} QIMMessageReadFlag;
+
+typedef enum {
+    QIMMessageSendState_Faild      = 0,     //发送失败
+    QIMMessageSendState_Waiting,           //发送中
+    QIMMessageSendState_Success,           //发送失败
+    QIMMessageSendState_NotRead    = 0xf,   //未读
+    QIMMessageSendState_didRead    = 0x10, //已读
+    QIMMessageSendState_didDestroyed = 0x11,//已销毁
+    QIMMessageSendState_didControl = 0x12, //已操作
+} QIMMessageSendState; //消息发送状态
+
+typedef enum {
     PublicNumberMsgType_None                = 0,
     PublicNumberMsgType_Text                = 1,
     PublicNumberMsgType_Voice               = 2,
@@ -241,6 +267,11 @@ typedef enum {
     MessageDirection_Sent = 0,
     MessageDirection_Received = 1,
 } MessageDirection;
+
+typedef enum {
+    QIMMessageDirection_Sent = 0,
+    QIMMessageDirection_Received = 1,
+} QIMMessageDirection;
 
 typedef enum {
     IMPlatform_UNKNOW   = 0,

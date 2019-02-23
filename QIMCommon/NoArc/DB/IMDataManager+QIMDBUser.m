@@ -90,7 +90,7 @@
 - (void)qimDB_bulkUpdateUserBackInfo:(NSDictionary *)userBackInfo WithXmppId:(NSString *)xmppId {
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         
-        NSString *insertSql = @"insert or replace into IM_User_BackInfo(XmppId, UserWorkInfo, LastUpdateTime) values(:XmppId, :UserWorkInfo, :LastUpdateTime);";
+        NSString *insertSql = @"insert or replace into IM_UserWorkInfo(XmppId, UserWorkInfo, LastUpdateTime) values(:XmppId, :UserWorkInfo, :LastUpdateTime);";
         NSString *userWorkInfoStr = [userBackInfo objectForKey:@"UserWorkInfo"];
         NSDate *nowDate = [NSDate dateWithTimeIntervalSinceNow:0];//获取当前时间0秒后的时间
         NSTimeInterval time=[nowDate timeIntervalSince1970]*1000;// *1000 是精确到毫秒，不乘就是精确到秒
@@ -359,7 +359,7 @@
     }
     __block NSMutableDictionary *userBackInfo = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"SELECT *from IM_User_BackInfo Where XmppId = :XmppId;";
+        NSString *sql = @"SELECT *from IM_UserWorkInfo Where XmppId = :XmppId;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:xmppId];
         DataReader *reader = [database executeReader:sql withParameters:param];

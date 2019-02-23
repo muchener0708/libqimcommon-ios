@@ -187,7 +187,7 @@ enum XmppLoginType {
 
 - (void)addFriendPresenceWithXmppId:(NSString *)xmppId WithAnswer:(NSString *)answer;
 
-- (void)validationFriendWihtXmppId:(NSString *)xmppId WithReason:(NSString *)reason;
+- (void)validationFriendWithXmppId:(NSString *)xmppId WithReason:(NSString *)reason;
 
 - (void)agreeFriendRequestWithXmppId:(NSString *)xmppId;
 
@@ -258,9 +258,9 @@ enum XmppLoginType {
 
 - (BOOL)sendControlStateWithMessagesIdArray:(NSString *)jsonString WithXmppid:(NSString *)xmppId;
 
-- (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WihtXmppId:(NSString *)xmppId;
+- (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithMessageReadFlag:(NSInteger)msgReadFlag WithXmppId:(NSString *)xmppId;
 
-- (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithXmppid:(NSString *)xmppId WithTo:(NSString *)to WithReadFlag:(NSInteger)readFlag;
+- (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithMessageReadFlag:(NSInteger)msgReadFlag WithXmppid:(NSString *)xmppId WithTo:(NSString *)to;
 
 - (BOOL)sendReadStateWithMessageTime:(long long)time groupName:(NSString *)groupName WithDomain:(NSString *)domain;
 

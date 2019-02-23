@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSDictionary *)qimDB_getLastWorkMoment;
 
-- (NSArray *)qimDB_getWorkMomentWithXmppId:(NSString *)xmppId WihtLimit:(int)limit WithOffset:(int)offset;
+- (NSArray *)qimDB_getWorkMomentWithXmppId:(NSString *)xmppId WithLimit:(int)limit WithOffset:(int)offset;
 
 - (void)qimDB_deleteMomentWithRId:(NSInteger)rId;
 
@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)qimDB_bulkinsertComments:(NSArray *)comments;
 
-- (NSArray *)qimDB_getWorkCommentsWithMomentId:(NSString *)momentId WihtLimit:(int)limit WithOffset:(int)offset;
+- (NSArray *)qimDB_getWorkCommentsWithMomentId:(NSString *)momentId WithLimit:(int)limit WithOffset:(int)offset;
 
 #pragma mark - NoticeMessage
 
@@ -50,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSInteger)qimDB_getWorkNoticeMessagesCount;
 
-- (NSArray *)qimDB_getWorkNoticeMessagesWihtLimit:(int)limit WithOffset:(int)offset;
+- (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset;
 
 - (void)qimDB_updateWorkNoticeMessageReadStateWithTime:(long long)time;
 

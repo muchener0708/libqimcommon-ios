@@ -11,7 +11,7 @@
 @implementation QIMManager (Calendar)
 
 - (NSArray *)selectTripByYearMonth:(NSString *)date {
-    return [[IMDataManager sharedInstance] qimDB_SelectTripByYearMonth:date];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_SelectTripByYearMonth:date];
 }
 
 - (void)getRemoteUserTripList {
@@ -24,7 +24,7 @@
     QIMVerboseLog(@"获取该用户会议列表q_ckey : %@", requestHeaders);
     
     NSMutableDictionary *bodyProperties = [NSMutableDictionary dictionary];
-    long long version = [[[IMDataManager sharedInstance] qimDB_getConfigInfoWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalTripUpdateTime] WithSubKey:[[QIMManager sharedInstance] getLastJid] WithDeleteFlag:NO] longLongValue];
+    long long version = [[[IMDataManager qimDB_SharedInstance] qimDB_getConfigInfoWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalTripUpdateTime] WithSubKey:[[QIMManager sharedInstance] getLastJid] WithDeleteFlag:NO] longLongValue];
     
     [bodyProperties setQIMSafeObject:[NSString stringWithFormat:@"%lld", version] forKey:@"updateTime"];
     [bodyProperties setQIMSafeObject:[[QIMManager sharedInstance] getLastJid] forKey:@"userName"];
@@ -46,12 +46,12 @@
             if ([[result objectForKey:@"ret"] boolValue]) {
                 NSDictionary *tripsData = [result objectForKey:@"data"];
                 NSArray *tripsList = [tripsData objectForKey:@"trips"];
-                [[IMDataManager sharedInstance] qimDB_bulkInsertTrips:tripsList];
+                [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertTrips:tripsList];
 
                 NSString *updateTime = [tripsData objectForKey:@"updateTime"];
                 NSString *jid = [[QIMManager sharedInstance] getLastJid];
                 NSArray *configArray = @[@{@"subkey":jid?jid:@"", @"configinfo":updateTime}];
-                [[IMDataManager sharedInstance] qimDB_bulkInsertConfigArrayWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalTripUpdateTime] WithConfigVersion:0 ConfigArray:configArray];
+                [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertConfigArrayWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalTripUpdateTime] WithConfigVersion:0 ConfigArray:configArray];
             }
         }
     } failure:^(NSError *error) {
@@ -86,12 +86,12 @@
                 NSDictionary *tripsData = [result objectForKey:@"data"];
                 
                 NSArray *tripsList = [tripsData objectForKey:@"trips"];
-                [[IMDataManager sharedInstance] qimDB_bulkInsertTrips:tripsList];
+                [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertTrips:tripsList];
                 
                 NSString *updateTime = [tripsData objectForKey:@"updateTime"];
                 NSString *jid = [[QIMManager sharedInstance] getLastJid];
                 NSArray *configArray = @[@{@"subkey":jid?jid:@"", @"configinfo":updateTime}];
-                [[IMDataManager sharedInstance] qimDB_bulkInsertConfigArrayWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalTripUpdateTime] WithConfigVersion:0 ConfigArray:configArray];
+                [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertConfigArrayWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalTripUpdateTime] WithConfigVersion:0 ConfigArray:configArray];
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (callback) {
                         callback(YES);
@@ -197,7 +197,7 @@
 }
 
 - (NSArray *)getLocalAreaList {
-    return [[IMDataManager sharedInstance] qimDB_getLocalArea];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getLocalArea];
 }
 
 - (void)getRemoteAreaList {
@@ -224,7 +224,7 @@
             if ([[result objectForKey:@"ret"] boolValue]) {
                 NSDictionary *areaData = [result objectForKey:@"data"];
                 NSArray *areaList = [areaData objectForKey:@"list"];
-                [[IMDataManager sharedInstance] qimDB_bulkInsertArea:areaList];
+                [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertArea:areaList];
             }
         }
     } failure:^(NSError *error) {

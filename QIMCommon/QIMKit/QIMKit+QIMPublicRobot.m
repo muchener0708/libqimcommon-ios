@@ -69,12 +69,12 @@
     return [[QIMManager sharedInstance] createPublicNumberMessageWithMsg:msg extenddInfo:extendInfo publicNumberId:publicNumberId msgType:msgType];
 }
 
-- (Message *)sendMessage:(NSString *)msg ToPublicNumberId:(NSString *)publicNumberId WithMsgId:(NSString *)msgId WihtMsgType:(int)msgType {
-    return [[QIMManager sharedInstance] sendMessage:msg ToPublicNumberId:publicNumberId WithMsgId:msgId WihtMsgType:msgType];
+- (Message *)sendMessage:(NSString *)msg ToPublicNumberId:(NSString *)publicNumberId WithMsgId:(NSString *)msgId WithMsgType:(int)msgType {
+    return [[QIMManager sharedInstance] sendMessage:msg ToPublicNumberId:publicNumberId WithMsgId:msgId WithMsgType:msgType];
 }
 
-- (NSArray *)getPublicNumberMsgListById:(NSString *)publicNumberId WihtLimit:(int)limit WithOffset:(int)offset {
-    return [[QIMManager sharedInstance] getPublicNumberMsgListById:publicNumberId WihtLimit:limit WithOffset:offset];
+- (NSArray *)getPublicNumberMsgListById:(NSString *)publicNumberId WithLimit:(int)limit WithOffset:(int)offset {
+    return [[QIMManager sharedInstance] getPublicNumberMsgListById:publicNumberId WithLimit:limit WithOffset:offset];
 }
 
 - (void)clearNotReadMsgByPublicNumberId:(NSString *)jid {

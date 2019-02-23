@@ -485,7 +485,7 @@ static QIMManager *__IMManager = nil;
         QIMVerboseLog(@"获取系统历史记录结束2");
         
         // 更新未发送的消息状态为失败
-        [[IMDataManager sharedInstance] updateMessageFromState:MessageState_Waiting ToState:MessageState_Faild];
+        [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageFromState:MessageState_Waiting ToState:MessageState_Faild];
         QIMVerboseLog(@"开始同步服务端漫游的个人配置2");
         CFAbsoluteTime startTime6 = [[QIMWatchDog sharedInstance] startTime];
         [self getRemoteClientConfig];
@@ -744,7 +744,7 @@ static QIMManager *__IMManager = nil;
                 NSError *error = nil;
                 id value = [[QIMJSONSerializer sharedInstance] deserializeObject:response.data error:&error];
                 if (error == nil && value) {
-                    [[IMDataManager sharedInstance] bulkUpdateUserSearchIndexs:value];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateUserSearchIndexs:value];
                 }
             }
         } failure:^(NSError *error) {
@@ -759,7 +759,7 @@ static QIMManager *__IMManager = nil;
         NSString *jid = [[QIMManager sharedInstance] getLastJid];
         NSString *updateTime = [NSString stringWithFormat:@"%lld", time];
         NSArray *configArray = @[@{@"subkey":jid?jid:@"", @"configinfo":updateTime}];
-        [[IMDataManager sharedInstance] qimDB_bulkInsertConfigArrayWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalIncrementUpdateTime] WithConfigVersion:0 ConfigArray:configArray];
+        [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertConfigArrayWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalIncrementUpdateTime] WithConfigVersion:0 ConfigArray:configArray];
     });
 }
 
@@ -774,7 +774,7 @@ static QIMManager *__IMManager = nil;
         NSURL *requestUrl = [[NSURL alloc] initWithString:destUrl];
         
         NSMutableDictionary *params = [NSMutableDictionary dictionaryWithCapacity:2];
-        long long maxIncrementUpdateTime = [[[IMDataManager sharedInstance] qimDB_getConfigInfoWithConfigKey:@"kLocalIncrementUpdateTime" WithSubKey:[[QIMManager sharedInstance] getLastJid] WithDeleteFlag:NO] longLongValue];
+        long long maxIncrementUpdateTime = [[[IMDataManager qimDB_SharedInstance] qimDB_getConfigInfoWithConfigKey:@"kLocalIncrementUpdateTime" WithSubKey:[[QIMManager sharedInstance] getLastJid] WithDeleteFlag:NO] longLongValue];
         [params setQIMSafeObject:@(maxIncrementUpdateTime) forKey:@"version"];
         [params setQIMSafeObject:[XmppImManager sharedInstance].domain forKey:@"domain"];
         
@@ -797,8 +797,7 @@ static QIMManager *__IMManager = nil;
                 BOOL ret = [[result objectForKey:@"ret"] boolValue];
                 if (ret) {
                     NSArray *resultArray = [result objectForKey:@"data"];
-//                        [[IMDataManager sharedInstance] clearUserListForList:resultArray];
-                        [[IMDataManager sharedInstance] bulkInsertUserInfosNotSaveDescInfo:resultArray];
+                        [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertUserInfosNotSaveDescInfo:resultArray];
                     dispatch_block_t block = ^{
                         for (NSDictionary *infoDic in resultArray) {
                             [_friendDescDic setObject:[infoDic objectForKey:@"D"] forKey:[infoDic objectForKey:@"U"]];
@@ -841,7 +840,7 @@ static QIMManager *__IMManager = nil;
     NSMutableArray *rosterList = [NSMutableArray array];
     NSMutableString *descInfo = [NSMutableString string];
     [self decodeTreeWithDic:deps WithRosterList:rosterList WithDescInfo:descInfo];
-    [[IMDataManager sharedInstance] bulkInsertUserInfos:rosterList];
+    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertUserInfos:rosterList];
 }
 
 - (NSData *)updateOrganizationalStructure {
@@ -957,7 +956,7 @@ static QIMManager *__IMManager = nil;
         NSString *osFile = [_configPath stringByAppendingPathComponent:@"os.bin"];
         NSString *rsFile = [_configPath stringByAppendingPathComponent:@"rs.bin"];
         
-        if ([[IMDataManager sharedInstance] checkExitsUser] == NO || forceUpdate) {
+        if ([[IMDataManager qimDB_SharedInstance] qimDB_checkExitsUser] == NO || forceUpdate) {
             QIMWarnLog(@"qchat本地数据库之前没有IM_User, 重新拉取组织架构");
             NSError *error = nil;
             { //Roster List
@@ -1070,7 +1069,7 @@ static QIMManager *__IMManager = nil;
         NSString *osFile = [_configPath stringByAppendingPathComponent:@"os.bin"];
         NSString *rsFile = [_configPath stringByAppendingPathComponent:@"rs.bin"];
         
-        if ([[IMDataManager sharedInstance] checkExitsUser] == NO || forceUpdate) {
+        if ([[IMDataManager qimDB_SharedInstance] qimDB_checkExitsUser] == NO || forceUpdate) {
             QIMWarnLog(@"qtalk本地数据库之前没有IM_User, 重新拉取组织架构");
             NSError *error = nil;
             { //Roster List
@@ -1724,7 +1723,7 @@ static QIMManager *__IMManager = nil;
     return [[QIMManager sharedInstance] getClientConfigDicWithType:QIMClientConfigTypeKStickJidDic];
 }
 
-- (void)addAtALLByJid:(NSString *)jid WithMsgId:(NSString *)msgId WihtMsg:(Message *)message WithNickName:(NSString *)nickName {
+- (void)addAtALLByJid:(NSString *)jid WithMsgId:(NSString *)msgId WithMsg:(Message *)message WithNickName:(NSString *)nickName {
     if (msgId.length > 0 && message.message.length > 0 && nickName.length > 0) {
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
         [dic setQIMSafeObject:msgId forKey:@"MsgId"];
@@ -1733,7 +1732,7 @@ static QIMManager *__IMManager = nil;
         [dic setQIMSafeObject:message forKey:@"Msg"];
         [_hasAtAllDic setObject:dic forKey:jid];
         //Comment by lilulucas.li 6.7
-//        QIMVerboseLog(@"抛出通知 addAtALLByJid:WithMsgId:WihtMsg:WithNickName: kAtALLChange");
+//        QIMVerboseLog(@"抛出通知 addAtALLByJid:WithMsgId:WithMsg:WithNickName: kAtALLChange");
 //        [[NSNotificationCenter defaultCenter] postNotificationName:kAtALLChange object:jid];
     }
 }
@@ -1921,208 +1920,6 @@ http://url/push/qtapi/token/setmsgsettings.qunar?username=hubo.hu&domain=ejabhos
         [self clearcache];
         [[QIMUserCacheManager sharedInstance] setUserObject:@(kClearCacheVersion) forKey:kClearCacheCheck];
     }
-}
-
-#warning 以下逻辑暂时都没有用到
-
-//用户在线状态
-- (void)updateUserStatus {
-    NSArray *xmppIdList = [[IMDataManager sharedInstance] selectXmppIdFromSessionList];
-    if (xmppIdList.count <= 0) {
-        return;
-    }
-    BOOL needRefreshUI = NO;
-    NSMutableDictionary *xmppIdDic = [NSMutableDictionary dictionary];
-    for (NSString *xmppId in xmppIdList) {
-        NSArray *coms = [xmppId componentsSeparatedByString:@"@"];
-        NSString *userId = [coms firstObject];
-        NSString *domain = [coms lastObject];
-        if (domain && userId) {
-            NSMutableArray *users = [xmppIdDic objectForKey:domain];
-            if (users == nil) {
-                users = [NSMutableArray array];
-                [xmppIdDic setObject:users forKey:domain];
-            }
-            [users addObject:userId];
-        }
-    }
-    NSMutableArray *params = [NSMutableArray array];
-    for (NSString *domain in xmppIdDic.allKeys) {
-        NSArray *users = [xmppIdDic objectForKey:domain];
-        [params addObject:@{@"domain": domain, @"users": users}];
-    }
-    NSData *requestData = [[QIMJSONSerializer sharedInstance] serializeObject:params error:nil];
-    NSString *destUrl = [NSString stringWithFormat:@"%@/domain/get_user_status?u=%@&k=%@&platform=iphone&version=%@", [[QIMNavConfigManager sharedInstance] httpHost], [[QIMManager getLastUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding], self.remoteKey, [[QIMAppInfo sharedInstance] AppBuildVersion]];
-    
-    NSURL *requestUrl = [[NSURL alloc] initWithString:destUrl];
-    ASIHTTPRequest *request = [[ASIHTTPRequest alloc] initWithURL:requestUrl];
-    [request addRequestHeader:@"Content-type" value:@"application/json;"];
-    [request setRequestMethod:@"POST"];
-    [request setPostBody:[NSMutableData dataWithData:requestData]];
-    [request startSynchronous];
-    
-    NSError *error = [request error];
-    NSDictionary *result = nil;
-    if ([request responseStatusCode] == 200 && !error) {
-        NSData *responseData = [request responseData];
-        result = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
-        [_onlineTables removeAllObjects];
-        BOOL ret = [[result objectForKey:@"ret"] boolValue];
-        if (ret) {
-            NSArray *list = [result objectForKey:@"data"];
-            __block NSMutableArray *needRefreshUseIds = [NSMutableArray arrayWithCapacity:10];
-            for (NSDictionary *dataDic in list) {
-                NSString *domain = [dataDic objectForKey:@"domain"];
-                NSArray *userList = [dataDic objectForKey:@"ul"];
-                for (NSDictionary *userDic in userList) {
-                    NSString *userId = [userDic objectForKey:@"u"];
-                    NSString *state = [userDic objectForKey:@"o"];
-                    NSString *xmppId = [userId stringByAppendingFormat:@"@%@", domain];
-                    if ([[[IMDataManager sharedInstance] getSessionListXMPPIDWithSingleChatType:ChatType_SingleChat] containsObject:xmppId]) {
-                        [needRefreshUseIds addObject:xmppId];
-                        needRefreshUI = YES;
-                    }
-                    if (state.length > 0 && [userId stringByAppendingFormat:@"@%@", domain].length > 0) {
-                        [_onlineTables setObject:state forKey:[userId stringByAppendingFormat:@"@%@", domain]];
-                    }
-                }
-            }
-            if (needRefreshUI) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyUserOnlineStateUpdate object:needRefreshUseIds];
-                });
-            }
-        }
-    }
-}
-
-- (void)loadOnlineUsers {
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(loadOnlineUsers) object:nil];
-    dispatch_async(_load_user_state_queue, ^{
-        if ([self isLogin]) {
-            [self updateUserStatus];
-        }
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self performSelector:@selector(loadOnlineUsers) withObject:nil afterDelay:120];
-        });
-    });
-}
-
-- (void)loadOnlineList {
-    
-    // 应该考虑多domain的情况，但是因为server在下状态的时候未能提供这个信息，所以先写在这里
-    dispatch_async(_load_user_state_queue, ^{
-        NSMutableString *userString = [[NSMutableString alloc] initWithCapacity:10];
-        int index = 0;
-        NSArray *list = [[IMDataManager sharedInstance] selectUserIdList];
-        for (NSString *user in list) {
-            [userString appendString:user];
-            if (index < list.count - 1) {
-                [userString appendString:@","];
-            }
-            index++;
-        }
-        NSDictionary *result = [self userStatusWithUserStrings:userString];
-        NSArray *userStatus = [result objectForKey:@"data"];
-        for (NSDictionary *info in userStatus) {
-            NSString *u = [info objectForKey:@"U"];
-            int status = [[info objectForKey:@"S"] intValue];
-            if (status == 0) {
-                [_onlineTables setObject:@"offline" forKey:u];
-            } else {
-                [_onlineTables setObject:@"available" forKey:u];
-            }
-        }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyUserOnlineStateUpdate object:nil];
-        });
-        
-        if ([self isLogin]) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self performSelector:@selector(loadOnlineList) withObject:nil afterDelay:5];
-            });
-        }
-    });
-}
-
-- (NSMutableDictionary *)userStatusWithUserStrings:(NSString *)userString {
-    NSString *destUrl = [NSString stringWithFormat:@"%@/getuserstatus?u=%@&k=%@&p=iphone&v=%@", [[QIMNavConfigManager sharedInstance] httpHost], [[QIMManager getLastUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding], self.remoteKey, [[QIMAppInfo sharedInstance] AppBuildVersion]];
-    NSURL *requestUrl = [[NSURL alloc] initWithString:destUrl];
-    ASIHTTPRequest *request = [[ASIHTTPRequest alloc] initWithURL:requestUrl];
-    NSString *body = [NSString stringWithFormat:@"users=%@", userString];
-    NSData *data = [body dataUsingEncoding:NSUTF8StringEncoding];
-    [request appendPostData:data];
-    [request setAllowCompressedResponse:YES];
-    [request setShouldCompressRequestBody:YES];
-    [request startSynchronous];
-    
-    NSError *error = [request error];
-    NSMutableDictionary *result = nil;
-    if ([request responseStatusCode] == 200 && !error) {
-        NSData *responseData = [request responseData];
-        result = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
-    }
-    return result;
-}
-
-- (NSString *)userOnlineStatus:(NSString *)sid {
-    return [_onlineTables objectForKey:sid];
-}
-
-- (BOOL)isUserOnline:(NSString *)userId {
-    
-    if (userId) {
-        
-        NSString *tempUserId = [userId copy];
-        if (_channelInfoDic) {
-            NSString *channelInfo = [_channelInfoDic objectForKey:tempUserId];
-            if (channelInfo.length > 0) {
-                return YES;
-            }
-        } else {
-            if (_onlineTables.count && _onlineTables) {
-//                判断用户是否在在线数组里
-                NSString *onlineState = [_onlineTables objectForKey:tempUserId];
-                if (onlineState.length > 0) {
-                    if ([onlineState isEqualToString:@"online"]) {
-                        return YES;
-                    } else if ([onlineState isEqualToString:@"away"]) {
-                        return NO;
-                    } else {
-                        return NO;
-                    }
-                } else {
-                    return NO;
-                }
-            }
-        }
-    }
-    return NO;
-}
-
-- (UserPrecenseStatus)getUserPrecenseStatus:(NSString *)jid {
-    
-    return [self getUserPrecenseStatus:jid status:nil];
-}
-
-- (UserPrecenseStatus)getUserPrecenseStatus:(NSString *)jid status:(NSString **)status {
-    /*
-    NSDictionary *infoDic = [[XmppUserPresence sharedInstance] userPresenceStatus:jid];
-    NSString *show = [infoDic objectForKey:@"show"];
-    if (status) {
-        
-        *status = [infoDic objectForKey:@"status"];
-    }
-    if ([show isEqualToString:@"away"]) {
-        
-        return UserPrecenseStatus_Away;
-    } else if ([show isEqualToString:@"dnd"]) {
-        
-        return UserPrecenseStatus_Dnd;
-    }
-     */
-    return UserPrecenseStatus_None;
 }
 
 @end

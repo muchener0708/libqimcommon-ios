@@ -109,7 +109,7 @@
  @param msgId 消息id
  @param msgType 消息类型
  */
-- (Message *)sendMessage:(NSString *)msg ToPublicNumberId:(NSString *)publicNumberId WithMsgId:(NSString *)msgId WihtMsgType:(int)msgType;
+- (Message *)sendMessage:(NSString *)msg ToPublicNumberId:(NSString *)publicNumberId WithMsgId:(NSString *)msgId WithMsgType:(int)msgType;
 
 /**
  获取公众号消息列表
@@ -119,7 +119,7 @@
  @param offset offset
  @return 消息列表
  */
-- (NSArray *)getPublicNumberMsgListById:(NSString *)publicNumberId WihtLimit:(int)limit WithOffset:(int)offset;
+- (NSArray *)getPublicNumberMsgListById:(NSString *)publicNumberId WithLimit:(int)limit WithOffset:(int)offset;
 
 /**
  根据公众号Id清空未读消息

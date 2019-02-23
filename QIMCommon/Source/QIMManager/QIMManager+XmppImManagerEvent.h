@@ -13,4 +13,6 @@
 
 - (void)userMucListUpdate:(NSDictionary *)mucListDic;
 
+- (void)onReadState:(NSDictionary *)infoDic;
+
 @end

@@ -10,4 +10,34 @@
 
 @interface IMDataManager (QIMSession)
 
+- (void)qimDB_updateSessionLastMsgIdWithSessionId:(NSString *)sessionId
+                                    WithLastMsgId:(NSString *)lastMsgId;
+
+- (void)qimDB_insertSessionWithSessionId:(NSString *)sessinId
+                              WithUserId:(NSString *)userId
+                           WithLastMsgId:(NSString *)lastMsgId
+                      WithLastUpdateTime:(long long)lastUpdateTime
+                                ChatType:(int)ChatType
+                             WithRealJid:(id)realJid;
+
+- (void)qimDB_deleteSession:(NSString *)xmppId RealJid:(NSString *)realJid;
+
+- (void)qimDB_deleteSession:(NSString *)xmppId;
+
+- (NSDictionary *)qimDB_getLastedSingleChatSession;
+
+- (NSArray *)qimDB_getFullSessionListWithSingleChatType:(int)singleChatType;
+
+- (NSArray *)qimDB_getSessionListWithSingleChatType:(int)singleChatType;
+
+- (NSArray *)qimDB_getSessionListXMPPIDWithSingleChatType:(int)singleChatType;
+
+- (NSArray *)qimDB_getPSessionListWithSingleChatType:(int)singleChatType;
+
+- (NSDictionary *)qimDB_getChatSessionWithUserId:(NSString *)userId chatType:(int)chatType;
+
+- (NSDictionary *)qimDB_getChatSessionWithUserId:(NSString *)userId WithRealJid:(NSString *)realJid;
+
+- (NSDictionary *)qimDB_getChatSessionWithUserId:(NSString *)userId;
+
 @end

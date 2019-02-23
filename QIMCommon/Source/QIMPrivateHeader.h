@@ -68,6 +68,12 @@
 #import "IMDataManager+QIMDBClientConfig.h"
 #import "IMDataManager+QIMDBQuickReply.h"
 #import "IMDataManager+QIMNote.h"
+#import "IMDataManager+QIMDBGroup.h"
+#import "IMDataManager+QIMDBFriend.h"
+#import "IMDataManager+QIMDBMessage.h"
+#import "IMDataManager+QIMDBCollectionMessage.h"
+#import "IMDataManager+QIMDBPublicNumber.h"
+#import "IMDataManager+QIMDBUser.h"
 #import "IMDataManager+QIMUserMedal.h"
 
 #import "XmppImManager.h"

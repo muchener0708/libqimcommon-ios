@@ -353,7 +353,7 @@
     }
 }
 
-- (void)verifyFriendPresenceWithFrom:(NSString *)from WithTo:(NSString *)to WihtDirection:(int)direction WithResult:(NSString *)result WithReason:(NSString *)reason {
+- (void)verifyFriendPresenceWithFrom:(NSString *)from WithTo:(NSString *)to WithDirection:(int)direction WithResult:(NSString *)result WithReason:(NSString *)reason {
     NSMutableArray *methods = [_eventMapping objectForKey:@(XmppEvent_Friend_Presence)];
     NSMutableDictionary *dic = [NSMutableDictionary dictionary];
     [dic setObject:from ? from : @"" forKey:@"from"];
@@ -1586,8 +1586,8 @@ static XmppImManager *_xmppImManager = nil;
 - (void)addFriendPresenceWithXmppId:(NSString *)xmppId WithAnswer:(NSString *)answer{
     return [_pbXmppStack addFriendPresenceWithXmppId:xmppId WithAnswer:answer];
 }
-- (void)validationFriendWihtXmppId:(NSString *)xmppId WithReason:(NSString *)reason{
-    return [_pbXmppStack validationFriendWihtXmppId:xmppId WithReason:reason];
+- (void)validationFriendWithXmppId:(NSString *)xmppId WithReason:(NSString *)reason{
+    return [_pbXmppStack validationFriendWithXmppId:xmppId WithReason:reason];
 }
 - (void)agreeFriendRequestWithXmppId:(NSString *)xmppId{
     return [_pbXmppStack agreeFriendRequestWithXmppId:xmppId];
@@ -1603,6 +1603,8 @@ static XmppImManager *_xmppImManager = nil;
 - (int)getReceiveMsgLimitWithXmppId:(NSString *)xmppId{
     return [_pbXmppStack getReceiveMsgLimitWithXmppId:xmppId];
 }
+
+#pragma mark - Paser Message
 
 - (NSDictionary *)parseOriginMessageByMsgRaw:(id)msgRaw {
     NSMutableDictionary *msgDic = [NSMutableDictionary dictionaryWithCapacity:1];
@@ -1815,12 +1817,12 @@ static XmppImManager *_xmppImManager = nil;
     return [_pbXmppStack sendControlStateWithMessagesIdArray:jsonString WithXmppid:xmppId];
 }
 
-- (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WihtXmppId:(NSString *)xmppId{
-    return [_pbXmppStack sendReadStateWithMessagesIdArray:jsonString WithXmppid:xmppId];
+- (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithMessageReadFlag:(QIMMessageReadFlag)msgReadFlag WithXmppId:(NSString *)xmppId{
+    return [_pbXmppStack sendReadStateWithMessagesIdArray:jsonString WithMessageReadFlag:(QIMMessageReadFlag)msgReadFlag WithXmppid:xmppId];
 }
 
-- (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithXmppid:(NSString *)xmppId WithTo:(NSString *)to WithReadFlag:(NSInteger)readFlag {
-    return [_pbXmppStack sendReadStateWithMessagesIdArray:jsonString WithXmppid:xmppId WithTo:to WithReadFlag:readFlag];
+- (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithMessageReadFlag:(QIMMessageReadFlag)msgReadFlag WithXmppid:(NSString *)xmppId WithTo:(NSString *)to {
+    return [_pbXmppStack sendReadStateWithMessagesIdArray:jsonString WithMessageReadFlag:(QIMMessageReadFlag)msgReadFlag WithXmppid:xmppId WithTo:to];
 }
 
 - (BOOL)sendReadStateWithMessageTime:(long long) time groupName:(NSString *)groupName WithDomain:(NSString *)domain{

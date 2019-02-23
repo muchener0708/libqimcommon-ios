@@ -43,13 +43,13 @@
 }
 
 + (void)updateGroupListToKeyChain {
-    NSData *groupListStr = [[QIMJSONSerializer sharedInstance] serializeObject:[[IMDataManager sharedInstance] qimDB_getGroupList] error:nil];
+    NSData *groupListStr = [[QIMJSONSerializer sharedInstance] serializeObject:[[IMDataManager qimDB_SharedInstance] qimDB_getGroupList] error:nil];
     [QIMUUIDTools setUUIDToolsMyGroupList:groupListStr];
 }
 
 + (void)updateFriendListToKeyChain {
     //save friend list to keychain
-    NSArray *dbFriendList = [[IMDataManager sharedInstance] selectFriendList];
+    NSArray *dbFriendList = [[IMDataManager qimDB_SharedInstance] qimDB_selectFriendList];
     NSMutableArray *friendList = [NSMutableArray arrayWithCapacity:1];
     for (NSDictionary *infoDic in dbFriendList) {
         

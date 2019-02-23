@@ -115,7 +115,7 @@
 // 好友
 - (void)verifyFriendPresenceWithFrom:(NSString *)from
                               WithTo:(NSString *)to
-                       WihtDirection:(int)direction
+                       WithDirection:(int)direction
                           WithResult:(NSString *)result
                           WithReason:(NSString *)reason;
 
@@ -274,7 +274,7 @@
 - (BOOL)setVerifyFreindMode:(int)mode WithQuestion:(NSString *)question WithAnswer:(NSString *)answer;
 - (NSString *)getFriendsJson;
 - (void)addFriendPresenceWithXmppId:(NSString *)xmppId WithAnswer:(NSString *)answer;
-- (void)validationFriendWihtXmppId:(NSString *)xmppId WithReason:(NSString *)reason;
+- (void)validationFriendWithXmppId:(NSString *)xmppId WithReason:(NSString *)reason;
 - (void)agreeFriendRequestWithXmppId:(NSString *)xmppId;
 - (void)refusedFriendRequestWithXmppId:(NSString *)xmppId;
 //1.删除好友,客户端请求，其中mode1为单项删除，mode为2为双项删除
@@ -286,8 +286,8 @@
 
 - (BOOL)sendClearAllMsgStateByReadMarkT:(long long)readMarkT;
 - (BOOL)sendControlStateWithMessagesIdArray:(NSString *)jsonString WithXmppid:(NSString *)xmppId;
-- (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithXmppid:(NSString *)xmppId;
-- (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithXmppid:(NSString *)xmppId WithTo:(NSString *)to WithReadFlag:(NSInteger)readFlag;
+- (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithMessageReadFlag:(NSInteger)msgReadFlag WithXmppid:(NSString *)xmppId;
+- (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithMessageReadFlag:(NSInteger)msgReadFlag WithXmppid:(NSString *)xmppId WithTo:(NSString *)to;
 - (BOOL) sendReadStateWithMessageTime:(long long)time groupName:(NSString *) groupName WithDomain:(NSString *)domain;
 
 //发送通知类Presence

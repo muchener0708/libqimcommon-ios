@@ -16,8 +16,8 @@
     return [QIMHttpApi checkUserToken:verifCode];
 }
 
-+ (NSDictionary *)getUserTokenWithUserName:(NSString *)userName WihtVerifyCode:(NSString *)verifCode {
-    return [QIMHttpApi getUserTokenWithUserName:userName WihtVerifyCode:verifCode];
++ (NSDictionary *)getUserTokenWithUserName:(NSString *)userName WithVerifyCode:(NSString *)verifCode {
+    return [QIMHttpApi getUserTokenWithUserName:userName WithVerifyCode:verifCode];
 }
 
 + (NSDictionary *)getVerifyCodeWithUserName:(NSString *)userName {
@@ -28,8 +28,8 @@
     return [QIMHttpApi getUserList];
 }
 
-+ (NSString *)updateLoadFile:(NSData *)fileData WithMsgId:(NSString *)key WithMsgType:(int)type WihtPathExtension:(NSString *)extension {
-    return [QIMHttpApi updateLoadFile:fileData WithMsgId:key WithMsgType:type WihtPathExtension:extension];
++ (NSString *)updateLoadFile:(NSData *)fileData WithMsgId:(NSString *)key WithMsgType:(int)type WithPathExtension:(NSString *)extension {
+    return [QIMHttpApi updateLoadFile:fileData WithMsgId:key WithMsgType:type WithPathExtension:extension];
 }
 
 + (NSString *)updateLoadVoiceFile:(NSData *)voiceFileData WithFilePath:(NSString *)filePath {

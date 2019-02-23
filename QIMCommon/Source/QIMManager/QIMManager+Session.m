@@ -16,24 +16,26 @@
 
 - (NSArray *)getSessionList {
     
-    NSArray *sessionList = [[IMDataManager sharedInstance] qimDB_getSessionListWithSingleChatType:ChatType_SingleChat];
+    NSArray *sessionList = [[IMDataManager qimDB_SharedInstance] qimDB_getSessionListWithSingleChatType:ChatType_SingleChat];
     return sessionList;
 }
 
 - (NSArray *)getNotReadSessionList {
-    NSArray *notReadList = [[IMDataManager sharedInstance] qimDB_getNotReadSessionList];
-    return notReadList;
+    //Mark NotReadList未读列表
+//    NSArray *notReadList = [[IMDataManager qimDB_SharedInstance] qimDB_getNotReadSessionList];
+//    return notReadList;
+    return @[];
 }
 
 - (NSArray *)getFullSessionList {
-    NSArray *sessionList = [[IMDataManager sharedInstance] getFullSessionListWithSingleChatType:ChatType_SingleChat];
+    NSArray *sessionList = [[IMDataManager qimDB_SharedInstance] qimDB_getFullSessionListWithSingleChatType:ChatType_SingleChat];
     return sessionList;
 }
 
 - (void)deleteSessionList {
     
-    [[IMDataManager sharedInstance] deleteSessionList];
-    [[IMDataManager sharedInstance] clearHistoryMsg];
+    [[IMDataManager qimDB_SharedInstance] qimDB_deleteSessionList];
+    [[IMDataManager qimDB_SharedInstance] qimDB_clearHistoryMsg];
     NSMutableDictionary *stickList = [NSMutableDictionary dictionaryWithDictionary:[[QIMManager sharedInstance] stickList]];
     NSMutableArray *deleteStickList = [NSMutableArray arrayWithCapacity:3];
     for (NSDictionary *tempStickDic in [stickList allValues]) {
@@ -54,14 +56,14 @@
     
     [self clearNotReadMsgByGroupId:sid];
     [self clearNotReadMsgByJid:sid];
-    [[IMDataManager sharedInstance] deleteSession:sid];
+    [[IMDataManager qimDB_SharedInstance] qimDB_deleteSession:sid];
     [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSessionListRemove object:sid];
 }
 
 - (void)removeConsultSessionById:(NSString *)sid RealId:(NSString *)realJid {
     [self clearNotReadMsgByGroupId:sid];
     [self clearNotReadMsgByJid:sid];
-    [[IMDataManager sharedInstance] deleteSession:sid RealJid:realJid];
+    [[IMDataManager qimDB_SharedInstance] qimDB_deleteSession:sid RealJid:realJid];
     [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSessionListRemove object:sid];
 }
 
@@ -75,7 +77,7 @@
             [self addConsultSessionById:xmppId ByRealJid:xmppId WithUserId:xmppId ByMsgId:nil WithOpen:YES WithLastUpdateTime:[[NSDate date] qim_timeIntervalSince1970InMilliSecond] WithChatType:ChatType_Consult];
             return ChatType_Consult;
         } else {
-            NSDictionary *chatInfo = [[IMDataManager sharedInstance] getChatSessionWithUserId:xmppId WithRealJid:xmppId];
+            NSDictionary *chatInfo = [[IMDataManager qimDB_SharedInstance] qimDB_getChatSessionWithUserId:xmppId WithRealJid:xmppId];
             if (chatInfo) {
                 return [[chatInfo objectForKey:@"ChatType"] integerValue];
             } else {
@@ -97,7 +99,7 @@
                 return ChatType_Consult;
             }
         }
-        NSDictionary *sessionDic = [[IMDataManager sharedInstance] getChatSessionWithUserId:userId];
+        NSDictionary *sessionDic = [[IMDataManager qimDB_SharedInstance] qimDB_getChatSessionWithUserId:userId];
         if (sessionDic == nil) {
             [self addSessionByType:ChatType_SingleChat ById:userId ByMsgId:nil WithMsgTime:([NSDate date].timeIntervalSince1970 - self.serverTimeDiff) * 1000 WithNeedUpdate:YES];
             return ChatType_SingleChat;
@@ -109,7 +111,7 @@
             [self addConsultSessionById:userId ByRealJid:userId WithUserId:userId ByMsgId:nil WithOpen:YES WithLastUpdateTime:[[NSDate date] qim_timeIntervalSince1970InMilliSecond] WithChatType:ChatType_Consult];
             return ChatType_Consult;
         } else {
-            NSDictionary *sessionDic = [[IMDataManager sharedInstance] getChatSessionWithUserId:userId];
+            NSDictionary *sessionDic = [[IMDataManager qimDB_SharedInstance] qimDB_getChatSessionWithUserId:userId];
             if (sessionDic == nil) {
                 [self addSessionByType:ChatType_SingleChat ById:userId ByMsgId:nil WithMsgTime:([NSDate date].timeIntervalSince1970 - self.serverTimeDiff) * 1000 WithNeedUpdate:YES];
                 return ChatType_SingleChat;
@@ -121,7 +123,7 @@
 
 - (void)openGroupSessionByGroupId:(NSString *)groupId ByName:(NSString *)name {
     
-    NSDictionary *sessionDic = [[IMDataManager sharedInstance] getChatSessionWithUserId:groupId];
+    NSDictionary *sessionDic = [[IMDataManager qimDB_SharedInstance] qimDB_getChatSessionWithUserId:groupId];
     if (sessionDic == nil) {
         
         [self addSessionByType:ChatType_GroupChat ById:groupId ByMsgId:nil WithMsgTime:([NSDate date].timeIntervalSince1970 - self.serverTimeDiff) * 1000 WithNeedUpdate:YES];
@@ -136,16 +138,12 @@
 
 - (void)addConsultSessionById:(NSString *)sessionId ByRealJid:(NSString *)realJid WithUserId:(NSString *)userId ByMsgId:(NSString *)msgId WithOpen:(BOOL)open WithLastUpdateTime:(long long)lastUpdateTime WithChatType:(ChatType)chatType{
     
-    if (msgId == nil) {
-        msgId = [[IMDataManager sharedInstance] getLastMsgIdByJid:sessionId ByRealJid:realJid];
-    }
-    
     long long lastMsgTime = lastUpdateTime;
     if (lastMsgTime <= 0) {
         //无消息时间戳的会话插入到两天前（两天为拉历史的时间差）
         lastMsgTime = [[NSDate date] qim_timeIntervalSince1970InMilliSecond] - 2 * 24 * 60 * 60 * 1000;
     }
-    [[IMDataManager sharedInstance] insertSessionWithSessionId:sessionId WithUserId:userId WihtLastMsgId:msgId WithLastUpdateTime:lastMsgTime ChatType:chatType WithRealJid:realJid];
+    [[IMDataManager qimDB_SharedInstance] qimDB_insertSessionWithSessionId:sessionId WithUserId:userId WithLastMsgId:msgId WithLastUpdateTime:lastMsgTime ChatType:chatType WithRealJid:realJid];
     dispatch_async(dispatch_get_main_queue(), ^{
         QIMVerboseLog(@"抛出通知 addConsultSessionById:(NSString *)sessionId ByRealJid:(NSString *)realJid WithUserId:(NSString *)userId ByMsgId:(NSString *)msgId WithOpen:(BOOL)open WithLastUpdateTime:(long long)lastUpdateTime WithChatType:(ChatType)chatType  kNotificationSessionListUpdate");
         [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSessionListUpdate object:sessionId userInfo:@{@"Open":@(open),@"RealJid":realJid?realJid:@""}];
@@ -155,17 +153,17 @@
 - (void)addSessionByType:(ChatType)type ById:(NSString *)jid ByMsgId:(NSString *)msgId WithMsgTime:(long long)msgTime WithNeedUpdate:(BOOL)needUpdate {
     if (jid.length) {
         if (msgId == nil) {
-            msgId = [[IMDataManager sharedInstance] getLastMsgIdByJid:jid];
+            msgId = [[IMDataManager qimDB_SharedInstance] qimDB_getLastMsgIdByJid:jid];
         }
         if (msgTime <= 0) {
-            msgTime = [[IMDataManager sharedInstance] getMsgTimeWithMsgId:msgId];
+            msgTime = [[IMDataManager qimDB_SharedInstance] qimDB_getMsgTimeWithMsgId:msgId];
         }
         long long lastMsgTime = msgTime;
         if (lastMsgTime <= 0) {
             //无消息时间戳的会话插入到两天前（两天为拉历史的时间差）
             lastMsgTime = [[NSDate date] qim_timeIntervalSince1970InMilliSecond] - 2 * 24 * 60 * 60 * 1000;
         }
-        [[IMDataManager sharedInstance] insertSessionWithSessionId:jid WithUserId:[[jid componentsSeparatedByString:@"@"] objectAtIndex:0] WihtLastMsgId:msgId WithLastUpdateTime:lastMsgTime ChatType:type WithRealJid:jid];
+        [[IMDataManager qimDB_SharedInstance] qimDB_insertSessionWithSessionId:jid WithUserId:[[jid componentsSeparatedByString:@"@"] objectAtIndex:0] WithLastMsgId:msgId WithLastUpdateTime:lastMsgTime ChatType:type WithRealJid:jid];
         if (needUpdate) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSessionListUpdate object:nil];

@@ -19,8 +19,8 @@
     NSMutableDictionary *param = [NSMutableDictionary dictionaryWithCapacity:4];
     [param setQIMSafeObject:[QIMManager getLastUserName] forKey:@"username"];
     [param setQIMSafeObject:[[QIMManager sharedInstance] getDomain] forKey:@"host"];
-    [param setQIMSafeObject:@([[IMDataManager sharedInstance] qimDB_getQuickReplyGroupVersion]) forKey:@"groupver"];
-    [param setQIMSafeObject:@([[IMDataManager sharedInstance] qimDB_getQuickReplyContentVersion]) forKey:@"contentver"];
+    [param setQIMSafeObject:@([[IMDataManager qimDB_SharedInstance] qimDB_getQuickReplyGroupVersion]) forKey:@"groupver"];
+    [param setQIMSafeObject:@([[IMDataManager qimDB_SharedInstance] qimDB_getQuickReplyContentVersion]) forKey:@"contentver"];
     NSData *requestData = [[QIMJSONSerializer sharedInstance] serializeObject:param error:nil];
 
     NSMutableDictionary *cookieProperties = [NSMutableDictionary dictionary];
@@ -68,8 +68,8 @@
                 [deleteGroupItems addObject:@(groupRId)];
             }
         }
-        [[IMDataManager sharedInstance] qimDB_bulkInsertQuickReply:updateGroupItems];
-        [[IMDataManager sharedInstance] qimDB_deleteQuickReplyGroup:deleteGroupItems];
+        [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertQuickReply:updateGroupItems];
+        [[IMDataManager qimDB_SharedInstance] qimDB_deleteQuickReplyGroup:deleteGroupItems];
     }
     NSDictionary *contentInfo = [data objectForKey:@"contentInfo"];
     NSMutableArray *updateContentItems = [NSMutableArray arrayWithCapacity:3];
@@ -89,21 +89,21 @@
                 [deleteContentItems addObject:@(contentRId)];
             }
         }
-        [[IMDataManager sharedInstance] qimDB_bulkInsertQuickReplyContents:updateContentItems];
-        [[IMDataManager sharedInstance] qimDB_deleteQuickReplyContents:deleteContentItems];
+        [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertQuickReplyContents:updateContentItems];
+        [[IMDataManager qimDB_SharedInstance] qimDB_deleteQuickReplyContents:deleteContentItems];
     }
 }
 
 - (NSInteger)getQuickReplyGroupCount {
-    return [[IMDataManager sharedInstance] qimDB_getQuickReplyGroupCount];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getQuickReplyGroupCount];
 }
 
 - (NSArray *)getQuickReplyGroup {
-    return [[IMDataManager sharedInstance] qimDB_getQuickReplyGroup];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getQuickReplyGroup];
 }
 
 - (NSArray *)getQuickReplyContentWithGroupId:(long)groupId {
-    return [[IMDataManager sharedInstance] qimDB_getQuickReplyContentWithGroupId:groupId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getQuickReplyContentWithGroupId:groupId];
 }
 
 @end

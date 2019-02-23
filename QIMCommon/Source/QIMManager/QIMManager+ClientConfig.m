@@ -108,7 +108,7 @@
 }
 
 - (NSInteger)getClientConfigDeleteFlagWithType:(QIMClientConfigType)type WithSubKey:(NSString *)subKey {
-    return [[IMDataManager sharedInstance] qimDB_getConfigDeleteFlagWithConfigKey:[self transformClientConfigKeyWithType:type] WithSubKey:subKey];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getConfigDeleteFlagWithConfigKey:[self transformClientConfigKeyWithType:type] WithSubKey:subKey];
 }
 
 /**
@@ -119,7 +119,7 @@
 }
 
 - (NSString *)getClientConfigInfoWithType:(QIMClientConfigType)type WithSubKey:(NSString *)subKey WithDeleteFlag:(BOOL)deleteFlag {
-    return [[IMDataManager sharedInstance] qimDB_getConfigInfoWithConfigKey:[self transformClientConfigKeyWithType:type] WithSubKey:subKey WithDeleteFlag:deleteFlag];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getConfigInfoWithConfigKey:[self transformClientConfigKeyWithType:type] WithSubKey:subKey WithDeleteFlag:deleteFlag];
 }
 
 /**
@@ -130,7 +130,7 @@
 }
 
 - (NSDictionary *)getClientConfigDicWithType:(QIMClientConfigType)type WithDeleteFlag:(BOOL)deleteFlag {
-    return [[IMDataManager sharedInstance] qimDB_getConfigDicWithConfigKey:[self transformClientConfigKeyWithType:type] WithDeleteFlag:deleteFlag];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getConfigDicWithConfigKey:[self transformClientConfigKeyWithType:type] WithDeleteFlag:deleteFlag];
 }
 
 /**
@@ -141,7 +141,7 @@
 }
 
 - (NSArray *)getClientConfigInfoArrayWithType:(QIMClientConfigType *)type WithDeleteFlag:(BOOL)deleteFlag {
-    return [[IMDataManager sharedInstance] qimDB_getConfigInfoArrayWithConfigKey:[self transformClientConfigKeyWithType:type] WithDeleteFlag:deleteFlag];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getConfigInfoArrayWithConfigKey:[self transformClientConfigKeyWithType:type] WithDeleteFlag:deleteFlag];
 }
 
 
@@ -153,7 +153,7 @@
 }
 
 - (NSArray *)getClientConfigValueArrayWithType:(QIMClientConfigType)type WithDeleteFlag:(BOOL)deleteFlag {
-    return [[IMDataManager sharedInstance] qimDB_getConfigValueArrayWithConfigKey:[self transformClientConfigKeyWithType:type] WithDeleteFlag:deleteFlag];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getConfigValueArrayWithConfigKey:[self transformClientConfigKeyWithType:type] WithDeleteFlag:deleteFlag];
 }
 
 - (void)insertNewClientConfigInfoWithData:(NSDictionary *)result {
@@ -165,7 +165,7 @@
         for (NSDictionary *configInfo in data) {
             NSArray *configInfoData = [configInfo objectForKey:@"infos"];
             NSString *key = [configInfo objectForKey:@"key"];
-            [[IMDataManager sharedInstance] qimDB_bulkInsertConfigArrayWithConfigKey:key WithConfigVersion:version ConfigArray:configInfoData];
+            [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertConfigArrayWithConfigKey:key WithConfigVersion:version ConfigArray:configInfoData];
             if ([key isEqualToString:@"kStickJidDic"]) {
                 self.stickJidDic = nil;
                 for (NSDictionary *stickInfo in configInfoData) {
@@ -236,7 +236,7 @@
     [bodyProperties setQIMSafeObject:[[XmppImManager sharedInstance] resource] forKey:@"resource"];
     [bodyProperties setQIMSafeObject:delFlag ? @(2) : @(1) forKey:@"type"]; //操作类型1：设置；2：删除或取消
     [bodyProperties setQIMSafeObject:@(delFlag) forKey:@"isdel"];
-    [bodyProperties setQIMSafeObject:@([[IMDataManager sharedInstance] qimDB_getConfigVersion]) forKey:@"version"];
+    [bodyProperties setQIMSafeObject:@([[IMDataManager qimDB_SharedInstance] qimDB_getConfigVersion]) forKey:@"version"];
     NSData *requestData = [[QIMJSONSerializer sharedInstance] serializeObject:bodyProperties error:nil];
     QIMVerboseLog(@"批量远端个人配置body体 : %@", [[QIMJSONSerializer sharedInstance] serializeObject:bodyProperties]);
     [request addRequestHeader:@"Content-type" value:@"application/json;"];
@@ -279,7 +279,7 @@
     [bodyProperties setQIMSafeObject:@"iOS" forKey:@"operate_plat"];
     [bodyProperties setQIMSafeObject:[[XmppImManager sharedInstance] resource] forKey:@"resource"];
     [bodyProperties setQIMSafeObject:delFlag ? @(2) : @(1) forKey:@"type"]; //操作类型1：设置；2：删除或取消
-    [bodyProperties setQIMSafeObject:@([[IMDataManager sharedInstance] qimDB_getConfigVersion]) forKey:@"version"];
+    [bodyProperties setQIMSafeObject:@([[IMDataManager qimDB_SharedInstance] qimDB_getConfigVersion]) forKey:@"version"];
     NSData *requestData = [[QIMJSONSerializer sharedInstance] serializeObject:bodyProperties error:nil];
     QIMVerboseLog(@"单独设置远端个人配置body体 : %@", [[QIMJSONSerializer sharedInstance] serializeObject:bodyProperties]);
 
@@ -315,7 +315,7 @@
     NSMutableDictionary *bodyProperties = [NSMutableDictionary dictionary];
     [bodyProperties setQIMSafeObject:[QIMManager getLastUserName] forKey:@"username"];
     [bodyProperties setQIMSafeObject:[[QIMManager sharedInstance] getDomain] forKey:@"host"];
-    [bodyProperties setQIMSafeObject:@([[IMDataManager sharedInstance] qimDB_getConfigVersion]) forKey:@"version"];
+    [bodyProperties setQIMSafeObject:@([[IMDataManager qimDB_SharedInstance] qimDB_getConfigVersion]) forKey:@"version"];
     NSData *requestData = [[QIMJSONSerializer sharedInstance] serializeObject:bodyProperties error:nil];
     QIMVerboseLog(@"获取远端个人配置Body体 : %@", [[QIMJSONSerializer sharedInstance] serializeObject:bodyProperties]);
     
@@ -346,17 +346,17 @@
 
 //返回星标联系人或者黑名单用户
 - (NSMutableArray *)selectStarOrBlackContacts:(NSString *)pkey {
-    return [[IMDataManager sharedInstance] qimDB_getConfigArrayStarOrBlackContacts:pkey];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getConfigArrayStarOrBlackContacts:pkey];
 }
 
 //查询不在星标用户的好友
 - (NSMutableArray *)selectFriendsNotInStarContacts {
-    return [[IMDataManager sharedInstance] qimDB_getConfigArrayFriendsNotInStarContacts];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getConfigArrayFriendsNotInStarContacts];
 }
 
 //搜索不在星标里面的用户
 - (NSMutableArray *)selectUserNotInStartContacts:(NSString *)key {
-    return [[IMDataManager sharedInstance] qimDB_getConfigArrayUserNotInStartContacts:key];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getConfigArrayUserNotInStartContacts:key];
 }
 
 -(BOOL)isStarOrBlackContact:(NSString *)subkey ConfigKey:(NSString *)pkey {

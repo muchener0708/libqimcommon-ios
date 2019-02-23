@@ -55,12 +55,12 @@
     [[QIMManager sharedInstance] getRemoteRecentNewCommentsWithMomentId:momentId withNewCommentCallBack:callback];
 }
 
-- (NSDictionary *)getWorkMomentWihtMomentId:(NSString *)momentId {
-    return [[QIMManager sharedInstance] getWorkMomentWihtMomentId:momentId];
+- (NSDictionary *)getWorkMomentWithMomentId:(NSString *)momentId {
+    return [[QIMManager sharedInstance] getWorkMomentWithMomentId:momentId];
 }
 
-- (void)getWorkMomentWithLastMomentTime:(long long)lastMomentTime withUserXmppId:(NSString *)xmppId WihtLimit:(int)limit WithOffset:(int)offset withFirstLocalMoment:(BOOL)firstLocal WihtComplete:(void (^)(NSArray *))complete {
-    [[QIMManager sharedInstance] getWorkMomentWithLastMomentTime:lastMomentTime withUserXmppId:xmppId WihtLimit:limit WithOffset:offset withFirstLocalMoment:firstLocal WihtComplete:complete];
+- (void)getWorkMomentWithLastMomentTime:(long long)lastMomentTime withUserXmppId:(NSString *)xmppId WithLimit:(int)limit WithOffset:(int)offset withFirstLocalMoment:(BOOL)firstLocal WithComplete:(void (^)(NSArray *))complete {
+    [[QIMManager sharedInstance] getWorkMomentWithLastMomentTime:lastMomentTime withUserXmppId:xmppId WithLimit:limit WithOffset:offset withFirstLocalMoment:firstLocal WithComplete:complete];
 }
 
 - (void)deleteRemoteCommentWithComment:(NSString *)commentId withPostUUId:(NSString *)postUUId withCallback:(QIMKitWorkCommentDeleteSuccessBlock)callback {
@@ -75,8 +75,8 @@
 
 #pragma mark - Local Comment
 
-- (void)getWorkCommentWithLastCommentRId:(NSInteger)lastCommentRId withMomentId:(NSString *)momentId WihtLimit:(int)limit WithOffset:(int)offset withFirstLocalComment:(BOOL)firstLocal WihtComplete:(void (^)(NSArray *))complete {
-    [[QIMManager sharedInstance] getWorkCommentWithLastCommentRId:lastCommentRId withMomentId:momentId WihtLimit:limit WithOffset:offset withFirstLocalComment:firstLocal WihtComplete:complete];
+- (void)getWorkCommentWithLastCommentRId:(NSInteger)lastCommentRId withMomentId:(NSString *)momentId WithLimit:(int)limit WithOffset:(int)offset withFirstLocalComment:(BOOL)firstLocal WithComplete:(void (^)(NSArray *))complete {
+    [[QIMManager sharedInstance] getWorkCommentWithLastCommentRId:lastCommentRId withMomentId:momentId WithLimit:limit WithOffset:offset withFirstLocalComment:firstLocal WithComplete:complete];
 }
 
 #pragma mark - Local NoticeMsg
@@ -93,8 +93,8 @@
     return [[QIMManager sharedInstance] getWorkNoticeMessagesCount];
 }
 
-- (NSArray *)getWorkNoticeMessagesWihtLimit:(int)limit WithOffset:(int)offset {
-    return [[QIMManager sharedInstance] getWorkNoticeMessagesWihtLimit:limit WithOffset:offset];
+- (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset {
+    return [[QIMManager sharedInstance] getWorkNoticeMessagesWithLimit:limit WithOffset:offset];
 }
 
 - (void)updateLocalWorkNoticeMsgReadStateWithTime:(long long)time {

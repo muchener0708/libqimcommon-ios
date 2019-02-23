@@ -37,8 +37,8 @@
     [[QIMManager sharedInstance] addFriendPresenceWithXmppId:xmppId WithAnswer:answer];
 }
 
-- (void)validationFriendWihtXmppId:(NSString *)xmppId WithReason:(NSString *)reason {
-    [[QIMManager sharedInstance] validationFriendWihtXmppId:xmppId WithReason:reason];
+- (void)validationFriendWithXmppId:(NSString *)xmppId WithReason:(NSString *)reason {
+    [[QIMManager sharedInstance] validationFriendWithXmppId:xmppId WithReason:reason];
 }
 
 - (void)agreeFriendRequestWithXmppId:(NSString *)xmppId {

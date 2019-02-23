@@ -18,7 +18,7 @@
         self.lastGroupMsgTime = errorTime;
         QIMVerboseLog(@"本地群消息错误时间戳 : %lld", errorTime);
     } else {
-        self.lastGroupMsgTime = [[IMDataManager sharedInstance] lastestGroupMessageTime];
+        self.lastGroupMsgTime = [[IMDataManager qimDB_SharedInstance] qimDB_lastestGroupMessageTime];
     }
     if (self.lastGroupMsgTime == 0) {
         self.lastGroupMsgTime = defaultTime;
@@ -34,7 +34,7 @@
 
 - (void)updateLastMaxMucReadMarkTime {
     QIMVerboseLog(@"更新本地群阅读指针时间戳");
-    long long maxMucReadMarkUpdateTime = [[[IMDataManager sharedInstance] qimDB_getConfigInfoWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalMucRemarkUpdateTime] WithSubKey:[[QIMManager sharedInstance] getLastJid] WithDeleteFlag:NO] longLongValue];
+    long long maxMucReadMarkUpdateTime = [[[IMDataManager qimDB_SharedInstance] qimDB_getConfigInfoWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalMucRemarkUpdateTime] WithSubKey:[[QIMManager sharedInstance] getLastJid] WithDeleteFlag:NO] longLongValue];
     self.lastMaxMucReadMarkTime = maxMucReadMarkUpdateTime;
     QIMVerboseLog(@"最终获取到的本地群阅读指针最后消息时间戳为 : %f", self.lastMaxMucReadMarkTime);
 }
@@ -60,7 +60,8 @@
             retryCount ++;
             getMucHistotySuccess = [self getMucHistoryV2WithTimeOut:timeOut];
             timeOut += 6;
-            if (retryCount > 3) {
+            QIMWarnLog(@"群历史记录拉重试第%d次", retryCount);
+            if (retryCount >= 3) {
                 QIMWarnLog(@"重试超过三次，结束请求群历史记录");
                 self.latestGroupMessageFlag = NO;
             }
@@ -183,7 +184,7 @@
         NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
         NSMutableArray <NSDictionary *>*atAllMsgList = [[NSMutableArray alloc] initWithCapacity:3];
         NSMutableArray <NSDictionary *>*normalMsgList = [[NSMutableArray alloc] initWithCapacity:3];
-        NSDictionary *tempGroupDic = [[IMDataManager sharedInstance] bulkInsertIphoneHistoryGroupJSONMsg:data WihtMyNickName:[self getMyNickName] WithReadMarkT:0 WithDidReadState:MessageState_NotRead WihtMyRtxId:[[QIMManager sharedInstance] getLastJid] WithAtAllMsgList:&atAllMsgList WithNormaleAtMsgList:&normalMsgList];
+        NSDictionary *tempGroupDic = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertIphoneHistoryGroupJSONMsg:data WithMyNickName:[self getMyNickName] WithReadMarkT:0 WithDidReadState:MessageState_NotRead WithMyRtxId:[[QIMManager sharedInstance] getLastJid] WithAtAllMsgList:&atAllMsgList WithNormaleAtMsgList:&normalMsgList];
         for (NSString *groupId in tempGroupDic) {
             if (groupId.length > 0) {
                 NSDictionary *groupMsgDic = [tempGroupDic objectForKey:groupId];
@@ -222,7 +223,7 @@
             [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
             [msg setPropress:[[infoDic objectForKey:@"ExtendedFlag"] floatValue]];
             
-            [self addAtALLByJid:groupId WithMsgId:msg.messageId WihtMsg:msg WithNickName:msg.from];
+            [self addAtALLByJid:groupId WithMsgId:msg.messageId WithMsg:msg WithNickName:msg.from];
         }
         for (NSDictionary *infoDic in normalMsgList) {
             NSString *groupId = [infoDic objectForKey:@"SessionId"];
@@ -247,7 +248,7 @@
 }
 
 //拉取群翻页历史记录
-- (NSArray *)getMucMsgListWihtGroupId:(NSString *)groupId WithDirection:(int)direction WithLimit:(int)limit WithVersion:(long long)version {
+- (NSArray *)getMucMsgListWithGroupId:(NSString *)groupId WithDirection:(int)direction WithLimit:(int)limit WithVersion:(long long)version {
     NSMutableDictionary *params = [NSMutableDictionary dictionary];
     NSArray *coms = [groupId componentsSeparatedByString:@"@"];
     NSString *groupC = @"conference.";
@@ -328,12 +329,12 @@
              if (errcode != 0 && result.count > 0 && response.code == 200) {
                  NSMutableArray *mucData = [result objectForKey:@"data"];
              
-                 long long maxMucReadMarkTime = [[IMDataManager sharedInstance] qimDB_bulkUpdateGroupMessageReadFlag:mucData];
+                 long long maxMucReadMarkTime = [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateGroupMessageReadFlag:mucData];
                  if (maxMucReadMarkTime > self.lastMaxMucReadMarkTime) {
                      NSString *jid = [[QIMManager sharedInstance] getLastJid];
                      NSString *updateTime = [NSString stringWithFormat:@"%lld", maxMucReadMarkTime];
                      NSArray *configArray = @[@{@"subkey":jid?jid:@"", @"configinfo":updateTime}];
-                     [[IMDataManager sharedInstance] qimDB_bulkInsertConfigArrayWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalMucRemarkUpdateTime] WithConfigVersion:0 ConfigArray:configArray];
+                     [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertConfigArrayWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalMucRemarkUpdateTime] WithConfigVersion:0 ConfigArray:configArray];
                  }
                  dispatch_async(dispatch_get_main_queue(), ^{
                      QIMVerboseLog(@"获取群阅读指针之后强制刷新NavBar未读数");

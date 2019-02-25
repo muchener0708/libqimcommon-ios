@@ -239,48 +239,6 @@
     return [result autorelease];
 }
 
-- (NSArray *)qimDB_getPSessionListWithSingleChatType:(int)singleChatType{
-    __block NSMutableArray *result = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"select a.XmppId, a.UserId, case a.ChatType WHEN %d THEN (select name from IM_User where IM_User.XmppId = a.XmppId) ELSE (select name from IM_Group where IM_Group.GroupId = a.XmppId) end as Name, case a.ChatType When %d THEN (Select HeaderSrc From IM_User WHERE UserId = a.UserId) ELSE (SELECT HeaderSrc From IM_Group WHERE GroupId=a.XmppId) END as HeaderSrc, b.MsgId, b.Content, b.Type, b.State, b.Direction,CASE When b.LastUpdateTime is NULL THEN a.LastUpdateTime ELSE b.LastUpdateTime END as orderTime, a.ChatType, case a.ChatType When %d THEN '' ELSE b.[From] END as NickName, (Select count(*) From IM_Message Where XmppId = a.XmppId And ReadedTag = 0) as NotReadCount from IM_SessionList as a left join IM_Message as b on a.XmppId = b.XmppId and b.MsgId = (SELECT MsgId FROM IM_Message WHERE XmppId = a.XmppId Order by LastUpdateTime DESC LIMIT 1) order by OrderTime desc;", singleChatType, singleChatType+1, singleChatType + 3];
-        DataReader *reader = [database executeReader:sql withParameters:nil];
-        
-        result = [[NSMutableArray alloc] initWithCapacity:100];
-        while ([reader read]) {
-            
-            NSString *xmppId = [reader objectForColumnIndex:0];
-            NSString *userId = [reader objectForColumnIndex:1];
-            NSString *name = [reader objectForColumnIndex:2];
-            NSString *headerSrc = [reader objectForColumnIndex:3];
-            NSString *lastMsgId = [reader objectForColumnIndex:4];
-            NSString *content = [reader objectForColumnIndex:5];
-            NSString *msgType = [reader objectForColumnIndex:6];
-            NSNumber *msgState = [reader objectForColumnIndex:7];
-            NSNumber *msgDirection = [reader objectForColumnIndex:8];
-            NSNumber *msgDateTime = [reader objectForColumnIndex:9];
-            NSNumber *chatType = [reader objectForColumnIndex:10];
-            NSString *nickName = [reader objectForColumnIndex:11];
-            NSMutableDictionary *sessionDic = [[NSMutableDictionary alloc] init];
-            [IMDataManager safeSaveForDic:sessionDic setObject:xmppId forKey:@"XmppId"];
-            [IMDataManager safeSaveForDic:sessionDic setObject:userId forKey:@"UserId"];
-            [IMDataManager safeSaveForDic:sessionDic setObject:name forKey:@"Name"];
-            [IMDataManager safeSaveForDic:sessionDic setObject:headerSrc forKey:@"HeaderSrc"];
-            [IMDataManager safeSaveForDic:sessionDic setObject:lastMsgId forKey:@"LastMsgId"];
-            [IMDataManager safeSaveForDic:sessionDic setObject:content forKey:@"Content"];
-            [IMDataManager safeSaveForDic:sessionDic setObject:msgType forKey:@"MsgType"];
-            [IMDataManager safeSaveForDic:sessionDic setObject:msgState forKey:@"MsgState"];
-            [IMDataManager safeSaveForDic:sessionDic setObject:msgDirection forKey:@"MsgDirection"];
-            [IMDataManager safeSaveForDic:sessionDic setObject:msgDateTime forKey:@"MsgDateTime"];
-            [IMDataManager safeSaveForDic:sessionDic setObject:chatType forKey:@"ChatType"];
-            [IMDataManager safeSaveForDic:sessionDic setObject:nickName forKey:@"NickName"];
-            [result addObject:sessionDic];
-            [sessionDic release];
-        }
-        
-    }];
-    return [result autorelease];
-}
-
 - (NSDictionary *)qimDB_getChatSessionWithUserId:(NSString *)userId chatType:(int)chatType{
     
     __block NSMutableDictionary *chatSession = nil;
@@ -400,6 +358,20 @@
     }];
     
     return [chatSession autorelease];
+}
+
+- (NSInteger)qimDB_getAppNotReadCount {
+    __block NSInteger count = 0;
+    //    [[QIMWatchDog sharedInstance] start];
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = @"SELECT sum(UnreadCount) FROM IM_SessionList";
+        DataReader *reader = [database executeReader:sql withParameters:nil];
+        if ([reader read]) {
+            count = [[reader objectForColumnIndex:0] integerValue];
+        }
+    }];
+    //    QIMVerboseLog(@"获取未读数耗时 :%lf", [[QIMWatchDog sharedInstance] escapedTime]);
+    return count;
 }
 
 @end

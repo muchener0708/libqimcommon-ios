@@ -95,41 +95,12 @@
 
 - (void)deleteMsg:(Message *)msg ByJid:(NSString *)sid;
 
-/**
- 发送操作状态(单人会话专用)
- 
- @param messages 消息集
- @param xmppId 跟谁的消息对话 to值
- @return 是否成功
- */
 - (BOOL)sendControlStateWithMessagesIdArray:(NSArray *)messages WithXmppId:(NSString *)xmppId;
 
-/**
- 发送已读状态(单人会话专用)
- 
- @param messages 消息集
- @param xmppId 跟谁的消息对话 to值
- @return 是否成功
- */
-- (BOOL)sendReadStateWithMessagesIdArray:(NSArray *)messages WithXmppId:(NSString *)xmppId;
+- (BOOL)sendReadStateWithMessagesIdArray:(NSArray *)messages WithMessageReadFlag:(QIMMessageReadFlag)msgReadFlag WithXmppId:(NSString *)xmppId;
 
-/**
- 发送已读状态(Consult会话专用)
- 
- @param messages 消息集
- @param xmppId 跟谁的消息对话 to值
- @param realJid 真实 to值(consult消息用，普通消息此值传nil)
- @return 是否成功
- */
-- (BOOL)sendReadStateWithMessagesIdArray:(NSArray *)messages WithXmppId:(NSString *)xmppId WithRealJid:(NSString *)realJid;
+- (BOOL)sendReadStateWithMessagesIdArray:(NSArray *)messages WithMessageReadFlag:(QIMMessageReadFlag)msgReadFlag WithXmppId:(NSString *)xmppId WithRealJid:(NSString *)realJid;
 
-/**
- 发送已读状态(群消息用)
- 
- @param lastTime 已读截止时间，一般为最后一条消息时间
- @param groupId 群ID
- @return 是否成功
- */
 - (BOOL)sendReadstateWithGroupLastMessageTime:(long long) lastTime withGroupId:(NSString *) groupId;
 
 

@@ -421,7 +421,7 @@
                 [msgDic setObject:@(0) forKey:@"MsgDirection"];
                 [msgDic setObject:@(msec_times-1) forKey:@"MsgDateTime"];
                 [msgDic setObject:@(QIMMessageSendState_Success) forKey:@"MsgState"];
-                [msgDic setObject:@(1) forKey:@"ReadedTag"];
+                [msgDic setObject:@(QIMMessageRemoteReadStateDidReaded) forKey:@"ReadedState"];
                 [msgDic setObject:@(1) forKey:@"ChatType"];
                 [msgList addObject:msgDic];
             }

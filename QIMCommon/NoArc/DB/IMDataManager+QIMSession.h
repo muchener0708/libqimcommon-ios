@@ -32,12 +32,12 @@
 
 - (NSArray *)qimDB_getSessionListXMPPIDWithSingleChatType:(int)singleChatType;
 
-- (NSArray *)qimDB_getPSessionListWithSingleChatType:(int)singleChatType;
-
 - (NSDictionary *)qimDB_getChatSessionWithUserId:(NSString *)userId chatType:(int)chatType;
 
 - (NSDictionary *)qimDB_getChatSessionWithUserId:(NSString *)userId WithRealJid:(NSString *)realJid;
 
 - (NSDictionary *)qimDB_getChatSessionWithUserId:(NSString *)userId;
+
+- (NSInteger)qimDB_getAppNotReadCount;
 
 @end

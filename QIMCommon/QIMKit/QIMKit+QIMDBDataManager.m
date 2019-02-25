@@ -758,10 +758,6 @@
     [[IMDataManager qimDB_SharedInstance] qimDB_dbCheckpoint];
 }
 
-- (NSArray *)getPSessionListWithSingleChatType:(int)singleChatType {
-    return [[IMDataManager qimDB_SharedInstance] qimDB_getPSessionListWithSingleChatType:singleChatType];
-}
-
 - (void)updateAllMsgWithMsgState:(int)msgState ByMsgDirection:(int)msgDirection ByReadMarkT:(long long)readMarkT {
     [[IMDataManager qimDB_SharedInstance] qimDB_updateAllMsgWithMsgState:msgState ByMsgDirection:msgDirection ByReadMarkT:readMarkT];
 }

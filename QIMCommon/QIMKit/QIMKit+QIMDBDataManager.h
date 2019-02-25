@@ -389,8 +389,6 @@
 
 - (void)qimDB_dbCheckpoint;
 
-- (NSArray *)getPSessionListWithSingleChatType:(int)singleChatType;
-
 - (void)updateAllMsgWithMsgState:(int)msgState ByMsgDirection:(int)msgDirection ByReadMarkT:(long long)readMarkT;
 
 /*************** Friend List *************/

@@ -1051,16 +1051,23 @@
 
 - (void)updateAppNotReadCount {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSInteger notReadCount = [[IMDataManager qimDB_SharedInstance] qimDB_getAppNotReadCount];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[UIApplication sharedApplication] setApplicationIconBadgeNumber:notReadCount];
+        });
+        /*
         NSInteger notReadCount = [[IMDataManager qimDB_SharedInstance] qimDB_getNotReaderMsgCountByDidReadState:MessageState_didRead WidthReceiveDirection:MessageDirection_Received];
         NSInteger notRemindCount = [[QIMManager sharedInstance] getNotRemindNotReaderCount];
         dispatch_async(dispatch_get_main_queue(), ^{
             [[UIApplication sharedApplication] setApplicationIconBadgeNumber:notReadCount-notRemindCount];
         });
+         */
     });
 }
 
 - (NSInteger)getAppNotReaderCount {
-    return [[IMDataManager qimDB_SharedInstance] qimDB_getNotReaderMsgCountByDidReadState:MessageState_didRead WidthReceiveDirection:MessageDirection_Received];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getAppNotReadCount];
+//    [[IMDataManager qimDB_SharedInstance] qimDB_getNotReaderMsgCountByDidReadState:MessageState_didRead WidthReceiveDirection:MessageDirection_Received];
 }
 
 - (NSInteger)getNotRemindNotReaderCount {

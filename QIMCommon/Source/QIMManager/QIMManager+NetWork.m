@@ -34,7 +34,6 @@
         [request startSynchronous];
         if ([request responseStatusCode] == 200) {
             QIMWarnLog(@"<Method: checkNetworkCanUser> 网络检测，已连接到互联网...");
-            [self checkOfflineMsg];
             return YES;
         } else {
             QIMWarnLog(@"网络检测，Request Url %@, Respone Code : %d , Error %@",checkUrl,request.responseStatusCode,request.error);
@@ -50,7 +49,7 @@
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(checkNetworkStatus) object:nil];
     QIMWarnLog(@" _needTryRelogin = %d", self.needTryRelogin);
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        if ([self checkNetworkCanUser]) {
+        if ([self checkNetworkCanUser] && self.notNeedCheckNetwotk == NO) {
             if ([self isLogin] == NO) {
                 [self relogin];
             }

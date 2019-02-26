@@ -2100,6 +2100,8 @@
     
     self.willCancelLogin = YES;
     self.needTryRelogin = NO;
+    self.notNeedCheckNetwotk = YES;
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(checkNetworkStatus) object:nil];
     dispatch_async(dispatch_get_main_queue(), ^{
         QIMErrorLog(@"LoginFaild: %@", errDic);
         if ([[errDic objectForKey:@"errMsg"] isEqualToString:@"out_of_date"]) {

@@ -321,6 +321,9 @@ static IMDataManager *__global_data_manager = nil;
         result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_MESSAGE_ChatType_State ON \
                   IM_Message(ChatType, State);"
                             withParameters:nil];
+        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_MESSAGE_State_Direction ON \
+                  IM_Message(State, Direction);"
+                            withParameters:nil];
     }
     
     result = [database executeNonQuery: @"CREATE TABLE IF NOT EXISTS IM_Recent_Contacts(\

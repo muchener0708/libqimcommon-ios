@@ -60,7 +60,7 @@
             retryCount ++;
             getMucHistotySuccess = [self getMucHistoryV2WithTimeOut:timeOut];
             timeOut += 6;
-            if (retryCount > 3) {
+            if (retryCount >= 3) {
                 QIMWarnLog(@"重试超过三次，结束请求群历史记录");
                 self.latestGroupMessageFlag = NO;
             }
@@ -75,7 +75,7 @@
 //拉取离线群历史记录
 - (BOOL)getMucHistoryV2WithTimeOut:(NSTimeInterval)timeOut {
 
-    if (!self.remoteKey) {
+    if (self.remoteKey.length <= 0) {
         [self updateRemoteLoginKey];
     }
     __block BOOL getMucHistorySuccess = NO;

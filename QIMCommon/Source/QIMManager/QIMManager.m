@@ -934,7 +934,7 @@ static QIMManager *__IMManager = nil;
                 
                 dispatch_block_t block = ^{
                     [_friendDescDic removeAllObjects];
-                    [_friendDescDic setObject:@"Qunarstaff" forKey:@"D"];
+                    [_friendDescDic setObject:@"组织架构" forKey:@"D"];
                     [_friendDescDic setObject:value forKey:@"SD"];
                 };
                 
@@ -943,7 +943,7 @@ static QIMManager *__IMManager = nil;
                 else
                     dispatch_sync(_cacheQueue, block);
                 
-                _friendInfoDic = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"Qunarstaff",@"D",value,@"SD",nil];
+                _friendInfoDic = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"组织架构",@"D",value,@"SD",nil];
             }
             return responseData;
         }
@@ -1166,7 +1166,7 @@ static QIMManager *__IMManager = nil;
                             }
                             if (error == nil && value) {
                                 
-                                _friendInfoDic = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"Qunarstaff",@"D",value,@"SD",nil];
+                                _friendInfoDic = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"组织架构",@"D",value,@"SD",nil];
                                 
                             } else {
                                 isNeedUpdate = YES;

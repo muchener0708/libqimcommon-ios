@@ -534,10 +534,11 @@
     __block NSMutableArray *firstlist = [NSMutableArray array];
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         
-        NSString *sql = [NSString stringWithFormat:@"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime,SearchIndex from IM_User as a LEFT JOIN (select *from IM_Client_Config where ConfigValue like '%%%@%%' and ConfigKey='kMarkupNames') as b where (a.XmppId=b.ConfigSubKey or a.UserId like '%%%@%%' OR a.Name like '%%%@%%' OR a.SearchIndex like '%%%@%%');", searchStr, searchStr, searchStr, searchStr];
+        NSString *sql = [NSString stringWithFormat:@"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime,SearchIndex from IM_User as a LEFT JOIN (select *from IM_Client_Config where ConfigValue like '%%%@%%' and ConfigKey='kMarkupNames') as b where (a.XmppId=b.ConfigSubKey or a.UserId like '%%%@%%' OR a.Name like '%%%@%%' OR a.SearchIndex like '%%%@%%')", searchStr, searchStr, searchStr, searchStr];
         if (limit != -1 && offset != -1) {
             sql = [sql stringByAppendingString:[NSString stringWithFormat:@"LIMIT %ld OFFSET %ld", (long)limit, (long)offset]];
         }
+        NSLog(@"search Sql : %@", sql);
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
             if (list == nil) {

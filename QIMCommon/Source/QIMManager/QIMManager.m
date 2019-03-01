@@ -432,7 +432,7 @@ static QIMManager *__IMManager = nil;
         }
         QIMVerboseLog(@"开始获取单人历史记录2");
         CFAbsoluteTime startTime1 = [[QIMWatchDog sharedInstance] startTime];
-        [self updateOfflineMessagesV2];
+        [self updateOfflineMessagesV2]; 
         QIMVerboseLog(@"获取单人历史记录2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime1]);
         QIMVerboseLog(@"获取单人历史记录结束2");
 

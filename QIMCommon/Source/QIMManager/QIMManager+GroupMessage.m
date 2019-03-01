@@ -184,7 +184,9 @@
         NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
         NSMutableArray <NSDictionary *>*atAllMsgList = [[NSMutableArray alloc] initWithCapacity:3];
         NSMutableArray <NSDictionary *>*normalMsgList = [[NSMutableArray alloc] initWithCapacity:3];
-        NSDictionary *tempGroupDic = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertIphoneHistoryGroupJSONMsg:data WithMyNickName:[self getMyNickName] WithReadMarkT:0 WithDidReadState:MessageState_NotRead WithMyRtxId:[[QIMManager sharedInstance] getLastJid] WithAtAllMsgList:&atAllMsgList WithNormaleAtMsgList:&normalMsgList];
+        // Mark by DB
+//        NSDictionary *tempGroupDic = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertIphoneHistoryGroupJSONMsg:data WithMyNickName:[self getMyNickName] WithReadMarkT:0 WithDidReadState:MessageState_NotRead WithMyRtxId:[[QIMManager sharedInstance] getLastJid] WithAtAllMsgList:&atAllMsgList WithNormaleAtMsgList:&normalMsgList];
+        NSDictionary *tempGroupDic = @[];
         for (NSString *groupId in tempGroupDic) {
             if (groupId.length > 0) {
                 NSDictionary *groupMsgDic = [tempGroupDic objectForKey:groupId];
@@ -200,7 +202,6 @@
                 [msg setMessageState:[[groupMsgDic objectForKey:@"MsgState"] intValue]];
                 [msg setMessageDirection:[[groupMsgDic objectForKey:@"MsgDirection"] intValue]];
                 [msg setMessageDate:[[groupMsgDic objectForKey:@"MsgDateTime"] longLongValue]];
-                [msg setPropress:[[groupMsgDic objectForKey:@"ExtendedFlag"] floatValue]];
                 [self addSessionByType:ChatType_GroupChat ById:groupId ByMsgId:msg.messageId WithMsgTime:msg.messageDate WithNeedUpdate:YES];
                 if (self.lastGroupMsgTime < [[groupMsgDic objectForKey:@"MsgDateTime"] longLongValue]) {
                     self.lastGroupMsgTime = [[groupMsgDic objectForKey:@"MsgDateTime"] longLongValue];
@@ -221,8 +222,6 @@
             [msg setMessageState:[[infoDic objectForKey:@"MsgState"] intValue]];
             [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
             [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
-            [msg setPropress:[[infoDic objectForKey:@"ExtendedFlag"] floatValue]];
-            
             [self addAtALLByJid:groupId WithMsgId:msg.messageId WithMsg:msg WithNickName:msg.from];
         }
         for (NSDictionary *infoDic in normalMsgList) {
@@ -239,7 +238,6 @@
             [msg setMessageState:[[infoDic objectForKey:@"MsgState"] intValue]];
             [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
             [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
-            [msg setPropress:[[infoDic objectForKey:@"ExtendedFlag"] floatValue]];
             [self addAtMeByJid:groupId WithNickName:msg.from];
         }
     }

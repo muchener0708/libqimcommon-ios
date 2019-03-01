@@ -23,7 +23,7 @@
  @param nickName 昵称
  @return MessageDirection
  */
-- (MessageDirection)getGroupMsgDirectionWithSendJid:(NSString *)sendJid;
+- (QIMMessageDirection)getGroupMsgDirectionWithSendJid:(NSString *)sendJid;
 
 /**
  获取我的群组列表

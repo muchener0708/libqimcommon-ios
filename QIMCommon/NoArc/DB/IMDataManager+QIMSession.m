@@ -26,7 +26,7 @@
                                 ChatType:(int)ChatType
                              WithRealJid:(id)realJid{
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"insert or replace into IM_SessionList(XmppId, UserId, LastMessageId,LastUpdateTime,ChatType,RealJid) Values(:XmppId, :UserId, :LastMessageId,:LastUpdateTime,:ChatType,:RealJid);";
+        NSString *sql = @"insert or ignore into IM_SessionList(XmppId, UserId, LastMessageId,LastUpdateTime,ChatType,RealJid) Values(:XmppId, :UserId, :LastMessageId,:LastUpdateTime,:ChatType,:RealJid);";
         NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:5];
         [param addObject:sessinId?sessinId:@":NULL"];
         [param addObject:userId?userId:@":NULL"];

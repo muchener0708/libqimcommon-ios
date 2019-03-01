@@ -669,8 +669,8 @@
     return [[IMDataManager qimDB_SharedInstance] qimDB_searchUserBySearchStr:searchStr notInGroup:groupId];
 }
 
-- (MessageDirection)getGroupMsgDirectionWithSendJid:(NSString *)sendJid {
-    MessageDirection direction = [sendJid isEqualToString:[self getLastJid]] ? MessageDirection_Sent : MessageDirection_Received;
+- (QIMMessageDirection)getGroupMsgDirectionWithSendJid:(NSString *)sendJid {
+    QIMMessageDirection direction = [sendJid isEqualToString:[self getLastJid]] ? QIMMessageDirection_Sent : QIMMessageDirection_Received;
     return direction;
 }
 

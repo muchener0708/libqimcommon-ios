@@ -59,37 +59,6 @@ typedef enum {
 } PublicNumberType;
 
 typedef enum {
-    MessageReadFlagDidSend = 3,
-    MessageReadFlagDidRead = 4,
-} MessageReadFlag;
-
-typedef enum {
-    QIMMessageRemoteReadStateNotSent = 0x00,       //发送到服务器
-    QIMMessageRemoteReadStateDidSent = 0x01,         //已送达，对方已接受
-    QIMMessageRemoteReadStateDidReaded = QIMMessageRemoteReadStateDidSent << 1,    //0x02已阅读，对方已读
-    QIMMessageRemoteReadStateGroupReaded = 0x03,  //群消息已读
-    QIMMessageRemoteReadStateDidOperated = 0x04,  //已操作
-} QIMMessageRemoteReadState; //消息操作状态
-
-typedef enum {
-    QIMMessageReadFlagClearAllUnRead = 0,    //向服务器清空所有未读
-    QIMMessageReadFlagGroupReaded = 2, //向服务器发送群消息已读
-    QIMMessageReadFlagDidSend = 3,     //向服务器发送已送达
-    QIMMessageReadFlagDidRead = 4,     //向服务器发送已阅读
-    QIMMessageReadFlagDidControl = 7,  //向服务器发送已操作
-} QIMMessageReadFlag;
-
-typedef enum {
-    QIMMessageSendState_Faild      = 0,     //发送失败
-    QIMMessageSendState_Waiting,           //发送中
-    QIMMessageSendState_Success,           //发送失败
-    QIMMessageSendState_NotRead    = 0xf,   //未读
-    QIMMessageSendState_didRead    = 0x10, //已读
-    QIMMessageSendState_didDestroyed = 0x11,//已销毁
-    QIMMessageSendState_didControl = 0x12, //已操作
-} QIMMessageSendState; //消息发送状态
-
-typedef enum {
     PublicNumberMsgType_None                = 0,
     PublicNumberMsgType_Text                = 1,
     PublicNumberMsgType_Voice               = 2,
@@ -253,25 +222,36 @@ typedef enum {
 } ChatType;
 
 typedef enum {
-    MessageState_none      = 0,
-    MessageState_Waiting,
-    MessageState_Success,
-    MessageState_Faild,
-    MessageState_NotRead    = 0xf,   //未读
-    MessageState_didRead    = 0x10, //已读
-    MessageState_didDestroyed = 0x11,//已销毁
-    MessageState_didControl = 0x12, //已操作
-} MessageState;
+    MessageReadFlagDidSend = 3,
+    MessageReadFlagDidRead = 4,
+} MessageReadFlag;
 
 typedef enum {
-    MessageDirection_Sent = 0,
-    MessageDirection_Received = 1,
-} MessageDirection;
+    QIMMessageRemoteReadStateNotSent = 0x00,       //发送到服务器
+    QIMMessageRemoteReadStateDidSent = 0x01,         //已送达，对方已接受
+    QIMMessageRemoteReadStateDidReaded = QIMMessageRemoteReadStateDidSent << 1,    //0x02已阅读，对方已读
+    QIMMessageRemoteReadStateGroupReaded = 0x03,  //群消息已读
+    QIMMessageRemoteReadStateDidOperated = 0x04,  //已操作
+} QIMMessageRemoteReadState; //消息操作状态
 
 typedef enum {
-    QIMMessageDirection_Sent = 0,
-    QIMMessageDirection_Received = 1,
-} QIMMessageDirection;
+    QIMMessageReadFlagClearAllUnRead = 0,    //向服务器清空所有未读
+    QIMMessageReadFlagGroupReaded = 2, //向服务器发送群消息已读
+    QIMMessageReadFlagDidSend = 3,     //向服务器发送已送达
+    QIMMessageReadFlagDidRead = 4,     //向服务器发送已阅读
+    QIMMessageReadFlagDidControl = 7,  //向服务器发送已操作
+} QIMMessageReadFlag;   //向服务器发送的标识符
+
+typedef enum {
+    QIMMessageSendState_Faild      = 0x00,     //发送失败
+    QIMMessageSendState_Waiting    = 0x01,     //发送中
+    QIMMessageSendState_Success    = 0x02,     //发送成功
+} QIMMessageSendState; //消息发送状态
+
+typedef enum {
+    QIMMessageDirection_Sent = 0,   //发送的消息
+    QIMMessageDirection_Received = 1,   //接收的消息
+} QIMMessageDirection;  //消息接收方向
 
 typedef enum {
     IMPlatform_UNKNOW   = 0,
@@ -283,12 +263,12 @@ typedef enum {
 } IMPlatform;
 
 typedef enum : NSUInteger {
-    QIMMSGSETTINGSHOW_CONTENT = 0x01,
-    QIMMSGSETTINGPUSH_ONLINE = QIMMSGSETTINGSHOW_CONTENT << 1,
-    QIMMSGSETTINGSOUND_INAPP = QIMMSGSETTINGPUSH_ONLINE << 1,
-    QIMMSGSETTINGVIBRATE_INAPP = QIMMSGSETTINGSOUND_INAPP << 1,
-    QIMMSGSETTINGPUSH_SWITCH = QIMMSGSETTINGVIBRATE_INAPP << 1
-} QIMMSGSETTING;
+    QIMMSGSETTINGSHOW_CONTENT = 0x01,                               //通知显示消息详情
+    QIMMSGSETTINGPUSH_ONLINE = QIMMSGSETTINGSHOW_CONTENT << 1,      //在线也接收通知
+    QIMMSGSETTINGSOUND_INAPP = QIMMSGSETTINGPUSH_ONLINE << 1,       //通知提示音
+    QIMMSGSETTINGVIBRATE_INAPP = QIMMSGSETTINGSOUND_INAPP << 1,     //通知震动提示
+    QIMMSGSETTINGPUSH_SWITCH = QIMMSGSETTINGVIBRATE_INAPP << 1      //开启消息推送
+} QIMMSGSETTING;  //APP消息通知设置
 
 typedef enum : NSUInteger {
     QIMClientConfigTypeKMarkupNames = 0,        //用户备注（通用）

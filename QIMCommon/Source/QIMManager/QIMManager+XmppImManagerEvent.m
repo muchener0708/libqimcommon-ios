@@ -396,15 +396,15 @@
         if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
             return;
         }
-        
-        [[QIMManager sharedInstance] checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
+        //Mark by DB
+//        [[QIMManager sharedInstance] checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
         
         Message *mesg = [Message new];
         [mesg setFrom:realfrom];
         [mesg setMessageId:msgId];
         [mesg setMessageType:msgType];
         [mesg setChatType:ChatType_SingleChat];
-        [mesg setMessageDirection:direction == 2 ? MessageDirection_Sent : MessageDirection_Received];
+        [mesg setMessageDirection:direction == 2 ? QIMMessageDirection_Sent : QIMMessageDirection_Received];
         [mesg setMessage:msg];
         [mesg setMessageDate:msgDate];
         if (nickName.length > 0) {
@@ -554,12 +554,13 @@
         if (flag) {
             return;
         }
-        [self checkMsgTimeWithJid:fromJid WithRealJid:realFrom WithMsgDate:msgDate WithGroup:NO];
+        //Mark by DB
+//        [self checkMsgTimeWithJid:fromJid WithRealJid:realFrom WithMsgDate:msgDate WithGroup:NO];
         Message *mesg = [Message new];
         [mesg setMessageId:msgId];
         [mesg setFrom:[msgDic objectForKey:@"realfrom"]];
         [mesg setMessageType:messageType];
-        [mesg setMessageDirection:(isCarbon == YES) ? MessageDirection_Sent : MessageDirection_Received];
+        [mesg setMessageDirection:(isCarbon == YES) ? QIMMessageDirection_Sent : QIMMessageDirection_Received];
         [mesg setMessage:msg];
         [mesg setExtendInformation:extendInfo];
         [mesg setMessageDate:msgDate];
@@ -590,7 +591,7 @@
                 }
             }
             [self addConsultSessionById:fromJid ByRealJid:realJid WithUserId:realJid ByMsgId:msgId WithOpen:NO WithLastUpdateTime:mesg.messageDate WithChatType:cType];
-            if (![sid isEqualToString:self.currentSessionUserId] && mesg.messageDirection == MessageDirection_Received) {
+            if (![sid isEqualToString:self.currentSessionUserId] && mesg.messageDirection == QIMMessageDirection_Received) {
                 [self increasedNotReadMsgCountByJid:fromJid WithReadJid:mesg.realJid];
                 [self updateNotReadCountCacheByJid:fromJid WithRealJid:mesg.realJid];
                 if (mesg.messageType == QIMMessageType_RedPack) {
@@ -659,7 +660,7 @@
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(checkNetworkStatus) object:nil];
     [self checkNetworkStatus];
     [self onDisconnect];
-    [self.loginComplateQueue cancelAllOperations];
+//    [self.loginComplateQueue cancelAllOperations];
 }
 
 - (void)serviceStreamEnd:(NSDictionary *)infoDic{
@@ -1087,14 +1088,14 @@
     NSString *msgID = [notify.object objectForKey:@"messageId"];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         long long receivedTime = [[notify.object objectForKey:@"receivedTime"] longLongValue];
-        [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgState:MessageState_Success WithMsgId:msgID];
+        [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgState:QIMMessageSendState_Success WithMsgId:msgID];
         [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgDate:receivedTime WithMsgId:msgID];
     });
 }
 
 - (void)onMessageSendFaild:(NSNotification *)notify {
     NSString *msgID = [notify.object objectForKey:@"messageId"];
-    [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgState:MessageState_Faild WithMsgId:msgID];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgState:QIMMessageSendState_Faild WithMsgId:msgID];
 }
 
 - (void)onRevoke:(NSDictionary *)infoDic {
@@ -1117,7 +1118,8 @@
     NSString * jid = [infoDic objectForKey:@"jid"];
     NSString * realJid = [infoDic objectForKey:@"realjid"];
     NSArray * readStateMsgList = [[QIMJSONSerializer sharedInstance] deserializeObject:infoStr error:nil];
-    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateChatMsgWithMsgState:MessageState_didRead ByMsgIdList:readStateMsgList];
+    //Mark by DB
+//    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateChatMsgWithMsgState:MessageState_didRead ByMsgIdList:readStateMsgList];
     [self.notReadMsgByGroupDic removeObjectForKey:[NSString stringWithFormat:@"%@-%@",jid,realJid]];
     [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:[NSString stringWithFormat:@"%@-%@",jid,realJid]];
 }
@@ -1136,7 +1138,8 @@
         if (readType == 0) {
             NSDictionary *readMarkTDic = [[QIMJSONSerializer sharedInstance] deserializeObject:infoStr error:nil];
             long long readMarkT = [[readMarkTDic objectForKey:@"T"] longLongValue];
-            [[IMDataManager qimDB_SharedInstance] qimDB_updateAllMsgWithMsgState:MessageState_didRead ByMsgDirection:MessageDirection_Received ByReadMarkT:readMarkT / 1000];
+            //Mark by DB
+//            [[IMDataManager qimDB_SharedInstance] qimDB_updateAllMsgWithMsgState:MessageState_didRead ByMsgDirection:MessageDirection_Received ByReadMarkT:readMarkT / 1000];
             [self.notReadMsgByGroupDic removeAllObjects];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:nil];
@@ -1160,6 +1163,7 @@
                 [self updateNotReadCountCacheByJid:jid];
             } else {
                 //单人
+                /* Mark by DB
                 if (readType == 1) {
                     [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateChatMsgWithMsgState:MessageState_NotRead ByMsgIdList:readStateMsgList];
                     [self updateMessageStateWithNewState:MessageState_NotRead ByMsgIdList:readStateMsgList];
@@ -1178,6 +1182,7 @@
                     [self updateMessageControlStateWithNewState:MessageState_didControl ByMsgIdList:readStateMsgList];
                     [self updateNotReadCountCacheByJid:jid];
                 }
+                */
             }
         }
     });
@@ -1207,12 +1212,12 @@
         NSString *jid = [msgDic objectForKey:@"fromId"];
         NSString *infoStr = [msgDic objectForKey:@"infoStr"];
         long long msgDate = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 1) * 1000;
-        int direction = MessageDirection_Received;
+        int direction = QIMMessageDirection_Received;
         int msgType = QIMMessageType_PNote;
         NSString *msgId = [QIMUUIDTools UUID];
         NSString *autoReply = [msgDic objectForKey:@"autoReply"];
-
-        [self checkMsgTimeWithJid:jid WithMsgDate:msgDate WithGroup:NO];
+        //Mark by DB
+//        [self checkMsgTimeWithJid:jid WithMsgDate:msgDate WithGroup:NO];
         
         Message *mesg = [Message new];
         [mesg setFrom:jid];
@@ -1292,32 +1297,36 @@
                 return;
             }
             [self saveChatId:chatId ForUserId:sid];
-            [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
+            //Mark by DB
+//            [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
             
             int direction = [[msgDic objectForKey:@"direction"] intValue];
             
             Message *mesg = [Message new];
             [mesg setFrom:sid];
+            [mesg setRealJid:sid];
             if ([msgDic objectForKey:@"msgId"] != nil && ![[msgDic objectForKey:@"msgId"] isEqualToString:@"1"]) {
                 NSString *messageId = [msgDic objectForKey:@"msgId"];
                 [mesg setMessageId:messageId];
             }
             [mesg setMessageType:QIMMessageType_Voice];
             [mesg setChatType:ChatType_SingleChat];
-            [mesg setMessageDirection:direction == 2 ? MessageDirection_Sent : MessageDirection_Received];
+            [mesg setMessageState:QIMMessageSendState_Success];
+            [mesg setMessageDirection:direction == 2 ? QIMMessageDirection_Sent : QIMMessageDirection_Received];
             [mesg setMessage:msg];
+            [mesg setRemoteReadState:QIMMessageRemoteReadStateDidSent];
             [mesg setMessageDate:msgDate];
             [mesg setTo:[[QIMManager sharedInstance] getLastJid]];
             [mesg setMsgRaw:msgRaw];
             // 消息落地
+            [self addSessionByType:ChatType_SingleChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
             if (![autoReply isEqualToString:@"true"]) {
                 [self saveMsg:mesg ByJid:sid];
             }
             [[QIMVoiceNoReadStateManager sharedVoiceNoReadStateManager] setVoiceNoReadStateWithMsgId:mesg.messageId ChatId:sid withState:NO];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
-                [self addSessionByType:ChatType_SingleChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
-                if (![sid isEqualToString:self.currentSessionUserId] && mesg.messageDirection == MessageDirection_Received) {
+                if (![sid isEqualToString:self.currentSessionUserId] && mesg.messageDirection == QIMMessageDirection_Received) {
 //                    [self setNotReaderMsgCount:[self getNotReadMsgCountByJid:sid] + 1 ForJid:sid];
                     [self increasedNotReadMsgCountByJid:sid];
                     [self updateNotReadCountCacheByJid:sid];
@@ -1366,28 +1375,32 @@
             }
             
             [self saveChatId:chatId ForUserId:sid];
-            [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
+            //Mark by DB
+//            [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
             
             Message *mesg = [Message new];
             [mesg setFrom:sid];
+            [mesg setRealJid:sid];
             [mesg setMessageId:msgId];
             [mesg setMessageType:msgType];
             [mesg setChatType:ChatType_SingleChat];
-            [mesg setMessageDirection:direction == 2 ? MessageDirection_Sent : MessageDirection_Received];
+            [mesg setMessageDirection:direction == 2 ? QIMMessageDirection_Sent : QIMMessageDirection_Received];
             [mesg setMessage:msg];
+            [mesg setMessageState:QIMMessageSendState_Success];
+            [mesg setRemoteReadState:QIMMessageRemoteReadStateDidSent];
             [mesg setMessageDate:msgDate];
             [mesg setExtendInformation:extendInfo];
             [mesg setTo:[[QIMManager sharedInstance] getLastJid]];
             [mesg setMsgRaw:msgRaw];
             // 消息落地
+            [self addSessionByType:ChatType_SingleChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
             if (![autoReply isEqualToString:@"true"]) {
                 [self saveMsg:mesg ByJid:sid];
             }
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
-                [self addSessionByType:ChatType_SingleChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
-                if (![sid isEqualToString:self.currentSessionUserId] && mesg.messageDirection == MessageDirection_Received) {
+                if (![sid isEqualToString:self.currentSessionUserId] && mesg.messageDirection == QIMMessageDirection_Received) {
                     [self increasedNotReadMsgCountByJid:sid];
                     [self updateNotReadCountCacheByJid:sid];
                     if (mesg.messageType == QIMMessageType_RedPack) {
@@ -1420,7 +1433,8 @@
             if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:messageId]) {
                 return;
             }
-            [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
+            //Mark by DB
+//            [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
             
             Message *mesg = [Message new];
             [mesg setFrom:sid];
@@ -1428,21 +1442,23 @@
             [mesg setChatType:ChatType_GroupChat];
             [mesg setMessageType:QIMMessageType_Voice];
             [mesg setMessageDirection:[self getGroupMsgDirectionWithSendJid:nickName]];
+            [mesg setRemoteReadState:QIMMessageRemoteReadStateDidSent];
             [mesg setMessage:msg];
             [mesg setNickName:nickName];
             [mesg setMessageDate:msgDate];
             [mesg setBackupInfo:backupInfo];
             [mesg setMsgRaw:msgRaw];
             [mesg setTo:[[QIMManager sharedInstance] getLastJid]];
+            [self addSessionByType:ChatType_GroupChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
+
             if (![autoReply isEqualToString:@"true"]) {
                 [self saveMsg:mesg ByJid:sid];
             }
             [[QIMVoiceNoReadStateManager sharedVoiceNoReadStateManager] setVoiceNoReadStateWithMsgId:mesg.messageId ChatId:sid withState:NO];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
-                [self addSessionByType:ChatType_GroupChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
                 BOOL isRemind = [self groupPushState:sid];
-                if (mesg.messageDirection == MessageDirection_Received && (![self.currentSessionUserId isEqualToString:sid])) {
+                if (mesg.messageDirection == QIMMessageDirection_Received && (![self.currentSessionUserId isEqualToString:sid])) {
                     
                     if (![sid isEqualToString:self.currentSessionUserId]) {
                         if (isRemind) {
@@ -1469,7 +1485,7 @@
             NSString *replyUser = [msgDic objectForKey:@"replyUser"];
             NSString *backupInfo = [msgDic objectForKey:@"backupInfo"];
             NSString *autoReply = [msgDic objectForKey:@"autoReply"];
-            if (msgType == QIMMessageType_shareLocation && [self getGroupMsgDirectionWithSendJid:nickName] == MessageDirection_Received) {
+            if (msgType == QIMMessageType_shareLocation && [self getGroupMsgDirectionWithSendJid:nickName] == QIMMessageDirection_Received) {
                 NSDictionary *shareDic = [[QIMJSONSerializer sharedInstance] deserializeObject:extendInfo error:nil];
                 NSString *shareId = [shareDic objectForKey:@"shareId"];
                 NSString *fromUser = [shareDic objectForKey:@"fromId"];
@@ -1496,11 +1512,12 @@
             if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:messageId]) {
                 return;
             }
-            
-            [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
+            //Mark by DB
+//            [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
             
             Message *mesg = [Message new];
             [mesg setFrom:sid];
+            [mesg setRealJid:sid];
             [mesg setMessageId:messageId];
             
             [mesg setChatType:ChatType_GroupChat];
@@ -1508,22 +1525,24 @@
             [mesg setMessageDirection:[self getGroupMsgDirectionWithSendJid:nickName]];
             [mesg setMessage:msg];
             [mesg setNickName:nickName];
+            [mesg setMessageState:QIMMessageSendState_Success];
+            [mesg setRemoteReadState:QIMMessageRemoteReadStateDidSent];
             [mesg setMessageDate:msgDate];
             [mesg setExtendInformation:extendInfo];
             [mesg setTo:[[QIMManager sharedInstance] getLastJid]];
-            [mesg setReplyMsgId:replyMsgId];
-            [mesg setReplyUser:replyUser];
+//            [mesg setReplyMsgId:replyMsgId];
+//            [mesg setReplyUser:replyUser];
             [mesg setBackupInfo:backupInfo];
             [mesg setMsgRaw:msgRaw];
+            [self addSessionByType:ChatType_GroupChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
             if (![autoReply isEqualToString:@"true"]) {
                 [self saveMsg:mesg ByJid:sid];
             }
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
-                [self addSessionByType:ChatType_GroupChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
                 BOOL isRemind = [self groupPushState:sid];
-                if (mesg.messageDirection == MessageDirection_Received && (![self.currentSessionUserId isEqualToString:sid])) {
+                if (mesg.messageDirection == QIMMessageDirection_Received && (![self.currentSessionUserId isEqualToString:sid])) {
                     if ([msg rangeOfString:@"@"].location != NSNotFound) {
                         NSArray *array = [msg componentsSeparatedByString:@"@"];
                         BOOL hasAt = NO;
@@ -1578,14 +1597,15 @@
         if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
             return;
         }
-        [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
+        //Mark by DB
+//        [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
         
         Message *mesg = [Message new];
         [mesg setMessageId:msgId];
         [mesg setFrom:sid];
         [mesg setChatType:ChatType_System];
         [mesg setMessageType:QIMMessageType_Text];
-        [mesg setMessageDirection:MessageDirection_Received];
+        [mesg setMessageDirection:QIMMessageDirection_Received];
         [mesg setMessage:msg];
         [mesg setMessageDate:msgDate];
         [mesg setMsgRaw:msgRaw];
@@ -1640,7 +1660,7 @@
                 [mesg setFrom:sid];
                 [mesg setMessageType:msgType];
                 [mesg setChatType:ChatType_SingleChat];
-                [mesg setMessageDirection:direction == 2 ? MessageDirection_Sent : MessageDirection_Received];
+                [mesg setMessageDirection:direction == 2 ? QIMMessageDirection_Sent : QIMMessageDirection_Received];
                 [mesg setMessage:msg];
                 [mesg setMessageDate:msgDate];
                 [mesg setExtendInformation:extendInfo];
@@ -1684,7 +1704,8 @@
         if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
             return;
         }
-        [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
+        //Mark by DB
+//        [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
         
         
         NSString *nickName = [msgDic objectForKey:@"nickName"];
@@ -1702,8 +1723,8 @@
         [mesg setMessageDate:msgDate];
         [mesg setExtendInformation:nil];
         [mesg setTo:[[QIMManager sharedInstance] getLastJid]];
-        [mesg setReplyMsgId:nil];
-        [mesg setReplyUser:nil];
+//        [mesg setReplyMsgId:nil];
+//        [mesg setReplyUser:nil];
         [mesg setMsgRaw:msgRaw];
         if (![autoReply isEqualToString:@"true"]) {
             [self saveMsg:mesg ByJid:sid];
@@ -1714,7 +1735,7 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
             [self addSessionByType:ChatType_GroupChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
             BOOL isRemind = [self groupPushState:sid];
-            if (mesg.messageDirection == MessageDirection_Received && (![self.currentSessionUserId isEqualToString:sid])) {
+            if (mesg.messageDirection == QIMMessageDirection_Received && (![self.currentSessionUserId isEqualToString:sid])) {
                 if (![sid isEqualToString:self.currentSessionUserId]) {
                     if (isRemind) {
                         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(playSound) object:nil];
@@ -1744,13 +1765,14 @@
         if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
             return;
         }
-        [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
+        //Mark by DB
+//        [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
         int direction = [[msgDic objectForKey:@"direction"] intValue];
         Message *mesg = [Message new];
         [mesg setMessageId:msgId];
         [mesg setFrom:sid];
         [mesg setMessageType:QIMMessageType_File];
-        [mesg setMessageDirection:direction == 2 ? MessageDirection_Sent : MessageDirection_Received];
+        [mesg setMessageDirection:direction == 2 ? QIMMessageDirection_Sent : QIMMessageDirection_Received];
         [mesg setMessage:msg];
         [mesg setChatType:ChatType_SingleChat];
         [mesg setMessageDate:msgDate];
@@ -1765,7 +1787,7 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
             [self addSessionByType:ChatType_SingleChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
             
-            if (![sid isEqualToString:self.currentSessionUserId] && mesg.messageDirection == MessageDirection_Received) {
+            if (![sid isEqualToString:self.currentSessionUserId] && mesg.messageDirection == QIMMessageDirection_Received) {
                 //                [self setNotReaderMsgCount:[self getNotReadMsgCountByJid:sid] + 1 ForJid:sid];
                 [self increasedNotReadMsgCountByJid:sid];
                 [self updateNotReadCountCacheByJid:sid];
@@ -1786,11 +1808,12 @@
         NSString *nickName = [msgDic objectForKey:@"nickName"];
         NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
         NSString *autoReply = [msgDic objectForKey:@"autoReply"];
-        MessageDirection direction = [self getGroupMsgDirectionWithSendJid:nickName];
+        QIMMessageDirection direction = [self getGroupMsgDirectionWithSendJid:nickName];
         if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
             return;
         }
-        [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
+        //Mark by DB
+//        [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
         
         Message *mesg = [Message new];
         [mesg setMessageId:msgId];
@@ -1810,7 +1833,7 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
             [self addSessionByType:ChatType_GroupChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
             BOOL isRemind = [self groupPushState:sid];
-            if (mesg.messageDirection == MessageDirection_Received && (![self.currentSessionUserId isEqualToString:sid])) {
+            if (mesg.messageDirection == QIMMessageDirection_Received && (![self.currentSessionUserId isEqualToString:sid])) {
                 if (![sid isEqualToString:self.currentSessionUserId]) {
                     if (isRemind) {
                         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(playSound) object:nil];
@@ -1838,7 +1861,8 @@
         if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
             return;
         }
-        [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
+        //Mark by DB
+//        [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
         NSString *userName = nil;
         NSDictionary *userInfo = [self getUserInfoByUserId:sid];
         if (userInfo) {
@@ -1855,7 +1879,7 @@
         [mesg setFrom:sid];
         [mesg setChatType:ChatType_SingleChat];
         [mesg setMessageType:QIMMessageType_Shock];
-        [mesg setMessageDirection:direction == 2 ? MessageDirection_Sent : MessageDirection_Received];
+        [mesg setMessageDirection:direction == 2 ? QIMMessageDirection_Sent : QIMMessageDirection_Received];
         [mesg setMessage:msg];
         [mesg setMessageDate:msgDate];
         [mesg setMsgRaw:msgRaw];
@@ -1894,7 +1918,7 @@
         
         dispatch_async(dispatch_get_main_queue(), ^{
             BOOL isRemind = [self groupPushState:sid];
-            if (mesg.messageDirection == MessageDirection_Received && (![self.currentSessionUserId isEqualToString:sid])) {
+            if (mesg.messageDirection == QIMMessageDirection_Received && (![self.currentSessionUserId isEqualToString:sid])) {
                 
                 if (![sid isEqualToString:self.currentSessionUserId]) {
                     if (isRemind) {
@@ -1944,9 +1968,11 @@
     
     if (msgType != PublicNumberMsgType_Action && msgType != PublicNumberMsgType_ClientCookie && msgType != PublicNumberMsgType_PostBackCookie && msgType != QIMMessageType_ConsultResult && msgType != MessageType_C2BGrabSingleFeedBack) {
         if (isSystemMsg) {
-            [self checkMsgTimeWithJid:publicNumberId WithMsgDate:msgDate WithGroup:NO];
+            //Mark by DB
+//            [self checkMsgTimeWithJid:publicNumberId WithMsgDate:msgDate WithGroup:NO];
         } else {
-            [self checkPNMsgTimeWithJid:publicNumberId WithMsgDate:msgDate];
+            //Mark by DB
+//            [self checkPNMsgTimeWithJid:publicNumberId WithMsgDate:msgDate];
         }
     }
     
@@ -1967,7 +1993,7 @@
     Message *message = [Message new];
     [message setMessageId:msgId];
     [message setFrom:publicNumberId];
-    [message setMessageDirection:MessageDirection_Received];
+    [message setMessageDirection:QIMMessageDirection_Received];
     if (isSystemMsg) {
         [message setChatType:ChatType_System];
     } else {
@@ -1976,7 +2002,7 @@
     [message setMessageType:msgType];
     [message setMessage:msg];
     [message setExtendInformation:extendInfo];
-    [message setMessageState:MessageState_none];
+    [message setMessageState:QIMMessageSendState_Success];
     [message setMessageDate:msgDate];
     if (msgType != PublicNumberMsgType_Action && msgType != PublicNumberMsgType_ClientCookie && msgType != PublicNumberMsgType_PostBackCookie && msgType != QIMMessageType_ConsultResult) {
         [self saveMsg:message ByJid:publicNumberId];
@@ -2027,7 +2053,7 @@
             if (isSystemMsg) {
                 [self addSessionByType:ChatType_System ById:publicNumberId ByMsgId:message.messageId WithMsgTime:message.messageDate WithNeedUpdate:YES];
             }
-            if (![publicNumberId isEqualToString:[self getCurrentSessionUserId]] && message.messageDirection == MessageDirection_Received) {
+            if (![publicNumberId isEqualToString:[self getCurrentSessionUserId]] && message.messageDirection == QIMMessageDirection_Received) {
                 if (isSystemMsg == NO) {
                     [self setNotReaderMsgCount:[self getNotReaderMsgCountByPublicNumberId:publicNumberId] + 1 ForPublicNumberId:publicNumberId];
                 } else {

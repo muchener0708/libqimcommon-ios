@@ -98,6 +98,7 @@ static IMDataManager *__global_data_manager = nil;
             }];
             if (result) {
                 QIMVerboseLog(@"创建DB文件成功");
+                [self insertUserCacheData];
                 [[NSUserDefaults standardUserDefaults] setObject:currentValue forKey:@"dbVersion"];
                 [[NSUserDefaults standardUserDefaults] synchronize];
             } else {
@@ -130,6 +131,42 @@ static IMDataManager *__global_data_manager = nil;
     NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : NSTemporaryDirectory();
     
     return [basePath stringByAppendingPathComponent:@"SQLiteLogger"];
+}
+
+- (void)insertUserCacheData {
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = @"insert or IGNORE into IM_Cache_Data(key, type, value, valueInt) Values(:key, :type, :value, :valueInt);";
+        NSMutableArray *parames = [[NSMutableArray alloc] init];
+        [parames addObject:@"singlelastupdatetime"];
+        [parames addObject:@(10)];
+        [parames addObject:@"单人聊天时间戳"];
+        [parames addObject:@(0)];
+        [database executeNonQuery:sql withParameters:parames];
+        [parames release];
+        parames = nil;
+    }];
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = @"insert or IGNORE into IM_Cache_Data(key, type, value, valueInt) Values(:key, :type, :value, :valueInt);";
+        NSMutableArray *parames = [[NSMutableArray alloc] init];
+        [parames addObject:@"grouplastupdatetime"];
+        [parames addObject:@(10)];
+        [parames addObject:@"群聊聊天时间戳"];
+        [parames addObject:@(0)];
+        [database executeNonQuery:sql withParameters:parames];
+        [parames release];
+        parames = nil;
+    }];
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = @"insert or IGNORE into IM_Cache_Data(key, type, value, valueInt) Values(:key, :type, :value, :valueInt);";
+        NSMutableArray *parames = [[NSMutableArray alloc] init];
+        [parames addObject:@"systemlastupdatetime"];
+        [parames addObject:@(10)];
+        [parames addObject:@"系统聊天时间戳"];
+        [parames addObject:@(0)];
+        [database executeNonQuery:sql withParameters:parames];
+        [parames release];
+        parames = nil;
+    }];
 }
 
 - (DatabaseOperator *) dbInstance {
@@ -232,6 +269,7 @@ static IMDataManager *__global_data_manager = nil;
               Content               TEXT,\
               ExtendInfo            TEXT,\
               Type                  INTEGER,\
+              ChatType              INTEGER,\
               State                 INTEGER,\
               Direction             INTEGER,\
               ContentResolve        TEXT,\
@@ -258,6 +296,51 @@ static IMDataManager *__global_data_manager = nil;
         
         result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_MESSAGE_TO ON \
                   IM_Message('From');" withParameters:nil];
+        
+        //创建消息列表插入未读数触发器
+        result = [database executeNonQuery:@"CREATE TRIGGER sessionlist_unread_insert after insert on IM_Message\
+                  for each row begin\
+                  INSERT INTO logs(context, level, message, timestamp) VALUES (new.ReadState, '创建消息列表插入未读数触发器', new.XmppId||'--'||new.MsgId, datetime('now')) ;\
+                  update IM_SessionList set UnreadCount = case when ((new.ReadState&2)<>2) then UnreadCount+1 else UnreadCount end where XmppId = new.XmppId and RealJid = new.RealJid and new.Direction=1 ;\
+                  end" withParameters:nil];
+        
+        //创建消息列表未读数更新触发器
+        result = [database executeNonQuery:@"CREATE TRIGGER sessionlist_unread_update after update of ReadState on IM_Message\
+                  for each row begin\
+                  INSERT INTO logs(context, level, message, timestamp) VALUES (new.ReadState, '创建消息列表未读数更新触发器', new.XmppId||'--'||new.MsgId, datetime('now')) ;\
+                  update IM_SessionList set UnreadCount = case when (new.ReadState& 2) =2 and old.ReadState & 2 <>2 then (case when\ UnreadCount >0 then (unreadcount -1) else 0 end ) when (new.ReadState & 2) <>2 and old.ReadState & 2 =2 then\ UnreadCount + 1 else UnreadCount end where XmppId = new.XmppId and RealJid = new.RealJid and new.Direction = 1;\
+                  end" withParameters:nil];
+        
+        //插入单人消息时更新单人消息最后一条消息时间戳
+        result = [database executeNonQuery:@"CREATE TRIGGER singlelastupdatetime_insert after insert on IM_Message\
+                  for each row begin\
+                  update IM_Cache_Data set valueInt = case when (valueInt<new.LastUpdateTime and new.State&2=2 and (new.ChatType=0 or new.ChatType=4 or new.ChatType=5 or new.ChatType=6)) then new.LastUpdateTime else valueInt end where key='singlelastupdatetime' and type=10 ;\
+                  end" withParameters:nil];
+        //更新群消息最后一条消息时间戳
+        result = [database executeNonQuery:@"CREATE TRIGGER grouplastupdatetime_insert after insert on IM_Message\
+                  for each row begin\
+                  update IM_Cache_Data set valueInt = case when (valueInt<new.LastUpdateTime and new.State&2=2 and new.ChatType=1) then new.LastUpdateTime else valueInt end where key='grouplastupdatetime' and type=10 ;\
+                  end" withParameters:nil];
+        //更新系统消息最后一条消息时间戳
+        result = [database executeNonQuery:@"CREATE TRIGGER systemlastupdatetime_insert after insert on IM_Message\
+                  for each row begin\
+                  update IM_Cache_Data set valueInt = case when (valueInt<new.LastUpdateTime and new.State&2=2 and new.ChatType=2) then new.LastUpdateTime else valueInt end where key='systemlastupdatetime' and type=10 ;\
+                  end" withParameters:nil];
+        
+        result = [database executeNonQuery:@"CREATE TRIGGER singlelastupdatetime_update after update of State on IM_Message\
+                  for each row begin\
+                  update IM_Cache_Data set valueInt = case when (valueInt<new.LastUpdateTime and old.State&2<>2 and new.State&2=2 and (new.ChatType=0 or new.ChatType=4 or new.ChatType=5 or new.ChatType=6)) then new.LastUpdateTime else valueInt end where key='singlelastupdatetime' and type=10 ;\
+                  end" withParameters:nil];
+        
+        result = [database executeNonQuery:@"CREATE TRIGGER grouplastupdatetime_update after update of State on IM_Message\
+                  for each row begin\
+                  update IM_Cache_Data set valueInt = case when (valueInt<new.LastUpdateTime and old.State&2<>2 and new.State&2=2 and new.ChatType=1) then new.LastUpdateTime else valueInt end where key='grouplastupdatetime' and type=10 ;\
+                  end" withParameters:nil];
+        
+        result = [database executeNonQuery:@"CREATE TRIGGER systemlastupdatetime_update after update of State on IM_Message\
+                  for each row begin\
+                  update IM_Cache_Data set valueInt = case when (valueInt<new.LastUpdateTime and old.State&2<>2 and new.State&2=2 and new.ChatType=2) then new.LastUpdateTime else valueInt end where key='systemlastupdatetime' and type=10 ;\
+                  end" withParameters:nil];
     }
     
     //创建公众号表

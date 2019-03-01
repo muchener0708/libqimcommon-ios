@@ -163,7 +163,9 @@
                 }
                 if ([chatlog count] > 0) {
                     @autoreleasepool {
-                        NSMutableDictionary *msgList = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:chatlog to:[self getLastJid] WithDidReadState:MessageState_didRead];
+                        //Mark by DB
+//                        NSMutableDictionary *msgList = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:chatlog to:[self getLastJid] WithDidReadState:MessageState_didRead];
+                        NSMutableDictionary *msgList = @{};
                         for (NSString *key in [msgList allKeys]) {
                             //                        int notReadCount = [self getNotReadMsgCountByJid:key];
                             NSDictionary *value = [msgList objectForKey:key];

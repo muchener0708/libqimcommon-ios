@@ -193,9 +193,9 @@ static QIMManager *__IMManager = nil;
 
 - (void)initAppCacheConfig {
     self.update_chat_card = dispatch_queue_create("update_chat_card", DISPATCH_QUEUE_SERIAL);
-    self.loginComplateQueue = [[NSOperationQueue alloc] init];
-    self.loginComplateQueue.maxConcurrentOperationCount = 1;
-    self.loginComplateQueue.name = @"loginComplateQueue";
+//    self.loginComplateQueue = [[NSOperationQueue alloc] init];
+//    self.loginComplateQueue.maxConcurrentOperationCount = 1;
+//    self.loginComplateQueue.name = @"loginComplateQueue";
 //    self.loginComplateQueue = dispatch_queue_create("loginComplateQueue", 0);
     self.update_group_member_queue = dispatch_queue_create("Update Group Member Info Queue", DISPATCH_QUEUE_SERIAL);
     self.load_group_offline_msg_queue = dispatch_queue_create("Load Group Offline Msg Queue", DISPATCH_QUEUE_SERIAL);
@@ -484,8 +484,8 @@ static QIMManager *__IMManager = nil;
         QIMVerboseLog(@"获取系统历史记录2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime5]);
         QIMVerboseLog(@"获取系统历史记录结束2");
         
-        // 更新未发送的消息状态为失败
-        [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageFromState:MessageState_Waiting ToState:MessageState_Faild];
+        // 更新未发送的消息状态为失败 Mark by DB
+//        [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageFromState:QIMMessageSendState_Waiting ToState:MessageState_Faild];
         QIMVerboseLog(@"开始同步服务端漫游的个人配置2");
         CFAbsoluteTime startTime6 = [[QIMWatchDog sharedInstance] startTime];
         [self getRemoteClientConfig];

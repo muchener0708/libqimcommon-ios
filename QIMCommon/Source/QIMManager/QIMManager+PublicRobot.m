@@ -326,12 +326,12 @@
     [mesg setMessageId:[QIMUUIDTools UUID]];
     [mesg setMessageType:(int) msgType];
     [mesg setChatType:ChatType_PublicNumber];
-    [mesg setMessageDirection:MessageDirection_Sent];
+    [mesg setMessageDirection:QIMMessageDirection_Sent];
     [mesg setMessage:msg];
     [mesg setTo:publicNumberId];
     [mesg setFrom:[[QIMManager sharedInstance] getLastJid]];
     [mesg setMessageDate:msgDate];
-    [mesg setMessageState:MessageState_Waiting];
+    [mesg setMessageState:QIMMessageSendState_Waiting];
     [mesg setExtendInformation:extendInfo];
     [self saveMsg:mesg ByJid:publicNumberId];
     return mesg;
@@ -342,11 +342,11 @@
     Message *message = [Message new];
     [message setMessageId:msgId];
     [message setTo:publicNumberId];
-    [message setMessageDirection:MessageDirection_Sent];
+    [message setMessageDirection:QIMMessageDirection_Sent];
     [message setChatType:ChatType_PublicNumber];
     [message setMessageType:msgType];
     [message setMessage:msg];
-    [message setMessageState:MessageState_Waiting];
+    [message setMessageState:QIMMessageSendState_Waiting];
     [message setMessageDate:([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff) * 1000];
     [[XmppImManager sharedInstance] sendPublicNumberMessage:msg WithInfo:nil toJid:publicNumberId WithMsgId:msgId WithMsgType:msgType];
     if (message.messageType != PublicNumberMsgType_Action && message.messageType != PublicNumberMsgType_ClientCookie && message.messageType != PublicNumberMsgType_PostBackCookie) {
@@ -419,7 +419,8 @@
         [msg setChatType:ChatType_PublicNumber];
         [msg setMessageType:QIMMessageType_Time];
         [msg setMessageDate:msgDate - 1];
-        [msg setMessageState:MessageState_didRead];
+        //Mark by DB
+//        [msg setMessageState:MessageState_didRead];
         [self saveMsg:msg ByJid:jid];
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate

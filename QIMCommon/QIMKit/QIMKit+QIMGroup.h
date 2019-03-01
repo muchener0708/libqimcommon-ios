@@ -21,7 +21,7 @@
  @param sendJid 昵称
  @return MessageDirection
  */
-- (MessageDirection)getGroupMsgDirectionWithSendJid:(NSString *)sendJid;
+- (QIMMessageDirection)getGroupMsgDirectionWithSendJid:(NSString *)sendJid;
 
 - (NSArray *)getGroupIdList;
 

@@ -27,8 +27,8 @@
 #if OS_OBJECT_USE_OBJC
 @property (nonatomic, strong) dispatch_queue_t receive_msg_queue;
 @property (nonatomic, strong) dispatch_queue_t load_user_state_queue;
-@property (nonatomic, strong) NSOperationQueue *loginComplateQueue;
-@property (nonatomic, strong) NSInvocationOperation *loginComplateOperation;
+//@property (nonatomic, strong) NSOperationQueue *loginComplateQueue;
+//@property (nonatomic, strong) NSInvocationOperation *loginComplateOperation;
 //@property (nonatomic, strong) dispatch_queue_t loginComplateQueue;
 @property (nonatomic, strong) dispatch_queue_t load_history_msg;
 @property (nonatomic, strong) dispatch_queue_t load_offlineSingleHistory_msg;
@@ -47,8 +47,8 @@
 #else
 @property (nonatomic, assign) dispatch_queue_t receive_msg_queue;
 @property (nonatomic, assign) dispatch_queue_t load_user_state_queue;
-@property (nonatomic, assign) NSOperationQueue *loginComplateQueue;
-@property (nonatomic, assign) NSInvocationOperation *loginComplateOperation;
+//@property (nonatomic, assign) NSOperationQueue *loginComplateQueue;
+//@property (nonatomic, assign) NSInvocationOperation *loginComplateOperation;
 //@property (nonatomic, assign) dispatch_queue_t loginComplateQueue;
 @property (nonatomic, assign) dispatch_queue_t load_history_msg;
 @property (nonatomic, assign) dispatch_queue_t load_offlineSingleHistory_msg;

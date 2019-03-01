@@ -73,11 +73,11 @@
     [message setRealFrom:[self getLastJid]];
     [message setTo:toJid];
     [message setRealTo:realToJid];
-    [message setMessageDirection:MessageDirection_Sent];
+    [message setMessageDirection:QIMMessageDirection_Sent];
     [message setMessageType:msgType];
     [message setMessage:msg];
     [message setExtendInformation:info];
-    [message setMessageState:MessageState_Waiting];
+    [message setMessageState:QIMMessageSendState_Waiting];
     [message setMessageDate:([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff)*1000];
     
     NSString *sid = nil;

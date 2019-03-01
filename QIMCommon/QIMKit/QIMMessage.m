@@ -17,23 +17,6 @@
 
 static UIFont *__global_font = nil;
 
-@implementation ChatSession
-
-- (NSString *)userName{
-    if (_userName == nil) {
-        [self setUserName:self.userId];
-    }
-    return _userName;
-}
-
-- (void)dealloc{
-    [self setSessionId:nil];
-    [self setLastMsgId:nil];
-    [self setMsgContent:nil];
-}
-
-@end
-
 @implementation Message
 
 - (NSDictionary *)getMsgInfoDic{

@@ -34,7 +34,6 @@
         [request startSynchronous];
         if ([request responseStatusCode] == 200) {
             QIMWarnLog(@"<Method: checkNetworkCanUser> 网络检测，已连接到互联网...");
-            [self checkOfflineMsg];
             return YES;
         } else {
             QIMWarnLog(@"网络检测，Request Url %@, Respone Code : %d , Error %@",checkUrl,request.responseStatusCode,request.error);

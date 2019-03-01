@@ -15,7 +15,7 @@
     [[QIMManager sharedInstance] updateLastGroupMsgTime];
 }
 
-- (MessageDirection)getGroupMsgDirectionWithSendJid:(NSString *)sendJid {
+- (QIMMessageDirection)getGroupMsgDirectionWithSendJid:(NSString *)sendJid {
     return [[QIMManager sharedInstance] getGroupMsgDirectionWithSendJid:sendJid];
 }
 

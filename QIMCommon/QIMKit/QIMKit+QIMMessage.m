@@ -163,7 +163,7 @@
 - (Message *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId willSave:(BOOL)willSave {
     return [[QIMManager sharedInstance] createMessageWithMsg:msg extenddInfo:extendInfo userId:userId userType:userType msgType:msgType forMsgId:mId willSave:willSave];
 }
-- (Message *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId realJid:(NSString *)realJid userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId msgState:(MessageState)msgState willSave:(BOOL)willSave {
+- (Message *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId realJid:(NSString *)realJid userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId msgState:(QIMMessageSendState)msgState willSave:(BOOL)willSave {
     return [[QIMManager sharedInstance] createMessageWithMsg:msg extenddInfo:extendInfo userId:userId realJid:realJid userType:userType msgType:msgType forMsgId:mId msgState:msgState willSave:willSave];
 }
 
@@ -232,7 +232,7 @@
 
 #pragma mark - 未读数
 
-- (void)updateMsgReadCompensateSetWithMsgId:(NSString *)msgId WithAddFlag:(BOOL)flag WithState:(MessageState)state{
+- (void)updateMsgReadCompensateSetWithMsgId:(NSString *)msgId WithAddFlag:(BOOL)flag WithState:(QIMMessageSendState)state{
     [[QIMManager sharedInstance] updateMsgReadCompensateSetWithMsgId:msgId WithAddFlag:flag WithState:state];
 }
 
@@ -296,7 +296,7 @@
     [[QIMManager sharedInstance] updateNotReadCountCacheByJid:jid WithRealJid:realJid];
 }
 
-- (void)updateMessageStateWithNewState:(MessageState)state ByMsgIdList:(NSArray *)MsgIdList {
+- (void)updateMessageStateWithNewState:(QIMMessageSendState)state ByMsgIdList:(NSArray *)MsgIdList {
     [[QIMManager sharedInstance] updateMessageStateWithNewState:state ByMsgIdList:MsgIdList];
 }
 
@@ -338,10 +338,6 @@
 
 - (void)getConsultServerMsgLisByUserId:(NSString *)userId WithVirtualId:(NSString *)virtualId WithLimit:(int)limit WithOffset:(int)offset WithComplete:(void (^)(NSArray *))complete {
     [[QIMManager sharedInstance] getConsultServerMsgLisByUserId:userId WithVirtualId:virtualId WithLimit:limit WithOffset:offset WithComplete:complete];
-}
-
-- (void)checkOfflineMsg {
-    [[QIMManager sharedInstance] checkOfflineMsg];
 }
 
 - (NSMutableArray *)searchLocalMessageByKeyword:(NSString *)keyWord XmppId:(NSString *)xmppid RealJid:(NSString *)realJid {

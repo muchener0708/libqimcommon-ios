@@ -178,7 +178,7 @@
 }
 
 - (NSArray *)qimNav_getDebugers {
-    return @[@"lilulucas.li", @"nigotuu7479"];
+    return @[@"lilulucas.li", @"nigotuu7479", @"hubin.hu"];
 }
 
 - (NSArray *)qimNav_getLocalNavServerConfigs {

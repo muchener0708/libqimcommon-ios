@@ -447,7 +447,7 @@ typedef enum {
 - (void)requestFailed:(ASIHTTPRequest *)request{
     
     if (self.fileReuqestType == FileRequest_Upload) {
-        self.message.messageState = MessageState_Faild;
+        self.message.messageState = QIMMessageSendState_Faild;
         [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyFileManagerUpdate object:[NSDictionary dictionaryWithObjectsAndKeys:self.message,@"message",@"1.1",@"propress", @"failed",@"status",nil]];
         [[NSNotificationCenter defaultCenter] postNotificationName:@"kXmppStreamSendMessageFailed" object:@{@"messageId":self.message.messageId}];
     } else if (self.fileReuqestType == FileRequest_Download) {

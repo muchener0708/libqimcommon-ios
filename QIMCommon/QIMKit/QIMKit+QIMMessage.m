@@ -19,7 +19,7 @@
     return [[QIMManager sharedInstance] getMsgDictByMsgId:msgId];
 }
 
-- (Message *)getMsgByMsgId:(NSString *)msgId {
+- (QIMMessageModel *)getMsgByMsgId:(NSString *)msgId {
     return [[QIMManager sharedInstance] getMsgByMsgId:msgId];
 }
 
@@ -59,15 +59,15 @@
     [[QIMManager sharedInstance] sendTypingToUserId:userId];
 }
 
-- (void)saveMsg:(Message *)msg ByJid:(NSString *)sid {
+- (void)saveMsg:(QIMMessageModel *)msg ByJid:(NSString *)sid {
     [[QIMManager sharedInstance] saveMsg:msg ByJid:sid];
 }
 
-- (void)updateMsg:(Message *)msg ByJid:(NSString *)sid {
+- (void)updateMsg:(QIMMessageModel *)msg ByJid:(NSString *)sid {
     [[QIMManager sharedInstance] updateMsg:msg ByJid:sid];
 }
 
-- (void)deleteMsg:(Message *)msg ByJid:(NSString *)sid {
+- (void)deleteMsg:(QIMMessageModel *)msg ByJid:(NSString *)sid {
     [[QIMManager sharedInstance] deleteMsg:msg ByJid:sid];
 }
 
@@ -87,7 +87,7 @@
     return [[QIMManager sharedInstance] sendReadstateWithGroupLastMessageTime:lastTime withGroupId:groupId];
 }
 
-- (Message *)sendShockToUserId:(NSString *)userId {
+- (QIMMessageModel *)sendShockToUserId:(NSString *)userId {
     return [[QIMManager sharedInstance] sendShockToUserId:userId];
 }
 
@@ -95,27 +95,27 @@
     [[QIMManager sharedInstance] revokeMessageWithMessageId:messageId message:message ToJid:jid];
 }
 
-- (Message *)sendVoiceUrl:(NSString *)voiceUrl withVoiceName:(NSString *)voiceName withSeconds:(int)seconds ToUserId:(NSString *)userId {
+- (QIMMessageModel *)sendVoiceUrl:(NSString *)voiceUrl withVoiceName:(NSString *)voiceName withSeconds:(int)seconds ToUserId:(NSString *)userId {
     return [[QIMManager sharedInstance] sendVoiceUrl:voiceUrl withVoiceName:voiceName withSeconds:seconds ToUserId:userId];
 }
 
-- (Message *)sendMessage:(Message *)msg ToUserId:(NSString *)userId {
+- (QIMMessageModel *)sendMessage:(QIMMessageModel *)msg ToUserId:(NSString *)userId {
     return [[QIMManager sharedInstance] sendMessage:msg ToUserId:userId];
 }
 
-- (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToUserId:(NSString *)userId WithMsgType:(int)msgType {
+- (QIMMessageModel *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToUserId:(NSString *)userId WithMsgType:(int)msgType {
     return [[QIMManager sharedInstance] sendMessage:msg WithInfo:info ToUserId:userId WithMsgType:msgType];
 }
 
-- (Message *)sendMessage:(NSString *)msg ToGroupId:(NSString *)groupId {
+- (QIMMessageModel *)sendMessage:(NSString *)msg ToGroupId:(NSString *)groupId {
     return [[QIMManager sharedInstance] sendMessage:msg ToGroupId:groupId];
 }
 
-- (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToGroupId:(NSString *)groupId WithMsgType:(int)msgType {
+- (QIMMessageModel *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToGroupId:(NSString *)groupId WithMsgType:(int)msgType {
     return [[QIMManager sharedInstance] sendMessage:msg WithInfo:info ToGroupId:groupId WithMsgType:msgType];
 }
 
-- (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToGroupId:(NSString *)groupId WithMsgType:(int)msgType WithMsgId:(NSString *)msgId {
+- (QIMMessageModel *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToGroupId:(NSString *)groupId WithMsgType:(int)msgType WithMsgId:(NSString *)msgId {
     return [[QIMManager sharedInstance] sendMessage:msg WithInfo:info ToGroupId:groupId WithMsgType:msgType WithMsgId:msgId];
 }
 
@@ -132,30 +132,30 @@
     [[QIMManager sharedInstance] sendWlanMessage:content to:targetID extendInfo:extendInfo msgType:msgType completionHandler:completionHandler];
 }
 
-- (Message *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId willSave:(BOOL)willSave {
+- (QIMMessageModel *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId willSave:(BOOL)willSave {
     return [[QIMManager sharedInstance] createMessageWithMsg:msg extenddInfo:extendInfo userId:userId userType:userType msgType:msgType forMsgId:mId willSave:willSave];
 }
-- (Message *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId realJid:(NSString *)realJid userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId msgState:(QIMMessageSendState)msgState willSave:(BOOL)willSave {
+- (QIMMessageModel *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId realJid:(NSString *)realJid userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId msgState:(QIMMessageSendState)msgState willSave:(BOOL)willSave {
     return [[QIMManager sharedInstance] createMessageWithMsg:msg extenddInfo:extendInfo userId:userId realJid:realJid userType:userType msgType:msgType forMsgId:mId msgState:msgState willSave:willSave];
 }
 
-- (Message *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId realJid:(NSString *)realJid userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId willSave:(BOOL)willSave {
+- (QIMMessageModel *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId realJid:(NSString *)realJid userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId willSave:(BOOL)willSave {
     return [[QIMManager sharedInstance] createMessageWithMsg:msg extenddInfo:extendInfo userId:userId realJid:realJid userType:userType msgType:msgType forMsgId:mId willSave:willSave];
 }
 
-- (Message *)sendMessage:(Message *)msg withChatType:(ChatType)chatType channelInfo:(NSString *)channelInfo realFrom:(NSString *)realFrom realTo:(NSString *)realTo ochatJson:(NSString *)ochatJson {
+- (QIMMessageModel *)sendMessage:(QIMMessageModel *)msg withChatType:(ChatType)chatType channelInfo:(NSString *)channelInfo realFrom:(NSString *)realFrom realTo:(NSString *)realTo ochatJson:(NSString *)ochatJson {
     return [[QIMManager sharedInstance] sendMessage:msg withChatType:chatType channelInfo:channelInfo realFrom:realFrom realTo:realTo ochatJson:ochatJson];
 }
 
-- (Message *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId userType:(ChatType)userType msgType:(QIMMessageType)msgType {
+- (QIMMessageModel *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId userType:(ChatType)userType msgType:(QIMMessageType)msgType {
     return [[QIMManager sharedInstance] createMessageWithMsg:msg extenddInfo:extendInfo userId:userId userType:userType msgType:msgType];
 }
 
-- (Message *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId userType:(ChatType)userType msgType:(QIMMessageType)msgType backinfo:(NSString *)backInfo {
+- (QIMMessageModel *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId userType:(ChatType)userType msgType:(QIMMessageType)msgType backinfo:(NSString *)backInfo {
     return [[QIMManager sharedInstance] createMessageWithMsg:msg extenddInfo:extendInfo userId:userId userType:userType msgType:msgType backinfo:backInfo];
 }
 
-- (Message *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId {
+- (QIMMessageModel *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId {
     return [[QIMManager sharedInstance] createMessageWithMsg:msg extenddInfo:extendInfo userId:userId userType:userType msgType:msgType forMsgId:mId];
 }
 
@@ -165,15 +165,15 @@
 
 #pragma mark - 位置共享
 
-- (Message *)sendShareLocationMessage:(NSString *)msg WithInfo:(NSString *)info ToJid:(NSString *)jid WithMsgType:(int)msgType {
+- (QIMMessageModel *)sendShareLocationMessage:(NSString *)msg WithInfo:(NSString *)info ToJid:(NSString *)jid WithMsgType:(int)msgType {
     return [[QIMManager sharedInstance] sendShareLocationMessage:msg WithInfo:info ToJid:jid WithMsgType:msgType];
 }
 
-- (Message *)beginShareLocationToUserId:(NSString *)userId WithShareLocationId:(NSString *)shareLocationId {
+- (QIMMessageModel *)beginShareLocationToUserId:(NSString *)userId WithShareLocationId:(NSString *)shareLocationId {
     return [[QIMManager sharedInstance] beginShareLocationToUserId:userId WithShareLocationId:shareLocationId];
 }
 
-- (Message *)beginShareLocationToGroupId:(NSString *)GroupId WithShareLocationId:(NSString *)shareLocationId {
+- (QIMMessageModel *)beginShareLocationToGroupId:(NSString *)GroupId WithShareLocationId:(NSString *)shareLocationId {
     return [[QIMManager sharedInstance] beginShareLocationToGroupId:GroupId WithShareLocationId:shareLocationId];
 }
 

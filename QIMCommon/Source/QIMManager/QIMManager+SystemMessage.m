@@ -56,7 +56,7 @@
         if (array.count > 0) {
             NSMutableArray *list = [NSMutableArray arrayWithCapacity:5];
             for (NSDictionary *infoDic in array) {
-                Message *msg = [Message new];
+               QIMMessageModel *msg = [QIMMessageModel new];
                 [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
                 [msg setFrom:[infoDic objectForKey:@"From"]];
                 [msg setNickName:[infoDic objectForKey:@"From"]];
@@ -102,7 +102,7 @@
                     NSArray *datas = [[IMDataManager qimDB_SharedInstance] qimDB_getMgsListBySessionId:userId WithRealJid:nil WithLimit:(int)(resultList.count) WithOffset:offset];
                     NSMutableArray *list = [NSMutableArray array];
                     for (NSDictionary *infoDic in datas) {
-                        Message *msg = [Message new];
+                       QIMMessageModel *msg = [QIMMessageModel new];
                         [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
                         [msg setFrom:[infoDic objectForKey:@"From"]];
                         [msg setTo:[infoDic objectForKey:@"To"]];
@@ -227,7 +227,7 @@
         NSString *msgId = nil;
         NSMutableArray *list = [NSMutableArray array];
         for (NSDictionary *infoDic in msgs) {
-            Message *msg = [Message new];
+           QIMMessageModel *msg = [QIMMessageModel new];
             [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
             [msg setFrom:[infoDic objectForKey:@"From"]];
             [msg setTo:[infoDic objectForKey:@"To"]];

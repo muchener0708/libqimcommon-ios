@@ -132,7 +132,7 @@
                 if ([from containsString:@"conference."]) {
                     
                 } else {
-                    Message *msg = [[QIMManager sharedInstance] createMessageWithMsg:@"消息已发出，但被对方拒收了。" extenddInfo:nil userId:from realJid:from userType:ChatType_SingleChat msgType:QIMMessageType_Time forMsgId:[QIMUUIDTools UUID] willSave:YES];
+                   QIMMessageModel *msg = [[QIMManager sharedInstance] createMessageWithMsg:@"消息已发出，但被对方拒收了。" extenddInfo:nil userId:from realJid:from userType:ChatType_SingleChat msgType:QIMMessageType_Time forMsgId:[QIMUUIDTools UUID] willSave:YES];
                     dispatch_async(dispatch_get_main_queue(), ^{
                         [[NSNotificationCenter defaultCenter] postNotificationName:kXmppStreamSendMessageFailed object:@{@"messageId":msgId}];
                         [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:from userInfo:@{@"message": msg}];
@@ -407,7 +407,7 @@
             
             int direction = [[msgDic objectForKey:@"direction"] intValue];
             
-            Message *mesg = [Message new];
+           QIMMessageModel *mesg = [QIMMessageModel new];
             [mesg setFrom:sid];
             [mesg setRealJid:sid];
             if ([msgDic objectForKey:@"msgId"] != nil && ![[msgDic objectForKey:@"msgId"] isEqualToString:@"1"]) {
@@ -480,7 +480,7 @@
             [self saveChatId:chatId ForUserId:sid];
             [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
             
-            Message *mesg = [Message new];
+           QIMMessageModel *mesg = [QIMMessageModel new];
             [mesg setFrom:sid];
             [mesg setRealJid:sid];
             [mesg setMessageId:msgId];
@@ -536,7 +536,7 @@
             }
             [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
             
-            Message *mesg = [Message new];
+           QIMMessageModel *mesg = [QIMMessageModel new];
             [mesg setFrom:sid];
             [mesg setMessageId:messageId];
             [mesg setChatType:ChatType_GroupChat];
@@ -613,7 +613,7 @@
             }
             [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
             
-            Message *mesg = [Message new];
+           QIMMessageModel *mesg = [QIMMessageModel new];
             [mesg setFrom:sid];
             [mesg setRealJid:sid];
             [mesg setMessageId:messageId];
@@ -695,7 +695,7 @@
         }
         [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
         
-        Message *mesg = [Message new];
+       QIMMessageModel *mesg = [QIMMessageModel new];
         [mesg setMessageId:msgId];
         [mesg setFrom:sid];
         [mesg setChatType:ChatType_System];
@@ -750,7 +750,7 @@
             }
                 break;
             case ShareLocationType_Info: {
-                Message *mesg = [Message new];
+               QIMMessageModel *mesg = [QIMMessageModel new];
                 [mesg setFrom:sid];
                 [mesg setMessageType:msgType];
                 [mesg setChatType:ChatType_SingleChat];
@@ -804,7 +804,7 @@
         NSString *nickName = [msgDic objectForKey:@"nickName"];
         NSString *autoReply = [msgDic objectForKey:@"autoReply"];
         
-        Message *mesg = [Message new];
+       QIMMessageModel *mesg = [QIMMessageModel new];
         [mesg setFrom:sid];
         [mesg setMessageId:msgId];
         
@@ -857,7 +857,7 @@
         }
         [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
         int direction = [[msgDic objectForKey:@"direction"] intValue];
-        Message *mesg = [Message new];
+       QIMMessageModel *mesg = [QIMMessageModel new];
         [mesg setMessageId:msgId];
         [mesg setFrom:sid];
         [mesg setMessageType:QIMMessageType_File];
@@ -901,7 +901,7 @@
         }
         [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
         
-        Message *mesg = [Message new];
+       QIMMessageModel *mesg = [QIMMessageModel new];
         [mesg setMessageId:msgId];
         
         [mesg setFrom:sid];
@@ -958,7 +958,7 @@
         NSString *msg = [NSString stringWithFormat:@"%@给您发送了一个窗口抖动。", userName];
         int direction = [[msgDic objectForKey:@"direction"] intValue];
         NSString *autoReply = [msgDic objectForKey:@"autoReply"];
-        Message *mesg = [Message new];
+       QIMMessageModel *mesg = [QIMMessageModel new];
         [mesg setMessageId:[msgDic objectForKey:@"msgId"]];
         [mesg setFrom:sid];
         [mesg setChatType:ChatType_SingleChat];
@@ -1033,8 +1033,8 @@
             [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertPublicNumbers:@[dic]];
         }
     }
-    Message *c2bFeedBackMessage = [Message new];
-    Message *message = [Message new];
+   QIMMessageModel *c2bFeedBackMessage = [QIMMessageModel new];
+   QIMMessageModel *message = [QIMMessageModel new];
     [message setMessageId:msgId];
     [message setFrom:publicNumberId];
     [message setMessageDirection:QIMMessageDirection_Received];
@@ -1135,7 +1135,7 @@
         }
         [[QIMManager sharedInstance] checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
         
-        Message *mesg = [Message new];
+       QIMMessageModel *mesg = [QIMMessageModel new];
         [mesg setFrom:realfrom];
         [mesg setChatType:ChatType_CollectionChat];
         [mesg setMessageId:msgId];
@@ -1230,7 +1230,7 @@
             return;
         }
         [self checkMsgTimeWithJid:fromJid WithRealJid:realFrom WithMsgDate:msgDate WithGroup:NO];
-        Message *mesg = [Message new];
+       QIMMessageModel *mesg = [QIMMessageModel new];
         [mesg setMessageId:msgId];
         [mesg setFrom:[msgDic objectForKey:@"realfrom"]];
         [mesg setTo:[[QIMManager sharedInstance] getLastJid]];

@@ -41,7 +41,7 @@ typedef enum {
 @property (nonatomic, strong) NSString *fileId;
 @property (nonatomic, strong) NSString *fileSizeStr;
 @property (nonatomic, strong) NSString *fileUrl;
-@property (nonatomic, strong) Message *message;
+@property (nonatomic, strong)QIMMessageModel *message;
 @property (nonatomic, strong) NSString *md5;
 @property (nonatomic, strong) NSData * imageData;
 @property (nonatomic, copy) NSString    * toJid;
@@ -633,7 +633,7 @@ typedef enum {
     [self performSelector:@selector(checkUploadFile) withObject:nil afterDelay:1];
 }
 
-- (NSString *)uploadFileForPath:(NSString *)filePath forMessage:(Message *)message withJid:(NSString *)jid isFile:(BOOL)flag {
+- (NSString *)uploadFileForPath:(NSString *)filePath forMessage:(QIMMessageModel *)message withJid:(NSString *)jid isFile:(BOOL)flag {
     if ([[NSFileManager defaultManager] fileExistsAtPath:filePath])
     {
         NSData * data = [[NSFileManager defaultManager] contentsAtPath:filePath];
@@ -654,7 +654,7 @@ typedef enum {
  *
  *  @return
  */
-- (NSString *)uploadFileForData:(NSData *)fileData forMessage:(Message *)message withJid:(NSString *)jid isFile:(BOOL)flag {
+- (NSString *)uploadFileForData:(NSData *)fileData forMessage:(QIMMessageModel *)message withJid:(NSString *)jid isFile:(BOOL)flag {
     
     if (fileData == nil) {
         return nil;
@@ -725,7 +725,7 @@ typedef enum {
     return fileName;
 }
 
-- (void)uploadFileForData:(NSData *)fileData fileKey:(NSString *)fileKey fileExt:(NSString *)fileExt forMessage:(Message *)message withJid:(NSString *)jid isFile:(BOOL)flag {
+- (void)uploadFileForData:(NSData *)fileData fileKey:(NSString *)fileKey fileExt:(NSString *)fileExt forMessage:(QIMMessageModel *)message withJid:(NSString *)jid isFile:(BOOL)flag {
     NSString *method = [NSString  stringWithFormat:@"file/v2/upload/%@",flag?@"file":@"img"];
     NSString *fileName = fileKey;
     if (fileExt.length > 0) {
@@ -982,7 +982,7 @@ typedef enum {
             }
         } else {
             NSURL *requestUrl = [[NSURL alloc] initWithString:[urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
-            Message *msg = [Message new];
+           QIMMessageModel *msg = [QIMMessageModel new];
             msg.messageId = [weakSelf getFileNameFromUrl:url width:width height:height];
             QIMFileRequest *fileRequest = [weakSelf.file_dic objectForKey:msg.messageId];
             if (!fileRequest) {

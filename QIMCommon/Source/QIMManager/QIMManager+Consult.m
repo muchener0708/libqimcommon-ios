@@ -66,8 +66,8 @@
     return myhotLinelist;
 }
 
-- (Message *)sendConsultMessageId:(NSString *)msgId WithMessage:(NSString *)msg WithInfo:(NSString *)info toJid:(NSString *)toJid realToJid:(NSString *)realToJid WithChatType:(ChatType)chatType WithMsgType:(int)msgType {
-    Message *message = [Message new];
+- (QIMMessageModel *)sendConsultMessageId:(NSString *)msgId WithMessage:(NSString *)msg WithInfo:(NSString *)info toJid:(NSString *)toJid realToJid:(NSString *)realToJid WithChatType:(ChatType)chatType WithMsgType:(int)msgType {
+   QIMMessageModel *message = [QIMMessageModel new];
     [message setMessageId:msgId];
     [message setFrom:[self getLastJid]];
     [message setRealFrom:[self getLastJid]];
@@ -341,7 +341,7 @@
         if (array.count > 0) {
             NSMutableArray *list = [NSMutableArray arrayWithCapacity:5];
             for (NSDictionary *infoDic in array) {
-                Message *msg = [Message new];
+               QIMMessageModel *msg = [QIMMessageModel new];
                 [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
                 [msg setFrom:[infoDic objectForKey:@"From"]];
                 [msg setNickName:[infoDic objectForKey:@"From"]];
@@ -389,7 +389,7 @@
                     NSArray *datas = [[IMDataManager qimDB_SharedInstance] qimDB_getMgsListBySessionId:virtualId WithRealJid:userId WithLimit:limit WithOffset:offset];
                     NSMutableArray *list = [NSMutableArray array];
                     for (NSDictionary *infoDic in datas) {
-                        Message *msg = [Message new];
+                       QIMMessageModel *msg = [QIMMessageModel new];
                         [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
                         [msg setFrom:[infoDic objectForKey:@"From"]];
                         [msg setTo:[infoDic objectForKey:@"To"]];

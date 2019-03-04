@@ -137,7 +137,7 @@
 
 // userList
 
-@property (nonatomic, strong) Message *msg;    //获取历史消息用的模型
+@property (nonatomic, strong)QIMMessageModel *msg;    //获取历史消息用的模型
 @property (nonatomic, strong) NSMutableArray *memberMessageArray;
 
 @property (nonatomic, strong) NSMutableSet *sendFileMessageSet;
@@ -345,7 +345,7 @@
 
 - (void)removeAtMeByJid:(NSString *)jid;
 
-- (void)addAtALLByJid:(NSString *)jid WithMsgId:(NSString *)msgId WithMsg:(Message *)message WithNickName:(NSString *)nickName;
+- (void)addAtALLByJid:(NSString *)jid WithMsgId:(NSString *)msgId WithMsg:(QIMMessageModel *)message WithNickName:(NSString *)nickName;
 
 - (void)removeAtAllByJid:(NSString *)jid;
 

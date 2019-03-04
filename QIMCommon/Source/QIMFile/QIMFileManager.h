@@ -19,9 +19,9 @@ typedef void(^QIMFileManagerUploadCompletionBlock)(UIImage *image, NSError *erro
 
 + (NSString *) documentsofPath:(QIMFileCacheType) type;
 
-- (NSString *)uploadFileForPath:(NSString *)filePath forMessage:(Message *)message withJid:(NSString *)jid isFile:(BOOL)flag;
+- (NSString *)uploadFileForPath:(NSString *)filePath forMessage:(QIMMessageModel *)message withJid:(NSString *)jid isFile:(BOOL)flag;
 
-- (NSString *)uploadFileForData:(NSData *)fileData forMessage:(Message *)message withJid:(NSString *)jid isFile:(BOOL)flag;
+- (NSString *)uploadFileForData:(NSData *)fileData forMessage:(QIMMessageModel *)message withJid:(NSString *)jid isFile:(BOOL)flag;
 
 - (void)uploadFileForData:(NSData *)fileData forCacheType:(QIMFileCacheType)type isFile:(BOOL)flag completionBlock:(QIMFileManagerUploadCompletionBlock)completionBlock;
 

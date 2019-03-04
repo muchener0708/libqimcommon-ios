@@ -188,7 +188,7 @@
         for (NSString *groupId in tempGroupDic) {
             if (groupId.length > 0) {
                 NSDictionary *groupMsgDic = [tempGroupDic objectForKey:groupId];
-                Message *msg = [Message new];
+               QIMMessageModel *msg = [QIMMessageModel new];
                 [msg setMessageId:[groupMsgDic objectForKey:@"MsgId"]];
                 [msg setFrom:[groupMsgDic objectForKey:@"From"]];
                 [msg setTo:[groupMsgDic objectForKey:@"To"]];
@@ -208,7 +208,7 @@
         }
         for (NSDictionary *infoDic in atAllMsgList) {
             NSString *groupId = [infoDic objectForKey:@"SessionId"];
-            Message *msg = [Message new];
+           QIMMessageModel *msg = [QIMMessageModel new];
             [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
             [msg setFrom:[infoDic objectForKey:@"From"]];
             [msg setTo:[infoDic objectForKey:@"To"]];
@@ -224,7 +224,7 @@
         }
         for (NSDictionary *infoDic in normalMsgList) {
             NSString *groupId = [infoDic objectForKey:@"SessionId"];
-            Message *msg = [Message new];
+           QIMMessageModel *msg = [QIMMessageModel new];
             [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
             [msg setFrom:[infoDic objectForKey:@"From"]];
             [msg setTo:[infoDic objectForKey:@"To"]];

@@ -251,22 +251,22 @@
  @param message 消息Message
  @return Model Message转出来的字典
  */
-- (NSDictionary *)createMessageDictWithMessage:(Message *)message {
+- (NSDictionary *)createMessageDictWithMessage:(QIMMessageModel *)message {
     
     NSDictionary *msgDict = [message yy_modelToJSONObject];
     return msgDict;
 }
 
-- (Message *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId userType:(ChatType)userType msgType:(QIMMessageType)msgType {
+- (QIMMessageModel *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId userType:(ChatType)userType msgType:(QIMMessageType)msgType {
     
     return [self createMessageWithMsg:msg extenddInfo:extendInfo userId:userId userType:userType msgType:msgType forMsgId:nil];
 }
 
-- (Message *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId userType:(ChatType)userType msgType:(QIMMessageType)msgType backinfo:(NSString *)backInfo {
+- (QIMMessageModel *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId userType:(ChatType)userType msgType:(QIMMessageType)msgType backinfo:(NSString *)backInfo {
     
     long long msgDate = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff) * 1000;
     [self checkMsgTimeWithJid:userId WithMsgDate:msgDate WithGroup:NO];
-    Message *mesg = [Message new];
+   QIMMessageModel *mesg = [QIMMessageModel new];
     [mesg setMessageId:[QIMUUIDTools UUID]];
     [mesg setMessageType:msgType];
     [mesg setChatType:userType];
@@ -291,19 +291,19 @@
     return mesg;
 }
 
-- (Message *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId {
+- (QIMMessageModel *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId {
     
     return [self createMessageWithMsg:msg extenddInfo:extendInfo userId:userId userType:userType msgType:msgType forMsgId:mId willSave:YES];
 }
 
-- (Message *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId willSave:(BOOL)willSave {
+- (QIMMessageModel *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId willSave:(BOOL)willSave {
     return [self createMessageWithMsg:msg extenddInfo:extendInfo userId:userId realJid:nil userType:userType msgType:msgType forMsgId:mId willSave:willSave];
 }
 
-- (Message *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId realJid:(NSString *)realJid userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId msgState:(QIMMessageSendState)msgState willSave:(BOOL)willSave {
+- (QIMMessageModel *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId realJid:(NSString *)realJid userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId msgState:(QIMMessageSendState)msgState willSave:(BOOL)willSave {
     long long msgDate = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff) * 1000;
     [self checkMsgTimeWithJid:userId WithMsgDate:msgDate WithGroup:NO];
-    Message *mesg = [Message new];
+   QIMMessageModel *mesg = [QIMMessageModel new];
     [mesg setMessageId:mId.length ? mId : [QIMUUIDTools UUID]];
     [mesg setMessageType:msgType];
     [mesg setChatType:userType];
@@ -333,11 +333,11 @@
     return mesg;
 }
 
-- (Message *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId realJid:(NSString *)realJid userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId willSave:(BOOL)willSave {
+- (QIMMessageModel *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId realJid:(NSString *)realJid userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId willSave:(BOOL)willSave {
     
     long long msgDate = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff) * 1000;
     [self checkMsgTimeWithJid:userId WithMsgDate:msgDate WithGroup:NO];
-    Message *mesg = [Message new];
+   QIMMessageModel *mesg = [QIMMessageModel new];
     [mesg setMessageId:mId.length ? mId : [QIMUUIDTools UUID]];
     [mesg setMessageType:msgType];
     [mesg setChatType:userType];
@@ -433,7 +433,7 @@
  
  @param userId 接收方Id
  */
-- (Message *)sendShockToUserId:(NSString *)userId {
+- (QIMMessageModel *)sendShockToUserId:(NSString *)userId {
     [self shockWindow];
     long long msgDate = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff) * 1000;
     NSString *userName = nil;
@@ -445,7 +445,7 @@
         userName = [[userId componentsSeparatedByString:@"@"] objectAtIndex:0];
     }
     
-    Message *mesg = [Message new];
+   QIMMessageModel *mesg = [QIMMessageModel new];
     [mesg setMessageId:[QIMUUIDTools UUID]];
     [mesg setMessageType:QIMMessageType_Shock];
     [mesg setTo:userId];
@@ -486,7 +486,7 @@
     [[XmppImManager sharedInstance] revokeGroupMessageId:messageId WithMessage:message ToJid:jid];
 }
 
-- (Message *)sendMessage:(Message *)msg ToUserId:(NSString *)userId {
+- (QIMMessageModel *)sendMessage:(QIMMessageModel *)msg ToUserId:(NSString *)userId {
     [self updateMsg:msg ByJid:msg.to];
     NSString *msgRaw = nil;
     msg.chatId = [self getChatIdByUserId:userId];
@@ -513,7 +513,7 @@
     return msg;
 }
 
-- (Message *)sendMessage:(Message *)msg withChatType:(ChatType)chatType channelInfo:(NSString *)channelInfo realFrom:(NSString *)realFrom realTo:(NSString *)realTo ochatJson:(NSString *)ochatJson {
+- (QIMMessageModel *)sendMessage:(QIMMessageModel *)msg withChatType:(ChatType)chatType channelInfo:(NSString *)channelInfo realFrom:(NSString *)realFrom realTo:(NSString *)realTo ochatJson:(NSString *)ochatJson {
     [self updateMsg:msg ByJid:msg.to];
     NSString *msgRaw = nil;
     
@@ -530,9 +530,9 @@
     return msg;
 }
 
-- (Message *)sendMessage:(NSString *)msg ToGroupId:(NSString *)groupId {
+- (QIMMessageModel *)sendMessage:(NSString *)msg ToGroupId:(NSString *)groupId {
     
-    Message *mesg = [Message new];
+   QIMMessageModel *mesg = [QIMMessageModel new];
     [mesg setMessageId:[QIMUUIDTools UUID]];
     [mesg setMessageType:QIMMessageType_Text];
     [mesg setMessageDirection:QIMMessageDirection_Sent];
@@ -550,9 +550,9 @@
     return mesg;
 }
 
-- (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToGroupId:(NSString *)groupId WithMsgType:(int)msgType {
+- (QIMMessageModel *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToGroupId:(NSString *)groupId WithMsgType:(int)msgType {
     
-    Message *mesg = [Message new];
+   QIMMessageModel *mesg = [QIMMessageModel new];
     [mesg setMessageId:[QIMUUIDTools UUID]];
     [mesg setMessageType:msgType];
     [mesg setMessageDirection:QIMMessageDirection_Sent];
@@ -572,9 +572,9 @@
     return mesg;
 }
 
-- (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToGroupId:(NSString *)groupId WithMsgType:(int)msgType WithMsgId:(NSString *)msgId {
+- (QIMMessageModel *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToGroupId:(NSString *)groupId WithMsgType:(int)msgType WithMsgId:(NSString *)msgId {
     
-    Message *mesg = [Message new];
+   QIMMessageModel *mesg = [QIMMessageModel new];
     [mesg setMessageId:msgId];
     [mesg setMessageType:msgType];
     [mesg setMessageDirection:QIMMessageDirection_Sent];
@@ -594,12 +594,12 @@
     return mesg;
 }
 
-- (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToUserId:(NSString *)userId WithMsgType:(int)msgType {
+- (QIMMessageModel *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToUserId:(NSString *)userId WithMsgType:(int)msgType {
     
     long long msgDate = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff) * 1000;
     [self checkMsgTimeWithJid:userId WithMsgDate:msgDate WithGroup:NO];
     
-    Message *mesg = [Message new];
+   QIMMessageModel *mesg = [QIMMessageModel new];
     [mesg setMessageId:[QIMUUIDTools UUID]];
     [mesg setMessageType:msgType];
     [mesg setChatType:ChatType_SingleChat];
@@ -634,8 +634,8 @@
 
 #pragma mark - Share Location
 
-- (Message *)sendShareLocationMessage:(NSString *)msg WithInfo:(NSString *)info ToJid:(NSString *)jid WithMsgType:(int)msgType {
-    Message *mesg = [Message new];
+- (QIMMessageModel *)sendShareLocationMessage:(NSString *)msg WithInfo:(NSString *)info ToJid:(NSString *)jid WithMsgType:(int)msgType {
+   QIMMessageModel *mesg = [QIMMessageModel new];
     [mesg setMessageId:[QIMUUIDTools UUID]];
     [mesg setMessageType:msgType];
     [mesg setMessageDirection:QIMMessageDirection_Sent];
@@ -649,7 +649,7 @@
     return mesg;
 }
 
-- (Message *)beginShareLocationToUserId:(NSString *)userId WithShareLocationId:(NSString *)shareLocationId {
+- (QIMMessageModel *)beginShareLocationToUserId:(NSString *)userId WithShareLocationId:(NSString *)shareLocationId {
     if (shareLocationId.length > 0) {
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
         [dic setObject:shareLocationId forKey:@"shareId"];
@@ -660,7 +660,7 @@
     return nil;
 }
 
-- (Message *)beginShareLocationToGroupId:(NSString *)GroupId WithShareLocationId:(NSString *)shareLocationId {
+- (QIMMessageModel *)beginShareLocationToGroupId:(NSString *)GroupId WithShareLocationId:(NSString *)shareLocationId {
     if (shareLocationId.length > 0) {
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
         [dic setObject:shareLocationId forKey:@"shareId"];
@@ -701,7 +701,7 @@
     NSArray *array = [[IMDataManager qimDB_SharedInstance] qimDB_getMsgsByMsgType:msgType];
     NSMutableArray *list = [NSMutableArray array];
     for (NSDictionary *infoDic in array) {
-        Message *msg = [Message new];
+       QIMMessageModel *msg = [QIMMessageModel new];
         [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
         [msg setFrom:[infoDic objectForKey:@"From"]];
         [msg setTo:[infoDic objectForKey:@"To"]];
@@ -723,10 +723,10 @@
     return [[IMDataManager qimDB_SharedInstance] qimDB_getMsgsByMsgId:msgId];
 }
 
-- (Message *)getMsgByMsgId:(NSString *)msgId {
+- (QIMMessageModel *)getMsgByMsgId:(NSString *)msgId {
     NSDictionary *infoDic = [[IMDataManager qimDB_SharedInstance] qimDB_getMsgsByMsgId:msgId];
     if (infoDic.count > 0) {
-        Message *msg = [Message new];
+       QIMMessageModel *msg = [QIMMessageModel new];
         [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
         [msg setFrom:[infoDic objectForKey:@"From"]];
         [msg setNickName:[infoDic objectForKey:@"From"]];
@@ -752,7 +752,7 @@
     if (msgDate - globalMsgDate.longLongValue >= 2 * 60 * 1000) {
         [self.timeStempDic setObject:@(msgDate) forKey:jid];
         NSDate*date = [NSDate qim_dateWithTimeIntervalInMilliSecondSince1970:msgDate];
-        Message *msg = [Message new];
+       QIMMessageModel *msg = [QIMMessageModel new];
         [msg setFrom:jid];
         [msg setMessageId:[[IMDataManager qimDB_SharedInstance] qimDB_getTimeSmtapMsgIdForDate:date WithUserId:key]];
         [msg setMessageType:QIMMessageType_Time];
@@ -781,7 +781,7 @@
     if (msgDate - globalMsgDate.longLongValue >= 2 * 60 * 1000) {
         
         [self.timeStempDic setObject:@(msgDate) forKey:jid];
-        Message *msg = [Message new];
+       QIMMessageModel *msg = [QIMMessageModel new];
         NSDate *date = [NSDate qim_dateWithTimeIntervalInMilliSecondSince1970:msgDate];
         [msg setMessageId:[[IMDataManager qimDB_SharedInstance] qimDB_getTimeSmtapMsgIdForDate:date WithUserId:jid]];
         [msg setMessageType:QIMMessageType_Time];
@@ -1027,14 +1027,14 @@
         
         if (list.count) {
             
-            Message *message = list.lastObject;
+           QIMMessageModel *message = list.lastObject;
             [self sendReadstateWithGroupLastMessageTime:[message messageDate] + 1 withGroupId:groupId];
         }
     }];
 }
 
 //更新消息
-- (void)updateMsg:(Message *)msg ByJid:(NSString *)sid {
+- (void)updateMsg:(QIMMessageModel *)msg ByJid:(NSString *)sid {
     
     //时间消息 不存
     if ([msg isKindOfClass:[NSString class]]) {
@@ -1066,7 +1066,7 @@
     }
 }
 
-- (void)deleteMsg:(Message *)msg ByJid:(NSString *)sid {
+- (void)deleteMsg:(QIMMessageModel *)msg ByJid:(NSString *)sid {
     
     [[IMDataManager qimDB_SharedInstance] qimDB_deleteMessageByMessageId:msg.messageId ByJid:sid];
 }
@@ -1217,7 +1217,7 @@
 #pragma mark - 数据库更新 或者 保存消息
 
 //存储消息
-- (void)saveMsg:(Message *)msg ByJid:(NSString *)xmppId {
+- (void)saveMsg:(QIMMessageModel *)msg ByJid:(NSString *)xmppId {
     
     //时间消息 不存
     if ([msg isKindOfClass:[NSString class]]) {
@@ -1296,7 +1296,7 @@
             
             NSMutableArray *list = [NSMutableArray array];
             for (NSDictionary *infoDic in array) {
-                Message *msg = [Message new];
+               QIMMessageModel *msg = [QIMMessageModel new];
                 [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
                 [msg setFrom:[infoDic objectForKey:@"From"]];
                 [msg setNickName:[infoDic objectForKey:@"From"]];
@@ -1332,7 +1332,7 @@
         if (array.count > 0) {
             NSMutableArray *list = [NSMutableArray array];
             for (NSDictionary *infoDic in array) {
-                Message *msg = [Message new];
+               QIMMessageModel *msg = [QIMMessageModel new];
                 [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
                 [msg setFrom:[infoDic objectForKey:@"From"]];
                 [msg setNickName:[infoDic objectForKey:@"From"]];
@@ -1422,7 +1422,7 @@
                         NSArray *datas = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertIphoneMucJSONMsg:resultList WithMyNickName:[self getMyNickName] WithReadMarkT:[readMarkT longLongValue] WithDidReadState:QIMMessageSendState_Success WithMyRtxId:[self getLastJid]];
                         NSMutableArray *list = [NSMutableArray array];
                         for (NSDictionary *infoDic in datas) {
-                            Message *msg = [Message new];
+                           QIMMessageModel *msg = [QIMMessageModel new];
                             
                             [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
                             [msg setFrom:[infoDic objectForKey:@"From"]];
@@ -1458,7 +1458,7 @@
                         NSString *buInfo = nil;
                         NSString *cctextInfo = nil;
                         for (NSDictionary *infoDic in datas) {
-                            Message *msg = [Message new];
+                           QIMMessageModel *msg = [QIMMessageModel new];
                             [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
                             [msg setFrom:[infoDic objectForKey:@"From"]];
                             [msg setNickName:[infoDic objectForKey:@"From"]];
@@ -1512,7 +1512,7 @@
     NSArray *array = [[IMDataManager qimDB_SharedInstance] qimDB_getLocalMediaByXmppId:xmppId ByReadJid:realJid];
     NSMutableArray *list = [NSMutableArray arrayWithCapacity:2];
     for (NSDictionary *msgInfoDic in array) {
-        Message *msg = [Message new];
+       QIMMessageModel *msg = [QIMMessageModel new];
         [msg setMessageId:[msgInfoDic objectForKey:@"MsgId"]];
         [msg setFrom:[msgInfoDic objectForKey:@"From"]];
         [msg setTo:[msgInfoDic objectForKey:@"To"]];
@@ -1534,7 +1534,7 @@
     NSArray *array = [[IMDataManager qimDB_SharedInstance] qimDB_getMsgsByMsgType:msgTypes ByXmppId:xmppId ByReadJid:realJid];
     NSMutableArray *list = [NSMutableArray array];
     for (NSDictionary *msgInfoDic in array) {
-        Message *msg = [Message new];
+       QIMMessageModel *msg = [QIMMessageModel new];
         [msg setMessageId:[msgInfoDic objectForKey:@"MsgId"]];
         [msg setFrom:[msgInfoDic objectForKey:@"From"]];
         [msg setTo:[msgInfoDic objectForKey:@"To"]];
@@ -1556,7 +1556,7 @@
     NSArray *array = [[IMDataManager qimDB_SharedInstance] qimDB_getMsgsByKeyWord:keyWork ByXmppId:xmppId ByReadJid:realJid];
     NSMutableArray *list = [NSMutableArray array];
     for (NSDictionary *msgInfoDic in array) {
-        Message *msg = [Message new];
+       QIMMessageModel *msg = [QIMMessageModel new];
         [msg setMessageId:[msgInfoDic objectForKey:@"MsgId"]];
         [msg setFrom:[msgInfoDic objectForKey:@"From"]];
         [msg setTo:[msgInfoDic objectForKey:@"To"]];

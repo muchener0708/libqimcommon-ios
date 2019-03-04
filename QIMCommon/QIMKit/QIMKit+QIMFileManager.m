@@ -19,11 +19,11 @@
     return [QIMFileManager documentsofPath:type];
 }
 
-- (NSString *)uploadFileForPath:(NSString *)filePath forMessage:(Message *)message withJid:(NSString *)jid isFile:(BOOL)flag {
+- (NSString *)uploadFileForPath:(NSString *)filePath forMessage:(QIMMessageModel *)message withJid:(NSString *)jid isFile:(BOOL)flag {
     return [[QIMFileManager sharedInstance] uploadFileForPath:filePath forMessage:message withJid:jid isFile:flag];
 }
 
-- (NSString *)uploadFileForData:(NSData *)fileData forMessage:(Message *)message withJid:(NSString *)jid isFile:(BOOL)flag {
+- (NSString *)uploadFileForData:(NSData *)fileData forMessage:(QIMMessageModel *)message withJid:(NSString *)jid isFile:(BOOL)flag {
     return [[QIMFileManager sharedInstance] uploadFileForData:fileData forMessage:message withJid:jid isFile:flag];
 }
 

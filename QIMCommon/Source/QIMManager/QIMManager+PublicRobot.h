@@ -99,7 +99,7 @@
  @param msgType 消息类型
  @return 消息对象Message
  */
-- (Message *)createPublicNumberMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo publicNumberId:(NSString *)publicNumberId msgType:(PublicNumberMsgType)msgType;
+- (QIMMessageModel *)createPublicNumberMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo publicNumberId:(NSString *)publicNumberId msgType:(PublicNumberMsgType)msgType;
 
 /**
  发送消息->公众号
@@ -109,7 +109,7 @@
  @param msgId 消息id
  @param msgType 消息类型
  */
-- (Message *)sendMessage:(NSString *)msg ToPublicNumberId:(NSString *)publicNumberId WithMsgId:(NSString *)msgId WithMsgType:(int)msgType;
+- (QIMMessageModel *)sendMessage:(NSString *)msg ToPublicNumberId:(NSString *)publicNumberId WithMsgId:(NSString *)msgId WithMsgType:(int)msgType;
 
 /**
  获取公众号消息列表

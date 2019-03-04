@@ -222,7 +222,7 @@ static QIMKit *__global_QIMKit = nil;
     [[QIMManager sharedInstance] removeAtMeByJid:jid];
 }
 
-- (void)addAtALLByJid:(NSString *)jid WithMsgId:(NSString *)msgId WithMsg:(Message *)message WithNickName:(NSString *)nickName {
+- (void)addAtALLByJid:(NSString *)jid WithMsgId:(NSString *)msgId WithMsg:(QIMMessageModel *)message WithNickName:(NSString *)nickName {
     [[QIMManager sharedInstance] addAtALLByJid:jid WithMsgId:msgId WithMsg:message WithNickName:nickName];
 }
 

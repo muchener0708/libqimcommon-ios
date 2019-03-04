@@ -10,7 +10,7 @@
 #import <UIKit/UIKit.h>
 #import "QIMCommonEnum.h"
 
-@class Message;
+@class QIMMessageModel;
 @interface QIMKit : NSObject
 
 + (QIMKit *)sharedInstance;
@@ -212,7 +212,7 @@
 
 - (void)removeAtMeByJid:(NSString *)jid;
 
-- (void)addAtALLByJid:(NSString *)jid WithMsgId:(NSString *)msgId WithMsg:(Message *)message WithNickName:(NSString *)nickName;
+- (void)addAtALLByJid:(NSString *)jid WithMsgId:(NSString *)msgId WithMsg:(QIMMessageModel *)message WithNickName:(NSString *)nickName;
 
 /**
  移除atall

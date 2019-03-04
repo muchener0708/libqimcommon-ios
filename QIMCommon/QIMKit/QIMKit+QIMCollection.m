@@ -31,7 +31,7 @@
     [[QIMManager sharedInstance] saveCollectionMessage:collectionMsgDic];
 }
 
-- (Message *)getCollectionMsgListForMsgId:(NSString *)msgId {
+- (QIMMessageModel *)getCollectionMsgListForMsgId:(NSString *)msgId {
     return [[QIMManager sharedInstance] getCollectionMsgListForMsgId:msgId];
 }
 

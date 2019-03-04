@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "QIMCommonEnum.h"
 
-@interface Message : NSObject 
+@interface QIMMessageModel : NSObject
 
 @property (nonatomic, copy)   NSString          *messageId;                 //消息Id
 @property (nonatomic, copy)   NSString          *from;                      //消息发送方
@@ -29,7 +29,6 @@
 @property (nonatomic, copy)   NSString          *originalMessage;
 @property (nonatomic, copy)   NSString          *originalExtendedInfo;
 
-@property (nonatomic, copy)   NSString          *resolveStr;
 @property (nonatomic, copy)   NSString          *nickName;
 
 @property (nonatomic, copy)   NSString          *realJid;
@@ -47,12 +46,8 @@
 @property (nonatomic, assign) long long         version;
 @property (nonatomic, strong) NSData            * imageData;
 @property (nonatomic, strong) NSString          *MD5;// 保存图片only
-//@property (nonatomic, assign) int               propress;
 
 @property (nonatomic, copy)   NSString          *xmppId;
-
-//@property (nonatomic, copy)   NSString          *replyMsgId;                //回复MsgId
-//@property (nonatomic, copy)   NSString          *replyUser;                 //回复用户
 
 @property (nonatomic, copy)   NSString          *fromUser;
 @property (nonatomic, assign) int               readTag;

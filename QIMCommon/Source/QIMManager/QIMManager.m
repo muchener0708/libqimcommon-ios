@@ -1675,7 +1675,7 @@ static QIMManager *__IMManager = nil;
     return [[QIMManager sharedInstance] getClientConfigDicWithType:QIMClientConfigTypeKStickJidDic];
 }
 
-- (void)addAtALLByJid:(NSString *)jid WithMsgId:(NSString *)msgId WithMsg:(Message *)message WithNickName:(NSString *)nickName {
+- (void)addAtALLByJid:(NSString *)jid WithMsgId:(NSString *)msgId WithMsg:(QIMMessageModel *)message WithNickName:(NSString *)nickName {
     if (msgId.length > 0 && message.message.length > 0 && nickName.length > 0) {
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
         [dic setQIMSafeObject:msgId forKey:@"MsgId"];

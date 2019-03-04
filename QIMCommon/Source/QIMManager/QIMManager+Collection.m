@@ -120,10 +120,10 @@
     [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertCollectionMsgWithMsgDics:@[collectionMsgDic]];
 }
 
-- (Message *)getCollectionMsgListForMsgId:(NSString *)msgId {
+- (QIMMessageModel *)getCollectionMsgListForMsgId:(NSString *)msgId {
     NSDictionary *infoDic = [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionMsgListForMsgId:msgId];
     if (infoDic) {
-        Message *msg = [Message new];
+       QIMMessageModel *msg = [QIMMessageModel new];
         [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
         [msg setFrom:[infoDic objectForKey:@"From"]];
         [msg setTo:[infoDic objectForKey:@"To"]];
@@ -150,7 +150,7 @@
     NSMutableArray *list = [NSMutableArray array];
     if (array.count > 0) {
         for (NSDictionary *infoDic in array) {
-            Message *msg = [Message new];
+           QIMMessageModel *msg = [QIMMessageModel new];
             [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
             [msg setFrom:[infoDic objectForKey:@"From"]];
             [msg setTo:[infoDic objectForKey:@"To"]];

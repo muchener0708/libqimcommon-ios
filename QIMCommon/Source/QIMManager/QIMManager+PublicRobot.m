@@ -318,11 +318,11 @@
 
 #pragma mark - 公众号消息
 
-- (Message *)createPublicNumberMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo publicNumberId:(NSString *)publicNumberId msgType:(PublicNumberMsgType)msgType {
+- (QIMMessageModel *)createPublicNumberMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo publicNumberId:(NSString *)publicNumberId msgType:(PublicNumberMsgType)msgType {
     
     long long msgDate = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff) * 1000;
     [self checkPNMsgTimeWithJid:publicNumberId WithMsgDate:msgDate];
-    Message *mesg = [Message new];
+   QIMMessageModel *mesg = [QIMMessageModel new];
     [mesg setMessageId:[QIMUUIDTools UUID]];
     [mesg setMessageType:(int) msgType];
     [mesg setChatType:ChatType_PublicNumber];
@@ -337,9 +337,9 @@
     return mesg;
 }
 
-- (Message *)sendMessage:(NSString *)msg ToPublicNumberId:(NSString *)publicNumberId WithMsgId:(NSString *)msgId WithMsgType:(int)msgType {
+- (QIMMessageModel *)sendMessage:(NSString *)msg ToPublicNumberId:(NSString *)publicNumberId WithMsgId:(NSString *)msgId WithMsgType:(int)msgType {
     
-    Message *message = [Message new];
+   QIMMessageModel *message = [QIMMessageModel new];
     [message setMessageId:msgId];
     [message setTo:publicNumberId];
     [message setMessageDirection:QIMMessageDirection_Sent];
@@ -371,7 +371,7 @@
             int msgState = [[dic objectForKey:@"State"] intValue];
             int msgDirection = [[dic objectForKey:@"Direction"] intValue];
             long long msgDate = [[dic objectForKey:@"LastUpdateTime"] longLongValue];
-            Message *msg = [Message new];
+           QIMMessageModel *msg = [QIMMessageModel new];
             [msg setMessageId:msgId];
             [msg setXmppId:xmppId];
             [msg setFrom:from];
@@ -413,7 +413,7 @@
     NSNumber *globalMsgDate = [self.timeStempDic objectForKey:jid];
     if (msgDate - globalMsgDate.longLongValue >= 2 * 60 * 1000) {
         [self.timeStempDic setObject:@(msgDate) forKey:jid];
-        Message *msg = [Message new];
+       QIMMessageModel *msg = [QIMMessageModel new];
         NSDate *date = [NSDate qim_dateWithTimeIntervalInMilliSecondSince1970:msgDate];
         [msg setMessageId:[[IMDataManager qimDB_SharedInstance] qimDB_getTimeSmtapMsgIdForDate:date WithUserId:jid]];
         [msg setChatType:ChatType_PublicNumber];

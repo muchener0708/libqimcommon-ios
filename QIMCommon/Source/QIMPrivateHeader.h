@@ -42,7 +42,7 @@
 #import "QIMManager+UserVcard.h"
 #import "QIMManager+XmppImManagerEvent.h"
 
-#import "QIMMessage.h"
+#import "QIMMessageModel.h"
 #import "QIMMessageManager.h"
 #import "QIMNavConfigManager.h"
 #import "QIMUserCacheManager.h"

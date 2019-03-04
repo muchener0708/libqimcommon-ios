@@ -48,6 +48,6 @@
 #import "QIMKit+QIMSystemMessage.h"
 #import "QIMKit+QIMUserVcard.h"
 #import "QIMKit+QIMUserCacheManager.h"
-#import "QIMMessage.h"
+#import "QIMMessageModel.h"
 
 #endif /* QIMKitPublicHeader_h */

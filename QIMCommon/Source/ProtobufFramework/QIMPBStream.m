@@ -1922,6 +1922,7 @@ static NSString *XmppPbStreamVersion = @"1.0";
 }
 
 - (void)sendProtobufMessage:(ProtoMessage *)message andGetReceipt:(PBXMPPReceipt **)receiptPtr {
+    NSLog(@"sendMessage : %@", message);
     if (message == nil) return;
     if (receiptPtr == nil) {
         [self sendProtobufMessage:message];

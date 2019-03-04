@@ -250,7 +250,8 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         NSString *xmppId = [NSString stringWithFormat:@"collection_rbt@%@", [self getDomain]];
         [self.notReadMsgDic removeObjectForKey:xmppId];
-        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:xmppId];
+        //Mark by DB
+//        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:xmppId];
     });
 }
 
@@ -266,7 +267,8 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         NSString *xmppId = [NSString stringWithFormat:@"collection_rbt@%@", [self getDomain]];
         [self.notReadMsgDic removeObjectForKey:xmppId];
-        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:xmppId];
+        //Mark by DB
+//        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:xmppId];
     });
 }
 

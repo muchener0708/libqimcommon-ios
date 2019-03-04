@@ -25,8 +25,6 @@ enum XmppEvent {
     XmppEvent_SystemMessageIn,
     XmppEvent_Typing,
     XmppEvent_Revoke,
-    XmppEvent_QChatNote,
-    XmppEvent_QChatEnd,
     XmppEvent_ReadState,
     XmppEvent_ConsultReadState,
     XmppEvent_ShareLocation,
@@ -205,21 +203,9 @@ enum XmppLoginType {
 
 - (BOOL)setReceiveMsgLimitWithMode:(int)mode;
 
-//- (NSArray *)getVirtualList;
-
-//- (NSString *)getRealJidForVirtual:(NSString *)virtualJid;
-
 - (NSString *)getMyVirtualJid;
 
 #pragma mark - 好友列表
-
-- (NSMutableArray *)chatSessionList;
-
-- (NSMutableDictionary *)rosterList;
-
-- (void)chatTransferTo:(NSString *)user message:(NSString *)message chatId:(NSString *)chatId;
-
-- (void)chatTransferFrom:(NSString *)from To:(NSString *)to User:(NSString *)user Reson:(NSString *)reson chatId:(NSString *)chatId WithMsgId:(NSString *)msgId;
 
 - (void)receiveChatTransferToUser:(NSString *)user ForMsgId:(NSString *)msgId;
 
@@ -262,6 +248,8 @@ enum XmppLoginType {
 - (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithMessageReadFlag:(NSInteger)msgReadFlag WithXmppId:(NSString *)xmppId;
 
 - (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithMessageReadFlag:(NSInteger)msgReadFlag WithXmppid:(NSString *)xmppId WithTo:(NSString *)to;
+
+- (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithMessageReadFlag:(NSInteger)msgReadFlag WithXmppid:(NSString *)xmppId WithTo:(NSString *)to withRealTo:(NSString *)realTo;
 
 - (BOOL)sendReadStateWithMessageTime:(long long)time groupName:(NSString *)groupName WithDomain:(NSString *)domain;
 

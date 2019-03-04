@@ -362,67 +362,6 @@ enum PlaType {
     return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
 }
 
-- (void)chatTransferFrom:(NSString *)from To:(NSString *)to User:(NSString *)user Reson:(NSString *)reson chatId:(NSString *)chatId WithMsgId:(NSString *)msgId {
-    if (to && from && user) {
-        // 发给web端的
-        NSArray *toComs = [to componentsSeparatedByString:@"@"];
-        NSMutableDictionary *toUser = [NSMutableDictionary dictionary];
-        [toUser setObject:toComs.firstObject forKey:@"TransId"];
-        [toUser setObject:toComs.lastObject forKey:@"Domain"];
-        [toUser setObject:reson forKey:@"TransReson"];
-        NSString *toUserJson = [self getJsonStringWithDictionary:toUser];
-        if (toUserJson) {
-            XmppMessageBuilder *msgBuilder = [XmppMessage builder];
-            [msgBuilder setMessageId:msgId];
-            [msgBuilder setMessageType:1001];
-            [msgBuilder setClientType:self.isFromMac ? MachineTypeMac : MachineTypeiOS];
-            [msgBuilder setClientVersion:0];
-            [msgBuilder setMessageId:msgId];
-            MessageBodyBuilder *bodyBuilder = [MessageBody builder];
-            [bodyBuilder setValue:toUserJson];
-            [bodyBuilder addHeaders:[[[[StringHeader builder] setKey:@"extendInfo"] setValue:toUserJson] build]];
-            [bodyBuilder addHeaders:[[[[StringHeader builder] setKey:@"chatid"] setValue:@"0"] build]];
-            [msgBuilder setBody:[bodyBuilder build]];
-            ProtoMessageBuilder *builder = [ProtoMessage builder];
-            [builder setSignalType:SignalTypeSignalTypeTransfor];
-            [builder setFrom:[[_pbXmppStream myJID] full]];
-            [builder setTo:user];
-            [builder setMessage:msgBuilder.build.data];
-            PBXMPPReceipt *receipt = nil;
-            [_pbXmppStream sendProtobufMessage:[builder build] andGetReceipt:&receipt];
-        }
-        
-        // 发给商户端的
-        NSArray *fromComs = [from componentsSeparatedByString:@"@"];
-        NSMutableDictionary *toKefu = [NSMutableDictionary dictionary];
-        [toKefu setObject:fromComs.firstObject forKey:@"f"];
-        [toKefu setObject:fromComs.lastObject forKey:@"d"];
-        [toKefu setObject:reson forKey:@"r"];
-        [toKefu setObject:user forKey:@"u"];
-        NSString *toKefuJson = [self getJsonStringWithDictionary:toKefu];
-        if (toKefuJson) {
-            XmppMessageBuilder *msgBuilder = [XmppMessage builder];
-            [msgBuilder setMessageId:msgId];
-            [msgBuilder setMessageType:1002];
-            [msgBuilder setClientType:self.isFromMac ? MachineTypeMac : MachineTypeiOS];
-            [msgBuilder setClientVersion:0];
-            [msgBuilder setMessageId:msgId];
-            MessageBodyBuilder *bodyBuilder = [MessageBody builder];
-            [bodyBuilder setValue:toKefuJson];
-            [bodyBuilder addHeaders:[[[[StringHeader builder] setKey:@"chatid"] setValue:@"0"] build]];
-            [bodyBuilder addHeaders:[[[[StringHeader builder] setKey:@"extendInfo"] setValue:toKefuJson] build]];
-            [msgBuilder setBody:[bodyBuilder build]];
-            ProtoMessageBuilder *builder = [ProtoMessage builder];
-            [builder setSignalType:SignalTypeSignalTypeTransfor];
-            [builder setFrom:[[_pbXmppStream myJID] full]];
-            [builder setTo:to];
-            [builder setMessage:msgBuilder.build.data];
-            PBXMPPReceipt *receipt = nil;
-            [_pbXmppStream sendProtobufMessage:[builder build] andGetReceipt:&receipt];
-        }
-    }
-}
-
 - (void)receiveChatTransferToUser:(NSString *)user ForMsgId:(NSString *)msgId {
     if (user && msgId) {
         XmppMessageBuilder *msgBuilder = [XmppMessage builder];
@@ -511,58 +450,8 @@ enum PlaType {
 }
 
 #pragma mark - Virtual User
-/*
-- (NSArray *)getVirtualList{
-//    <iq to='xuejie.bi@ejabhost1' id='console938df079' type='get'>
-//    <get_virtual_user xmlns='jabber:x:virtual_user' jid='it-rexian'/>
-//    </iq>
-    IQMessageBuilder *iqBuilder = [IQMessage builder];
-    [iqBuilder setKey:@"GET_VIRTUAL_USER"];
-    [iqBuilder setMessageId:[QIMPBStream generateUUID]];
-    IQMessage *result = [_pbXmppStream syncIQMessage:[iqBuilder build] ToJid:[[_pbXmppStream myJID] bare]];
-    if ([result.key isEqualToString:@"result"]) {
-        NSMutableArray *resultList = nil;
-        for (MessageBody *body in result.bodys) {
-            NSDictionary *keyValues = [result getHeadersDicForHeaders:body.headers];
-            if (resultList == nil) {
-                resultList = [NSMutableArray array];
-            }
-            NSString *value = [keyValues objectForKey:@"vuser"];
-            if (value) {
-                [resultList addObject:value];
-            }
-        }
-        return resultList;
-    }
-    return nil;
-}
-*/
-
-/*
-- (NSString *)getRealJidForVirtual:(NSString *)virtualJid{
-//    <iq to='xuejie.bi@ejabhost1' id='console938df079' type='get'>
-//    <real_user_start_session xmlns='jabber:x:virtual_user' jid='it-rexian'/>
-//    </iq>
-    IQMessageBuilder *iqBuilder = [IQMessage builder];
-    [iqBuilder setKey:@"REAL_USER_START_SESSION"];
-    [iqBuilder setMessageId:[QIMPBStream generateUUID]];
-    [iqBuilder setValue:virtualJid];
-    IQMessage *result = [_pbXmppStream syncIQMessage:[iqBuilder build] ToJid:[[_pbXmppStream myJID] bare]];
-    if ([result.key isEqualToString:@"result"]) {
-        NSDictionary *keyValues = [result getHeadersDicForHeaders:result.body.headers];
-        if ([[keyValues objectForKey:@"start_session"] isEqualToString:@"success"]) {
-            return [keyValues objectForKey:@"real_user"];
-        }
-        return nil;
-    }
-    return nil;
-}
-*/
 
 - (NSString *)getMyVirtualJid{
-//    <iq to='xuejie.bi@ejabhost1' id='console938df079' type='get'>
-//    <get_virtual_user_role xmlns='jabber:x:virtual_user' />
-//    </iq>
     IQMessageBuilder *iqBuilder = [IQMessage builder];
     [iqBuilder setKey:@"GET_VIRTUAL_USER_ROLE"];
     [iqBuilder setMessageId:[QIMPBStream generateUUID]];
@@ -878,6 +767,39 @@ enum PlaType {
         [builder setSignalType:SignalTypeSignalTypeReadmark];
         [builder setFrom:[[_pbXmppStream myJID] full]];
         [builder setTo:to];
+        [builder setMessage:msgBuilder.build.data];
+        PBXMPPReceipt *receipt = nil;
+        [_pbXmppStream sendProtobufMessage:[builder build] andGetReceipt:&receipt];
+        return [receipt wait:3000];
+    }
+    return NO;
+}
+
+- (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithMessageReadFlag:(NSInteger)msgReadFlag WithXmppid:(NSString *)xmppId WithTo:(NSString *)to withRealTo:(NSString *)realTo {
+    if (jsonString && [jsonString length] > 0) {
+        NSString *readFlagStr = @"3";
+        if (msgReadFlag == 4) {
+            readFlagStr = @"4";
+        } else if (msgReadFlag == 7) {
+            readFlagStr = @"7";
+        } else {
+            readFlagStr = @"3";
+        }
+        XmppMessageBuilder *msgBuilder = [XmppMessage builder];
+        [msgBuilder setMessageId:[QIMPBStream generateUUID]];
+        [msgBuilder setMessageType:MessageTypeMessageTypeText];
+        [msgBuilder setClientType:self.isFromMac ? MachineTypeMac : MachineTypeiOS];
+        [msgBuilder setClientVersion:0];
+        MessageBodyBuilder *bodyBuilder = [MessageBody builder];
+        [bodyBuilder setValue:jsonString];
+        [bodyBuilder addHeaders:[[[[StringHeader builder] setKey:@"read_type"] setValue:readFlagStr] build]];
+        [bodyBuilder addHeaders:[[[[StringHeader builder] setKey:@"extendInfo"] setValue:xmppId] build]];
+        [msgBuilder setBody:[bodyBuilder build]];
+        ProtoMessageBuilder *builder = [ProtoMessage builder];
+        [builder setSignalType:SignalTypeSignalTypeReadmark];
+        [builder setFrom:[[_pbXmppStream myJID] full]];
+        [builder setTo:to];
+        [builder setRealto:realTo];
         [builder setMessage:msgBuilder.build.data];
         PBXMPPReceipt *receipt = nil;
         [_pbXmppStream sendProtobufMessage:[builder build] andGetReceipt:&receipt];
@@ -2151,6 +2073,7 @@ enum PlaType {
             break;
         case SignalTypeSignalTypeReadmark: {
             XmppMessage *xmppMessage = [XmppMessage parseFromData:pMessage.message];
+            NSLog(@"ReadMark : %@", pMessage);
             { // Log
                 NSString *log = [pMessage description];
                 log = [log stringByAppendingFormat:@"<========== message[%s] ==========>\r%@<========== end message ==========>\r", object_getClassName(xmppMessage), [xmppMessage description]];
@@ -2172,7 +2095,6 @@ enum PlaType {
                 jid = [NSString stringWithFormat:@"%@@%@", userId, domain];
             }
             NSArray *jidComs = [jid componentsSeparatedByString:@";"];
-            //@"chatType":@"group",
             if (jid.length > 0) {
                 NSString *infoStr = [xmppMessage.body value];
                 infoStr = [infoStr stringByReplacingOccurrencesOfString:@"consult-" withString:@""];
@@ -2206,23 +2128,6 @@ enum PlaType {
                 [[self delegate] onSystemMsgReceived:context messageId:msgId stamp:date msgRaw:msgRaw];
             }
             
-        }
-            break;
-        case SignalTypeSignalTypeNote: {
-            QIMXMPPJID *destJid = [QIMXMPPJID jidWithString:pMessage.pb_from];
-            if (destJid) {
-                XmppMessage *xmppMessage = [XmppMessage parseFromData:pMessage.message];
-                { // Log
-                    NSString *log = [pMessage description];
-                    log = [log stringByAppendingFormat:@"<========== message[%s] ==========>\r%@<========== end message ==========>\r", object_getClassName(xmppMessage), [xmppMessage description]];
-                    [self recordLog:log withDirection:MsgDirection_Receive];
-                }
-                NSString *msg = [xmppMessage.body value];
-                NSDate *date = [NSDate dateWithTimeIntervalSince1970:xmppMessage.receivedTime / 1000.0];
-                if ([[self delegate] respondsToSelector:@selector(onQChatNoteReceived:from:stamp:)]) {
-                    [[self delegate] onQChatNoteReceived:msg from:[destJid bare] stamp:date];
-                }
-            }
         }
             break;
         case SignalTypeSignalTypeRevoke: {
@@ -2296,33 +2201,6 @@ enum PlaType {
             NSDictionary *messageInfo = @{@"messageId": messageId ? messageId : @"", @"receivedTime" : @(receivedTime), @"msgSuccess":@(YES)};
             if (self.delegate && [self.delegate respondsToSelector:@selector(onMessageUpdateMState:)]) {
                 [self.delegate onMessageUpdateMState:messageInfo];
-            }
-        }
-            break;
-        case SignalTypeSignalTypeTransfor: {
-            QIMXMPPJID *fromJid = [QIMXMPPJID jidWithString:pMessage.pb_from];
-            if (fromJid) {
-                XmppMessage *xmppMessage = [XmppMessage parseFromData:pMessage.message];
-                { // Log
-                    NSString *log = [pMessage description];
-                    log = [log stringByAppendingFormat:@"<========== message[%s] ==========>\r%@<========== end message ==========>\r", object_getClassName(xmppMessage), [xmppMessage description]];
-                    [self recordLog:log withDirection:MsgDirection_Receive];
-                }
-                NSString *json = [xmppMessage.body value];
-                int msgType = [xmppMessage messageType];
-                if (msgType == 1003) {
-                    NSString *msgId = [xmppMessage messageId];
-                    if ([[self delegate] respondsToSelector:@selector(receiveChatTransferToUser:ForMsgId:)]) {
-                        [[self delegate] receTransferChatWithFrom:[fromJid bare] WithMsgId:msgId];
-                    }
-                } else {
-                    NSDictionary *keyValues = [xmppMessage getHeadersDicForHeaders:xmppMessage.body.headers];
-                    NSString *chatId = [keyValues objectForKey:@"chatid"];
-                    NSString *msgId = [xmppMessage messageId];
-                    if ([[self delegate] respondsToSelector:@selector(onTransferChatWithFrom:WithMsgType:WithChatId:WithMsgId:WithJson:)]) {
-                        [[self delegate] onTransferChatWithFrom:[fromJid bare] WithMsgType:msgType WithChatId:chatId WithMsgId:msgId WithJson:json];
-                    }
-                }
             }
         }
             break;

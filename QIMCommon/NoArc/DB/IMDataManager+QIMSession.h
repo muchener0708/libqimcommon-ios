@@ -28,6 +28,8 @@
 
 - (NSArray *)qimDB_getFullSessionListWithSingleChatType:(int)singleChatType;
 
+- (NSArray *)qimDB_getNotReadSessionList;
+
 - (NSArray *)qimDB_getSessionListWithSingleChatType:(int)singleChatType;
 
 - (NSArray *)qimDB_getSessionListXMPPIDWithSingleChatType:(int)singleChatType;

@@ -88,13 +88,6 @@
 //标记已读消息
 - (void)onReadStateReceived:(NSString *)readType ForJid:(NSString *)jid infoStr:(NSString *)infoStr;
 
-- (void)onReadStateReceivedForJid:(NSString *)jid ForRealJid:(NSString *)realJid infoStr:(NSString *)infoStr;
-//QChat 通话开始
-- (void)onQChatNoteReceived:(NSString *)infoStr from:(NSString *)jid stamp:(NSDate *)stamp;
-
-//QChat 通话结束
-- (void)onQChatEndReceivedFrom:(NSString *)jid stamp:(NSDate *)stamp;
-
 - (void)onRevokeReceived:(NSString *)destId
                messageId:(NSString *)messageId
                  message:(NSString *)message;
@@ -257,14 +250,8 @@
 
 - (void)sendHeartBeat;
 
-- (void)chatTransferTo:(NSString *)user message:(NSString *)message chatId:(NSString *)chatId;
-
-- (void)chatTransferFrom:(NSString *)from To:(NSString *)to User:(NSString *)user Reson:(NSString *)reson chatId:(NSString *)chatId WithMsgId:(NSString *)msgId;
-
 - (void)receiveChatTransferToUser:(NSString *)user ForMsgId:(NSString *)msgId;
 
-//- (NSArray *)getVirtualList;
-//- (NSString *)getRealJidForVirtual:(NSString *)virtualJid;
 - (NSString *)getMyVirtualJid;
 
 #pragma mark - Roster
@@ -287,6 +274,7 @@
 - (BOOL)sendControlStateWithMessagesIdArray:(NSString *)jsonString WithXmppid:(NSString *)xmppId;
 - (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithMessageReadFlag:(NSInteger)msgReadFlag WithXmppid:(NSString *)xmppId;
 - (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithMessageReadFlag:(NSInteger)msgReadFlag WithXmppid:(NSString *)xmppId WithTo:(NSString *)to;
+- (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithMessageReadFlag:(NSInteger)msgReadFlag WithXmppid:(NSString *)xmppId WithTo:(NSString *)to withRealTo:(NSString *)realTo;
 - (BOOL) sendReadStateWithMessageTime:(long long)time groupName:(NSString *) groupName WithDomain:(NSString *)domain;
 
 //发送通知类Presence

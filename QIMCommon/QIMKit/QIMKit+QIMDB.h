@@ -10,11 +10,6 @@
 @interface QIMKit (QIMDB)
 
 /**
- 初始化数据库
- */
-- (void)initDB;
-
-/**
  清空数据库文件
  */
 - (void)removeDataBase;

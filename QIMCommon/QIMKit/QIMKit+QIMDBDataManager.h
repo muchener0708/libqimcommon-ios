@@ -367,17 +367,6 @@
 
 - (void)bulkUpdateChatMsgWithMsgState:(int)msgState ByMsgIdList:(NSArray *)msgIdList;
 
-
-/**
- 查询当前数据库没有给服务器同步已送达状态的消息，按From分组
- 
- @param msgState 消息状态 - MessageState_None
- @param receiveDirection QIMMessageDirection_Received
- */
-- (NSArray *)getReceiveMsgIdListWithMsgState:(int)msgState WithReceiveDirection:(int)receiveDirection;
-
-- (NSArray *)getNotReadMsgListWithMsgState:(int)msgState WithReceiveDirection:(int)receiveDirection;
-
 - (void)clearHistoryMsg;
 
 // 系统消息专用 。。。。。

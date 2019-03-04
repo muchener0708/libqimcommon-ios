@@ -79,7 +79,7 @@
 - (void)deleteMsg:(Message *)msg ByJid:(NSString *)sid;
 
 //更新群消息阅读状态
-- (void)updateLocalGroupMessageRemoteState:(NSInteger)remoteState ByReadList:(NSArray *)readList;
+- (void)updateLocalGroupMessageRemoteState:(NSInteger)remoteState withXmppId:(NSString *)xmppId ByReadList:(NSArray *)readList;
 
 //更新单人消息阅读状态
 - (void)updateLocalMessageRemoteState:(NSInteger)remoteState withXmppId:(NSString *)xmppId withRealJid:(NSString *)realJid ByMsgIdList:(NSArray *)msgIdList;
@@ -107,15 +107,6 @@
  @param jid jid
  */
 - (void)revokeMessageWithMessageId:(NSString *)messageId message:(NSString *)message ToJid:(NSString *)jid;
-
-/**
- 发送文件消息
- 
- @param fileJson 文件URL
- @param userId 对方UserId
- @param msgId 消息Id
- */
-- (void)sendFileJson:(NSString *)fileJson ToUserId:(NSString *)userId WithMsgId:(NSString *)msgId;
 
 /**
  发送语音消息
@@ -188,26 +179,6 @@
  */
 - (void)revokeGroupMessageWithMessageId:(NSString *)messageId message:(NSString *)message ToJid:(NSString *)jid;
 
-/**
- 发送群文件
- 
- @param fileJson 文件地址
- @param groupId 群Id
- @param msgId 消息Id
- */
-- (void)sendFileJson:(NSString *)fileJson ToGroupId:(NSString *)groupId WithMsgId:(NSString *)msgId;
-
-
-/**
- 发送群语音消息
- 
- @param voiceUrl 语音文件地址
- @param voiceName 语音文件名称
- @param seconds 语音时长
- @param groupId 群Id
- */
-- (Message *)sendGroupVoiceUrl:(NSString *)voiceUrl withVoiceName:(NSString *)voiceName withSeconds:(int)seconds ToGroupId:(NSString *)groupId;
-
 //发送wlan消息
 -(void)sendWlanMessage:(NSString *)content to:(NSString *)targetID extendInfo:(NSString *)extendInfo msgType:(int) msgType completionHandler:(void (^)(NSData * data, NSURLResponse * response, NSError * error))completionHandler;
 
@@ -249,11 +220,6 @@
 - (NSMutableSet *)getLastMsgCompensateReadSet;
 
 /**
- *  返回未读消息数组
- */
-- (NSArray *)getNotReaderMsgList;
-
-/**
  清空所有未读消息
  */
 - (void) clearAllNoRead;
@@ -292,16 +258,6 @@
  */
 - (NSInteger)getNotReadMsgCountByJid:(NSString *)jid;
 
-//自增未读数
-- (void)increasedNotReadMsgCountByJid:(NSString *)jid WithReadJid:(NSString *)realJid;
-
-- (void)increasedNotReadMsgCountByJid:(NSString *)jid;
-
-//清除内存未读数
-- (void)decrementNotReadMsgCountByJid:(NSString *)jid WithReadJid:(NSString *)realJid;
-
-- (void)decrementNotReadMsgCountByJid:(NSString *)jid;
-
 /**
  获取Jid & 真实Id下的未读消息数
  
@@ -309,6 +265,8 @@
  @param realJid 真实用户Id
  */
 - (NSInteger)getNotReadMsgCountByJid:(NSString *)jid WithRealJid:(NSString *)realJid;
+
+- (NSInteger)getNotReadMsgCountByJid:(NSString *)jid WithRealJid:(NSString *)realJid withChatType:(ChatType)chatType;
 
 - (void)updateAppNotReadCount;
 
@@ -342,7 +300,6 @@
 
 - (void)setMsgSentFaild;
 
-
 - (NSDictionary *)parseMessageByMsgRaw:(id)msgRaw;
 
 - (NSDictionary *)parseOriginMessageByMsgRaw:(id)msgRaw;
@@ -351,11 +308,7 @@
 
 - (void)getMsgListByUserId:(NSString *)userId WithRealJid:(NSString *)realJid WithLimit:(int)limit WithOffset:(int)offset WithComplete:(void (^)(NSArray *))complete;
 
-- (void)getMsgListByUserId:(NSString *)userId FromTimeStamp:(long long)timeStamp WithComplete:(void (^)(NSArray *))complete;
-
 - (void)getMsgListByUserId:(NSString *)userId WithRealJid:(NSString *)realJid FromTimeStamp:(long long)timeStamp WithComplete:(void (^)(NSArray *))complete;
-
-- (void)getConsultServerMsgLisByUserId:(NSString *)userId WithVirtualId:(NSString *)virtualId WithLimit:(int)limit WithOffset:(int)offset WithComplete:(void (^)(NSArray *))complete;
 
 - (NSMutableArray *)searchLocalMessageByKeyword:(NSString *)keyWord
                                          XmppId:(NSString *)xmppid

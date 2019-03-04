@@ -115,17 +115,6 @@
     return message;
 }
 
-
-- (void)chatTransferTo:(NSString *)user message:(NSString *)message chatId:(NSString *)chatId {
-    
-    [[XmppImManager sharedInstance] chatTransferTo:user message:message chatId:chatId];
-}
-
-- (void)chatTransferFrom:(NSString *)from To:(NSString *)to User:(NSString *)user Reson:(NSString *)reson chatId:(NSString *)chatId WithMsgId:(NSString *)msgId {
-    
-    [[XmppImManager sharedInstance] chatTransferFrom:from To:to User:user Reson:reson chatId:chatId WithMsgId:msgId];
-}
-
 - (void)customerConsultServicesayHelloWithUser:(NSString *)user WithVirtualId:(NSString *)virtualId WithFromUser:(NSString *)fromUser{
     NSString *host = @"http://qcadmin.qunar.com";
     NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@/notice/sayHello.json?userQName=%@&seatQName=%@&virtualId=%@&line=dujia&u=%@&k=%@&p=iphone&v=%@",host,user,fromUser,virtualId,[QIMManager getLastUserName],self.remoteKey,[[QIMAppInfo sharedInstance] AppBuildVersion]]];
@@ -229,27 +218,6 @@
         
     }];
 }
-
-/*
-- (NSString *)getRealJidForVirtual:(NSString *)virtualJid{
-    if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
-        NSString *realJid = [self.virtualRealJidDic objectForKey:virtualJid];
-        if (realJid == nil) {
-            NSDictionary *result = [self getBusinessInfoByBusinessId:virtualJid];
-            realJid = [[[result objectForKey:@"seat"] objectForKey:@"qunarName"] stringByAppendingFormat:@"@%@",[self getDomain]];
-            [self.virtualRealJidDic setQIMSafeObject:realJid forKey:virtualJid];
-        }
-        return realJid;
-    } else {
-        NSString *realJid = [self.virtualRealJidDic objectForKey:virtualJid];
-        if (realJid == nil) {
-            realJid = [[XmppImManager sharedInstance] getRealJidForVirtual:virtualJid];
-            [self.virtualRealJidDic setQIMSafeObject:realJid forKey:virtualJid];
-        }
-        return realJid;
-    }
-}
-*/
 
 //V2版获取客服坐席列表：支持多店铺
 - (NSArray *)getSeatSeStatus {
@@ -367,5 +335,86 @@
     }];
 }
 
+- (void)getConsultServerMsgLisByUserId:(NSString *)userId WithVirtualId:(NSString *)virtualId WithLimit:(int)limit WithOffset:(int)offset WithComplete:(void (^)(NSArray *))complete {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSArray *array = [[IMDataManager qimDB_SharedInstance] qimDB_getMgsListBySessionId:virtualId WithRealJid:userId WithLimit:limit WithOffset:offset];
+        if (array.count > 0) {
+            NSMutableArray *list = [NSMutableArray arrayWithCapacity:5];
+            for (NSDictionary *infoDic in array) {
+                Message *msg = [Message new];
+                [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
+                [msg setFrom:[infoDic objectForKey:@"From"]];
+                [msg setNickName:[infoDic objectForKey:@"From"]];
+                [msg setTo:[infoDic objectForKey:@"To"]];
+                [msg setMessage:[infoDic objectForKey:@"Content"]];
+                NSString *extendInfo = [infoDic objectForKey:@"ExtendInfo"];
+                [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
+                [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
+                [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
+                [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
+                [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
+                [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
+                [msg setReadTag:[[infoDic objectForKey:@"ReadTag"] intValue]];
+                [msg setMsgRaw:[infoDic objectForKey:@"msgRaw"]];
+                [list addObject:msg];
+            }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                complete(list);
+            });
+            if (list.count < limit) {
+                if (self.load_history_msg == nil) {
+                    self.load_history_msg = dispatch_queue_create("Load History", 0);
+                }
+                dispatch_async(self.load_history_msg, ^{
+                    long long version = [[IMDataManager qimDB_SharedInstance] qimDB_getMinMsgTimeStampByXmppId:virtualId RealJid:userId] - timeChange;
+                    
+                    NSArray *result = [self getConsultServerlogWithFrom:userId virtualId:virtualId to:[self getLastJid] version:version count:(int)(limit - list.count) direction:QIMMessageDirection_Received];
+                    if (result.count > 0) {
+                        NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
+                        [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:result to:[QIMManager getLastUserName] WithDidReadState:QIMMessageSendState_Success];
+                    }
+                });
+            }
+        } else {
+            if (self.load_history_msg == nil) {
+                self.load_history_msg = dispatch_queue_create("Load History", 0);
+            }
+            dispatch_async(self.load_history_msg, ^{
+                long long version = [[IMDataManager qimDB_SharedInstance] qimDB_getMinMsgTimeStampByXmppId:virtualId RealJid:userId] - timeChange;
+                NSArray *resultList = [self getConsultServerlogWithFrom:userId virtualId:virtualId to:[self getLastJid] version:version count:limit direction:QIMMessageDirection_Received];
+                
+                if (resultList.count > 0) {
+                    NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:resultList to:[QIMManager getLastUserName] WithDidReadState:QIMMessageSendState_Success];
+                    NSArray *datas = [[IMDataManager qimDB_SharedInstance] qimDB_getMgsListBySessionId:virtualId WithRealJid:userId WithLimit:limit WithOffset:offset];
+                    NSMutableArray *list = [NSMutableArray array];
+                    for (NSDictionary *infoDic in datas) {
+                        Message *msg = [Message new];
+                        [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
+                        [msg setFrom:[infoDic objectForKey:@"From"]];
+                        [msg setTo:[infoDic objectForKey:@"To"]];
+                        [msg setMessage:[infoDic objectForKey:@"Content"]];
+                        NSString *extendInfo = [infoDic objectForKey:@"ExtendInfo"];
+                        [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
+                        [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
+                        [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
+                        [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
+                        [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
+                        [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
+                        [msg setMsgRaw:[infoDic objectForKey:@"msgRaw"]];
+                        [list addObject:msg];
+                    }
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        complete(list);
+                    });
+                } else {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        complete(@[]);
+                    });
+                }
+            });
+        }
+    });
+}
 
 @end

@@ -95,10 +95,6 @@
     [[QIMManager sharedInstance] revokeMessageWithMessageId:messageId message:message ToJid:jid];
 }
 
-- (void)sendFileJson:(NSString *)fileJson ToUserId:(NSString *)userId WithMsgId:(NSString *)msgId {
-    [[QIMManager sharedInstance] sendFileJson:fileJson ToUserId:userId WithMsgId:msgId];
-}
-
 - (Message *)sendVoiceUrl:(NSString *)voiceUrl withVoiceName:(NSString *)voiceName withSeconds:(int)seconds ToUserId:(NSString *)userId {
     return [[QIMManager sharedInstance] sendVoiceUrl:voiceUrl withVoiceName:voiceName withSeconds:seconds ToUserId:userId];
 }
@@ -125,14 +121,6 @@
 
 - (void)revokeGroupMessageWithMessageId:(NSString *)messageId message:(NSString *)message ToJid:(NSString *)jid {
     [[QIMManager sharedInstance] revokeGroupMessageWithMessageId:messageId message:message ToJid:jid];
-}
-
-- (void)sendFileJson:(NSString *)fileJson ToGroupId:(NSString *)groupId WithMsgId:(NSString *)msgId {
-    [[QIMManager sharedInstance] sendFileJson:fileJson ToGroupId:groupId WithMsgId:msgId];
-}
-
-- (Message *)sendGroupVoiceUrl:(NSString *)voiceUrl withVoiceName:(NSString *)voiceName withSeconds:(int)seconds ToGroupId:(NSString *)groupId {
-   return [[QIMManager sharedInstance] sendGroupVoiceUrl:voiceUrl withVoiceName:voiceName withSeconds:seconds ToGroupId:groupId];
 }
 
 // 发送音视频消息
@@ -224,10 +212,6 @@
     return [[QIMManager sharedInstance] getLastMsgCompensateReadSet];
 }
 
-- (NSArray *)getNotReaderMsgList {
-    return [[QIMManager sharedInstance] getNotReaderMsgList];
-}
-
 - (void)clearAllNoRead {
     [[QIMManager sharedInstance] clearAllNoRead];
 }
@@ -254,6 +238,10 @@
 
 - (NSInteger)getNotReadMsgCountByJid:(NSString *)jid WithRealJid:(NSString *)realJid {
     return [[QIMManager sharedInstance] getNotReadMsgCountByJid:jid WithRealJid:realJid];
+}
+
+- (NSInteger)getNotReadMsgCountByJid:(NSString *)jid WithRealJid:(NSString *)realJid withChatType:(ChatType)chatType {
+    return [[QIMManager sharedInstance] getNotReadMsgCountByJid:jid WithRealJid:realJid withChatType:chatType];
 }
 
 - (void)updateAppNotReadCount {
@@ -310,10 +298,6 @@
 
 - (void)getMsgListByUserId:(NSString *)userId WithRealJid:(NSString *)realJid WithLimit:(int)limit WithOffset:(int)offset WithComplete:(void (^)(NSArray *))complete {
     [[QIMManager sharedInstance] getMsgListByUserId:userId WithRealJid:realJid WithLimit:limit WithOffset:offset WithComplete:complete];
-}
-
-- (void)getMsgListByUserId:(NSString *)userId FromTimeStamp:(long long)timeStamp WithComplete:(void (^)(NSArray *))complete {
-    [[QIMManager sharedInstance] getMsgListByUserId:userId FromTimeStamp:timeStamp WithComplete:complete];
 }
 
 - (void)getMsgListByUserId:(NSString *)userId WithRealJid:(NSString *)realJid FromTimeStamp:(long long)timeStamp WithComplete:(void (^)(NSArray *))complete {

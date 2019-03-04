@@ -334,7 +334,7 @@
                  }
                  dispatch_async(dispatch_get_main_queue(), ^{
                      QIMVerboseLog(@"获取群阅读指针之后强制刷新NavBar未读数");
-                     [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@"ForceRefresh"];
+                     [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@{@"ForceRefresh":@(YES)}];
                  });
                  getMucReadMarkSuccess = YES;
              } else {

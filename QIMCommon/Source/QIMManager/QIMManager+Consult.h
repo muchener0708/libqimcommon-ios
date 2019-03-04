@@ -42,13 +42,6 @@
 - (void)getHotlineShopList;
 
 /**
- 根据虚拟Id获取真实RealJid
-
- @param virtualJid 虚拟Id
- */
-//- (NSString *)getRealJidForVirtual:(NSString *)virtualJid;
-
-/**
  发送Consult消息
 
  @param msgId MsgId
@@ -61,10 +54,6 @@
  @return 消息对象Message
  */
 - (Message *)sendConsultMessageId:(NSString *)msgId WithMessage:(NSString *)msg WithInfo:(NSString *)info toJid:(NSString *)toJid realToJid:(NSString *)realToJid WithChatType:(ChatType)chatType WithMsgType:(int)msgType;
-
-- (void)chatTransferTo:(NSString *)user message:(NSString *)message chatId:(NSString *)chatId;
-
-- (void)chatTransferFrom:(NSString *)from To:(NSString *)to User:(NSString *)user Reson:(NSString *)reson chatId:(NSString *)chatId WithMsgId:(NSString *)msgId;
 
 - (void)customerConsultServicesayHelloWithUser:(NSString *)user WithVirtualId:(NSString *)virtualId WithFromUser:(NSString *)fromUser;
 
@@ -107,5 +96,7 @@
  @return 关闭之后的提示语
  */
 - (void)closeSessionWithShopId:(NSString *)shopId WithVisitorId:(NSString *)visitorId withBlock:(QIMCloseSessionBlock)block;
+
+- (void)getConsultServerMsgLisByUserId:(NSString *)userId WithVirtualId:(NSString *)virtualId WithLimit:(int)limit WithOffset:(int)offset WithComplete:(void (^)(NSArray *))complete;
 
 @end

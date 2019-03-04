@@ -484,7 +484,6 @@ static QIMManager *__IMManager = nil;
         QIMVerboseLog(@"获取系统历史记录2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime5]);
         QIMVerboseLog(@"获取系统历史记录结束2");
         
-        // 更新未发送的消息状态为失败 Mark by DB
         [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageFromState:QIMMessageSendState_Waiting ToState:QIMMessageSendState_Faild];
         QIMVerboseLog(@"开始同步服务端漫游的个人配置2");
         CFAbsoluteTime startTime6 = [[QIMWatchDog sharedInstance] startTime];
@@ -580,7 +579,7 @@ static QIMManager *__IMManager = nil;
             });
         }
         
-        if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
+        if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
             
             QIMVerboseLog(@"登录之后请求一下驼圈入口开关");
             [self getCricleCamelEntrance];
@@ -591,12 +590,10 @@ static QIMManager *__IMManager = nil;
             QIMVerboseLog(@"登录之后请求一下骆驼帮未读数");
 
             [[QIMManager sharedInstance] getExploreNotReaderCount];
+            
+            QIMVerboseLog(@"登录之后请求热线账户列表");
+            [self getHotlineShopList];
         }
-    
-    if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
-        QIMVerboseLog(@"登录之后请求热线账户列表");
-        [self getHotlineShopList];
-    }
 }
 
 - (void)generateClientConfigUpgradeArrayWithType:(QIMClientConfigType)type WithArray:(id)valueArr {
@@ -715,43 +712,6 @@ static QIMManager *__IMManager = nil;
 @end
 
 @implementation QIMManager (Common)
-
-- (void)synchServerTime {
-    
-    NSString *destUrl = [NSString stringWithFormat:@"%@/getservertime?u=%@&k=%@&p=iphone&v=%@", [[QIMNavConfigManager sharedInstance] httpHost], [[QIMManager getLastUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding], self.remoteKey, [[QIMAppInfo sharedInstance] AppBuildVersion]];
-    NSURL *requestUrl = [[NSURL alloc] initWithString:destUrl];
-    
-    QIMHTTPRequest *request = [[QIMHTTPRequest alloc] initWithURL:requestUrl];
-    [QIMHTTPClient sendRequest:request complete:^(QIMHTTPResponse *response) {
-        if (response.code == 200) {
-            _serverTimeDiff = [[NSDate date] timeIntervalSince1970] - response.responseString.longLongValue;
-        }
-    } failure:^(NSError *error) {
-        
-    }];
-}
-
-- (void)updateUserSuoXie {
-    if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
-        return;
-    } else {
-        NSString *destUrl = [NSString stringWithFormat:@"%@/getusersuoxie?c=qtalk&u=%@&k=%@&p=iphone&v=%@", [[QIMNavConfigManager sharedInstance] httpHost], [[QIMManager getLastUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding], self.remoteKey, [[QIMAppInfo sharedInstance] AppBuildVersion]];
-        NSURL *requestUrl = [[NSURL alloc] initWithString:destUrl];
-        
-        QIMHTTPRequest *request = [[QIMHTTPRequest alloc] initWithURL:requestUrl];
-        [QIMHTTPClient sendRequest:request complete:^(QIMHTTPResponse *response) {
-            if (response.code == 200) {
-                NSError *error = nil;
-                id value = [[QIMJSONSerializer sharedInstance] deserializeObject:response.data error:&error];
-                if (error == nil && value) {
-                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateUserSearchIndexs:value];
-                }
-            }
-        } failure:^(NSError *error) {
-            
-        }];
-    }
-}
 
 - (void)updateMaxRosterListTime:(NSNotification *)notify {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
@@ -963,8 +923,6 @@ static QIMManager *__IMManager = nil;
                 NSData *data = [self updateRosterList];
                 data = [[QIMDESHelper sharedInstance] DESEncrypt:data WithKey:[QIMManager getLastUserName]];
                 [[ASIDataCompressor compressData:data error:&error] writeToFile:rsFile atomically:YES];
-                //获取搜索的拼音索引
-                [self updateUserSuoXie];
             }
             //获取组织架构图
             
@@ -983,8 +941,6 @@ static QIMManager *__IMManager = nil;
                     NSData *data = [self updateRosterList];
                     data = [[QIMDESHelper sharedInstance] DESEncrypt:data WithKey:[QIMManager getLastUserName]];
                     [[ASIDataCompressor compressData:data error:&error] writeToFile:rsFile atomically:YES];
-                    //获取搜索的拼音索引
-                    [self updateUserSuoXie];
                 }
                 //获取组织架构图
                 
@@ -1076,8 +1032,6 @@ static QIMManager *__IMManager = nil;
                 NSData *data = [self updateRosterList];
                 data = [[QIMDESHelper sharedInstance] DESEncrypt:data WithKey:[QIMManager getLastUserName]];
                 [[ASIDataCompressor compressData:data error:&error] writeToFile:rsFile atomically:YES];
-                //获取搜索的拼音索引
-                [self updateUserSuoXie];
             }
             //获取组织架构图
             
@@ -1096,8 +1050,6 @@ static QIMManager *__IMManager = nil;
                     NSData *data = [self updateRosterList];
                     data = [[QIMDESHelper sharedInstance] DESEncrypt:data WithKey:[QIMManager getLastUserName]];
                     [[ASIDataCompressor compressData:data error:&error] writeToFile:rsFile atomically:YES];
-                    //获取搜索的拼音索引
-                    [self updateUserSuoXie];
                 }
                 //获取组织架构图
                 

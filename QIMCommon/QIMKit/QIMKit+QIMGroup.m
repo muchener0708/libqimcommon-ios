@@ -115,20 +115,6 @@
     return [[QIMManager sharedInstance] updatePushState:groupId withOn:on];
 }
 
-#pragma mark - 群成员变更
-
-- (void)addGroupMemberChange:(NSString *)groupId {
-    [[QIMManager sharedInstance] addGroupMemberChange:groupId];
-}
-
-- (void)removeGroupMemberChange:(NSString *)groupId {
-    [[QIMManager sharedInstance] removeGroupMemberChange:groupId];
-}
-
-- (BOOL)isGroupMemberChangeByGroupId:(NSString *)groupId {
-    return [[QIMManager sharedInstance] isGroupMemberChangeByGroupId:groupId];
-}
-
 - (NSDictionary *) defaultGroupSetting {
     return [[QIMManager sharedInstance] defaultGroupSetting];
 }

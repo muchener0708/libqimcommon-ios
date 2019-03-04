@@ -10,8 +10,6 @@
 
 @interface QIMManager (Group)
 
-- (NSMutableDictionary *)groupMemberChangerDic; //群成员变更通知
-
 /**
  更新群消息时间戳
  */
@@ -190,10 +188,6 @@
  @return 更新群组免打扰状态是否成功
  */
 - (BOOL)updatePushState:(NSString *)groupId withOn:(BOOL)on;
-
-- (void)addGroupMemberChange:(NSString *)groupId;
-- (void)removeGroupMemberChange:(NSString *)groupId;
-- (BOOL)isGroupMemberChangeByGroupId:(NSString *)groupId;
 
 /**
  默认群组设置

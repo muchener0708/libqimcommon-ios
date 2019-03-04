@@ -124,15 +124,6 @@
 - (void)revokeMessageWithMessageId:(NSString *)messageId message:(NSString *)message ToJid:(NSString *)jid;
 
 /**
- 发送文件消息
- 
- @param fileJson 文件URL
- @param userId 对方UserId
- @param msgId 消息Id
- */
-- (void)sendFileJson:(NSString *)fileJson ToUserId:(NSString *)userId WithMsgId:(NSString *)msgId;
-
-/**
  发送语音消息
  
  @param voiceUrl 语音文件地址
@@ -202,26 +193,6 @@
  @param jid jid
  */
 - (void)revokeGroupMessageWithMessageId:(NSString *)messageId message:(NSString *)message ToJid:(NSString *)jid;
-
-/**
- 发送群文件
- 
- @param fileJson 文件地址
- @param groupId 群Id
- @param msgId 消息Id
- */
-- (void)sendFileJson:(NSString *)fileJson ToGroupId:(NSString *)groupId WithMsgId:(NSString *)msgId;
-
-
-/**
- 发送群语音消息
- 
- @param voiceUrl 语音文件地址
- @param voiceName 语音文件名称
- @param seconds 语音时长
- @param groupId 群Id
- */
-- (Message *)sendGroupVoiceUrl:(NSString *)voiceUrl withVoiceName:(NSString *)voiceName withSeconds:(int)seconds ToGroupId:(NSString *)groupId;
 
 // 发送音视频消息
 - (void)sendAudioVideoWithType:(int)msgType WithBody:(NSString *)body WithExtentInfo:(NSString *)extentInfo WithMsgId:(NSString *)msgId ToJid:(NSString *)jid;
@@ -347,11 +318,6 @@
 - (NSMutableSet *)getLastMsgCompensateReadSet;
 
 /**
- *  返回未读消息数组
- */
-- (NSArray *)getNotReaderMsgList;
-
-/**
  清空所有未读消息
  */
 - (void) clearAllNoRead;
@@ -397,6 +363,8 @@
  @param realJid 真实用户Id
  */
 - (NSInteger)getNotReadMsgCountByJid:(NSString *)jid WithRealJid:(NSString *)realJid;
+
+- (NSInteger)getNotReadMsgCountByJid:(NSString *)jid WithRealJid:(NSString *)realJid withChatType:(ChatType)chatType;
 
 - (void)updateAppNotReadCount;
 
@@ -445,15 +413,6 @@
  @param complete 回调block
  */
 - (void)getMsgListByUserId:(NSString *)userId WithRealJid:(NSString *)realJid WithLimit:(int)limit WithOffset:(int)offset WithComplete:(void (^)(NSArray *))complete;
-
-/**
- 获取消息列表
- 
- @param userId 虚拟id
- @param timeStamp 时间戳
- @param complete 回调block
- */
-- (void)getMsgListByUserId:(NSString *)userId FromTimeStamp:(long long)timeStamp WithComplete:(void (^)(NSArray *))complete;
 
 /**
  获取消息列表

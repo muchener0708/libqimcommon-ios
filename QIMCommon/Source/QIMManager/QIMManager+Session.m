@@ -21,10 +21,7 @@
 }
 
 - (NSArray *)getNotReadSessionList {
-    //Mark NotReadList未读列表
-//    NSArray *notReadList = [[IMDataManager qimDB_SharedInstance] qimDB_getNotReadSessionList];
-//    return notReadList;
-    return @[];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getNotReadSessionList];
 }
 
 - (NSArray *)getFullSessionList {
@@ -93,7 +90,6 @@
     if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
         if ([userId hasPrefix:@"shop_"]) {
             NSString *realJid = @"";
-            //[self getRealJidForVirtual:userId];
             if (realJid) {
                 [self addConsultSessionById:userId ByRealJid:userId WithUserId:userId ByMsgId:nil WithOpen:YES WithLastUpdateTime:[[NSDate date] qim_timeIntervalSince1970InMilliSecond] WithChatType:ChatType_Consult];
                 return ChatType_Consult;

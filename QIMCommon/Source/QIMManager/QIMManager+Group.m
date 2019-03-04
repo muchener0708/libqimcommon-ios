@@ -55,19 +55,6 @@
     return @"";
 }
 
-//群成员变更通知
-- (void)setGroupMemberChangerDic:(NSMutableDictionary *)groupMemberChangerDic {
-    objc_setAssociatedObject(self, "groupMemberChangerDic", groupMemberChangerDic, OBJC_ASSOCIATION_COPY_NONATOMIC);
-}
-
-- (NSMutableDictionary *)groupMemberChangerDic {
-    NSMutableDictionary *groupMemberChangerDic = objc_getAssociatedObject(self, "groupMemberChangerDic");
-    if (!groupMemberChangerDic) {
-        groupMemberChangerDic = [NSMutableDictionary dictionaryWithCapacity:5];
-    }
-    return groupMemberChangerDic;
-}
-
 - (NSArray *)getGroupList {
     return self.groupList;
 }
@@ -566,20 +553,6 @@
     } else {
         return NO;
     }
-}
-
-- (void)addGroupMemberChange:(NSString *)groupId {
-    [self.groupMemberChangerDic setObject:groupId forKey:groupId];
-    [[QIMUserCacheManager sharedInstance] setUserObject:self.groupMemberChangerDic forKey:kGroupMemberChangeDic];
-}
-
-- (void)removeGroupMemberChange:(NSString *)groupId {
-    [self.groupMemberChangerDic removeObjectForKey:groupId];
-    [[QIMUserCacheManager sharedInstance] setUserObject:self.groupMemberChangerDic forKey:kGroupMemberChangeDic];
-}
-
-- (BOOL)isGroupMemberChangeByGroupId:(NSString *)groupId {
-    return [self.groupMemberChangerDic objectForKey:groupId] != nil;
 }
 
 - (BOOL)inviteMember:(NSArray *)members ToGroupId:(NSString *)groupId {

@@ -89,14 +89,6 @@ static QIMKit *__global_QIMKit = nil;
     return [[QIMManager sharedInstance] updateRosterList];
 }
 
-- (void)updateUserSuoXie {
-    [[QIMManager sharedInstance] updateUserSuoXie];
-}
-
-- (void)synchServerTime {
-    [[QIMManager sharedInstance] synchServerTime];
-}
-
 - (void)checkRosterListWithForceUpdate:(BOOL)forceUpdate {
     [[QIMManager sharedInstance] checkRosterListWithForceUpdate:forceUpdate];
 }

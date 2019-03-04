@@ -10,10 +10,6 @@
 
 @implementation QIMKit (QIMDB)
 
-- (void)initDB {
-    [[QIMManager sharedInstance] initDB];
-}
-
 - (void)removeDataBase {
     //关闭数据库
     [[QIMManager sharedInstance] removeDataBase];

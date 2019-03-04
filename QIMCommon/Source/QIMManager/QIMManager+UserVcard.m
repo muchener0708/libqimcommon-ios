@@ -375,27 +375,6 @@
 
 - (void)updateUserBigHeaderImageUrl:(NSString *)url WithVersion:(NSString *)version ForUserId:(NSString *)userId {
     if (url.length > 0) {
-        /*
-        NSDictionary *temp = [self.userBigHeaderDic objectForKey:userId];
-        if (temp == nil) {
-            temp 
-         = [NSDictionary dictionary];
-        }
-        NSMutableDictionary *userBigHeaderDic = [NSMutableDictionary dictionaryWithDictionary:temp];
-        NSString *oldVersion = [userBigHeaderDic objectForKey:@"Version"];
-        if (![oldVersion isEqualToString:version] && oldVersion.length > 0) {
-            NSString *fileName = [userBigHeaderDic objectForKey:@"FileName"];
-            if (fileName.length > 0) {
-                [[NSFileManager defaultManager] removeItemAtPath:[self.imageCachePath stringByAppendingPathComponent:fileName]
-                                                           error:nil];
-            }
-            [userBigHeaderDic removeObjectForKey:@"FileName"];
-            [userBigHeaderDic setObject:version forKey:@"Version"];
-            [userBigHeaderDic setObject:url forKey:@"Url"];
-            [self.userBigHeaderDic setObject:userBigHeaderDic forKey:userId];
-            [[QIMUserCacheManager sharedInstance] setUserObject:self.userBigHeaderDic forKey:kUserBigHeaderDic];
-        }
-        */
         [[IMDataManager qimDB_SharedInstance] qimDB_updateUser:userId WithHeaderSrc:url WithVersion:version];
     }
 }

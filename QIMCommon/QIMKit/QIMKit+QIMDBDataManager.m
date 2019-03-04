@@ -729,15 +729,6 @@
     [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateChatMsgWithMsgState:msgState ByMsgIdList:msgIdList];
 }
 
-- (NSArray *)getReceiveMsgIdListWithMsgState:(int)msgState WithReceiveDirection:(int)receiveDirection {
-    return nil;
-//    return [[IMDataManager qimDB_SharedInstance] qimDB_getReceiveMsgIdListWithMsgState:msgState WithReceiveDirection:receiveDirection];
-}
-
-- (NSArray *)getNotReadMsgListWithMsgState:(int)msgState WithReceiveDirection:(int)receiveDirection {
-    return [[IMDataManager qimDB_SharedInstance] qimDB_getNotReadMsgListWithMsgState:msgState WithReceiveDirection:receiveDirection];
-}
-
 - (void)clearHistoryMsg {
     [[IMDataManager qimDB_SharedInstance] qimDB_clearHistoryMsg];
 }

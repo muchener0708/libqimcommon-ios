@@ -463,6 +463,13 @@
     return mesg;
 }
 
+/**
+ 撤销单人消息
+
+ @param messageId 原始消息Id
+ @param message 消息Body
+ @param jid 群id
+ */
 - (void)revokeMessageWithMessageId:(NSString *)messageId message:(NSString *)message ToJid:(NSString *)jid {
     [[XmppImManager sharedInstance] revokeMessageId:messageId WithMessage:message ToJid:jid];
 }
@@ -477,40 +484,6 @@
 - (void)revokeGroupMessageWithMessageId:(NSString *)messageId message:(NSString *)message ToJid:(NSString *)jid {
     
     [[XmppImManager sharedInstance] revokeGroupMessageId:messageId WithMessage:message ToJid:jid];
-}
-
-/**
- 发送单人文件消息
- 
- @param fileJson 文件消息JSON串
- @param userId 接收方Id
- @param msgId msgId
- */
-- (void)sendFileJson:(NSString *)fileJson ToUserId:(NSString *)userId WithMsgId:(NSString *)msgId {
-    
-    NSMutableDictionary *messageDict = [NSMutableDictionary dictionaryWithCapacity:5];
-    [messageDict setQIMSafeObject:fileJson forKey:@"MessageBody"];
-    [messageDict setQIMSafeObject:msgId forKey:@"MessageId"];
-    [messageDict setQIMSafeObject:@(QIMMessageType_File) forKey:@"MessageType"];
-    [messageDict setQIMSafeObject:[self getChatIdByUserId:userId] forKey:@"MessageChatId"];
-    [messageDict setQIMSafeObject:[self getChancelInfoForUserId:userId] forKey:@"MessageChannelInfo"];
-    [messageDict setQIMSafeObject:[self getAppendInfoForUserId:userId] forKey:@"MessageAppendInfoDict"];
-    [messageDict setQIMSafeObject:userId forKey:@"ToJid"];
-    
-    [[XmppImManager sharedInstance] sendChatMessageWithMsgDict:messageDict];
-}
-
-/**
- 发送群文件消息
- 
- @param fileJson 文件消息JSON串
- @param groupId 群Id
- @param msgId msgId
- */
-- (void)sendFileJson:(NSString *)fileJson ToGroupId:(NSString *)groupId WithMsgId:(NSString *)msgId {
-    
-    NSDictionary *msgDict = [self createMessageDictWithMessageId:msgId message:fileJson ToJid:groupId messageType:QIMMessageType_File];
-    [[XmppImManager sharedInstance] sendGroupMessageWithMessageDict:msgDict];
 }
 
 - (Message *)sendMessage:(Message *)msg ToUserId:(NSString *)userId {
@@ -653,79 +626,73 @@
     return mesg;
 }
 
-/**
- 发送群语音消息
- 
- @param voiceUrl 语音文件地址
- @param voiceName 语音文件名称
- @param seconds 语音时长
- @param groupId 群Id
- */
-- (Message *)sendGroupVoiceUrl:(NSString *)voiceUrl withVoiceName:(NSString *)voiceName withSeconds:(int)seconds ToGroupId:(NSString *)groupId {
-    
-    Message *mesg = [Message new];
-    [mesg setChatType:ChatType_GroupChat];
-    [mesg setTo:groupId];
-    [mesg setMessageType:QIMMessageType_Voice];
-    [mesg setMessageId:[QIMUUIDTools UUID]];
-    [mesg setMessageDirection:QIMMessageDirection_Sent];
-    NSString *msgStr = [NSString stringWithFormat:@"{\"%@\":\"%@\", \"%@\":\"%@\", \"%@\":%@}", @"HttpUrl", voiceUrl, @"FileName", voiceName, @"Seconds", [NSNumber numberWithInt:seconds]];
-    [mesg setMessage:msgStr];
-    long long date = [[NSDate date] timeIntervalSince1970];
-    [mesg setMessageDate:date];
-    NSString *msgRaw = nil;
-    
-    NSDictionary *msgDict = [self createMessageDictWithMessage:mesg];
-    [[XmppImManager sharedInstance] sendGroupMessageWithMessageDict:msgDict];
-    
-    if (msgRaw.length > 0) {
-        [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageWithMsgId:mesg.messageId WithMsgRaw:msgRaw];
-    }
-    
-    return mesg;
-}
-
-/**
- 单人发送语音消息
- 
- @param voiceUrl 语音文件线上地址
- @param voiceName 语音文件名称
- @param seconds 语音时长
- @param userId 接收方
- */
-- (Message *)sendVoiceUrl:(NSString *)voiceUrl withVoiceName:(NSString *)voiceName withSeconds:(int)seconds ToUserId:(NSString *)userId {
-    
-    long long msgDate = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff) * 1000;
-    
-    Message *mesg = [Message new];
-    [mesg setTo:userId];
-    [mesg setChatType:ChatType_SingleChat];
-    [mesg setMessageId:[QIMUUIDTools UUID]];
-    [mesg setMessageType:QIMMessageType_Voice];
-    [mesg setMessageDirection:QIMMessageDirection_Sent];
-    [mesg setChatId:[self getChatIdByUserId:userId]];
-    [mesg setChannelInfo:[self getChancelInfoForUserId:userId]];
-    [mesg setAppendInfoDict:[self getAppendInfoForUserId:userId]];
-    NSString *msgStr = [NSString stringWithFormat:@"{\"%@\":\"%@\", \"%@\":\"%@\", \"%@\":%@}", @"HttpUrl", voiceUrl, @"FileName", voiceName, @"Seconds", [NSNumber numberWithInt:seconds]];
-    [mesg setMessage:msgStr];
-    [mesg setMessageDate:msgDate];
-    [self saveMsg:mesg ByJid:userId];
-    
-    NSString *msgRaw = nil;
-    
-    NSDictionary *messageDict = [self createMessageDictWithMessage:mesg];
-    [[XmppImManager sharedInstance] sendChatMessageWithMsgDict:messageDict];
-    
-    if (msgRaw.length > 0) {
-        [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageWithMsgId:mesg.messageId WithMsgRaw:msgRaw];
-    }
-    return mesg;
-}
-
 // 发送音视频消息
 - (void)sendAudioVideoWithType:(int)msgType WithBody:(NSString *)body WithExtentInfo:(NSString *)extentInfo WithMsgId:(NSString *)msgId ToJid:(NSString *)jid{
     QIMVerboseLog(@"===========音视频信息=========\r sendAudioVideoWithType ExtentInfo %@ ",extentInfo);
     [[XmppImManager sharedInstance] sendAudioVideoWithType:msgType WithBody:body WithExtentInfo:extentInfo WithMsgId:msgId ToJid:jid];
+}
+
+#pragma mark - Share Location
+
+- (Message *)sendShareLocationMessage:(NSString *)msg WithInfo:(NSString *)info ToJid:(NSString *)jid WithMsgType:(int)msgType {
+    Message *mesg = [Message new];
+    [mesg setMessageId:[QIMUUIDTools UUID]];
+    [mesg setMessageType:msgType];
+    [mesg setMessageDirection:QIMMessageDirection_Sent];
+    [mesg setMessage:msg];
+    [mesg setExtendInformation:info];
+    NSString *msgRaw = nil;
+    [[XmppImManager sharedInstance] sendShareLocationMessage:msg WithInfo:info toJid:jid WithMsgId:mesg.messageId WithMsgType:msgType WithChatId:nil OutMsgRaw:&msgRaw];
+    if (msgRaw.length > 0) {
+        [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageWithMsgId:mesg.messageId WithMsgRaw:msgRaw];
+    }
+    return mesg;
+}
+
+- (Message *)beginShareLocationToUserId:(NSString *)userId WithShareLocationId:(NSString *)shareLocationId {
+    if (shareLocationId.length > 0) {
+        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+        [dic setObject:shareLocationId forKey:@"shareId"];
+        [dic setObject:[self getLastJid] forKey:@"fromId"];
+        NSString *extendInfo = [[QIMJSONSerializer sharedInstance] serializeObject:dic];
+        return [self sendMessage:@"发起了位置共享,请升级最新App客户端查看。" WithInfo:extendInfo ToUserId:userId WithMsgType:QIMMessageType_shareLocation];
+    }
+    return nil;
+}
+
+- (Message *)beginShareLocationToGroupId:(NSString *)GroupId WithShareLocationId:(NSString *)shareLocationId {
+    if (shareLocationId.length > 0) {
+        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+        [dic setObject:shareLocationId forKey:@"shareId"];
+        [dic setObject:[self getLastJid] forKey:@"fromId"];
+        NSString *extendInfo = [[QIMJSONSerializer sharedInstance] serializeObject:dic];
+        return [self sendMessage:@"发起了位置共享,请升级最新App客户端查看。" WithInfo:extendInfo ToGroupId:GroupId WithMsgType:QIMMessageType_shareLocation];
+    }
+    return nil;
+}
+
+- (BOOL)joinShareLocationToUsers:(NSArray *)users WithShareLocationId:(NSString *)shareLocationId {
+    return [[XmppImManager sharedInstance] joinShareLocationToUsers:users WithShareLocationId:shareLocationId WithMsgType:ShareLocationType_Join];
+}
+
+- (BOOL)sendMyLocationToUsers:(NSArray *)users WithLocationInfo:(NSString *)locationInfo ByShareLocationId:(NSString *)shareLocationId {
+    return [[XmppImManager sharedInstance] sendMyLocationToUsers:users WithLocationInfo:locationInfo ByShareLocationId:shareLocationId WithMsgType:ShareLocationType_Info];
+}
+
+- (BOOL)quitShareLocationToUsers:(NSArray *)users WithShareLocationId:(NSString *)shareLocationId {
+    return [[XmppImManager sharedInstance] quitShareLocationToUsers:users WithShareLocationId:shareLocationId WithMsgType:ShareLocationType_Quit];
+}
+
+- (NSString *)getShareLocationIdByJid:(NSString *)jid {
+    return [self.shareLocationDic objectForKey:jid];
+}
+
+- (NSString *)getShareLocationFromIdByShareLocationId:(NSString *)shareLocationId {
+    return [self.shareLocationFromIdDic objectForKey:shareLocationId];
+}
+
+- (NSArray *)getShareLocationUsersByShareLocationId:(NSString *)shareLocationId {
+    return [self.shareLocationUserDic objectForKey:shareLocationId];
 }
 
 #pragma mark - MsgReadCount
@@ -854,42 +821,9 @@
     return self.msgCompensateReadSet;
 }
 
-/**
- *  返回未读消息数组
- */
-- (NSArray *)getNotReaderMsgList {
-    
-    /* Mark by DB
-    NSArray *sessionlist = [[IMDataManager qimDB_SharedInstance] qimDB_getNotReadMsgListWithMsgState:QIMMessageSendState_Success WithReceiveDirection:QIMMessageDirection_Received];
-    for (NSMutableDictionary *dic in sessionlist) {
-        
-        NSString *xmppId = [dic objectForKey:@"XmppId"];
-        NSArray *xmppAry = [xmppId componentsSeparatedByString:@"@"];
-        if ([xmppId isEqualToString:@"SystemMessage"]) {
-            
-            [dic setObject:@(ChatType_System) forKey:@"ChatType"];
-            [dic setObject:@"系统消息" forKey:@"Name"];
-        } else if ([xmppAry.lastObject hasPrefix:@"conference"]) {
-            
-            [dic setObject:@(ChatType_GroupChat) forKey:@"ChatType"];
-            NSDictionary *cardDic = [[QIMManager sharedInstance] getGroupCardByGroupId:xmppId];
-            if (cardDic) {
-                
-                [dic setObject:[cardDic objectForKey:@"Name"] forKey:@"Name"];
-            } else {
-                
-                [dic setObject:xmppAry.firstObject forKey:@"Name"];
-            }
-        } else {
-            
-            [dic setObject:@(ChatType_SingleChat) forKey:@"ChatType"];
-        }
-    }
-    return sessionlist;
-    */
-}
-
 - (void)updateNotReadCountCacheByJid:(NSString *)jid WithRealJid:(NSString *)realJid{
+    return;
+//    Mark by DB
     if (jid.length > 0) {
         NSString *userId = [NSString stringWithFormat:@"%@-%@", jid, realJid];
         [self updateNotReadCountCacheByJid:userId];
@@ -914,49 +848,21 @@
     if (jid.length > 0) {
         dispatch_async(dispatch_get_main_queue(), ^{
             QIMVerboseLog(@"updateNotReadCountCacheByJid: 抛出通知 kMsgNotReadCountChange");
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"kMsgNotReadCountChange" object:jid];
+//            [[NSNotificationCenter defaultCenter] postNotificationName:@"kMsgNotReadCountChange" object:jid];
         });
     } else {
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"kMsgNotReadCountChange" object:@"ForceRefresh"];
+//            [[NSNotificationCenter defaultCenter] postNotificationName:@"kMsgNotReadCountChange" object:@{@"ForceRefresh":@(YES)}];
         });
     }
 }
 
-//自增未读数
-- (void)increasedNotReadMsgCountByJid:(NSString *)jid WithReadJid:(NSString *)realJid {
-    return;
-    NSString *userId = jid;
-    if (realJid.length > 0) {
-        userId = [NSString stringWithFormat:@"%@-%@", jid, realJid];
-    } else {
-        userId = jid;
+- (NSInteger)getNotReadMsgCountByJid:(NSString *)jid WithRealJid:(NSString *)realJid withChatType:(ChatType)chatType {
+    if (jid.length > 0 && realJid.length > 0) {
+        NSInteger notReadCount = [[IMDataManager qimDB_SharedInstance] qimDB_getNotReaderMsgCountByJid:jid ByRealJid:realJid withChatType:chatType];
+        return notReadCount;
     }
-    [self increasedNotReadMsgCountByJid:userId];
-}
-
-- (void)increasedNotReadMsgCountByJid:(NSString *)jid {
-    return;
-    NSInteger count = [self getNotReadMsgCountByJid:jid];
-    count += 1;
-    [self.notReadMsgDic setObject:@(count) forKey:jid];
-}
-
-//内存中清除未读数
-- (void)decrementNotReadMsgCountByJid:(NSString *)jid WithReadJid:(NSString *)realJid {
-    return;
-    NSString *userId = jid;
-    if (realJid.length > 0) {
-        userId = [NSString stringWithFormat:@"%@-%@", jid, realJid];
-    } else {
-        userId = jid;
-    }
-    [self decrementNotReadMsgCountByJid:userId];
-}
-
-- (void)decrementNotReadMsgCountByJid:(NSString *)jid {
-    return;
-    [self.notReadMsgDic setObject:@(0) forKey:jid];
+    return 0;
 }
 
 - (NSInteger)getNotReadMsgCountByJid:(NSString *)jid WithRealJid:(NSString *)realJid {
@@ -1064,15 +970,6 @@
     return 0;
 }
 
-- (void)clearNotReadWithSessionId:(NSString *)sessionId {
-    //清除SessionList未读数 + 发送本地置接收过来的消息ReadState + 数据库置一下
-}
-
-//清除未读数
-- (void)clearNotReadWithSessionId:(NSString *)sessionId withRealJid:(NSString *)realJid {
-    
-}
-
 - (void)clearSystemMsgNotReadWithJid:(NSString *)jid {
     
     if (jid.length <= 0) {
@@ -1083,10 +980,10 @@
 //    [[IMDataManager qimDB_SharedInstance] qimDB_updateSystemMsgState:QIMMessageSendState_Success WithXmppId:jid];
     dispatch_async(dispatch_get_main_queue(), ^{
         
-        [self decrementNotReadMsgCountByJid:jid];
         [self updateNotReadCountCacheByJid:jid];
         QIMVerboseLog(@"clearSystemMsgNotReadWithJid: 抛出通知 kMsgNotReadCountChange");
-        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:jid];
+        //Mark by DB
+//        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:jid];
     });
 }
 
@@ -1097,18 +994,6 @@
         NSDictionary *clearAllOnReadStateDic = [self getLocalAllOnReadStateInfoWithReadType:QIMMessageReadFlagClearAllUnRead ByReadMarkT:readMarkT * 1000];
         QIMVerboseLog(@"发送本地清除所有未读OnReadState : %@", clearAllOnReadStateDic);
         [self onReadState:clearAllOnReadStateDic];
-        /*
-         [self getLocalOnGroupReadStateInfoWithReadType:QIMMessageReadFlagDidSend withGroupId:nil withReadMarkTime:1];
-         [[IMDataManager qimDB_SharedInstance] qimDB_updateAllMsgWithMsgState:QIMMessageSendState_didRead ByMsgDirection:QIMMessageDirection_Received ByReadMarkT:readMarkT * 1000];
-         //去 at all
-         [self.hasAtAllDic removeAllObjects];
-         dispatch_async(dispatch_get_main_queue(), ^{
-         QIMVerboseLog(@"clearAllNoRead: 抛出通知 kMsgNotReadCountChange");
-         [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@"ForceRefresh"];
-         QIMVerboseLog(@"抛出通知 clearAllNoRead: kAtALLChange");
-         [[NSNotificationCenter defaultCenter] postNotificationName:kAtALLChange object:@"allIds"];
-         });
-         */
     }
 }
 
@@ -1176,7 +1061,6 @@
         int msgDirection = msg.messageDirection;
         
         long long msgDate = msg.messageDate;
-//        int propress = msg.propress;
         
         [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageWithMsgId:messageId WithSessionId:sid WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:0 WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:0 ExtendedFlag:0 WithMsgRaw:msg.msgRaw];
     }
@@ -1232,11 +1116,12 @@
 }
 
 //更新群消息阅读状态
-- (void)updateLocalGroupMessageRemoteState:(NSInteger)remoteState ByReadList:(NSArray *)readList {
+- (void)updateLocalGroupMessageRemoteState:(NSInteger)remoteState withXmppId:(NSString *)xmppId ByReadList:(NSArray *)readList {
     
     [[IMDataManager qimDB_SharedInstance] qimDB_updateGroupMessageRemoteState:remoteState ByGroupReadList:readList];
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@"ForceRefresh"];
+        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@{@"ForceRefresh":@(YES)}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@{@"XmppId":xmppId, @"RealJid":xmppId}];
     });
 }
 
@@ -1246,7 +1131,8 @@
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         QIMVerboseLog(@"发送消息RemoteState阅读状态变化通知 : %ld, %@", remoteState, msgIdList);
         [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageReadStateUpdate object:@{@"State":@(remoteState), @"MsgIds":msgIdList?msgIdList:@[]}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@"ForceRefresh"];
+        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@{@"ForceRefresh":@(YES)}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@{@"XmppId":xmppId, @"RealJid":realJid}];
     });
 }
 
@@ -1267,7 +1153,8 @@
     }
     
     NSString *jsonString = [[QIMJSONSerializer sharedInstance] serializeObject:resultArray];
-    BOOL isSuccess = [[XmppImManager sharedInstance] sendReadStateWithMessagesIdArray:jsonString WithMessageReadFlag:msgReadFlag WithXmppId:[NSString stringWithFormat:@"%@",xmppId]];
+//    sendReadStateWithMessagesIdArray:(NSString *)jsonString WithMessageReadFlag:(NSInteger)msgReadFlag WithXmppid:(NSString *)xmppId WithTo:(NSString *)to withRealTo:(NSString *)realTo
+    BOOL isSuccess = [[XmppImManager sharedInstance] sendReadStateWithMessagesIdArray:jsonString WithMessageReadFlag:msgReadFlag WithXmppid:[NSString stringWithFormat:@"%@",xmppId] WithTo:xmppId withRealTo:realJid];
     if (isSuccess) {
         NSDictionary *readDic = [self getLocalOnReadStateInfoWithReadType:msgReadFlag withReadMsgList:resultArray withXmppId:xmppId];
         QIMVerboseLog(@"发送本地OnReadState : %@", readDic);
@@ -1325,69 +1212,6 @@
     [presenceMsgDict setQIMSafeObject:@(QIMCategoryNotifyMsgTypeSession) forKey:@"PresenceMsgType"];
     [presenceMsgDict setQIMSafeObject:msg forKey:@"PresenceMsg"];
     [[XmppImManager sharedInstance] sendNotifyPresenceMsg:presenceMsgDict ToJid:[[QIMManager sharedInstance] getLastJid]];
-}
-
-#pragma mark - Share Location
-
-- (Message *)sendShareLocationMessage:(NSString *)msg WithInfo:(NSString *)info ToJid:(NSString *)jid WithMsgType:(int)msgType {
-    Message *mesg = [Message new];
-    [mesg setMessageId:[QIMUUIDTools UUID]];
-    [mesg setMessageType:msgType];
-    [mesg setMessageDirection:QIMMessageDirection_Sent];
-    [mesg setMessage:msg];
-    [mesg setExtendInformation:info];
-    NSString *msgRaw = nil;
-    [[XmppImManager sharedInstance] sendShareLocationMessage:msg WithInfo:info toJid:jid WithMsgId:mesg.messageId WithMsgType:msgType WithChatId:nil OutMsgRaw:&msgRaw];
-    if (msgRaw.length > 0) {
-        [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageWithMsgId:mesg.messageId WithMsgRaw:msgRaw];
-    }
-    return mesg;
-}
-
-- (Message *)beginShareLocationToUserId:(NSString *)userId WithShareLocationId:(NSString *)shareLocationId {
-    if (shareLocationId.length > 0) {
-        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-        [dic setObject:shareLocationId forKey:@"shareId"];
-        [dic setObject:[self getLastJid] forKey:@"fromId"];
-        NSString *extendInfo = [[QIMJSONSerializer sharedInstance] serializeObject:dic];
-        return [self sendMessage:@"发起了位置共享,请升级最新App客户端查看。" WithInfo:extendInfo ToUserId:userId WithMsgType:QIMMessageType_shareLocation];
-    }
-    return nil;
-}
-
-- (Message *)beginShareLocationToGroupId:(NSString *)GroupId WithShareLocationId:(NSString *)shareLocationId {
-    if (shareLocationId.length > 0) {
-        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-        [dic setObject:shareLocationId forKey:@"shareId"];
-        [dic setObject:[self getLastJid] forKey:@"fromId"];
-        NSString *extendInfo = [[QIMJSONSerializer sharedInstance] serializeObject:dic];
-        return [self sendMessage:@"发起了位置共享,请升级最新App客户端查看。" WithInfo:extendInfo ToGroupId:GroupId WithMsgType:QIMMessageType_shareLocation];
-    }
-    return nil;
-}
-
-- (BOOL)joinShareLocationToUsers:(NSArray *)users WithShareLocationId:(NSString *)shareLocationId {
-    return [[XmppImManager sharedInstance] joinShareLocationToUsers:users WithShareLocationId:shareLocationId WithMsgType:ShareLocationType_Join];
-}
-
-- (BOOL)sendMyLocationToUsers:(NSArray *)users WithLocationInfo:(NSString *)locationInfo ByShareLocationId:(NSString *)shareLocationId {
-    return [[XmppImManager sharedInstance] sendMyLocationToUsers:users WithLocationInfo:locationInfo ByShareLocationId:shareLocationId WithMsgType:ShareLocationType_Info];
-}
-
-- (BOOL)quitShareLocationToUsers:(NSArray *)users WithShareLocationId:(NSString *)shareLocationId {
-    return [[XmppImManager sharedInstance] quitShareLocationToUsers:users WithShareLocationId:shareLocationId WithMsgType:ShareLocationType_Quit];
-}
-
-- (NSString *)getShareLocationIdByJid:(NSString *)jid {
-    return [self.shareLocationDic objectForKey:jid];
-}
-
-- (NSString *)getShareLocationFromIdByShareLocationId:(NSString *)shareLocationId {
-    return [self.shareLocationFromIdDic objectForKey:shareLocationId];
-}
-
-- (NSArray *)getShareLocationUsersByShareLocationId:(NSString *)shareLocationId {
-    return [self.shareLocationUserDic objectForKey:shareLocationId];
 }
 
 #pragma mark - 数据库更新 或者 保存消息
@@ -1468,40 +1292,6 @@
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
         NSArray *array = [[IMDataManager qimDB_SharedInstance] qimDB_getMsgListByXmppId:userId WithRealJid:realJid FromTimeStamp:timeStamp];
-        if (array.count > 0) {
-            
-            NSMutableArray *list = [NSMutableArray array];
-            for (NSDictionary *infoDic in array) {
-                Message *msg = [Message new];
-                [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
-                [msg setFrom:[infoDic objectForKey:@"From"]];
-                [msg setNickName:[infoDic objectForKey:@"From"]];
-                [msg setTo:[infoDic objectForKey:@"To"]];
-                [msg setMessage:[infoDic objectForKey:@"Content"]];
-                NSString *extendInfo = [infoDic objectForKey:@"ExtendInfo"];
-                [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
-                [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
-                [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-                [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
-                [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
-                [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
-                [msg setReadTag:[[infoDic objectForKey:@"ReadTag"] intValue]];
-                [msg setMsgRaw:[infoDic objectForKey:@"msgRaw"]];
-                
-                [list addObject:msg];
-            }
-            dispatch_async(dispatch_get_main_queue(), ^{
-                complete(list);
-            });
-        }
-    });
-}
-
-- (void)getMsgListByUserId:(NSString *)userId FromTimeStamp:(long long)timeStamp WithComplete:(void (^)(NSArray *))complete {
-    
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        
-        NSArray *array = [[IMDataManager qimDB_SharedInstance] qimDB_getMsgListByXmppId:userId FromTimeStamp:timeStamp];
         if (array.count > 0) {
             
             NSMutableArray *list = [NSMutableArray array];
@@ -1704,88 +1494,6 @@
                             complete(@[]);
                         });
                     }
-                }
-            });
-        }
-    });
-}
-
-- (void)getConsultServerMsgLisByUserId:(NSString *)userId WithVirtualId:(NSString *)virtualId WithLimit:(int)limit WithOffset:(int)offset WithComplete:(void (^)(NSArray *))complete {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSArray *array = [[IMDataManager qimDB_SharedInstance] qimDB_getMgsListBySessionId:virtualId WithRealJid:userId WithLimit:limit WithOffset:offset];
-        if (array.count > 0) {
-            NSMutableArray *list = [NSMutableArray arrayWithCapacity:5];
-            for (NSDictionary *infoDic in array) {
-                Message *msg = [Message new];
-                [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
-                [msg setFrom:[infoDic objectForKey:@"From"]];
-                [msg setNickName:[infoDic objectForKey:@"From"]];
-                [msg setTo:[infoDic objectForKey:@"To"]];
-                [msg setMessage:[infoDic objectForKey:@"Content"]];
-                NSString *extendInfo = [infoDic objectForKey:@"ExtendInfo"];
-                [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
-                [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
-                [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-                [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
-                [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
-                [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
-                [msg setReadTag:[[infoDic objectForKey:@"ReadTag"] intValue]];
-                [msg setMsgRaw:[infoDic objectForKey:@"msgRaw"]];
-                [list addObject:msg];
-            }
-            dispatch_async(dispatch_get_main_queue(), ^{
-                complete(list);
-            });
-            if (list.count < limit) {
-                if (self.load_history_msg == nil) {
-                    self.load_history_msg = dispatch_queue_create("Load History", 0);
-                }
-                dispatch_async(self.load_history_msg, ^{
-                    long long version = [[IMDataManager qimDB_SharedInstance] qimDB_getMinMsgTimeStampByXmppId:virtualId RealJid:userId] - timeChange;
-                    
-                    NSArray *result = [self getConsultServerlogWithFrom:userId virtualId:virtualId to:[self getLastJid] version:version count:(int)(limit - list.count) direction:QIMMessageDirection_Received];
-                    if (result.count > 0) {
-                        NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
-                        [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:result to:[QIMManager getLastUserName] WithDidReadState:QIMMessageSendState_Success];
-                    }
-                });
-            }
-        } else {
-            if (self.load_history_msg == nil) {
-                self.load_history_msg = dispatch_queue_create("Load History", 0);
-            }
-            dispatch_async(self.load_history_msg, ^{
-                long long version = [[IMDataManager qimDB_SharedInstance] qimDB_getMinMsgTimeStampByXmppId:virtualId RealJid:userId] - timeChange;
-                NSArray *resultList = [self getConsultServerlogWithFrom:userId virtualId:virtualId to:[self getLastJid] version:version count:limit direction:QIMMessageDirection_Received];
-                
-                if (resultList.count > 0) {
-                    NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
-                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:resultList to:[QIMManager getLastUserName] WithDidReadState:QIMMessageSendState_Success];
-                    NSArray *datas = [[IMDataManager qimDB_SharedInstance] qimDB_getMgsListBySessionId:virtualId WithRealJid:userId WithLimit:limit WithOffset:offset];
-                    NSMutableArray *list = [NSMutableArray array];
-                    for (NSDictionary *infoDic in datas) {
-                        Message *msg = [Message new];
-                        [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
-                        [msg setFrom:[infoDic objectForKey:@"From"]];
-                        [msg setTo:[infoDic objectForKey:@"To"]];
-                        [msg setMessage:[infoDic objectForKey:@"Content"]];
-                        NSString *extendInfo = [infoDic objectForKey:@"ExtendInfo"];
-                        [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
-                        [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
-                        [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-                        [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
-                        [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
-                        [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
-                        [msg setMsgRaw:[infoDic objectForKey:@"msgRaw"]];
-                        [list addObject:msg];
-                    }
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        complete(list);
-                    });
-                } else {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        complete(@[]);
-                    });
                 }
             });
         }

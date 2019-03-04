@@ -1838,6 +1838,18 @@
     return count;
 }
 
+- (NSInteger)qimDB_getNotReaderMsgCountByJid:(NSString *)jid ByRealJid:(NSString *)realJid withChatType:(ChatType)chatType {
+    __block NSInteger count = 0;
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = @"SELECT UnreadCount FROM IM_SessionList Where XmppId = :XmppId And RealJid = :RealJid And ChatType = :ChatType;";
+        DataReader *reader = [database executeReader:sql withParameters:@[jid, realJid, @(chatType)]];
+        if ([reader read]) {
+            count = [[reader objectForColumnIndex:0] integerValue];
+        }
+    }];
+    return count;
+}
+
 - (NSInteger)qimDB_getNotReaderMsgCountByJid:(NSString *)jid ByDidReadState:(int)didReadState WidthReceiveDirection:(int)receiveDirection {
     __block NSInteger count = 0;
     //    [[QIMWatchDog sharedInstance] start];
@@ -2058,54 +2070,6 @@
         }
     }];
     return maxRemoteTime;
-}
-
-- (NSArray *)qimDB_getNotReadMsgListWithMsgState:(int)msgState WithReceiveDirection:(int)receiveDirection {
-    __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql =[NSString stringWithFormat:@"Select XmppId, NotReadCount From (Select XmppId,Count(*) as NotReadCount From IM_Message Where State <> %d And Direction= %d Group By XmppId Order By LastUpdateTime Desc) Where NotReadCount > 0;",msgState,receiveDirection];
-        DataReader *reader = [database executeReader:sql withParameters:nil];
-        NSMutableArray *xmppIdList = nil;
-        while ([reader read]) {
-            if (xmppIdList == nil) {
-                xmppIdList = [NSMutableArray array];
-            }
-            NSString *xmppId = [reader objectForColumnIndex:0];
-            [xmppIdList addObject:xmppId];
-        }
-        for (NSString *xmppId in xmppIdList) {
-            NSString *sql = @"Select MsgId,a.XmppId,\"From\",Type,Content,Direction,a.LastUpdateTime,b.Name, extendInfo From IM_Message as a Left Join IM_User as b on a.XmppId = b.XmppId Where a.XmppId =:XmppId And Type <> 101 Order By a.LastUpdateTime Desc Limit 1;";
-            reader = [database executeReader:sql withParameters:@[xmppId]];
-            if ([reader read]) {
-                if (resultList == nil) {
-                    resultList = [[NSMutableArray alloc] init];
-                }
-                NSString *msgId = [reader objectForColumnIndex:0];
-                NSString *xmppId = [reader objectForColumnIndex:1];
-                NSString *from = [reader objectForColumnIndex:2];
-                NSNumber *type = [reader objectForColumnIndex:3];
-                NSString *content = [reader objectForColumnIndex:4];
-                NSNumber *direction = [reader objectForColumnIndex:5];
-                NSNumber *msgDateTime = [reader objectForColumnIndex:6];
-                NSString *name = [reader objectForColumnIndex:7];
-                NSString *extendInfo = [reader objectForColumnIndex:8];
-                NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
-                [IMDataManager safeSaveForDic:msgDic setObject:msgId forKey:@"MsgId"];
-                [IMDataManager safeSaveForDic:msgDic setObject:xmppId forKey:@"XmppId"];
-                [IMDataManager safeSaveForDic:msgDic setObject:from forKey:@"NickName"];
-                [IMDataManager safeSaveForDic:msgDic setObject:content forKey:@"Content"];
-                [IMDataManager safeSaveForDic:msgDic setObject:type forKey:@"MsgType"];
-                [IMDataManager safeSaveForDic:msgDic setObject:direction forKey:@"MsgDirection"];
-                [IMDataManager safeSaveForDic:msgDic setObject:msgDateTime forKey:@"MsgDateTime"];
-                [IMDataManager safeSaveForDic:msgDic setObject:name forKey:@"Name"];
-                [IMDataManager safeSaveForDic:msgDic setObject:extendInfo forKey:@"ExtendInfo"];
-                [resultList addObject:msgDic];
-                [msgDic release];
-                msgDic = nil;
-            }
-        }
-    }];
-    return [resultList autorelease];
 }
 
 - (void)qimDB_clearHistoryMsg {

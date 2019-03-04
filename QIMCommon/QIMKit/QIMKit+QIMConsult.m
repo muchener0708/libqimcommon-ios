@@ -26,16 +26,6 @@
     return [[QIMManager sharedInstance] sendConsultMessageId:msgId WithMessage:msg WithInfo:info toJid:toJid realToJid:realToJid WithChatType:chatType WithMsgType:msgType];
 }
 
-
-- (void)chatTransferTo:(NSString *)user message:(NSString *)message chatId:(NSString *)chatId {
-    [[QIMManager sharedInstance] chatTransferTo:user message:message chatId:chatId];
-}
-
-- (void)chatTransferFrom:(NSString *)from To:(NSString *)to User:(NSString *)user Reson:(NSString *)reson chatId:(NSString *)chatId WithMsgId:(NSString *)msgId {
-    
-    [[QIMManager sharedInstance] chatTransferFrom:from To:to User:user Reson:reson chatId:chatId WithMsgId:msgId];
-}
-
 - (void)customerConsultServicesayHelloWithUser:(NSString *)user WithVirtualId:(NSString *)virtualId WithFromUser:(NSString *)fromUser{
     [[QIMManager sharedInstance] customerConsultServicesayHelloWithUser:user WithVirtualId:virtualId WithFromUser:fromUser];
 }
@@ -52,12 +42,6 @@
 - (NSArray *)getSuggestOrganizationBySuggestId:(NSString *)suggestId{
     return [[QIMManager sharedInstance] getSuggestOrganizationBySuggestId:suggestId];
 }
-
-/*
-- (NSString *)getRealJidForVirtual:(NSString *)virtualJid{
-    return [[QIMManager sharedInstance] getRealJidForVirtual:virtualJid];
-}
-*/
 
 /**
  获取虚拟帐号列表

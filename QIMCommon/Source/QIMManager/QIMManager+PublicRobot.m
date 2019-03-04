@@ -420,7 +420,7 @@
         [msg setMessageType:QIMMessageType_Time];
         [msg setMessageDate:msgDate - 1];
         //Mark by DB
-//        [msg setMessageState:MessageState_didRead];
+        [msg setMessageSendState:QIMMessageSendState_Success];
         [self saveMsg:msg ByJid:jid];
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate

@@ -190,10 +190,6 @@
  */
 - (BOOL)updatePushState:(NSString *)groupId withOn:(BOOL)on;
 
-- (void)addGroupMemberChange:(NSString *)groupId;
-- (void)removeGroupMemberChange:(NSString *)groupId;
-- (BOOL)isGroupMemberChangeByGroupId:(NSString *)groupId;
-
 /**
  默认群组设置
  */

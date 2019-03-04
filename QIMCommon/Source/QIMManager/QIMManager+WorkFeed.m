@@ -757,17 +757,6 @@
     } withFailedCallBack:^(NSError *error) {
 
     }];
-    /*
-    [[QIMManager sharedInstance] getMomentHistoryWithLastUpdateTime:0 withOwnerXmppId:nil withCallBack:^(NSArray *moments) {
-        if (moments.count > 0) {
-            NSDictionary *lastMomentDic = [moments firstObject];
-            NSDictionary *momoentDic = [self getLastWorkMomentWithDic:lastMomentDic];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:kNotify_RN_QTALK_SUGGEST_WorkFeed_UPDATE object:momoentDic];
-            });
-        }
-    }];
-    */
 }
 
 - (NSDictionary *)getLastWorkOnlineMomentWithDic:(NSDictionary *)dic {

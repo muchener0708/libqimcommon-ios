@@ -184,6 +184,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSInteger)qimDB_getNotReaderMsgCountByDidReadState:(int)didReadState WidthReceiveDirection:(int)receiveDirection;
 
+- (NSInteger)qimDB_getNotReaderMsgCountByJid:(NSString *)jid ByRealJid:(NSString *)realJid withChatType:(ChatType)chatType;
+
 - (NSInteger)qimDB_getNotReaderMsgCountByJid:(NSString *)jid ByDidReadState:(int)didReadState WidthReceiveDirection:(int)receiveDirection;
 
 - (NSInteger)qimDB_getNotReaderMsgCountByJid:(NSString *)jid ByRealJid:(NSString *)realJid ByDidReadState:(int)didReadState WidthReceiveDirection:(int)receiveDirection;
@@ -219,8 +221,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (long long)qimDB_bulkUpdateGroupMessageReadFlag:(NSArray *)mucArray;
 
 - (void)qimDB_bulkUpdateChatMsgWithMsgState:(int)msgState ByMsgIdList:(NSArray *)msgIdList;
-
-- (NSArray *)qimDB_getNotReadMsgListWithMsgState:(int)msgState WithReceiveDirection:(int)receiveDirection;
 
 - (void)qimDB_clearHistoryMsg;
 

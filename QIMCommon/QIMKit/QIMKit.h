@@ -38,10 +38,6 @@
 
 - (NSData *)updateRosterList;
 
-- (void)updateUserSuoXie;
-
-- (void)synchServerTime;
-
 - (void)checkRosterListWithForceUpdate:(BOOL)forceUpdate;
 
 @end

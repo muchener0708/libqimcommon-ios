@@ -984,63 +984,6 @@
     }
 }
 
-//QChat 通话开始
-- (void)onQChatNoteReceived:(NSString *)infoStr from:(NSString *)jid stamp:(NSDate *)stamp {
-    NSMutableArray *methods = [_eventMapping objectForKey:@(XmppEvent_QChatNote)];
-    
-    NSDictionary *message = @{@"fromId": jid, @"infoStr": infoStr, @"stamp": stamp};
-    
-    for (NSDictionary *info in methods) {
-        if (info) {
-            id obj = [info objectForKey:@"object"];
-            NSString *method = [info objectForKey:@"method"];
-            SEL sel = NSSelectorFromString(method);
-            
-            [obj performSelector:sel
-                        onThread:[NSThread mainThread]
-                      withObject:message
-                   waitUntilDone:NO];
-        }
-    }
-}
-
-//QChat 通话结束
-- (void)onQChatEndReceivedFrom:(NSString *)jid stamp:(NSDate *)stamp {
-    NSMutableArray *methods = [_eventMapping objectForKey:@(XmppEvent_QChatEnd)];
-    
-    NSDictionary *message = @{@"fromId": jid, @"stamp": stamp};
-    
-    for (NSDictionary *info in methods) {
-        if (info) {
-            id obj = [info objectForKey:@"object"];
-            NSString *method = [info objectForKey:@"method"];
-            SEL sel = NSSelectorFromString(method);
-            
-            [obj performSelector:sel
-                        onThread:[NSThread mainThread]
-                      withObject:message
-                   waitUntilDone:NO];
-        }
-    }
-}
-
-- (void)onReadStateReceivedForJid:(NSString *)jid ForRealJid:(NSString *)realJid infoStr:(NSString *)infoStr{
-    NSDictionary *message = @{@"realjid": realJid, @"jid": jid ? jid : @"", @"infoStr": infoStr};
-    NSMutableArray *methods = [_eventMapping objectForKey:@(XmppEvent_ConsultReadState)];
-    for (NSDictionary *info in methods) {
-        if (info) {
-            id obj = [info objectForKey:@"object"];
-            NSString *method = [info objectForKey:@"method"];
-            SEL sel = NSSelectorFromString(method);
-            
-            [obj performSelector:sel
-                        onThread:[NSThread mainThread]
-                      withObject:message
-                   waitUntilDone:NO];
-        }
-    }
-}
-
 - (void)onReadStateReceived:(NSString *)readType
                      ForJid:(NSString *)jid
                     infoStr:(NSString *)infoStr {
@@ -1682,21 +1625,7 @@ static XmppImManager *_xmppImManager = nil;
     return [_pbXmppStack setReceiveMsgLimitWithMode:mode];
 }
 
-/*
-- (NSArray *)getVirtualList{
-    return [_pbXmppStack getVirtualList];
-}
-*/
-
-//- (NSString *)getRealJidForVirtual:(NSString *)virtualJid{
-//    return [_pbXmppStack getRealJidForVirtual:virtualJid];
-//}
-
 #pragma mark - 好友列表
-
-- (NSMutableArray *)chatSessionList {
-    return nil;
-}
 
 - (NSMutableDictionary *)rosterList{
     return nil;
@@ -1776,15 +1705,6 @@ static XmppImManager *_xmppImManager = nil;
     return [_pbXmppStack destoryChatRoom:groupId];
 }
 
-- (void)chatTransferTo:(NSString *)user message:(NSString *)message chatId:(NSString *)chatId
-{
-    [_pbXmppStack chatTransferTo:user message:message chatId:chatId];
-}
-
-- (void)chatTransferFrom:(NSString *)from To:(NSString *)to User:(NSString *)user Reson:(NSString *)reson chatId:(NSString *)chatId WithMsgId:(NSString *)msgId{
-    [_pbXmppStack chatTransferFrom:from To:to User:user Reson:reson chatId:chatId WithMsgId:msgId];
-}
-
 - (void)receiveChatTransferToUser:(NSString *)user ForMsgId:(NSString *)msgId{
     [_pbXmppStack receiveChatTransferToUser:user ForMsgId:msgId];
 }
@@ -1825,6 +1745,10 @@ static XmppImManager *_xmppImManager = nil;
 
 - (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithMessageReadFlag:(QIMMessageReadFlag)msgReadFlag WithXmppid:(NSString *)xmppId WithTo:(NSString *)to {
     return [_pbXmppStack sendReadStateWithMessagesIdArray:jsonString WithMessageReadFlag:(QIMMessageReadFlag)msgReadFlag WithXmppid:xmppId WithTo:to];
+}
+
+- (BOOL)sendReadStateWithMessagesIdArray:(NSString *)jsonString WithMessageReadFlag:(NSInteger)msgReadFlag WithXmppid:(NSString *)xmppId WithTo:(NSString *)to withRealTo:(NSString *)realTo {
+    return [_pbXmppStack sendReadStateWithMessagesIdArray:jsonString WithMessageReadFlag:(QIMMessageReadFlag)msgReadFlag WithXmppid:xmppId WithTo:to withRealTo:realTo];
 }
 
 - (BOOL)sendReadStateWithMessageTime:(long long) time groupName:(NSString *)groupName WithDomain:(NSString *)domain{

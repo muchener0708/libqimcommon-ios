@@ -78,6 +78,12 @@
 
 - (void)deleteMsg:(Message *)msg ByJid:(NSString *)sid;
 
+//更新群消息阅读状态
+- (void)updateLocalGroupMessageRemoteState:(NSInteger)remoteState ByReadList:(NSArray *)readList;
+
+//更新单人消息阅读状态
+- (void)updateLocalMessageRemoteState:(NSInteger)remoteState withXmppId:(NSString *)xmppId withRealJid:(NSString *)realJid ByMsgIdList:(NSArray *)msgIdList;
+
 - (BOOL)sendControlStateWithMessagesIdArray:(NSArray *)messages WithXmppId:(NSString *)xmppId;
 - (BOOL)sendReadStateWithMessagesIdArray:(NSArray *)messages WithMessageReadFlag:(QIMMessageReadFlag)msgReadFlag WithXmppId:(NSString *)xmppId;
 - (BOOL)sendReadStateWithMessagesIdArray:(NSArray *)messages WithMessageReadFlag:(QIMMessageReadFlag)msgReadFlag WithXmppId:(NSString *)xmppId WithRealJid:(NSString *)realJid;
@@ -140,12 +146,7 @@
  */
 - (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToUserId:(NSString *)userId WithMsgType:(int)msgType;
 
-
-// Note消息自动回复消息(您好，我是在线客服xxx，很高兴为您服务)
-- (Message *)createNoteReplyMessage:(NSString *)msg ToUserId:(NSString *)user;
-
 #pragma mark - 群消息
-
 
 /**
  发送群消息
@@ -179,24 +180,6 @@
 - (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToGroupId:(NSString *)groupId WithMsgType:(int)msgType WithMsgId:(NSString *)msgId;
 
 /**
- 发送群窗口抖动
- 
- @param groupId 群Id
- */
-- (Message *)sendGroupShockToGroupId:(NSString *)groupId;
-
-/**
- 回复群消息
- 
- @param replyMsgId replyMsgId
- @param replyUser replyUser
- @param msgId msgId
- @param message message
- @param groupId groupId
- */
-- (BOOL)sendReplyMessageId:(NSString *)replyMsgId WithReplyUser:(NSString *)replyUser WithMessageId:(NSString *)msgId WithMessage:(NSString *)message ToGroupId:(NSString *)groupId;
-
-/**
  撤销群消息
  
  @param messageId messageId
@@ -224,9 +207,6 @@
  @param groupId 群Id
  */
 - (Message *)sendGroupVoiceUrl:(NSString *)voiceUrl withVoiceName:(NSString *)voiceName withSeconds:(int)seconds ToGroupId:(NSString *)groupId;
-
-// Note消息自动回复消息(您好，我是在线客服xxx，很高兴为您服务)
-- (Message *)createNoteReplyMessage:(NSString *)msg ToGroupId:(NSString *)groupId;
 
 //发送wlan消息
 -(void)sendWlanMessage:(NSString *)content to:(NSString *)targetID extendInfo:(NSString *)extendInfo msgType:(int) msgType completionHandler:(void (^)(NSData * data, NSURLResponse * response, NSError * error))completionHandler;

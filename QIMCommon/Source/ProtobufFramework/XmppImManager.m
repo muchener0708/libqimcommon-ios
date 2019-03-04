@@ -1227,18 +1227,20 @@
     
 }
 
-- (void)onUserPresenceChange:(NSString *)jid {
-    NSMutableArray *methods = [_eventMapping objectForKey:@(XmppEvent_UserStatusChange)];
-    for (NSDictionary *info in methods) {
-        if (info) {
-            id obj = [info objectForKey:@"object"];
-            NSString *method = [info objectForKey:@"method"];
-            SEL sel = NSSelectorFromString(method);
-            
-            [obj performSelector:sel
-                        onThread:[NSThread mainThread]
-                      withObject:jid
-                   waitUntilDone:NO];
+- (void)onMessageUpdateMState:(NSDictionary *)msgDic {
+    if (msgDic.count) {
+        NSMutableArray *methods = [_eventMapping objectForKey:@(XmppEvent_MStateUpdate)];
+        for (NSDictionary *info in methods) {
+            if (info) {
+                id obj = [info objectForKey:@"object"];
+                NSString *method = [info objectForKey:@"method"];
+                SEL sel = NSSelectorFromString(method);
+                
+                [obj performSelector:sel
+                            onThread:[NSThread mainThread]
+                          withObject:msgDic
+                       waitUntilDone:NO];
+            }
         }
     }
 }
@@ -1869,10 +1871,6 @@ static XmppImManager *_xmppImManager = nil;
 
 - (BOOL)revokeGroupMessageId:(NSString *)msgId WithMessage:(NSString *)message ToJid:(NSString *)jid{
     return [_pbXmppStack revokeGroupMessageId:msgId WithMessage:message ToJid:jid];
-}
-
-- (BOOL)sendReplyMessageId:(NSString *)replyMsgId WithReplyUser:(NSString *)replyUser WithMessageId:(NSString *)msgId WithMessage:(NSString *)message ToGroupId:(NSString *)groupId{
-    return [_pbXmppStack sendReplyMessageId:replyMsgId WithReplyUser:replyUser WithMessageId:msgId WithMessage:message ToGroupId:groupId];
 }
 
 #pragma mark - change status

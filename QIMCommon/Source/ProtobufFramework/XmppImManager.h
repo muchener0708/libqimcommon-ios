@@ -77,6 +77,7 @@ enum XmppEvent {
     XmppEvent_Friend_Validation,
     
     XmppEvent_TransferChat,
+    XmppEvent_MStateUpdate,
     XmppEvent_ReceiveTransferChat,
     
     XmppEvent_UpdateChannelInfo,
@@ -271,8 +272,6 @@ enum XmppLoginType {
 - (BOOL)revokeMessageId:(NSString *)msgId WithMessage:(NSString *)message ToJid:(NSString *)jid;
 
 - (BOOL)revokeGroupMessageId:(NSString *)msgId WithMessage:(NSString *)message ToJid:(NSString *)jid;
-
-- (BOOL)sendReplyMessageId:(NSString *)replyMsgId WithReplyUser:(NSString *)replyUser WithMessageId:(NSString *)msgId WithMessage:(NSString *)message ToGroupId:(NSString *)groupId;
 
 #pragma mark - Login
 

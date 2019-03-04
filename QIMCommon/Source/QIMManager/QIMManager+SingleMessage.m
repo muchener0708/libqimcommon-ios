@@ -51,7 +51,6 @@
 }
 
 - (void)getReadFlag {
-    //curl -X POST  -H 'content-type: application/json' -d '{"time":1.520480778253E9, "domain":"ejabhost1"}' 'http://l-im3.vc.beta.cn0.qunar.com:8900/qtapi/getreadflag.qunar
     NSString *destUrl = [NSString stringWithFormat:@"%@/qtapi/getreadflag.qunar?server=%@&c=qtalk&u=%@&k=%@&p=iphone&v=%@",
                          [[QIMNavConfigManager sharedInstance] javaurl],
                          [[XmppImManager sharedInstance] domain],
@@ -163,9 +162,7 @@
                 }
                 if ([chatlog count] > 0) {
                     @autoreleasepool {
-                        //Mark by DB
-//                        NSMutableDictionary *msgList = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:chatlog to:[self getLastJid] WithDidReadState:MessageState_didRead];
-                        NSMutableDictionary *msgList = @{};
+                        NSMutableDictionary *msgList = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:chatlog to:[self getLastJid] WithDidReadState:QIMMessageRemoteReadStateDidSent];
                         for (NSString *key in [msgList allKeys]) {
                             //                        int notReadCount = [self getNotReadMsgCountByJid:key];
                             NSDictionary *value = [msgList objectForKey:key];

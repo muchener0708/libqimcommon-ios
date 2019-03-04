@@ -14,6 +14,8 @@
 
 #define kNotificationMessageUpdate          @"kNotificationMessageUpdate"
 
+#define kNotificationMessageSendStateUpdate     @"kNotificationMessageSendStateUpdate"
+
 #define kNotificationMessageStateUpdate     @"kNotificationMessageStateUpdate"
 
 #define kNotificationMessageReadStateUpdate     @"kNotificationMessageReadStateUpdate"

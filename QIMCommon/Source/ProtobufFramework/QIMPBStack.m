@@ -1160,7 +1160,6 @@ enum PlaType {
     return [receipt wait:3000];
 }
 
-
 - (BOOL)revokeGroupMessageId:(NSString *)msgId WithMessage:(NSString *)message ToJid:(NSString *)jid {
     XmppMessageBuilder *msgBuilder = [XmppMessage builder];
     [msgBuilder setMessageType:MessageTypeMessageTypeRevoke];
@@ -1178,36 +1177,6 @@ enum PlaType {
     PBXMPPReceipt *receipt = nil;
     [_pbXmppStream sendProtobufMessage:[builder build] andGetReceipt:&receipt];
     return [receipt wait:3000];
-}
-
-- (BOOL)sendReplyMessageId:(NSString *)replyMsgId WithReplyUser:(NSString *)replyUser WithMessageId:(NSString *)msgId WithMessage:(NSString *)message ToGroupId:(NSString *)groupId OutMsgRaw:(NSString **)msgRaw {
-    XmppMessageBuilder *msgBuilder = [XmppMessage builder];
-    [msgBuilder setMessageId:msgId];
-    [msgBuilder setMessageType:MessageTypeMessageTypeReply];
-    [msgBuilder setClientType:self.isFromMac ? MachineTypeMac : MachineTypeiOS];
-    [msgBuilder setClientVersion:0];
-    [msgBuilder setMessageId:msgId];
-    MessageBodyBuilder *bodyBuilder = [MessageBody builder];
-    [bodyBuilder setValue:message];
-    if (replyMsgId) {
-        [bodyBuilder addHeaders:[[[[StringHeader builder] setKey:@"replyMsgId"] setValue:replyMsgId] build]];
-    }
-    if (replyUser) {
-        [bodyBuilder addHeaders:[[[[StringHeader builder] setKey:@"replyUser"] setValue:replyUser] build]];
-    }
-    [msgBuilder setBody:[bodyBuilder build]];
-    ProtoMessageBuilder *builder = [ProtoMessage builder];
-    [builder setSignalType:SignalTypeSignalTypeGroupChat];
-    [builder setFrom:[[_pbXmppStream myJID] full]];
-    [builder setTo:groupId];
-    [builder setMessage:msgBuilder.build.data];
-    PBXMPPReceipt *receipt = nil;
-    [_pbXmppStream sendProtobufMessage:[builder build] andGetReceipt:&receipt];
-    return [receipt wait:3000];
-}
-
-- (BOOL)sendReplyMessageId:(NSString *)replyMsgId WithReplyUser:(NSString *)replyUser WithMessageId:(NSString *)msgId WithMessage:(NSString *)message ToGroupId:(NSString *)groupId {
-    return [self sendReplyMessageId:replyMsgId WithReplyUser:replyUser WithMessageId:msgId WithMessage:message ToGroupId:groupId OutMsgRaw:nil];
 }
 
 - (BOOL)sendConsultMessageId:(NSString *)msgId WithMessage:(NSString *)message WithInfo:(NSString *)info toJid:(NSString *)toJid realToJid:(NSString *)realToJid realFromJid:(NSString *)realFromJid channelInfo:(NSString *)channelInfo WithAppendInfoDict:(NSDictionary *)appendInfoDict chatId:(NSString *)chatId WithMsgTYpe:(int)msgType OutMsgRaw:(NSString **)msgRaw{
@@ -1328,10 +1297,12 @@ enum PlaType {
     [builder setMessageId:[QIMPBStream generateUUID]];
     [builder setKey:@"GET_MUC_USER"];
     IQMessage *result = [_pbXmppStream syncIQMessage:[builder build] ToJid:groupId];
+    NSLog(@"GET_MUC_USER Result : %@", result);
     if ([result.key isEqualToString:@"result"] && [result.body.value isEqualToString:@"error_info"] == NO) {
         NSMutableArray *results = [NSMutableArray array];
         for (MessageBody *body in result.bodys) {
             NSDictionary *keyValues = [result getHeadersDicForHeaders:body.headers];
+            NSLog(@"GET_MUC_USER Result keyValues: %@", keyValues);
             NSString *memberJid = [keyValues objectForKey:@"jid"];
             NSString *affiliation = [keyValues objectForKey:@"affiliation"];
             if (affiliation.length <= 0) {
@@ -1353,7 +1324,7 @@ enum PlaType {
             }
             NSMutableDictionary *memberInfo = [NSMutableDictionary dictionary];
             [memberInfo setObject:affiliation forKey:@"affiliation"];
-            [memberInfo setObject:nickName forKey:@"name"];
+            [memberInfo setObject:nickName?nickName:memberJid forKey:@"name"];
             [memberInfo setObject:memberJid forKey:@"jid"];
             [results addObject:memberInfo];
         }
@@ -1704,8 +1675,10 @@ enum PlaType {
             XmppMessage *xmppMessage = [XmppMessage parseFromData:message.message];
             NSString *msgId = [xmppMessage messageId];
             if (msgId) {
-                NSDictionary *messageInfo = @{@"messageId": msgId};
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"kXmppStreamSendMessageFailed" object:messageInfo];
+                NSDictionary *messageInfo = @{@"messageId": msgId, @"msgSuccess":@(NO)};
+                if (self.delegate && [self.delegate respondsToSelector:@selector(onMessageUpdateMState:)]) {
+                    [self.delegate onMessageUpdateMState:messageInfo];
+                }
             }
         }
     } @catch (NSException *exception) {
@@ -2320,10 +2293,10 @@ enum PlaType {
             }
             NSString *messageId = [xmppMessage messageId];
             long long receivedTime = [xmppMessage receivedTime];
-            NSDictionary *messageInfo = @{@"messageId": messageId ? messageId : @"", @"receivedTime" : @(receivedTime)};
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"kXmppStreamDidSendMessage" object:messageInfo];
-            });
+            NSDictionary *messageInfo = @{@"messageId": messageId ? messageId : @"", @"receivedTime" : @(receivedTime), @"msgSuccess":@(YES)};
+            if (self.delegate && [self.delegate respondsToSelector:@selector(onMessageUpdateMState:)]) {
+                [self.delegate onMessageUpdateMState:messageInfo];
+            }
         }
             break;
         case SignalTypeSignalTypeTransfor: {

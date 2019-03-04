@@ -88,7 +88,6 @@
     }
 }
 
-
 /**
  根据用户Id获取Message附加属性  {'cctext', 'bu'}
  
@@ -181,7 +180,6 @@
     }
 }
 
-
 /**
  根据用户Id获取ChatId
 
@@ -267,8 +265,7 @@
 - (Message *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId userType:(ChatType)userType msgType:(QIMMessageType)msgType backinfo:(NSString *)backInfo {
     
     long long msgDate = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff) * 1000;
-    //Mark by DB
-//    [self checkMsgTimeWithJid:userId WithMsgDate:msgDate WithGroup:NO];
+    [self checkMsgTimeWithJid:userId WithMsgDate:msgDate WithGroup:NO];
     Message *mesg = [Message new];
     [mesg setMessageId:[QIMUUIDTools UUID]];
     [mesg setMessageType:msgType];
@@ -282,14 +279,13 @@
     if (userType == ChatType_Consult) {
         [mesg setRealJid:userId];
     } else {
-        [mesg setRealJid:nil];
+        [mesg setRealJid:userId];
     }
     if (userType == ChatType_GroupChat) {
         [mesg setNickName:[[QIMManager sharedInstance] getLastJid]];
-//        [mesg setNickName:[[[QIMManager sharedInstance] getUserInfoBsyUserId:[[QIMManager sharedInstance] getLastJid]] objectForKey:@"Name"]];
     }
     [mesg setMessageDate:msgDate];
-    [mesg setMessageState:QIMMessageSendState_Waiting];
+    [mesg setMessageSendState:QIMMessageSendState_Waiting];
     [mesg setExtendInformation:extendInfo];
     [self saveMsg:mesg ByJid:userId];
     return mesg;
@@ -306,8 +302,7 @@
 
 - (Message *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId realJid:(NSString *)realJid userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId msgState:(QIMMessageSendState)msgState willSave:(BOOL)willSave {
     long long msgDate = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff) * 1000;
-    //Mark by DB
-//    [self checkMsgTimeWithJid:userId WithMsgDate:msgDate WithGroup:NO];
+    [self checkMsgTimeWithJid:userId WithMsgDate:msgDate WithGroup:NO];
     Message *mesg = [Message new];
     [mesg setMessageId:mId.length ? mId : [QIMUUIDTools UUID]];
     [mesg setMessageType:msgType];
@@ -320,17 +315,16 @@
     if (userType == ChatType_Consult) {
         [mesg setRealJid:userId];
     } else {
-        [mesg setRealJid:realJid];
+        [mesg setRealJid:realJid?realJid:userId];
     }
     if (userType == ChatType_GroupChat) {
         [mesg setNickName:[[QIMManager sharedInstance] getLastJid]];
-//        [mesg setNickName:[[[QIMManager sharedInstance] getUserInfoByUserId:[[QIMManager sharedInstance] getLastJid]] objectForKey:@"Name"]];
     }
     [mesg setMessageDate:msgDate];
     if (msgState) {
-        [mesg setMessageState:msgState];
+        [mesg setMessageSendState:msgState];
     } else {
-        [mesg setMessageState:QIMMessageSendState_Waiting];
+        [mesg setMessageSendState:QIMMessageSendState_Waiting];
     }
     [mesg setExtendInformation:extendInfo];
     if (willSave) {
@@ -342,8 +336,7 @@
 - (Message *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId realJid:(NSString *)realJid userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId willSave:(BOOL)willSave {
     
     long long msgDate = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff) * 1000;
-    //Mark by DB
-//    [self checkMsgTimeWithJid:userId WithMsgDate:msgDate WithGroup:NO];
+    [self checkMsgTimeWithJid:userId WithMsgDate:msgDate WithGroup:NO];
     Message *mesg = [Message new];
     [mesg setMessageId:mId.length ? mId : [QIMUUIDTools UUID]];
     [mesg setMessageType:msgType];
@@ -352,45 +345,20 @@
     [mesg setMessage:msg];
     [mesg setTo:userId];
     [mesg setFrom:[[QIMManager sharedInstance] getLastJid]];
-    [mesg setRealJid:realJid];
     if (userType == ChatType_Consult) {
         [mesg setRealJid:userId];
     } else {
-        [mesg setRealJid:realJid];
+        [mesg setRealJid:realJid?realJid:userId];
     }
     if (userType == ChatType_GroupChat) {
         [mesg setNickName:[[QIMManager sharedInstance] getLastJid]];
     }
     [mesg setMessageDate:msgDate];
-    [mesg setMessageState:QIMMessageSendState_Waiting];
+    [mesg setMessageSendState:QIMMessageSendState_Waiting];
     [mesg setExtendInformation:extendInfo];
     if (willSave) {
         [self saveMsg:mesg ByJid:userId];
     }
-    return mesg;
-}
-
-/**
- 创建 “您好，我是在线客服xxx，很高兴为您服务消息”
- 
- @param msg 消息Body
- @param groupId 群Id
- */
-- (Message *)createNoteReplyMessage:(NSString *)msg ToGroupId:(NSString *)groupId {
-    
-    long long msgDate = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff) * 1000;
-    //Mark by DB
-//    [self checkMsgTimeWithJid:groupId WithMsgDate:msgDate WithGroup:NO];
-    Message *mesg = [Message new];
-    [mesg setMessageId:[QIMUUIDTools UUID]];
-    [mesg setMessageDate:msgDate];
-    [mesg setMessageType:QIMMessageType_Text];
-    [mesg setChatType:ChatType_GroupChat];
-    [mesg setMessageDirection:QIMMessageDirection_Sent];
-    [mesg setMessage:msg];
-    [mesg setMessageState:QIMMessageSendState_Waiting];
-    [self saveMsg:mesg ByJid:groupId];
-    [self updateMsg:mesg ByJid:groupId];
     return mesg;
 }
 
@@ -448,31 +416,6 @@
     }];
 }
 
-/**
- 创建 “您好，我是在线客服xxx，很高兴为您服务消息”
- 
- @param msg 消息Body
- @param groupId 群Id
- */
-- (Message *)createNoteReplyMessage:(NSString *)msg ToUserId:(NSString *)user {
-    
-    long long msgDate = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff) * 1000;
-    //Mark by DB
-//    [self checkMsgTimeWithJid:user WithMsgDate:msgDate WithGroup:NO];
-    Message *mesg = [Message new];
-    [mesg setMessageId:[QIMUUIDTools UUID]];
-    [mesg setMessageType:QIMMessageType_Text];
-    [mesg setChatType:ChatType_SingleChat];
-    [mesg setMessageDirection:QIMMessageDirection_Sent];
-    [mesg setMessage:msg];
-    [mesg setTo:user];
-    [mesg setFrom:[[QIMManager sharedInstance] getLastJid]];
-    [mesg setMessageDate:msgDate];
-    [mesg setMessageState:QIMMessageSendState_Waiting];
-    [self saveMsg:mesg ByJid:user];
-    return mesg;
-}
-
 #pragma mark - SendMsg
 
 /**
@@ -520,20 +463,6 @@
     return mesg;
 }
 
-//群组窗口抖动
-- (Message *)sendGroupShockToGroupId:(NSString *)groupId {
-    Message *mesg = [Message new];
-    [mesg setMessageId:[QIMUUIDTools UUID]];
-    [mesg setTo:groupId];
-    [mesg setMessageType:QIMMessageType_Shock];
-    [mesg setMessageDirection:QIMMessageDirection_Sent];
-    [mesg setMessage:[NSString stringWithFormat:@"%@发送了一个窗口抖动。", [self getMyNickName]]];
-    
-    NSDictionary *msgDict = [self createMessageDictWithMessage:mesg];
-    [[XmppImManager sharedInstance] sendGroupMessageWithMessageDict:msgDict];
-    return mesg;
-}
-
 - (void)revokeMessageWithMessageId:(NSString *)messageId message:(NSString *)message ToJid:(NSString *)jid {
     [[XmppImManager sharedInstance] revokeMessageId:messageId WithMessage:message ToJid:jid];
 }
@@ -549,12 +478,6 @@
     
     [[XmppImManager sharedInstance] revokeGroupMessageId:messageId WithMessage:message ToJid:jid];
 }
-
-- (BOOL)sendReplyMessageId:(NSString *)replyMsgId WithReplyUser:(NSString *)replyUser WithMessageId:(NSString *)msgId WithMessage:(NSString *)message ToGroupId:(NSString *)groupId {
-    
-    return [[XmppImManager sharedInstance] sendReplyMessageId:replyMsgId WithReplyUser:replyUser WithMessageId:msgId WithMessage:message ToGroupId:groupId];
-}
-
 
 /**
  发送单人文件消息
@@ -573,7 +496,6 @@
     [messageDict setQIMSafeObject:[self getChancelInfoForUserId:userId] forKey:@"MessageChannelInfo"];
     [messageDict setQIMSafeObject:[self getAppendInfoForUserId:userId] forKey:@"MessageAppendInfoDict"];
     [messageDict setQIMSafeObject:userId forKey:@"ToJid"];
-    
     
     [[XmppImManager sharedInstance] sendChatMessageWithMsgDict:messageDict];
 }
@@ -702,8 +624,7 @@
 - (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToUserId:(NSString *)userId WithMsgType:(int)msgType {
     
     long long msgDate = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff) * 1000;
-    //Mark by DB
-//    [self checkMsgTimeWithJid:userId WithMsgDate:msgDate WithGroup:NO];
+    [self checkMsgTimeWithJid:userId WithMsgDate:msgDate WithGroup:NO];
     
     Message *mesg = [Message new];
     [mesg setMessageId:[QIMUUIDTools UUID]];
@@ -716,7 +637,7 @@
     [mesg setFrom:[[QIMManager sharedInstance] getLastJid]];
     [mesg setMessageDate:msgDate];
     [mesg setExtendInformation:info];
-    [mesg setMessageState:QIMMessageSendState_Waiting];
+    [mesg setMessageSendState:QIMMessageSendState_Waiting];
     [mesg setChatId:[self getChatIdByUserId:userId]];
     [mesg setChannelInfo:[self getChancelInfoForUserId:userId]];
     [mesg setAppendInfoDict:[self getAppendInfoForUserId:userId]];
@@ -822,7 +743,7 @@
         [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
         [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
         [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-        [msg setMessageState:[[infoDic objectForKey:@"MsgState"] intValue]];
+        [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
         [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
         [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
         [msg setXmppId:[infoDic objectForKey:@"XmppId"]];
@@ -848,7 +769,7 @@
         [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
         [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
         [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-        [msg setMessageState:[[infoDic objectForKey:@"MsgState"] intValue]];
+        [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
         [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
         [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
         [msg setReadTag:[[infoDic objectForKey:@"ReadTag"] intValue]];
@@ -870,7 +791,7 @@
         [msg setMessageType:QIMMessageType_Time];
         [msg setMessageDate:msgDate-1];
         [msg setRealJid:realJid];
-        [msg setMessageState:QIMMessageSendState_Success];
+        [msg setMessageSendState:QIMMessageSendState_Success];
         if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msg.messageId]) {
             return;
         }
@@ -898,7 +819,7 @@
         [msg setMessageId:[[IMDataManager qimDB_SharedInstance] qimDB_getTimeSmtapMsgIdForDate:date WithUserId:jid]];
         [msg setMessageType:QIMMessageType_Time];
         [msg setMessageDate:msgDate - 1];
-        [msg setMessageState:QIMMessageSendState_Success];
+        [msg setMessageSendState:QIMMessageSendState_Success];
         if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msg.messageId]) {
             
             return;
@@ -1250,7 +1171,7 @@
         NSString *extendInfo = msg.extendInformation;
         int msgType = msg.messageType;
         
-        long long msgState = msg.messageState;
+        long long msgState = msg.messageSendState;
         
         int msgDirection = msg.messageDirection;
         
@@ -1314,14 +1235,18 @@
 - (void)updateLocalGroupMessageRemoteState:(NSInteger)remoteState ByReadList:(NSArray *)readList {
     
     [[IMDataManager qimDB_SharedInstance] qimDB_updateGroupMessageRemoteState:remoteState ByGroupReadList:readList];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@"ForceRefresh"];
+    });
 }
 
 //更新单人消息阅读状态
-- (void)updateLocalMessageRemoteState:(NSInteger)remoteState ByMsgIdList:(NSArray *)msgIdList {
+- (void)updateLocalMessageRemoteState:(NSInteger)remoteState withXmppId:(NSString *)xmppId withRealJid:(NSString *)realJid ByMsgIdList:(NSArray *)msgIdList {
     [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgWithMsgRemoteState:remoteState ByMsgIdList:msgIdList];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         QIMVerboseLog(@"发送消息RemoteState阅读状态变化通知 : %ld, %@", remoteState, msgIdList);
         [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageReadStateUpdate object:@{@"State":@(remoteState), @"MsgIds":msgIdList?msgIdList:@[]}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@"ForceRefresh"];
     });
 }
 
@@ -1382,7 +1307,6 @@
 }
 
 - (void)synchronizeChatSessionWithUserId:(NSString *)userId WithChatType:(ChatType)chatType WithRealJid:(NSString *)realJid {
-    
     
     NSMutableDictionary *msgDict = [NSMutableDictionary dictionaryWithCapacity:5];
     [msgDict setQIMSafeObject:userId forKey:@"id"];
@@ -1492,7 +1416,7 @@
         NSString *extendInfo = msg.extendInformation;
         int msgType = msg.messageType;
         
-        int msgState = msg.messageState;
+        int msgState = msg.messageSendState;
         
         int msgDirection = msg.messageDirection;
         
@@ -1502,8 +1426,7 @@
             if (msg.messageType == QIMMessageType_Consult || msg.messageType == QIMMessageType_ConsultResult || msg.messageType == QIMMessageType_MicroTourGuide) {
                 content = msg.extendInformation.length > 0 ? msg.extendInformation : msg.message;
             }
-            //Mark by DB
-//            [[IMDataManager qimDB_SharedInstance] qimDB_insetPublicNumberMsgWithMsgId:messageId WithSessionId:xmppId WithFrom:from WithTo:to WithContent:content WithPlatform:0 WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:QIMMessageSendState_Success];
+            [[IMDataManager qimDB_SharedInstance] qimDB_insetPublicNumberMsgWithMsgId:messageId WithSessionId:xmppId WithFrom:from WithTo:to WithContent:content WithPlatform:0 WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:QIMMessageSendState_Success];
         } else if (msg.chatType == ChatType_CollectionChat) {
             if (msg.messageType == QIMMessageType_Consult || msg.messageType == QIMMessageType_ConsultResult || msg.messageType == QIMMessageType_MicroTourGuide) {
                 content = msg.extendInformation.length > 0 ? msg.extendInformation : msg.message;
@@ -1520,7 +1443,7 @@
                 NSDictionary *msgRawDict = @{@"content":msg.message?msg.message:@"", @"extendInfo":msg.extendInformation?msg.extendInformation:@"", @"localConvert":@(YES)};
                 msg.msgRaw = [[QIMJSONSerializer sharedInstance] serializeObject:msgRawDict];
             }
-            [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgId:messageId WithXmppId:xmppId WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:msg.platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:msg.remoteReadState WithMsgRaw:msg.msgRaw WithRealJid:msg.realJid WithChatType:msg.chatType];
+            [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgId:messageId WithXmppId:xmppId WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:msg.platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:msg.messageReadState WithMsgRaw:msg.msgRaw WithRealJid:msg.realJid WithChatType:msg.chatType];
         }
     }
 }
@@ -1559,7 +1482,7 @@
                 [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
                 [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
                 [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-                [msg setMessageState:[[infoDic objectForKey:@"MsgState"] intValue]];
+                [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
                 [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
                 [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
                 [msg setReadTag:[[infoDic objectForKey:@"ReadTag"] intValue]];
@@ -1593,7 +1516,7 @@
                 [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
                 [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
                 [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-                [msg setMessageState:[[infoDic objectForKey:@"MsgState"] intValue]];
+                [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
                 [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
                 [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
                 [msg setReadTag:[[infoDic objectForKey:@"ReadTag"] intValue]];
@@ -1609,12 +1532,7 @@
 }
 
 - (NSArray *)getNotReadMsgIdListByUserId:(NSString *)userId WithRealJid:(NSString *)realJid {
-    NSArray *msgIdList = nil;
-    if (realJid.length > 0) {
-        msgIdList = [[IMDataManager qimDB_SharedInstance] qimDB_getNotReadMsgListForUserId:userId ForRealJid:realJid];
-    } else {
-        msgIdList = [[IMDataManager qimDB_SharedInstance] qimDB_getNotReadMsgListForUserId:userId];
-    }
+    NSArray *msgIdList = [[IMDataManager qimDB_SharedInstance] qimDB_getNotReadMsgListForUserId:userId ForRealJid:realJid];
     return msgIdList;
 }
 
@@ -1635,7 +1553,7 @@
                 [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
                 [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
                 [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-                [msg setMessageState:[[infoDic objectForKey:@"MsgState"] intValue]];
+                [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
                 [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
                 [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
                 [msg setReadTag:[[infoDic objectForKey:@"ReadTag"] intValue]];
@@ -1664,16 +1582,13 @@
                             if (resultList.count > 0) {
                                 
                                 NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
-                                //Mark by DB
                                 [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertIphoneMucJSONMsg:resultList WithMyNickName:[self getMyNickName] WithReadMarkT:[readMarkT longLongValue] WithDidReadState:QIMMessageSendState_Success WithMyRtxId:[self getLastJid]];
                             }
                         } else {
 #pragma mark - 这里开始拉取单人翻页消息
                             NSArray *result = [self getUserChatlogWithFrom:userId to:[self getLastJid] version:[[IMDataManager qimDB_SharedInstance] qimDB_getMinMsgTimeStampByXmppId:userId] count:limit direction:0];
                             if (result.count > 0) {
-                                //Mark by DB
                                 NSArray *datas = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:result WithXmppId:userId WithDidReadState:QIMMessageSendState_Success];
-                                
                                 NSDictionary *infoDic = datas.lastObject;
                                 if (infoDic) {
                                     NSString *channelInfo = [infoDic objectForKey:@"channelid"];
@@ -1714,9 +1629,7 @@
                         readMarkT = [NSNumber numberWithLong:[date1 timeIntervalSince1970]];
                     if (resultList.count > 0) {
                         NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
-                        //Mark by DB
-//                        NSArray *datas = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertIphoneMucJSONMsg:resultList WithMyNickName:[self getMyNickName] WithReadMarkT:[readMarkT longLongValue] WithDidReadState:QIMMessageSendState_Success WithMyRtxId:[self getLastJid]];
-                        NSArray *datas = @[];
+                        NSArray *datas = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertIphoneMucJSONMsg:resultList WithMyNickName:[self getMyNickName] WithReadMarkT:[readMarkT longLongValue] WithDidReadState:QIMMessageSendState_Success WithMyRtxId:[self getLastJid]];
                         NSMutableArray *list = [NSMutableArray array];
                         for (NSDictionary *infoDic in datas) {
                             Message *msg = [Message new];
@@ -1729,7 +1642,7 @@
                             [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
                             [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
                             [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-                            [msg setMessageState:[[infoDic objectForKey:@"MsgState"] intValue]];
+                            [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
                             [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
                             [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
                             [msg setNickName:[infoDic objectForKey:@"From"]];
@@ -1749,7 +1662,6 @@
                     NSArray *result = [self getUserChatlogWithFrom:userId to:[self getLastJid] version:[[IMDataManager qimDB_SharedInstance] qimDB_getMinMsgTimeStampByXmppId:userId] count:limit direction:0];
                     if (result.count > 0) {
                         NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
-                        //Mark by DB
                         NSArray *datas = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:result WithXmppId:userId WithDidReadState:QIMMessageSendState_Success];
                         NSMutableArray *list = [NSMutableArray array];
                         NSString *channelInfo = nil;
@@ -1766,7 +1678,7 @@
                             [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
                             [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
                             [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-                            [msg setMessageState:[[infoDic objectForKey:@"MsgState"] intValue]];
+                            [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
                             [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
                             [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
                             [msg setMsgRaw:[infoDic objectForKey:@"msgRaw"]];
@@ -1814,7 +1726,7 @@
                 [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
                 [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
                 [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-                [msg setMessageState:[[infoDic objectForKey:@"MsgState"] intValue]];
+                [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
                 [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
                 [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
                 [msg setReadTag:[[infoDic objectForKey:@"ReadTag"] intValue]];
@@ -1834,7 +1746,6 @@
                     NSArray *result = [self getConsultServerlogWithFrom:userId virtualId:virtualId to:[self getLastJid] version:version count:(int)(limit - list.count) direction:QIMMessageDirection_Received];
                     if (result.count > 0) {
                         NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
-                        //Mark by DB
                         [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:result to:[QIMManager getLastUserName] WithDidReadState:QIMMessageSendState_Success];
                     }
                 });
@@ -1862,7 +1773,7 @@
                         [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
                         [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
                         [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-                        [msg setMessageState:[[infoDic objectForKey:@"MsgState"] intValue]];
+                        [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
                         [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
                         [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
                         [msg setMsgRaw:[infoDic objectForKey:@"msgRaw"]];
@@ -1902,7 +1813,7 @@
         [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
         [msg setPlatform:[[msgInfoDic objectForKey:@"Platform"] intValue]];
         [msg setMessageType:[[msgInfoDic objectForKey:@"MsgType"] intValue]];
-        [msg setMessageState:[[msgInfoDic objectForKey:@"MsgState"] intValue]];
+        [msg setMessageSendState:[[msgInfoDic objectForKey:@"MsgState"] intValue]];
         [msg setMessageDirection:[[msgInfoDic objectForKey:@"MsgDirection"] intValue]];
         [msg setMessageDate:[[msgInfoDic objectForKey:@"MsgDateTime"] longLongValue]];
         [msg setXmppId:[msgInfoDic objectForKey:@"XmppId"]];
@@ -1924,7 +1835,7 @@
         [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
         [msg setPlatform:[[msgInfoDic objectForKey:@"Platform"] intValue]];
         [msg setMessageType:[[msgInfoDic objectForKey:@"MsgType"] intValue]];
-        [msg setMessageState:[[msgInfoDic objectForKey:@"MsgState"] intValue]];
+        [msg setMessageSendState:[[msgInfoDic objectForKey:@"MsgState"] intValue]];
         [msg setMessageDirection:[[msgInfoDic objectForKey:@"MsgDirection"] intValue]];
         [msg setMessageDate:[[msgInfoDic objectForKey:@"MsgDateTime"] longLongValue]];
         [msg setXmppId:[msgInfoDic objectForKey:@"XmppId"]];
@@ -1946,7 +1857,7 @@
         [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
         [msg setPlatform:[[msgInfoDic objectForKey:@"Platform"] intValue]];
         [msg setMessageType:[[msgInfoDic objectForKey:@"MsgType"] intValue]];
-        [msg setMessageState:[[msgInfoDic objectForKey:@"MsgState"] intValue]];
+        [msg setMessageSendState:[[msgInfoDic objectForKey:@"MsgState"] intValue]];
         [msg setMessageDirection:[[msgInfoDic objectForKey:@"MsgDirection"] intValue]];
         [msg setMessageDate:[[msgInfoDic objectForKey:@"MsgDateTime"] longLongValue]];
         [msg setXmppId:[msgInfoDic objectForKey:@"XmppId"]];

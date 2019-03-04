@@ -184,9 +184,7 @@
         NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
         NSMutableArray <NSDictionary *>*atAllMsgList = [[NSMutableArray alloc] initWithCapacity:3];
         NSMutableArray <NSDictionary *>*normalMsgList = [[NSMutableArray alloc] initWithCapacity:3];
-        // Mark by DB
-//        NSDictionary *tempGroupDic = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertIphoneHistoryGroupJSONMsg:data WithMyNickName:[self getMyNickName] WithReadMarkT:0 WithDidReadState:MessageState_NotRead WithMyRtxId:[[QIMManager sharedInstance] getLastJid] WithAtAllMsgList:&atAllMsgList WithNormaleAtMsgList:&normalMsgList];
-        NSDictionary *tempGroupDic = @[];
+        NSDictionary *tempGroupDic = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertIphoneHistoryGroupJSONMsg:data WithMyNickName:[self getMyNickName] WithReadMarkT:0 WithDidReadState:QIMMessageRemoteReadStateDidSent WithMyRtxId:[[QIMManager sharedInstance] getLastJid] WithAtAllMsgList:&atAllMsgList WithNormaleAtMsgList:&normalMsgList];
         for (NSString *groupId in tempGroupDic) {
             if (groupId.length > 0) {
                 NSDictionary *groupMsgDic = [tempGroupDic objectForKey:groupId];
@@ -199,7 +197,7 @@
                 [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
                 [msg setPlatform:[[groupMsgDic objectForKey:@"Platform"] intValue]];
                 [msg setMessageType:[[groupMsgDic objectForKey:@"MsgType"] intValue]];
-                [msg setMessageState:[[groupMsgDic objectForKey:@"MsgState"] intValue]];
+                [msg setMessageSendState:[[groupMsgDic objectForKey:@"MsgState"] intValue]];
                 [msg setMessageDirection:[[groupMsgDic objectForKey:@"MsgDirection"] intValue]];
                 [msg setMessageDate:[[groupMsgDic objectForKey:@"MsgDateTime"] longLongValue]];
                 [self addSessionByType:ChatType_GroupChat ById:groupId ByMsgId:msg.messageId WithMsgTime:msg.messageDate WithNeedUpdate:YES];
@@ -219,7 +217,7 @@
             [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
             [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
             [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-            [msg setMessageState:[[infoDic objectForKey:@"MsgState"] intValue]];
+            [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
             [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
             [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
             [self addAtALLByJid:groupId WithMsgId:msg.messageId WithMsg:msg WithNickName:msg.from];
@@ -235,7 +233,7 @@
             [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
             [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
             [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-            [msg setMessageState:[[infoDic objectForKey:@"MsgState"] intValue]];
+            [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
             [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
             [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
             [self addAtMeByJid:groupId WithNickName:msg.from];

@@ -161,12 +161,7 @@
  */
 - (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToUserId:(NSString *)userId WithMsgType:(int)msgType;
 
-
-// Note消息自动回复消息(您好，我是在线客服xxx，很高兴为您服务)
-- (Message *)createNoteReplyMessage:(NSString *)msg ToUserId:(NSString *)user;
-
 #pragma mark - 群消息
-
 
 /**
  发送群消息
@@ -200,25 +195,6 @@
 - (Message *)sendMessage:(NSString *)msg WithInfo:(NSString *)info ToGroupId:(NSString *)groupId WithMsgType:(int)msgType WithMsgId:(NSString *)msgId;
 
 /**
- 发送群窗口抖动
- 
- @param groupId 群Id
- */
-- (Message *)sendGroupShockToGroupId:(NSString *)groupId;
-
-/**
- 回复群消息
- 
- @param replyMsgId 回复消息id
- @param replyUser 回复userid
- @param msgId 消息id
- @param message 消息
- @param groupId 群id
- @return 是否成功
- */
-- (BOOL)sendReplyMessageId:(NSString *)replyMsgId WithReplyUser:(NSString *)replyUser WithMessageId:(NSString *)msgId WithMessage:(NSString *)message ToGroupId:(NSString *)groupId;
-
-/**
  撤销群消息
  
  @param messageId messageId
@@ -246,9 +222,6 @@
  @param groupId 群Id
  */
 - (Message *)sendGroupVoiceUrl:(NSString *)voiceUrl withVoiceName:(NSString *)voiceName withSeconds:(int)seconds ToGroupId:(NSString *)groupId;
-
-// Note消息自动回复消息(您好，我是在线客服xxx，很高兴为您服务)
-- (Message *)createNoteReplyMessage:(NSString *)msg ToGroupId:(NSString *)groupId;
 
 // 发送音视频消息
 - (void)sendAudioVideoWithType:(int)msgType WithBody:(NSString *)body WithExtentInfo:(NSString *)extentInfo WithMsgId:(NSString *)msgId ToJid:(NSString *)jid;

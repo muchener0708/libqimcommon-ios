@@ -32,10 +32,7 @@
     [[XmppImManager sharedInstance] addTarget:self method:@selector(registerComplate) withXmppEvent:XmppEvent_RegisterSuccess];
     
     [[XmppImManager sharedInstance] addTarget:self method:@selector(receiveMsg:) withXmppEvent:XmppEvent_MessageIn];
-    //QChat 会话开始
-    [[XmppImManager sharedInstance] addTarget:self method:@selector(receiveQChatNoteMsg:) withXmppEvent:XmppEvent_QChatNote];
-    //QChat 会话结束
-    [[XmppImManager sharedInstance] addTarget:self method:@selector(receiveQChatEndMsg:) withXmppEvent:XmppEvent_QChatEnd];
+
     [[XmppImManager sharedInstance] addTarget:self method:@selector(receiveGroupMsg:) withXmppEvent:XmppeventGroupMessageIn];
     
     [[XmppImManager sharedInstance] addTarget:self method:@selector(receiveSystemMsg:) withXmppEvent:XmppEvent_SystemMessageIn];
@@ -47,19 +44,18 @@
     [[XmppImManager sharedInstance] addTarget:self method:@selector(receiveGroupFile:) withXmppEvent:XmppEvent_GroupFileIn];
     
     [[XmppImManager sharedInstance] addTarget:self method:@selector(receiveShock:) withXmppEvent:XmppEvent_ShockIn];
-    [[XmppImManager sharedInstance] addTarget:self method:@selector(receiveGroupShock:) withXmppEvent:XmppEvent_GroupShockIn];
-    
-    [[XmppImManager sharedInstance] addTarget:self method:@selector(onUserPresenceChange:) withXmppEvent:XmppEvent_UserStatusChange];
     
     [[XmppImManager sharedInstance] addTarget:self method:@selector(onTyping:) withXmppEvent:XmppEvent_Typing];
     [[XmppImManager sharedInstance] addTarget:self method:@selector(onReadState:) withXmppEvent:XmppEvent_ReadState];
     [[XmppImManager sharedInstance] addTarget:self method:@selector(onConsultReadState:) withXmppEvent:XmppEvent_ConsultReadState];
     [[XmppImManager sharedInstance] addTarget:self method:@selector(onRevoke:) withXmppEvent:XmppEvent_Revoke];
     
+    [[XmppImManager sharedInstance] addTarget:self method:@selector(onMessageStateUpdate:) withXmppEvent:XmppEvent_MStateUpdate];
+    
     //消息发送成功
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onMessageSendSuccess:) name:kXmppStreamDidSendMessage object:nil];
+//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onMessageSendSuccess:) name:kXmppStreamDidSendMessage object:nil];
     //消息发送失败
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onMessageSendFaild:) name:kXmppStreamSendMessageFailed object:nil];
+//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onMessageSendFaild:) name:kXmppStreamSendMessageFailed object:nil];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(xmppStackConnectedTimesNotify:) name:XmppstackConnectedTimes object:nil];
     
@@ -68,8 +64,6 @@
     [[XmppImManager sharedInstance] addTarget:self method:@selector(friendPresence:) withXmppEvent:XmppEvent_Friend_Presence];
     
     [[XmppImManager sharedInstance] addTarget:self method:@selector(friendValidation:) withXmppEvent:XmppEvent_Friend_Validation];
-    
-    [[XmppImManager sharedInstance] addTarget:self method:@selector(onTransferChat:) withXmppEvent:XmppEvent_TransferChat];
     
     [[XmppImManager sharedInstance] addTarget:self method:@selector(updateUserChannelInfo:) withXmppEvent:XmppEvent_UpdateChannelInfo];
     [[XmppImManager sharedInstance] addTarget:self method:@selector(updateUserAppendInfo:) withXmppEvent:XmppEvent_UpdateAppendInfo];
@@ -373,6 +367,771 @@
     QIMVerboseLog(@"%s", __func__);
 }
 
+#pragma mark - Receive Msgs接收消息
+
+- (void)onRevoke:(NSDictionary *)infoDic {
+    NSString *jid = [infoDic objectForKey:@"fromId"];
+    NSString *msgId = [infoDic objectForKey:@"messageId"];
+    NSString *msg = [infoDic objectForKey:@"message"];
+    if (msg.length <= 0) {
+        msg = @"该消息被撤回";
+    }
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [[IMDataManager qimDB_SharedInstance] qimDB_revokeMessageByMsgId:msgId WithContent:msg WithMsgType:QIMMessageType_Revoke];
+    });
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:kRevokeMsg object:jid userInfo:@{@"MsgId": msgId, @"Content": msg}];
+    });
+}
+
+- (void)receiveMsg:(NSDictionary *)msgDic {
+    if (msgDic == nil) {
+        return;
+    }
+    dispatch_async(self.receive_msg_queue, ^{
+        
+        if ([[msgDic objectForKey:@"msgtype"] isEqualToString:@"msgVoice"]) {
+            //如果不为空，则是voice文件
+            //#TODO 单人语音消息
+            NSString *sid = [NSString stringWithFormat:@"%@@%@", [msgDic objectForKey:@"fromId"], [msgDic objectForKey:@"domain"]];
+            NSString *msg = [msgDic objectForKey:@"msg"];
+            NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
+            long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970] * 1000;
+            NSString *msgId = [msgDic objectForKey:@"msgId"];
+            NSString *chatId = [msgDic objectForKey:@"chatId"];
+            NSString *autoReply = [msgDic objectForKey:@"autoReply"];
+            if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
+                return;
+            }
+            [self saveChatId:chatId ForUserId:sid];
+            //Mark by DB
+            [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
+            
+            int direction = [[msgDic objectForKey:@"direction"] intValue];
+            
+            Message *mesg = [Message new];
+            [mesg setFrom:sid];
+            [mesg setRealJid:sid];
+            if ([msgDic objectForKey:@"msgId"] != nil && ![[msgDic objectForKey:@"msgId"] isEqualToString:@"1"]) {
+                NSString *messageId = [msgDic objectForKey:@"msgId"];
+                [mesg setMessageId:messageId];
+            }
+            [mesg setMessageType:QIMMessageType_Voice];
+            [mesg setChatType:ChatType_SingleChat];
+            [mesg setMessageSendState:QIMMessageSendState_Success];
+            [mesg setMessageDirection:direction == 2 ? QIMMessageDirection_Sent : QIMMessageDirection_Received];
+            [mesg setMessage:msg];
+            [mesg setMessageReadState:QIMMessageRemoteReadStateDidSent];
+            [mesg setMessageDate:msgDate];
+            [mesg setTo:[[QIMManager sharedInstance] getLastJid]];
+            [mesg setMsgRaw:msgRaw];
+            // 消息落地
+            [self addSessionByType:ChatType_SingleChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
+            if (![autoReply isEqualToString:@"true"]) {
+                [self saveMsg:mesg ByJid:sid];
+            }
+            [[QIMVoiceNoReadStateManager sharedVoiceNoReadStateManager] setVoiceNoReadStateWithMsgId:mesg.messageId ChatId:sid withState:NO];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
+                if (![sid isEqualToString:self.currentSessionUserId] && mesg.messageDirection == QIMMessageDirection_Received) {
+                    //                    [self setNotReaderMsgCount:[self getNotReadMsgCountByJid:sid] + 1 ForJid:sid];
+                    [self increasedNotReadMsgCountByJid:sid];
+                    [self updateNotReadCountCacheByJid:sid];
+                    [self playSound];
+                }
+            });
+            
+        } else {
+            //如果为空，则是message文件
+            NSString *sid = [NSString stringWithFormat:@"%@@%@", [msgDic objectForKey:@"fromId"], [msgDic objectForKey:@"domain"]];
+            NSString *msg = [msgDic objectForKey:@"msg"];
+            long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970] * 1000;
+            int direction = [[msgDic objectForKey:@"direction"] intValue];
+            int msgType = [[msgDic objectForKey:@"msgType"] intValue];
+            NSString *extendInfo = [msgDic objectForKey:@"extendInfo"];
+            NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
+            NSString *msgId = [msgDic objectForKey:@"msgId"];
+            NSString *chatId = [msgDic objectForKey:@"chatId"];
+            NSString *autoReply = [msgDic objectForKey:@"autoReply"];
+            if (msgType == QIMMessageType_shareLocation && direction == 1) {
+                NSDictionary *shareDic = [[QIMJSONSerializer sharedInstance] deserializeObject:extendInfo error:nil];
+                NSString *shareId = [shareDic objectForKey:@"shareId"];
+                NSString *fromUser = [shareDic objectForKey:@"fromId"];
+                [self.shareLocationDic setObject:shareId forKey:sid];
+                [self.shareLocationFromIdDic setObject:fromUser forKey:shareId];
+                NSMutableSet *users = [self.shareLocationUserDic objectForKey:shareId];
+                if (users == nil) {
+                    users = [NSMutableSet set];
+                    [self.shareLocationUserDic setObject:users forKey:shareId];
+                }
+                [users addObject:fromUser];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:kBeginShareLocation object:sid userInfo:shareDic];
+                });
+            }
+            if (msgType == QIMMessageType_RedPackInfo || msgType == QIMMessageType_AAInfo) {
+                NSDictionary *redPackInfoDic = [[QIMJSONSerializer sharedInstance] deserializeObject:extendInfo error:nil];
+                NSString *jid = [redPackInfoDic objectForKey:@"From_User"];
+                if ([jid isEqualToString:[QIMManager getLastUserName]] == NO) {
+                    return;
+                }
+            }
+            
+            if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
+                return;
+            }
+            
+            [self saveChatId:chatId ForUserId:sid];
+            //Mark by DB
+            [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
+            
+            Message *mesg = [Message new];
+            [mesg setFrom:sid];
+            [mesg setRealJid:sid];
+            [mesg setMessageId:msgId];
+            [mesg setMessageType:msgType];
+            [mesg setChatType:ChatType_SingleChat];
+            [mesg setMessageDirection:direction == 2 ? QIMMessageDirection_Sent : QIMMessageDirection_Received];
+            [mesg setMessage:msg];
+            [mesg setMessageSendState:QIMMessageSendState_Success];
+            [mesg setMessageReadState:QIMMessageRemoteReadStateDidSent];
+            [mesg setMessageDate:msgDate];
+            [mesg setExtendInformation:extendInfo];
+            [mesg setTo:[[QIMManager sharedInstance] getLastJid]];
+            [mesg setMsgRaw:msgRaw];
+            // 消息落地
+            [self addSessionByType:ChatType_SingleChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
+            if (![autoReply isEqualToString:@"true"]) {
+                [self saveMsg:mesg ByJid:sid];
+            }
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
+                if (![sid isEqualToString:self.currentSessionUserId] && mesg.messageDirection == QIMMessageDirection_Received) {
+                    [self increasedNotReadMsgCountByJid:sid];
+                    [self updateNotReadCountCacheByJid:sid];
+                    if (mesg.messageType == QIMMessageType_RedPack) {
+                        [self playHongBaoSound];
+                    } else {
+                        [self playSound];
+                    }
+                }
+            });
+        }
+    });
+}
+
+- (void)receiveGroupMsg:(NSDictionary *)msgDic {
+    dispatch_async(self.receive_msg_queue, ^{
+        //#TODO 群消息到达
+        //if add by dan.zheng 15/4/28
+        if ([[msgDic objectForKey:@"msgtype"] isEqualToString:@"msgVoice"]) {
+            //如果不为空，则是voice文件
+            NSString *sid = [NSString stringWithFormat:@"%@@%@", [msgDic objectForKey:@"fromId"], [msgDic objectForKey:@"domain"]];
+            NSString *msg = [msgDic objectForKey:@"msg"];
+            long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970] * 1000;
+            
+            NSString *nickName = [msgDic objectForKey:@"nickName"];
+            NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
+            NSString *backupInfo = [msgDic objectForKey:@"backupInfo"];
+            NSString *messageId = [msgDic objectForKey:@"msgId"];
+            NSString *autoReply = [msgDic objectForKey:@"autoReply"];
+            // 消息已存在
+            if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:messageId]) {
+                return;
+            }
+            //Mark by DB
+            [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
+            
+            Message *mesg = [Message new];
+            [mesg setFrom:sid];
+            [mesg setMessageId:messageId];
+            [mesg setChatType:ChatType_GroupChat];
+            [mesg setMessageType:QIMMessageType_Voice];
+            [mesg setMessageDirection:[self getGroupMsgDirectionWithSendJid:nickName]];
+            [mesg setMessageReadState:QIMMessageRemoteReadStateDidSent];
+            [mesg setMessage:msg];
+            [mesg setNickName:nickName];
+            [mesg setMessageDate:msgDate];
+            [mesg setBackupInfo:backupInfo];
+            [mesg setMsgRaw:msgRaw];
+            [mesg setTo:[[QIMManager sharedInstance] getLastJid]];
+            [self addSessionByType:ChatType_GroupChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
+            
+            if (![autoReply isEqualToString:@"true"]) {
+                [self saveMsg:mesg ByJid:sid];
+            }
+            [[QIMVoiceNoReadStateManager sharedVoiceNoReadStateManager] setVoiceNoReadStateWithMsgId:mesg.messageId ChatId:sid withState:NO];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
+                BOOL isRemind = [self groupPushState:sid];
+                if (mesg.messageDirection == QIMMessageDirection_Received && (![self.currentSessionUserId isEqualToString:sid])) {
+                    
+                    if (![sid isEqualToString:self.currentSessionUserId]) {
+                        if (isRemind) {
+                            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(playSound) object:nil];
+                            [self performSelector:@selector(playSound) withObject:nil afterDelay:0.1];
+                        }
+                        [self increasedNotReadMsgCountByJid:sid];
+                        [self updateNotReadCountCacheByJid:sid];
+                    }
+                }
+            });
+        } else {
+            
+            //如果为空，则是message文件
+            NSString *sid = [NSString stringWithFormat:@"%@@%@", [msgDic objectForKey:@"fromId"], [msgDic objectForKey:@"domain"]];
+            NSString *msg = [msgDic objectForKey:@"msg"];
+            int msgType = [[msgDic objectForKey:@"msgType"] intValue];
+            NSString *extendInfo = [msgDic objectForKey:@"extendInfo"];
+            long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970] * 1000;
+            NSString *nickName = [msgDic objectForKey:@"nickName"];
+            NSString *messageId = [msgDic objectForKey:@"msgId"];
+            NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
+            NSString *replyMsgId = [msgDic objectForKey:@"replyMsgId"];
+            NSString *replyUser = [msgDic objectForKey:@"replyUser"];
+            NSString *backupInfo = [msgDic objectForKey:@"backupInfo"];
+            NSString *autoReply = [msgDic objectForKey:@"autoReply"];
+            if (msgType == QIMMessageType_shareLocation && [self getGroupMsgDirectionWithSendJid:nickName] == QIMMessageDirection_Received) {
+                NSDictionary *shareDic = [[QIMJSONSerializer sharedInstance] deserializeObject:extendInfo error:nil];
+                NSString *shareId = [shareDic objectForKey:@"shareId"];
+                NSString *fromUser = [shareDic objectForKey:@"fromId"];
+                [self.shareLocationDic setObject:shareId forKey:sid];
+                [self.shareLocationFromIdDic setObject:fromUser forKey:shareId];
+                NSMutableSet *users = [self.shareLocationUserDic objectForKey:shareId];
+                if (users == nil) {
+                    users = [NSMutableSet set];
+                    [self.shareLocationUserDic setObject:users forKey:shareId];
+                }
+                [users addObject:fromUser];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:kBeginShareLocation object:sid userInfo:shareDic];
+                });
+            }
+            if (msgType == QIMMessageType_RedPackInfo || msgType == QIMMessageType_AAInfo) {
+                NSDictionary *infoDic = [[QIMJSONSerializer sharedInstance] deserializeObject:extendInfo error:nil];
+                NSString *fid = [infoDic objectForKey:@"From_User"];
+                if ([fid isEqualToString:[QIMManager getLastUserName]] == NO) {
+                    return;
+                }
+            }
+            // 消息已存在
+            if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:messageId]) {
+                return;
+            }
+            //Mark by DB
+            [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
+            
+            Message *mesg = [Message new];
+            [mesg setFrom:sid];
+            [mesg setRealJid:sid];
+            [mesg setMessageId:messageId];
+            
+            [mesg setChatType:ChatType_GroupChat];
+            [mesg setMessageType:msgType];
+            [mesg setMessageDirection:[self getGroupMsgDirectionWithSendJid:nickName]];
+            [mesg setMessage:msg];
+            [mesg setNickName:nickName];
+            [mesg setMessageSendState:QIMMessageSendState_Success];
+            [mesg setMessageReadState:QIMMessageRemoteReadStateDidSent];
+            [mesg setMessageDate:msgDate];
+            [mesg setExtendInformation:extendInfo];
+            [mesg setTo:[[QIMManager sharedInstance] getLastJid]];
+            [mesg setBackupInfo:backupInfo];
+            [mesg setMsgRaw:msgRaw];
+            [self addSessionByType:ChatType_GroupChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
+            if (![autoReply isEqualToString:@"true"]) {
+                [self saveMsg:mesg ByJid:sid];
+            }
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
+                BOOL isRemind = [self groupPushState:sid];
+                if (mesg.messageDirection == QIMMessageDirection_Received && (![self.currentSessionUserId isEqualToString:sid])) {
+                    if ([msg rangeOfString:@"@"].location != NSNotFound) {
+                        NSArray *array = [msg componentsSeparatedByString:@"@"];
+                        BOOL hasAt = NO;
+                        BOOL hasAtAll = NO;
+                        for (NSString *str in array) {
+                            if ([[str lowercaseString] hasPrefix:@"all"] || [str hasPrefix:@"全体成员"]) {
+                                hasAtAll = YES;
+                                break;
+                            }
+                            NSString *prefix = [self getMyNickName];
+                            if (prefix && [str hasPrefix:prefix]) {
+                                hasAt = YES;
+                                break;
+                            }
+                        }
+                        if (hasAtAll) {
+                            [self addAtALLByJid:sid WithMsgId:mesg.messageId WithMsg:mesg WithNickName:nickName];
+                        }
+                        if (hasAt) {
+                            [self addAtMeByJid:sid WithNickName:nickName];
+                        }
+                    }
+                    if (![sid isEqualToString:self.currentSessionUserId]) {
+                        if (isRemind) {
+                            if (mesg.messageType == QIMMessageType_RedPack) {
+                                [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(playHongBaoSound) object:nil];
+                                [self performSelector:@selector(playHongBaoSound) withObject:nil afterDelay:0.1];
+                            } else {
+                                [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(playSound) object:nil];
+                                [self performSelector:@selector(playSound) withObject:nil afterDelay:0.1];
+                            }
+                        }
+                        [self increasedNotReadMsgCountByJid:sid];
+                        [self updateNotReadCountCacheByJid:sid];
+                    }
+                }
+            });
+        }
+    });
+}
+
+- (void)receiveSystemMsg:(NSDictionary *)msgDic {
+    QIMVerboseLog(@"在线收到系统消息: %@", msgDic);
+    dispatch_async(self.receive_msg_queue, ^{
+        
+        NSString *msgId = [msgDic objectForKey:@"msgId"];
+        NSString *msg = [msgDic objectForKey:@"msg"];
+        NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
+        long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970] * 1000;
+        NSString *sid = [NSString stringWithFormat:@"SystemMessage@%@", [[QIMNavConfigManager sharedInstance] domain]];
+        NSString *autoReply = [msgDic objectForKey:@"autoReply"];
+        
+        if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
+            return;
+        }
+        [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
+        
+        Message *mesg = [Message new];
+        [mesg setMessageId:msgId];
+        [mesg setFrom:sid];
+        [mesg setChatType:ChatType_System];
+        [mesg setMessageType:QIMMessageType_Text];
+        [mesg setMessageDirection:QIMMessageDirection_Received];
+        [mesg setMessage:msg];
+        [mesg setMessageDate:msgDate];
+        [mesg setMsgRaw:msgRaw];
+        if (![autoReply isEqualToString:@"true"]) {
+            [self saveMsg:mesg ByJid:sid];
+        }
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
+            [self addSessionByType:ChatType_System ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
+            
+            if (![sid isEqualToString:self.currentSessionUserId]) {
+                [self increasedNotReadMsgCountByJid:sid];
+                [self updateNotReadCountCacheByJid:sid];
+                [self playSound];
+            }
+        });
+        
+    });
+}
+
+- (void)receiveShareLocationMsg:(NSDictionary *)msgDic {
+    dispatch_async(self.receive_msg_queue, ^{
+        //如果为空，则是message文件
+        NSString *sid = [NSString stringWithFormat:@"%@@%@", [msgDic objectForKey:@"fromId"], [msgDic objectForKey:@"domain"]];
+        NSString *msg = [msgDic objectForKey:@"msg"];
+        long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970] * 1000;
+        int direction = [[msgDic objectForKey:@"direction"] intValue];
+        int msgType = [[msgDic objectForKey:@"msgType"] intValue];
+        NSString *extendInfo = [msgDic objectForKey:@"extendInfo"];
+        NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
+        NSString *shareId = [msgDic objectForKey:@"shareId"];
+        if (shareId.length <= 0) {
+            return;
+        }
+        switch (msgType) {
+            case ShareLocationType_Join: {
+                //                [_shareLocationDic setObject:shareId forKey:sid];
+                NSMutableSet *users = [self.shareLocationUserDic objectForKey:shareId];;
+                if (users == nil) {
+                    users = [NSMutableSet set];
+                    [self.shareLocationUserDic setObject:users forKey:shareId];
+                }
+                [users addObject:sid];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:kJoinShareLocation object:sid];
+                });
+            }
+                break;
+            case ShareLocationType_Info: {
+                Message *mesg = [Message new];
+                [mesg setFrom:sid];
+                [mesg setMessageType:msgType];
+                [mesg setChatType:ChatType_SingleChat];
+                [mesg setMessageDirection:direction == 2 ? QIMMessageDirection_Sent : QIMMessageDirection_Received];
+                [mesg setMessage:msg];
+                [mesg setMessageDate:msgDate];
+                [mesg setExtendInformation:extendInfo];
+                [mesg setTo:[[QIMManager sharedInstance] getLastJid]];
+                [mesg setMsgRaw:msgRaw];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:kShareLocationInfo object:sid userInfo:@{@"message": mesg}];
+                });
+            }
+                break;
+            case ShareLocationType_Quit: {
+                NSMutableSet *users = [self.shareLocationUserDic objectForKey:shareId];;
+                if (users == nil) {
+                    users = [NSMutableSet set];
+                    [self.shareLocationUserDic setObject:users forKey:shareId];
+                }
+                [users removeObject:sid];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:kQuitShareLocation object:sid];
+                    if (users.count <= 0) {
+                        [self.shareLocationUserDic removeObjectForKey:shareId];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:kEndShareLocation object:sid];
+                    }
+                });
+            }
+                break;
+            default:
+                break;
+        }
+    });
+}
+
+- (void)receiveGroupImage:(NSDictionary *)msgDic {
+    dispatch_async(self.receive_msg_queue, ^{
+        NSString *sid = [NSString stringWithFormat:@"%@@%@", [msgDic objectForKey:@"fromId"], [msgDic objectForKey:@"domain"]];
+        NSString *msg = [msgDic objectForKey:@"msg"];
+        long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970] * 1000;
+        
+        NSString *msgId = [msgDic objectForKey:@"msgId"];
+        NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
+        if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
+            return;
+        }
+        //Mark by DB
+        [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
+        
+        
+        NSString *nickName = [msgDic objectForKey:@"nickName"];
+        NSString *autoReply = [msgDic objectForKey:@"autoReply"];
+        
+        Message *mesg = [Message new];
+        [mesg setFrom:sid];
+        [mesg setMessageId:msgId];
+        
+        [mesg setChatType:ChatType_GroupChat];
+        [mesg setMessageType:QIMMessageType_Text];
+        [mesg setMessageDirection:[self getGroupMsgDirectionWithSendJid:nickName]];
+        [mesg setMessage:msg];
+        [mesg setNickName:nickName];
+        [mesg setMessageDate:msgDate];
+        [mesg setExtendInformation:nil];
+        [mesg setTo:[[QIMManager sharedInstance] getLastJid]];
+        //        [mesg setReplyMsgId:nil];
+        //        [mesg setReplyUser:nil];
+        [mesg setMsgRaw:msgRaw];
+        if (![autoReply isEqualToString:@"true"]) {
+            [self saveMsg:mesg ByJid:sid];
+            [self updateMsg:mesg ByJid:sid];
+        }
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
+            [self addSessionByType:ChatType_GroupChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
+            BOOL isRemind = [self groupPushState:sid];
+            if (mesg.messageDirection == QIMMessageDirection_Received && (![self.currentSessionUserId isEqualToString:sid])) {
+                if (![sid isEqualToString:self.currentSessionUserId]) {
+                    if (isRemind) {
+                        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(playSound) object:nil];
+                        [self performSelector:@selector(playSound) withObject:nil afterDelay:0.1];
+                    }
+                    [self increasedNotReadMsgCountByJid:sid];
+                    [self updateNotReadCountCacheByJid:sid];
+                }
+            }
+        });
+        
+    });
+    
+}
+
+- (void)receiveFile:(NSDictionary *)msgDic {
+    if (msgDic == nil) {
+        return;
+    }
+    dispatch_async(self.receive_msg_queue, ^{
+        NSString *sid = [NSString stringWithFormat:@"%@@%@", [msgDic objectForKey:@"fromId"], [msgDic objectForKey:@"domain"]];
+        NSString *msg = [msgDic objectForKey:@"msg"];
+        long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970] * 1000;
+        NSString *msgId = [msgDic objectForKey:@"msgId"];
+        NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
+        NSString *autoReply = [msgDic objectForKey:@"autoReply"];
+        if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
+            return;
+        }
+        //Mark by DB
+        [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
+        int direction = [[msgDic objectForKey:@"direction"] intValue];
+        Message *mesg = [Message new];
+        [mesg setMessageId:msgId];
+        [mesg setFrom:sid];
+        [mesg setMessageType:QIMMessageType_File];
+        [mesg setMessageDirection:direction == 2 ? QIMMessageDirection_Sent : QIMMessageDirection_Received];
+        [mesg setMessage:msg];
+        [mesg setChatType:ChatType_SingleChat];
+        [mesg setMessageDate:msgDate];
+        [mesg setMsgRaw:msgRaw];
+        // 消息落地
+        if (![autoReply isEqualToString:@"true"]) {
+            
+            [self saveMsg:mesg ByJid:sid];
+        }
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
+            [self addSessionByType:ChatType_SingleChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
+            
+            if (![sid isEqualToString:self.currentSessionUserId] && mesg.messageDirection == QIMMessageDirection_Received) {
+                //                [self setNotReaderMsgCount:[self getNotReadMsgCountByJid:sid] + 1 ForJid:sid];
+                [self increasedNotReadMsgCountByJid:sid];
+                [self updateNotReadCountCacheByJid:sid];
+                [self playSound];
+            }
+        });
+        
+    });
+}
+
+
+- (void)receiveGroupFile:(NSDictionary *)msgDic {
+    dispatch_async(self.receive_msg_queue, ^{
+        NSString *sid = [NSString stringWithFormat:@"%@@%@", [msgDic objectForKey:@"fromId"], [msgDic objectForKey:@"domain"]];
+        NSString *msg = [msgDic objectForKey:@"msg"];
+        long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970] * 1000;
+        NSString *msgId = [msgDic objectForKey:@"msgId"];
+        NSString *nickName = [msgDic objectForKey:@"nickName"];
+        NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
+        NSString *autoReply = [msgDic objectForKey:@"autoReply"];
+        QIMMessageDirection direction = [self getGroupMsgDirectionWithSendJid:nickName];
+        if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
+            return;
+        }
+        //Mark by DB
+        [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
+        
+        Message *mesg = [Message new];
+        [mesg setMessageId:msgId];
+        
+        [mesg setFrom:sid];
+        [mesg setChatType:ChatType_GroupChat];
+        [mesg setMessageType:QIMMessageType_File];
+        [mesg setMessageDirection:direction];
+        [mesg setMessage:msg];
+        [mesg setNickName:nickName];
+        [mesg setMessageDate:msgDate];
+        [mesg setMsgRaw:msgRaw];
+        if (![autoReply isEqualToString:@"true"]) {
+            [self saveMsg:mesg ByJid:sid];
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
+            [self addSessionByType:ChatType_GroupChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
+            BOOL isRemind = [self groupPushState:sid];
+            if (mesg.messageDirection == QIMMessageDirection_Received && (![self.currentSessionUserId isEqualToString:sid])) {
+                if (![sid isEqualToString:self.currentSessionUserId]) {
+                    if (isRemind) {
+                        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(playSound) object:nil];
+                        [self performSelector:@selector(playSound) withObject:nil afterDelay:0.1];
+                    }
+                    [self increasedNotReadMsgCountByJid:sid];
+                    [self updateNotReadCountCacheByJid:sid];
+                }
+            }
+        });
+    });
+}
+
+//接受窗口抖动
+- (void)receiveShock:(NSDictionary *)msgDic {
+    if (msgDic == nil) {
+        return;
+    }
+    dispatch_async(self.receive_msg_queue, ^{
+        NSString *sid = [NSString stringWithFormat:@"%@@%@", [msgDic objectForKey:@"fromId"], [msgDic objectForKey:@"domain"]];
+        long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970] * 1000;
+        
+        NSString *msgId = [msgDic objectForKey:@"msgId"];
+        NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
+        if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
+            return;
+        }
+        //Mark by DB
+        [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
+        NSString *userName = nil;
+        NSDictionary *userInfo = [self getUserInfoByUserId:sid];
+        if (userInfo) {
+            userName = [userInfo objectForKey:@"N"];
+        }
+        if (userName == nil) {
+            userName = [[sid componentsSeparatedByString:@"@"] objectAtIndex:0];
+        }
+        NSString *msg = [NSString stringWithFormat:@"%@给您发送了一个窗口抖动。", userName];
+        int direction = [[msgDic objectForKey:@"direction"] intValue];
+        NSString *autoReply = [msgDic objectForKey:@"autoReply"];
+        Message *mesg = [Message new];
+        [mesg setMessageId:[msgDic objectForKey:@"msgId"]];
+        [mesg setFrom:sid];
+        [mesg setChatType:ChatType_SingleChat];
+        [mesg setMessageType:QIMMessageType_Shock];
+        [mesg setMessageDirection:direction == 2 ? QIMMessageDirection_Sent : QIMMessageDirection_Received];
+        [mesg setMessage:msg];
+        [mesg setMessageDate:msgDate];
+        [mesg setMsgRaw:msgRaw];
+        // 消息落地
+        if (![autoReply isEqualToString:@"true"]) {
+            
+            [self saveMsg:mesg ByJid:sid];
+        }
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self shockWindow];
+            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
+            [self addSessionByType:ChatType_SingleChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
+        });
+    });
+}
+
+- (void)receivePublicNumberMsg:(NSDictionary *)msgDic {
+    // 消息ID
+    NSString *msgId = [msgDic objectForKey:@"MsgId"];
+    // 消息类型
+    int msgType = [[msgDic objectForKey:@"MsgType"] intValue];
+    // 消息
+    NSString *msg = [msgDic objectForKey:@"Message"];
+    // from
+    NSString *publicNumberId = [msgDic objectForKey:@"PublicNumberId"];
+    // Date
+    long long msgDate = [[msgDic objectForKey:@"MsgDate"] timeIntervalSince1970] * 1000;
+    
+    NSString *extendInfo = [msgDic objectForKey:@"extendInfo"];
+    if ([[IMDataManager qimDB_SharedInstance] qimDB_checkPublicNumberMsgById:msgId]) {
+        return;
+    }
+    BOOL isSystemMsg = NO;
+    if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
+        if ([publicNumberId hasPrefix:@"rbt-system"]) {
+            isSystemMsg = YES;
+        } else if ([publicNumberId hasPrefix:@"rbt-notice"]) {
+            isSystemMsg = YES;
+        } else if ([publicNumberId hasPrefix:@"rbt-qiangdan"]) {
+            isSystemMsg = YES;
+        } else if ([publicNumberId hasPrefix:@"rbt-zhongbao"]) {
+            isSystemMsg = YES;
+        }
+    }
+    
+    if (msgType != PublicNumberMsgType_Action && msgType != PublicNumberMsgType_ClientCookie && msgType != PublicNumberMsgType_PostBackCookie && msgType != QIMMessageType_ConsultResult && msgType != MessageType_C2BGrabSingleFeedBack) {
+        if (isSystemMsg) {
+            //Mark by DB
+            [self checkMsgTimeWithJid:publicNumberId WithMsgDate:msgDate WithGroup:NO];
+        } else {
+            //Mark by DB
+            [self checkPNMsgTimeWithJid:publicNumberId WithMsgDate:msgDate];
+        }
+    }
+    
+    NSDictionary *dic = [self getPublicNumberCardByJid:publicNumberId];
+    if (dic == nil) {
+        NSString *enName = [publicNumberId componentsSeparatedByString:@"@"].firstObject;
+        NSArray *cardList = [self updatePublicNumberCardByIds:@[@{@"robot_name": enName, @"version": @(0)}] WithNeedUpdate:YES];
+        if (cardList.count <= 0) {
+            NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+            [dic setObject:@(0) forKey:@"rbt_ver"];
+            [dic setObject:enName forKey:@"robotEnName"];
+            [dic setObject:enName forKey:@"robotCnName"];
+            [dic setObject:enName forKey:@"searchIndex"];
+            [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertPublicNumbers:@[dic]];
+        }
+    }
+    Message *c2bFeedBackMessage = [Message new];
+    Message *message = [Message new];
+    [message setMessageId:msgId];
+    [message setFrom:publicNumberId];
+    [message setMessageDirection:QIMMessageDirection_Received];
+    if (isSystemMsg) {
+        [message setChatType:ChatType_System];
+    } else {
+        [message setChatType:ChatType_PublicNumber];
+    }
+    [message setMessageType:msgType];
+    [message setMessage:msg];
+    [message setExtendInformation:extendInfo];
+    [message setMessageSendState:QIMMessageSendState_Success];
+    [message setMessageDate:msgDate];
+    if (msgType != PublicNumberMsgType_Action && msgType != PublicNumberMsgType_ClientCookie && msgType != PublicNumberMsgType_PostBackCookie && msgType != QIMMessageType_ConsultResult) {
+        [self saveMsg:message ByJid:publicNumberId];
+    } else if (msgType == QIMMessageType_ConsultResult) {
+        // 保存渠道信息
+        if (message.extendInformation) {
+            [message setMessage:message.extendInformation];
+        }
+        NSDictionary *resultContent = [[QIMJSONSerializer sharedInstance] deserializeObject:extendInfo error:nil];
+        BOOL result = [[resultContent objectForKey:@"result"] boolValue];
+        NSString *sessionId = [resultContent objectForKey:@"sessionid"];
+        if ([sessionId rangeOfString:@"@"].location == NSNotFound) {
+            sessionId = [sessionId stringByAppendingFormat:@"@%@", [self getDomain]];
+        }
+        NSString *name = [resultContent objectForKey:@"nickname"];
+        NSMutableDictionary *userDic = [NSMutableDictionary dictionary];
+        [userDic setObject:[sessionId componentsSeparatedByString:@"@"].firstObject forKey:@"U"];
+        [userDic setObject:name forKey:@"N"];
+        [[IMDataManager qimDB_SharedInstance] qimDB_InsertOrUpdateUserInfos:@[userDic]];
+        if (result) {
+            NSString *channelid = [msgDic objectForKey:@"channelid"];
+            [self setChannelInfo:channelid ForUserId:sessionId];
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self addSessionByType:ChatType_SingleChat ById:sessionId ByMsgId:message.messageId WithMsgTime:message.messageDate WithNeedUpdate:YES];
+        });
+    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (message.messageType == MessageType_C2BGrabSingleFeedBack) {
+            NSString *c2BExtendInfo = message.extendInformation;
+            NSDictionary *c2BMsgDict = [[QIMJSONSerializer sharedInstance] deserializeObject:c2BExtendInfo error:nil];
+            NSString *c2BMsgId = nil;
+            NSString *btnDisplay = nil;
+            BOOL c2BStatus = YES;
+            NSString *dealId = nil;
+            if (c2BMsgDict.count > 0) {
+                c2BMsgId = [c2BMsgDict objectForKey:@"msgId"];
+                btnDisplay = [c2BMsgDict objectForKey:@"btnDisplay"];
+                c2BStatus = [[c2BMsgDict objectForKey:@"status"] boolValue];
+                dealId = [c2BMsgDict objectForKey:@"dealId"];
+            }
+            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationC2BMessageFeedBackUpdate object:c2BMsgId userInfo:@{@"message": c2bFeedBackMessage}];
+            return ;
+        } else {
+            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:publicNumberId userInfo:@{@"message": message}];
+            QIMVerboseLog(@"抛出通知 QIMmanger receivePublicNumberMsg  kNotificationSessionListUpdate");
+            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSessionListUpdate object:nil];
+            if (isSystemMsg) {
+                [self addSessionByType:ChatType_System ById:publicNumberId ByMsgId:message.messageId WithMsgTime:message.messageDate WithNeedUpdate:YES];
+            }
+            if (![publicNumberId isEqualToString:[self getCurrentSessionUserId]] && message.messageDirection == QIMMessageDirection_Received) {
+                if (isSystemMsg == NO) {
+                    [self setNotReaderMsgCount:[self getNotReaderMsgCountByPublicNumberId:publicNumberId] + 1 ForPublicNumberId:publicNumberId];
+                } else {
+                    [self increasedNotReadMsgCountByJid:publicNumberId];
+                    [self updateNotReadCountCacheByJid:publicNumberId];
+                }
+                
+                [self playSound];
+            }
+        }
+    });
+}
+
 - (void)receiveCollectionMessage:(NSDictionary *)msgDic {
     if (msgDic == nil) {
         return;
@@ -397,13 +1156,13 @@
             return;
         }
         //Mark by DB
-//        [[QIMManager sharedInstance] checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
+        [[QIMManager sharedInstance] checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
         
         Message *mesg = [Message new];
         [mesg setFrom:realfrom];
+        [mesg setChatType:ChatType_CollectionChat];
         [mesg setMessageId:msgId];
         [mesg setMessageType:msgType];
-        [mesg setChatType:ChatType_SingleChat];
         [mesg setMessageDirection:direction == 2 ? QIMMessageDirection_Sent : QIMMessageDirection_Received];
         [mesg setMessage:msg];
         [mesg setMessageDate:msgDate];
@@ -470,60 +1229,6 @@
         BOOL isCarbon = [[msgDic objectForKey:@"isCarbon"] boolValue];
         BOOL convertType = NO;
         BOOL needAutoReply = YES;
-        /*
-        if (messageType == QIMMessageType_TransChatToCustomerService) {
-            chatType = 5;
-            if (isCarbon == NO) {
-                // 创建会话 需要处理
-                NSString *content = extendInfo.length>0?extendInfo:msg;
-                [self sendConsultMessageId:[QIMUUIDTools UUID] WithMessage:content WithInfo:nil toJid:fromJid realToJid:[msgDic objectForKey:@"realfrom"] WithChatType:ChatType_Consult WithMsgType:QIMMessageType_TransChatToCustomerService_Feedback];
-            }
-            needAutoReply = NO;
-        } else if (messageType == QIMMessageType_TransChatToCustomer) {
-            if (isCarbon == NO) {
-                needAutoReply = NO;
-                // 创建会话
-                NSString *content = extendInfo.length>0?extendInfo:msg;
-                NSDictionary *contentDic = [[QIMJSONSerializer sharedInstance] deserializeObject:content error:nil];
-                if(contentDic) {
-                    if (self.virtualRealJidDic == nil) {
-                        self.virtualRealJidDic = [NSMutableDictionary dictionary];
-                    }
-                    NSString *virtualJid =[[contentDic objectForKey:@"toId"] stringByAppendingFormat:@"@%@",[self getDomain]];
-                    NSString *realJid =[[contentDic objectForKey:@"toId"] stringByAppendingFormat:@"@%@",[self getDomain]];
-                    [self.virtualRealJidDic setQIMSafeObject:realJid forKey:virtualJid];
-                }
-                [self sendConsultMessageId:[QIMUUIDTools UUID] WithMessage:content WithInfo:nil toJid:fromJid realToJid:[msgDic objectForKey:@"realfrom"] WithChatType:ChatType_Consult WithMsgType:QIMMessageType_TransChatToCustomer_Feedback];
-            }
-        } else if (messageType == QIMMessageType_TransChatToCustomerService_Feedback) {
-            if (isCarbon == NO) {
-                needAutoReply = NO;
-            }
-            chatType = ChatType_Consult;
-            NSString *content = extendInfo.length>0?extendInfo:msg;
-            NSDictionary *infoDic = [[QIMJSONSerializer sharedInstance] deserializeObject:content error:nil];
-            realFrom = [infoDic objectForKey:@"u"];
-            msgId = [infoDic objectForKey:@"retid"];
-            if (msgId == nil) {
-                msgId = [NSString stringWithFormat:@"%lld",msgDate / 1000 % 10];
-            }
-        } else if (messageType == QIMMessageType_TransChatToCustomer_Feedback) {
-            if (isCarbon == NO) {
-                needAutoReply = NO;
-            }
-            chatType = ChatType_Consult;
-            NSString *content = extendInfo.length>0?extendInfo:msg;
-            NSDictionary *infoDic = [[QIMJSONSerializer sharedInstance] deserializeObject:content error:nil];
-            msgId = [infoDic objectForKey:@"retid"];
-            if (msgId == nil) {
-                msgId = [NSString stringWithFormat:@"%lld",msgDate / 1000 % 10];
-            }
-        } else if (messageType == QIMMessageType_CNote) {
-//            if (isCarbon == NO) {
-//                [self customerConsultServicesayHelloWithUser:[realFrom componentsSeparatedByString:@"@"].firstObject WithVirtualId:[fromJid componentsSeparatedByString:@"@"].firstObject WithFromUser:[QIMManager getLastUserName]];
-//            }
-        }
-        */
         
         NSString *sid = nil;
         if (isCarbon == YES) {
@@ -555,7 +1260,7 @@
             return;
         }
         //Mark by DB
-//        [self checkMsgTimeWithJid:fromJid WithRealJid:realFrom WithMsgDate:msgDate WithGroup:NO];
+        [self checkMsgTimeWithJid:fromJid WithRealJid:realFrom WithMsgDate:msgDate WithGroup:NO];
         Message *mesg = [Message new];
         [mesg setMessageId:msgId];
         [mesg setFrom:[msgDic objectForKey:@"realfrom"]];
@@ -603,6 +1308,108 @@
         });
     });
 }
+
+#pragma mark - Receive Msgs接收消息已读未读状态
+
+- (void)onConsultReadState:(NSDictionary *)infoDic {
+    NSString * infoStr = [infoDic objectForKey:@"infoStr"];
+    NSString * jid = [infoDic objectForKey:@"jid"];
+    NSString * realJid = [infoDic objectForKey:@"realjid"];
+    NSArray * readStateMsgList = [[QIMJSONSerializer sharedInstance] deserializeObject:infoStr error:nil];
+    //Mark by DB
+    //    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateChatMsgWithMsgState:MessageState_didRead ByMsgIdList:readStateMsgList];
+    [self.notReadMsgByGroupDic removeObjectForKey:[NSString stringWithFormat:@"%@-%@",jid,realJid]];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:[NSString stringWithFormat:@"%@-%@",jid,realJid]];
+}
+
+- (void)onReadState:(NSDictionary *)infoDic {
+    QIMVerboseLog(@"onReadState : %@", infoDic);
+    dispatch_queue_t onReadStateQueue = dispatch_queue_create("onReadStateQueue", DISPATCH_QUEUE_SERIAL);
+    dispatch_async(onReadStateQueue, ^{
+        if (!self.msgCompensateReadSet) {
+            self.msgCompensateReadSet = [[NSMutableSet alloc] initWithCapacity:3];
+        }
+        NSInteger readType = [[infoDic objectForKey:@"readType"] integerValue];
+        NSString *infoStr = [infoDic objectForKey:@"infoStr"];
+        NSString *jid = [infoDic objectForKey:@"jid"];
+        NSArray *readStateMsgList = [[QIMJSONSerializer sharedInstance] deserializeObject:infoStr error:nil];
+        NSInteger remoteState = QIMMessageRemoteReadStateNotSent;
+        if (readType == QIMMessageReadFlagClearAllUnRead) {
+            remoteState = QIMMessageRemoteReadStateDidReaded;
+            
+            NSDictionary *readMarkTDic = [[QIMJSONSerializer sharedInstance] deserializeObject:infoStr error:nil];
+            long long readMarkT = [[readMarkTDic objectForKey:@"T"] longLongValue];
+            [[IMDataManager qimDB_SharedInstance] qimDB_updateAllMsgWithMsgRemoteState:remoteState ByMsgDirection:QIMMessageDirection_Received ByReadMarkT:readMarkT / 1000];
+            [self.hasAtAllDic removeAllObjects];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                QIMVerboseLog(@"clearAllNoRead: 抛出通知 kMsgNotReadCountChange");
+                [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@"ForceRefresh"];
+                QIMVerboseLog(@"抛出通知 clearAllNoRead: kAtALLChange");
+                [[NSNotificationCenter defaultCenter] postNotificationName:kAtALLChange object:@"allIds"];
+            });
+        } else if (readType == QIMMessageReadFlagGroupReaded) {
+            //群已读
+            
+            /*
+             {
+             infoStr = "[{\"id\":\"ed6220010bff49b1bdd82f1b96853dbe\",\"domain\":\"conference.ejabhost1\",\"t\":1543496876997}]";
+             jid = "ed6220010bff49b1bdd82f1b96853dbe@conference.ejabhost1";
+             readType = 2;
+             }
+             */
+            
+            remoteState = QIMMessageRemoteReadStateDidReaded | QIMMessageRemoteReadStateGroupReaded;
+            [self updateLocalGroupMessageRemoteState:remoteState ByReadList:readStateMsgList];
+        } else {
+            if (readType == QIMMessageReadFlagDidSend) {
+                //已送到
+                remoteState = QIMMessageRemoteReadStateDidSent;
+            } else if (readType == QIMMessageReadFlagDidRead) {
+                //已读
+                remoteState = QIMMessageRemoteReadStateDidReaded;
+            } else if (readType == QIMMessageReadFlagDidControl) {
+                //已操作
+                remoteState = QIMMessageRemoteReadStateDidOperated | QIMMessageRemoteReadStateDidReaded;
+            } else {
+                //已发送
+                remoteState = QIMMessageRemoteReadStateNotSent;
+            }
+            [self updateLocalMessageRemoteState:remoteState withXmppId:jid withRealJid:jid ByMsgIdList:readStateMsgList];
+        }
+    });
+}
+
+#pragma mark - Receive Msgs接收消息发送状态
+
+//更新消息发送状态
+- (void)onMessageStateUpdate:(NSDictionary *)msgDic {
+    QIMVerboseLog(@"更新消息发送状态 : %@", msgDic);
+    NSString *msgId = [msgDic objectForKey:@"messageId"];
+    BOOL msgSuccess = [[msgDic objectForKey:@"msgSuccess"] boolValue];
+    if (msgSuccess) {
+        //发送消息成功
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+            long long receivedTime = [[msgDic objectForKey:@"receivedTime"] longLongValue];
+            [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgState:QIMMessageSendState_Success WithMsgId:msgId];
+            [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgDate:receivedTime WithMsgId:msgId];
+            [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgWithMsgRemoteState:QIMMessageRemoteReadStateNotSent ByMsgIdList:@[@{@"id":msgId}]];
+        });
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageSendStateUpdate object:@{@"MsgSendState":@(QIMMessageSendState_Success), @"messageId":msgId}];
+        });
+    } else {
+        //发送消息失败
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+            
+            [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgState:QIMMessageSendState_Faild WithMsgId:msgId];
+            [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgWithMsgRemoteState:QIMMessageRemoteReadStateNotSent ByMsgIdList:@[@{@"id":msgId}]];
+        });
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageSendStateUpdate object:@{@"MsgSendState":@(QIMMessageSendState_Faild), @"messageId":msgId}];
+        });
+    }
+}
+
 
 //单人视频
 - (void)callVideoAudio:(NSDictionary *)infoDic {
@@ -865,50 +1672,6 @@
     [self setAppendInfo:dict ForUserId:userId];
 }
 
-- (void)onTransferChat:(NSDictionary *)infoDic {
-    NSString *transFrom = [infoDic objectForKey:@"From"];
-    int msgType = [[infoDic objectForKey:@"MsgType"] intValue];
-    //    NSString *chatId = [infoDic objectForKey:@"ChatId"];
-    NSString *json = [infoDic objectForKey:@"Json"];
-    switch (msgType) {
-        case 1001: { //用户端接收
-            NSDictionary *infoDic = [[QIMJSONSerializer sharedInstance] deserializeObject:json error:nil];
-            if (infoDic) {
-                NSString *transId = [infoDic objectForKey:@"TransId"];
-                NSString *domain = [infoDic objectForKey:@"Domain"];
-                NSString *transJid = [NSString stringWithFormat:@"%@@%@", transId, domain];
-                NSDictionary *userInfo = [self getUserInfoByUserId:transJid];
-                if (userInfo == nil) {
-                    [self updateUserCard:@[transJid]];
-                    userInfo = [self getUserInfoByUserId:transJid];
-                }
-                NSString *transName = [userInfo objectForKey:@"Name"];
-                if (transName) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [[NSNotificationCenter defaultCenter] postNotificationName:kTransToUser object:transFrom userInfo:@{@"TransJid": transJid, @"TransName": transName}];
-                    });
-                }
-            }
-        }
-            break;
-        case 1002: { //商家端接收
-            NSDictionary *infoDic = [[QIMJSONSerializer sharedInstance] deserializeObject:json error:nil];
-            if (infoDic) {
-//                NSString *from = [infoDic objectForKey:@"f"];
-//                NSString *domain = [infoDic objectForKey:@"d"];
-//                NSString *transReason = [infoDic objectForKey:@"r"];
-//                NSString *user = [infoDic objectForKey:@"u"];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:kTransToBusiness object:transFrom userInfo:infoDic];
-                });
-            }
-        }
-            break;
-        default:
-            break;
-    }
-}
-
 #pragma mark - App Config
 
 - (void)friendValidation:(NSDictionary *)validationDic {
@@ -1084,987 +1847,9 @@
     //    [self addLogEventWithDescription:@"ScoketConnect" eventId:10010 eventType:2 eventValue:@([notify.object intValue])];
 }
 
-- (void)onMessageSendSuccess:(NSNotification *)notify {
-    NSString *msgID = [notify.object objectForKey:@"messageId"];
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-        long long receivedTime = [[notify.object objectForKey:@"receivedTime"] longLongValue];
-        [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgState:QIMMessageSendState_Success WithMsgId:msgID];
-        [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgDate:receivedTime WithMsgId:msgID];
-    });
-}
-
-- (void)onMessageSendFaild:(NSNotification *)notify {
-    NSString *msgID = [notify.object objectForKey:@"messageId"];
-    [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgState:QIMMessageSendState_Faild WithMsgId:msgID];
-}
-
-- (void)onRevoke:(NSDictionary *)infoDic {
-    NSString *jid = [infoDic objectForKey:@"fromId"];
-    NSString *msgId = [infoDic objectForKey:@"messageId"];
-    NSString *msg = [infoDic objectForKey:@"message"];
-    if (msg.length <= 0) {
-        msg = @"该消息被撤回";
-    }
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [[IMDataManager qimDB_SharedInstance] qimDB_revokeMessageByMsgId:msgId WithContent:msg WithMsgType:QIMMessageType_Revoke];
-    });
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:kRevokeMsg object:jid userInfo:@{@"MsgId": msgId, @"Content": msg}];
-    });
-}
-
-- (void)onConsultReadState:(NSDictionary *)infoDic {
-    NSString * infoStr = [infoDic objectForKey:@"infoStr"];
-    NSString * jid = [infoDic objectForKey:@"jid"];
-    NSString * realJid = [infoDic objectForKey:@"realjid"];
-    NSArray * readStateMsgList = [[QIMJSONSerializer sharedInstance] deserializeObject:infoStr error:nil];
-    //Mark by DB
-//    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateChatMsgWithMsgState:MessageState_didRead ByMsgIdList:readStateMsgList];
-    [self.notReadMsgByGroupDic removeObjectForKey:[NSString stringWithFormat:@"%@-%@",jid,realJid]];
-    [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:[NSString stringWithFormat:@"%@-%@",jid,realJid]];
-}
-
-- (void)onReadState:(NSDictionary *)infoDic {
-    QIMVerboseLog(@"onReadState : %@", infoDic);
-    dispatch_queue_t onReadStateQueue = dispatch_queue_create("onReadStateQueue", DISPATCH_QUEUE_SERIAL);
-    dispatch_async(onReadStateQueue, ^{
-        if (!self.msgCompensateReadSet) {
-            self.msgCompensateReadSet = [[NSMutableSet alloc] initWithCapacity:3];
-        }
-        NSInteger readType = [[infoDic objectForKey:@"readType"] integerValue];
-        NSString *infoStr = [infoDic objectForKey:@"infoStr"];
-        NSString *jid = [infoDic objectForKey:@"jid"];
-        NSArray *readStateMsgList = [[QIMJSONSerializer sharedInstance] deserializeObject:infoStr error:nil];
-        if (readType == 0) {
-            NSDictionary *readMarkTDic = [[QIMJSONSerializer sharedInstance] deserializeObject:infoStr error:nil];
-            long long readMarkT = [[readMarkTDic objectForKey:@"T"] longLongValue];
-            //Mark by DB
-//            [[IMDataManager qimDB_SharedInstance] qimDB_updateAllMsgWithMsgState:MessageState_didRead ByMsgDirection:MessageDirection_Received ByReadMarkT:readMarkT / 1000];
-            [self.notReadMsgByGroupDic removeAllObjects];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:nil];
-                [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSessionListUpdate object:nil];
-            });
-        } else {
-            if ([jid containsString:@"@conference."]) {
-                //群
-                long long maxMucReadMarkUpdateTime = [[[QIMUserCacheManager sharedInstance] userObjectForKey:@"MaxMucReadMarkTime"] longLongValue];
-                /*
-                long long maxRemoteTime = [[IMDataManager qimDB_SharedInstance] qimDB_updateGroupMsgWithMsgState:MessageState_didRead ByGroupMsgList:readStateMsgList];
-                if (maxRemoteTime > maxMucReadMarkUpdateTime) {
-                    maxMucReadMarkUpdateTime = maxRemoteTime;
-                    NSString *jid = [[QIMManager sharedInstance] getLastJid];
-                    NSString *updateTime = [NSString stringWithFormat:@"%lld", maxMucReadMarkUpdateTime];
-                    NSArray *configArray = @[@{@"subkey":jid?jid:@"", @"configinfo":updateTime}];
-                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertConfigArrayWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalMucRemarkUpdateTime] WithConfigVersion:0 ConfigArray:configArray];
-                }
-                */
-                [self decrementNotReadMsgCountByJid:jid];
-                [self updateNotReadCountCacheByJid:jid];
-            } else {
-                //单人
-                /* Mark by DB
-                if (readType == 1) {
-                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateChatMsgWithMsgState:MessageState_NotRead ByMsgIdList:readStateMsgList];
-                    [self updateMessageStateWithNewState:MessageState_NotRead ByMsgIdList:readStateMsgList];
-                    [self updateNotReadCountCacheByJid:jid];
-                } else if (readType == 3) {
-                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateChatMsgWithMsgState:MessageState_NotRead ByMsgIdList:readStateMsgList];
-                    [self updateMessageStateWithNewState:MessageState_NotRead ByMsgIdList:readStateMsgList];
-                    [self updateNotReadCountCacheByJid:jid];
-                } else if (readType == 4) {
-                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateChatMsgWithMsgState:MessageState_didRead ByMsgIdList:readStateMsgList];
-                    [self updateMessageStateWithNewState:MessageState_didRead ByMsgIdList:readStateMsgList];
-                    [self updateNotReadCountCacheByJid:jid];
-                } else if (readType == 7) {
-                    //已操作
-                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateChatMsgWithMsgState:MessageState_didControl ByMsgIdList:readStateMsgList];
-                    [self updateMessageControlStateWithNewState:MessageState_didControl ByMsgIdList:readStateMsgList];
-                    [self updateNotReadCountCacheByJid:jid];
-                }
-                */
-            }
-        }
-    });
-}
-
 - (void)onTyping:(NSDictionary *)infoDic {
     NSString *jid = [infoDic objectForKey:@"fromId"];
     [[NSNotificationCenter defaultCenter] postNotificationName:kTyping object:jid];
-}
-
-- (void)onUserPresenceChange:(NSString *)userId {
-    QIMVerboseLog(@"onUserPresenceChange %@", userId);
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:kUserStatusChange object:userId];
-        if (!self.isStartPushNotify) {
-            return;
-        }
-    });
-}
-
-- (void)receiveQChatNoteMsg:(NSDictionary *)msgDic {
-    if (msgDic == nil) {
-        return;
-    }
-    dispatch_async(self.receive_msg_queue, ^{
-        
-        NSString *jid = [msgDic objectForKey:@"fromId"];
-        NSString *infoStr = [msgDic objectForKey:@"infoStr"];
-        long long msgDate = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 1) * 1000;
-        int direction = QIMMessageDirection_Received;
-        int msgType = QIMMessageType_PNote;
-        NSString *msgId = [QIMUUIDTools UUID];
-        NSString *autoReply = [msgDic objectForKey:@"autoReply"];
-        //Mark by DB
-//        [self checkMsgTimeWithJid:jid WithMsgDate:msgDate WithGroup:NO];
-        
-        Message *mesg = [Message new];
-        [mesg setFrom:jid];
-        [mesg setMessageId:msgId];
-        [mesg setMessageType:msgType];
-        [mesg setChatType:ChatType_SingleChat];
-        [mesg setMessageDirection:direction];
-        [mesg setMessage:infoStr];
-        [mesg setMessageDate:msgDate];
-        [mesg setTo:[[QIMManager sharedInstance] getLastJid]];
-        
-        // 消息落地
-        if (![autoReply isEqualToString:@"true"]) {
-            [self saveMsg:mesg ByJid:jid];
-        }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:jid userInfo:@{@"message": mesg}];
-            
-            [self addSessionByType:ChatType_SingleChat ById:jid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
-            if (![jid isEqualToString:self.currentSessionUserId]) {
-                [self increasedNotReadMsgCountByJid:jid];
-                [self updateNotReadCountCacheByJid:jid];
-                [self playSound];
-            }
-            Message *mesg = [self createNoteReplyMessage:[NSString stringWithFormat:@"您好，我是在线客服%@，很高兴为您服务。", self.webName ? [NSString stringWithFormat:@"【%@】", self.webName] : @""] ToUserId:jid];
-            [self sendMessage:mesg ToUserId:jid];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:jid userInfo:@{@"message": mesg}];
-            });
-        });
-        
-    });
-    
-}
-
-- (void)receiveQChatEndMsg:(NSDictionary *)msgDic {
-    if (msgDic == nil) {
-        return;
-    }
-    dispatch_async(self.receive_msg_queue, ^{
-        
-//        NSString * jid = [msgDic objectForKey:@"fromId"];
-//        long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970];
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-//            [self addSessionByType:ChatType_SingleChat ById:jid ByMsgId:nil WithMsgTime:msgDate];
-//            if (![jid isEqualToString:_currentSessionUserId]) {
-//                [self setNotReaderMsgCount:[self getNotReadMsgCountByJid:jid] + 1 ForJid:jid];
-//                [self playSound];
-//            }
-//            Message * mesg = [self createNoteReplyMessage:@"通话结束！\n感谢您的咨询，欢迎再次咨询。" ToUserId:jid];
-//            [self sendMessage:mesg ToUserId:jid];
-//            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:jid userInfo:@{@"message":mesg}];
-        });
-    });
-}
-
-- (void)receiveMsg:(NSDictionary *)msgDic {
-    if (msgDic == nil) {
-        return;
-    }
-    dispatch_async(self.receive_msg_queue, ^{
-        
-        if ([[msgDic objectForKey:@"msgtype"] isEqualToString:@"msgVoice"]) {
-            //如果不为空，则是voice文件
-            //#TODO 单人语音消息
-            NSString *sid = [NSString stringWithFormat:@"%@@%@", [msgDic objectForKey:@"fromId"], [msgDic objectForKey:@"domain"]];
-            NSString *msg = [msgDic objectForKey:@"msg"];
-            NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
-            long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970] * 1000;
-            NSString *msgId = [msgDic objectForKey:@"msgId"];
-            NSString *chatId = [msgDic objectForKey:@"chatId"];
-            NSString *autoReply = [msgDic objectForKey:@"autoReply"];
-            if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
-                return;
-            }
-            [self saveChatId:chatId ForUserId:sid];
-            //Mark by DB
-//            [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
-            
-            int direction = [[msgDic objectForKey:@"direction"] intValue];
-            
-            Message *mesg = [Message new];
-            [mesg setFrom:sid];
-            [mesg setRealJid:sid];
-            if ([msgDic objectForKey:@"msgId"] != nil && ![[msgDic objectForKey:@"msgId"] isEqualToString:@"1"]) {
-                NSString *messageId = [msgDic objectForKey:@"msgId"];
-                [mesg setMessageId:messageId];
-            }
-            [mesg setMessageType:QIMMessageType_Voice];
-            [mesg setChatType:ChatType_SingleChat];
-            [mesg setMessageState:QIMMessageSendState_Success];
-            [mesg setMessageDirection:direction == 2 ? QIMMessageDirection_Sent : QIMMessageDirection_Received];
-            [mesg setMessage:msg];
-            [mesg setRemoteReadState:QIMMessageRemoteReadStateDidSent];
-            [mesg setMessageDate:msgDate];
-            [mesg setTo:[[QIMManager sharedInstance] getLastJid]];
-            [mesg setMsgRaw:msgRaw];
-            // 消息落地
-            [self addSessionByType:ChatType_SingleChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
-            if (![autoReply isEqualToString:@"true"]) {
-                [self saveMsg:mesg ByJid:sid];
-            }
-            [[QIMVoiceNoReadStateManager sharedVoiceNoReadStateManager] setVoiceNoReadStateWithMsgId:mesg.messageId ChatId:sid withState:NO];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
-                if (![sid isEqualToString:self.currentSessionUserId] && mesg.messageDirection == QIMMessageDirection_Received) {
-//                    [self setNotReaderMsgCount:[self getNotReadMsgCountByJid:sid] + 1 ForJid:sid];
-                    [self increasedNotReadMsgCountByJid:sid];
-                    [self updateNotReadCountCacheByJid:sid];
-                    [self playSound];
-                }
-            });
-            
-        } else {
-            //如果为空，则是message文件
-            NSString *sid = [NSString stringWithFormat:@"%@@%@", [msgDic objectForKey:@"fromId"], [msgDic objectForKey:@"domain"]];
-            NSString *msg = [msgDic objectForKey:@"msg"];
-            long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970] * 1000;
-            int direction = [[msgDic objectForKey:@"direction"] intValue];
-            int msgType = [[msgDic objectForKey:@"msgType"] intValue];
-            NSString *extendInfo = [msgDic objectForKey:@"extendInfo"];
-            NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
-            NSString *msgId = [msgDic objectForKey:@"msgId"];
-            NSString *chatId = [msgDic objectForKey:@"chatId"];
-            NSString *autoReply = [msgDic objectForKey:@"autoReply"];
-            if (msgType == QIMMessageType_shareLocation && direction == 1) {
-                NSDictionary *shareDic = [[QIMJSONSerializer sharedInstance] deserializeObject:extendInfo error:nil];
-                NSString *shareId = [shareDic objectForKey:@"shareId"];
-                NSString *fromUser = [shareDic objectForKey:@"fromId"];
-                [self.shareLocationDic setObject:shareId forKey:sid];
-                [self.shareLocationFromIdDic setObject:fromUser forKey:shareId];
-                NSMutableSet *users = [self.shareLocationUserDic objectForKey:shareId];
-                if (users == nil) {
-                    users = [NSMutableSet set];
-                    [self.shareLocationUserDic setObject:users forKey:shareId];
-                }
-                [users addObject:fromUser];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:kBeginShareLocation object:sid userInfo:shareDic];
-                });
-            }
-            if (msgType == QIMMessageType_RedPackInfo || msgType == QIMMessageType_AAInfo) {
-                NSDictionary *redPackInfoDic = [[QIMJSONSerializer sharedInstance] deserializeObject:extendInfo error:nil];
-                NSString *jid = [redPackInfoDic objectForKey:@"From_User"];
-                if ([jid isEqualToString:[QIMManager getLastUserName]] == NO) {
-                    return;
-                }
-            }
-            
-            if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
-                return;
-            }
-            
-            [self saveChatId:chatId ForUserId:sid];
-            //Mark by DB
-//            [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
-            
-            Message *mesg = [Message new];
-            [mesg setFrom:sid];
-            [mesg setRealJid:sid];
-            [mesg setMessageId:msgId];
-            [mesg setMessageType:msgType];
-            [mesg setChatType:ChatType_SingleChat];
-            [mesg setMessageDirection:direction == 2 ? QIMMessageDirection_Sent : QIMMessageDirection_Received];
-            [mesg setMessage:msg];
-            [mesg setMessageState:QIMMessageSendState_Success];
-            [mesg setRemoteReadState:QIMMessageRemoteReadStateDidSent];
-            [mesg setMessageDate:msgDate];
-            [mesg setExtendInformation:extendInfo];
-            [mesg setTo:[[QIMManager sharedInstance] getLastJid]];
-            [mesg setMsgRaw:msgRaw];
-            // 消息落地
-            [self addSessionByType:ChatType_SingleChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
-            if (![autoReply isEqualToString:@"true"]) {
-                [self saveMsg:mesg ByJid:sid];
-            }
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
-                if (![sid isEqualToString:self.currentSessionUserId] && mesg.messageDirection == QIMMessageDirection_Received) {
-                    [self increasedNotReadMsgCountByJid:sid];
-                    [self updateNotReadCountCacheByJid:sid];
-                    if (mesg.messageType == QIMMessageType_RedPack) {
-                        [self playHongBaoSound];
-                    } else {
-                        [self playSound];
-                    }
-                }
-            });
-        }
-    });
-}
-
-- (void)receiveGroupMsg:(NSDictionary *)msgDic {
-    dispatch_async(self.receive_msg_queue, ^{
-        //#TODO 群消息到达
-        //if add by dan.zheng 15/4/28
-        if ([[msgDic objectForKey:@"msgtype"] isEqualToString:@"msgVoice"]) {
-            //如果不为空，则是voice文件
-            NSString *sid = [NSString stringWithFormat:@"%@@%@", [msgDic objectForKey:@"fromId"], [msgDic objectForKey:@"domain"]];
-            NSString *msg = [msgDic objectForKey:@"msg"];
-            long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970] * 1000;
-            
-            NSString *nickName = [msgDic objectForKey:@"nickName"];
-            NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
-            NSString *backupInfo = [msgDic objectForKey:@"backupInfo"];
-            NSString *messageId = [msgDic objectForKey:@"msgId"];
-            NSString *autoReply = [msgDic objectForKey:@"autoReply"];
-            // 消息已存在
-            if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:messageId]) {
-                return;
-            }
-            //Mark by DB
-//            [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
-            
-            Message *mesg = [Message new];
-            [mesg setFrom:sid];
-            [mesg setMessageId:messageId];
-            [mesg setChatType:ChatType_GroupChat];
-            [mesg setMessageType:QIMMessageType_Voice];
-            [mesg setMessageDirection:[self getGroupMsgDirectionWithSendJid:nickName]];
-            [mesg setRemoteReadState:QIMMessageRemoteReadStateDidSent];
-            [mesg setMessage:msg];
-            [mesg setNickName:nickName];
-            [mesg setMessageDate:msgDate];
-            [mesg setBackupInfo:backupInfo];
-            [mesg setMsgRaw:msgRaw];
-            [mesg setTo:[[QIMManager sharedInstance] getLastJid]];
-            [self addSessionByType:ChatType_GroupChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
-
-            if (![autoReply isEqualToString:@"true"]) {
-                [self saveMsg:mesg ByJid:sid];
-            }
-            [[QIMVoiceNoReadStateManager sharedVoiceNoReadStateManager] setVoiceNoReadStateWithMsgId:mesg.messageId ChatId:sid withState:NO];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
-                BOOL isRemind = [self groupPushState:sid];
-                if (mesg.messageDirection == QIMMessageDirection_Received && (![self.currentSessionUserId isEqualToString:sid])) {
-                    
-                    if (![sid isEqualToString:self.currentSessionUserId]) {
-                        if (isRemind) {
-                            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(playSound) object:nil];
-                            [self performSelector:@selector(playSound) withObject:nil afterDelay:0.1];
-                        }
-                        [self increasedNotReadMsgCountByJid:sid];
-                        [self updateNotReadCountCacheByJid:sid];
-                    }
-                }
-            });
-        } else {
-            
-            //如果为空，则是message文件
-            NSString *sid = [NSString stringWithFormat:@"%@@%@", [msgDic objectForKey:@"fromId"], [msgDic objectForKey:@"domain"]];
-            NSString *msg = [msgDic objectForKey:@"msg"];
-            int msgType = [[msgDic objectForKey:@"msgType"] intValue];
-            NSString *extendInfo = [msgDic objectForKey:@"extendInfo"];
-            long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970] * 1000;
-            NSString *nickName = [msgDic objectForKey:@"nickName"];
-            NSString *messageId = [msgDic objectForKey:@"msgId"];
-            NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
-            NSString *replyMsgId = [msgDic objectForKey:@"replyMsgId"];
-            NSString *replyUser = [msgDic objectForKey:@"replyUser"];
-            NSString *backupInfo = [msgDic objectForKey:@"backupInfo"];
-            NSString *autoReply = [msgDic objectForKey:@"autoReply"];
-            if (msgType == QIMMessageType_shareLocation && [self getGroupMsgDirectionWithSendJid:nickName] == QIMMessageDirection_Received) {
-                NSDictionary *shareDic = [[QIMJSONSerializer sharedInstance] deserializeObject:extendInfo error:nil];
-                NSString *shareId = [shareDic objectForKey:@"shareId"];
-                NSString *fromUser = [shareDic objectForKey:@"fromId"];
-                [self.shareLocationDic setObject:shareId forKey:sid];
-                [self.shareLocationFromIdDic setObject:fromUser forKey:shareId];
-                NSMutableSet *users = [self.shareLocationUserDic objectForKey:shareId];
-                if (users == nil) {
-                    users = [NSMutableSet set];
-                    [self.shareLocationUserDic setObject:users forKey:shareId];
-                }
-                [users addObject:fromUser];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:kBeginShareLocation object:sid userInfo:shareDic];
-                });
-            }
-            if (msgType == QIMMessageType_RedPackInfo || msgType == QIMMessageType_AAInfo) {
-                NSDictionary *infoDic = [[QIMJSONSerializer sharedInstance] deserializeObject:extendInfo error:nil];
-                NSString *fid = [infoDic objectForKey:@"From_User"];
-                if ([fid isEqualToString:[QIMManager getLastUserName]] == NO) {
-                    return;
-                }
-            }
-            // 消息已存在
-            if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:messageId]) {
-                return;
-            }
-            //Mark by DB
-//            [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
-            
-            Message *mesg = [Message new];
-            [mesg setFrom:sid];
-            [mesg setRealJid:sid];
-            [mesg setMessageId:messageId];
-            
-            [mesg setChatType:ChatType_GroupChat];
-            [mesg setMessageType:msgType];
-            [mesg setMessageDirection:[self getGroupMsgDirectionWithSendJid:nickName]];
-            [mesg setMessage:msg];
-            [mesg setNickName:nickName];
-            [mesg setMessageState:QIMMessageSendState_Success];
-            [mesg setRemoteReadState:QIMMessageRemoteReadStateDidSent];
-            [mesg setMessageDate:msgDate];
-            [mesg setExtendInformation:extendInfo];
-            [mesg setTo:[[QIMManager sharedInstance] getLastJid]];
-//            [mesg setReplyMsgId:replyMsgId];
-//            [mesg setReplyUser:replyUser];
-            [mesg setBackupInfo:backupInfo];
-            [mesg setMsgRaw:msgRaw];
-            [self addSessionByType:ChatType_GroupChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
-            if (![autoReply isEqualToString:@"true"]) {
-                [self saveMsg:mesg ByJid:sid];
-            }
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
-                BOOL isRemind = [self groupPushState:sid];
-                if (mesg.messageDirection == QIMMessageDirection_Received && (![self.currentSessionUserId isEqualToString:sid])) {
-                    if ([msg rangeOfString:@"@"].location != NSNotFound) {
-                        NSArray *array = [msg componentsSeparatedByString:@"@"];
-                        BOOL hasAt = NO;
-                        BOOL hasAtAll = NO;
-                        for (NSString *str in array) {
-                            if ([[str lowercaseString] hasPrefix:@"all"] || [str hasPrefix:@"全体成员"]) {
-                                hasAtAll = YES;
-                                break;
-                            }
-                            NSString *prefix = [self getMyNickName];
-                            if (prefix && [str hasPrefix:prefix]) {
-                                hasAt = YES;
-                                break;
-                            }
-                        }
-                        if (hasAtAll) {
-                            [self addAtALLByJid:sid WithMsgId:mesg.messageId WithMsg:mesg WithNickName:nickName];
-                        }
-                        if (hasAt) {
-                            [self addAtMeByJid:sid WithNickName:nickName];
-                        }
-                    }
-                    if (![sid isEqualToString:self.currentSessionUserId]) {
-                        if (isRemind) {
-                            if (mesg.messageType == QIMMessageType_RedPack) {
-                                [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(playHongBaoSound) object:nil];
-                                [self performSelector:@selector(playHongBaoSound) withObject:nil afterDelay:0.1];
-                            } else {
-                                [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(playSound) object:nil];
-                                [self performSelector:@selector(playSound) withObject:nil afterDelay:0.1];
-                            }
-                        }
-                        [self increasedNotReadMsgCountByJid:sid];
-                        [self updateNotReadCountCacheByJid:sid];
-                    }
-                }
-            });
-        }
-    });
-}
-
-- (void)receiveSystemMsg:(NSDictionary *)msgDic {
-    dispatch_async(self.receive_msg_queue, ^{
-        
-        NSString *msgId = [msgDic objectForKey:@"msgId"];
-        NSString *msg = [msgDic objectForKey:@"msg"];
-        NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
-        long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970] * 1000;
-        NSString *sid = [NSString stringWithFormat:@"SystemMessage@%@", [[QIMNavConfigManager sharedInstance] domain]];
-        NSString *autoReply = [msgDic objectForKey:@"autoReply"];
-
-        if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
-            return;
-        }
-        //Mark by DB
-//        [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
-        
-        Message *mesg = [Message new];
-        [mesg setMessageId:msgId];
-        [mesg setFrom:sid];
-        [mesg setChatType:ChatType_System];
-        [mesg setMessageType:QIMMessageType_Text];
-        [mesg setMessageDirection:QIMMessageDirection_Received];
-        [mesg setMessage:msg];
-        [mesg setMessageDate:msgDate];
-        [mesg setMsgRaw:msgRaw];
-        if (![autoReply isEqualToString:@"true"]) {
-            [self saveMsg:mesg ByJid:sid];
-        }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
-            [self addSessionByType:ChatType_System ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
-            
-            if (![sid isEqualToString:self.currentSessionUserId]) {
-                [self increasedNotReadMsgCountByJid:sid];
-                [self updateNotReadCountCacheByJid:sid];
-                [self playSound];
-            }
-        });
-        
-    });
-}
-
-- (void)receiveShareLocationMsg:(NSDictionary *)msgDic {
-    dispatch_async(self.receive_msg_queue, ^{
-        //如果为空，则是message文件
-        NSString *sid = [NSString stringWithFormat:@"%@@%@", [msgDic objectForKey:@"fromId"], [msgDic objectForKey:@"domain"]];
-        NSString *msg = [msgDic objectForKey:@"msg"];
-        long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970] * 1000;
-        int direction = [[msgDic objectForKey:@"direction"] intValue];
-        int msgType = [[msgDic objectForKey:@"msgType"] intValue];
-        NSString *extendInfo = [msgDic objectForKey:@"extendInfo"];
-        NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
-        NSString *shareId = [msgDic objectForKey:@"shareId"];
-        if (shareId.length <= 0) {
-            return;
-        }
-        switch (msgType) {
-            case ShareLocationType_Join: {
-                //                [_shareLocationDic setObject:shareId forKey:sid];
-                NSMutableSet *users = [self.shareLocationUserDic objectForKey:shareId];;
-                if (users == nil) {
-                    users = [NSMutableSet set];
-                    [self.shareLocationUserDic setObject:users forKey:shareId];
-                }
-                [users addObject:sid];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:kJoinShareLocation object:sid];
-                });
-            }
-                break;
-            case ShareLocationType_Info: {
-                Message *mesg = [Message new];
-                [mesg setFrom:sid];
-                [mesg setMessageType:msgType];
-                [mesg setChatType:ChatType_SingleChat];
-                [mesg setMessageDirection:direction == 2 ? QIMMessageDirection_Sent : QIMMessageDirection_Received];
-                [mesg setMessage:msg];
-                [mesg setMessageDate:msgDate];
-                [mesg setExtendInformation:extendInfo];
-                [mesg setTo:[[QIMManager sharedInstance] getLastJid]];
-                [mesg setMsgRaw:msgRaw];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:kShareLocationInfo object:sid userInfo:@{@"message": mesg}];
-                });
-            }
-                break;
-            case ShareLocationType_Quit: {
-                NSMutableSet *users = [self.shareLocationUserDic objectForKey:shareId];;
-                if (users == nil) {
-                    users = [NSMutableSet set];
-                    [self.shareLocationUserDic setObject:users forKey:shareId];
-                }
-                [users removeObject:sid];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:kQuitShareLocation object:sid];
-                    if (users.count <= 0) {
-                        [self.shareLocationUserDic removeObjectForKey:shareId];
-                        [[NSNotificationCenter defaultCenter] postNotificationName:kEndShareLocation object:sid];
-                    }
-                });
-            }
-                break;
-            default:
-                break;
-        }
-    });
-}
-
-- (void)receiveGroupImage:(NSDictionary *)msgDic {
-    dispatch_async(self.receive_msg_queue, ^{
-        NSString *sid = [NSString stringWithFormat:@"%@@%@", [msgDic objectForKey:@"fromId"], [msgDic objectForKey:@"domain"]];
-        NSString *msg = [msgDic objectForKey:@"msg"];
-        long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970] * 1000;
-        
-        NSString *msgId = [msgDic objectForKey:@"msgId"];
-        NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
-        if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
-            return;
-        }
-        //Mark by DB
-//        [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
-        
-        
-        NSString *nickName = [msgDic objectForKey:@"nickName"];
-        NSString *autoReply = [msgDic objectForKey:@"autoReply"];
-
-        Message *mesg = [Message new];
-        [mesg setFrom:sid];
-        [mesg setMessageId:msgId];
-        
-        [mesg setChatType:ChatType_GroupChat];
-        [mesg setMessageType:QIMMessageType_Text];
-        [mesg setMessageDirection:[self getGroupMsgDirectionWithSendJid:nickName]];
-        [mesg setMessage:msg];
-        [mesg setNickName:nickName];
-        [mesg setMessageDate:msgDate];
-        [mesg setExtendInformation:nil];
-        [mesg setTo:[[QIMManager sharedInstance] getLastJid]];
-//        [mesg setReplyMsgId:nil];
-//        [mesg setReplyUser:nil];
-        [mesg setMsgRaw:msgRaw];
-        if (![autoReply isEqualToString:@"true"]) {
-            [self saveMsg:mesg ByJid:sid];
-            [self updateMsg:mesg ByJid:sid];
-        }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
-            [self addSessionByType:ChatType_GroupChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
-            BOOL isRemind = [self groupPushState:sid];
-            if (mesg.messageDirection == QIMMessageDirection_Received && (![self.currentSessionUserId isEqualToString:sid])) {
-                if (![sid isEqualToString:self.currentSessionUserId]) {
-                    if (isRemind) {
-                        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(playSound) object:nil];
-                        [self performSelector:@selector(playSound) withObject:nil afterDelay:0.1];
-                    }
-                    [self increasedNotReadMsgCountByJid:sid];
-                    [self updateNotReadCountCacheByJid:sid];
-                }
-            }
-        });
-        
-    });
-    
-}
-
-- (void)receiveFile:(NSDictionary *)msgDic {
-    if (msgDic == nil) {
-        return;
-    }
-    dispatch_async(self.receive_msg_queue, ^{
-        NSString *sid = [NSString stringWithFormat:@"%@@%@", [msgDic objectForKey:@"fromId"], [msgDic objectForKey:@"domain"]];
-        NSString *msg = [msgDic objectForKey:@"msg"];
-        long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970] * 1000;
-        NSString *msgId = [msgDic objectForKey:@"msgId"];
-        NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
-        NSString *autoReply = [msgDic objectForKey:@"autoReply"];
-        if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
-            return;
-        }
-        //Mark by DB
-//        [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
-        int direction = [[msgDic objectForKey:@"direction"] intValue];
-        Message *mesg = [Message new];
-        [mesg setMessageId:msgId];
-        [mesg setFrom:sid];
-        [mesg setMessageType:QIMMessageType_File];
-        [mesg setMessageDirection:direction == 2 ? QIMMessageDirection_Sent : QIMMessageDirection_Received];
-        [mesg setMessage:msg];
-        [mesg setChatType:ChatType_SingleChat];
-        [mesg setMessageDate:msgDate];
-        [mesg setMsgRaw:msgRaw];
-        // 消息落地
-        if (![autoReply isEqualToString:@"true"]) {
-
-            [self saveMsg:mesg ByJid:sid];
-        }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
-            [self addSessionByType:ChatType_SingleChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
-            
-            if (![sid isEqualToString:self.currentSessionUserId] && mesg.messageDirection == QIMMessageDirection_Received) {
-                //                [self setNotReaderMsgCount:[self getNotReadMsgCountByJid:sid] + 1 ForJid:sid];
-                [self increasedNotReadMsgCountByJid:sid];
-                [self updateNotReadCountCacheByJid:sid];
-                [self playSound];
-            }
-        });
-        
-    });
-}
-
-
-- (void)receiveGroupFile:(NSDictionary *)msgDic {
-    dispatch_async(self.receive_msg_queue, ^{
-        NSString *sid = [NSString stringWithFormat:@"%@@%@", [msgDic objectForKey:@"fromId"], [msgDic objectForKey:@"domain"]];
-        NSString *msg = [msgDic objectForKey:@"msg"];
-        long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970] * 1000;
-        NSString *msgId = [msgDic objectForKey:@"msgId"];
-        NSString *nickName = [msgDic objectForKey:@"nickName"];
-        NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
-        NSString *autoReply = [msgDic objectForKey:@"autoReply"];
-        QIMMessageDirection direction = [self getGroupMsgDirectionWithSendJid:nickName];
-        if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
-            return;
-        }
-        //Mark by DB
-//        [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:YES];
-        
-        Message *mesg = [Message new];
-        [mesg setMessageId:msgId];
-        
-        [mesg setFrom:sid];
-        [mesg setChatType:ChatType_GroupChat];
-        [mesg setMessageType:QIMMessageType_File];
-        [mesg setMessageDirection:direction];
-        [mesg setMessage:msg];
-        [mesg setNickName:nickName];
-        [mesg setMessageDate:msgDate];
-        [mesg setMsgRaw:msgRaw];
-        if (![autoReply isEqualToString:@"true"]) {
-            [self saveMsg:mesg ByJid:sid];
-        }
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
-            [self addSessionByType:ChatType_GroupChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
-            BOOL isRemind = [self groupPushState:sid];
-            if (mesg.messageDirection == QIMMessageDirection_Received && (![self.currentSessionUserId isEqualToString:sid])) {
-                if (![sid isEqualToString:self.currentSessionUserId]) {
-                    if (isRemind) {
-                        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(playSound) object:nil];
-                        [self performSelector:@selector(playSound) withObject:nil afterDelay:0.1];
-                    }
-                    [self increasedNotReadMsgCountByJid:sid];
-                    [self updateNotReadCountCacheByJid:sid];
-                }
-            }
-        });
-    });
-}
-
-//接受窗口抖动
-- (void)receiveShock:(NSDictionary *)msgDic {
-    if (msgDic == nil) {
-        return;
-    }
-    dispatch_async(self.receive_msg_queue, ^{
-        NSString *sid = [NSString stringWithFormat:@"%@@%@", [msgDic objectForKey:@"fromId"], [msgDic objectForKey:@"domain"]];
-        long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970] * 1000;
-        
-        NSString *msgId = [msgDic objectForKey:@"msgId"];
-        NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
-        if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId]) {
-            return;
-        }
-        //Mark by DB
-//        [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
-        NSString *userName = nil;
-        NSDictionary *userInfo = [self getUserInfoByUserId:sid];
-        if (userInfo) {
-            userName = [userInfo objectForKey:@"N"];
-        }
-        if (userName == nil) {
-            userName = [[sid componentsSeparatedByString:@"@"] objectAtIndex:0];
-        }
-        NSString *msg = [NSString stringWithFormat:@"%@给您发送了一个窗口抖动。", userName];
-        int direction = [[msgDic objectForKey:@"direction"] intValue];
-        NSString *autoReply = [msgDic objectForKey:@"autoReply"];
-        Message *mesg = [Message new];
-        [mesg setMessageId:[msgDic objectForKey:@"msgId"]];
-        [mesg setFrom:sid];
-        [mesg setChatType:ChatType_SingleChat];
-        [mesg setMessageType:QIMMessageType_Shock];
-        [mesg setMessageDirection:direction == 2 ? QIMMessageDirection_Sent : QIMMessageDirection_Received];
-        [mesg setMessage:msg];
-        [mesg setMessageDate:msgDate];
-        [mesg setMsgRaw:msgRaw];
-        // 消息落地
-        if (![autoReply isEqualToString:@"true"]) {
-
-            [self saveMsg:mesg ByJid:sid];
-        }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self shockWindow];
-            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
-            [self addSessionByType:ChatType_SingleChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
-        });
-    });
-}
-
-//接收群组窗口抖动
-- (void)receiveGroupShock:(NSDictionary *)msgDic {
-    dispatch_async(self.receive_msg_queue, ^{
-        NSString *sid = [NSString stringWithFormat:@"%@@%@", [msgDic objectForKey:@"fromId"], [msgDic objectForKey:@"domain"]];
-        long long msgDate = [[msgDic objectForKey:@"stamp"] timeIntervalSince1970] * 1000;
-        NSString *nickName = [msgDic objectForKey:@"nickName"];
-        NSString *msgRaw = [msgDic objectForKey:@"msgRaw"];
-        NSString *msg = [NSString stringWithFormat:@"%@给您发送了一个窗口抖动。", nickName];
-        
-        Message *mesg = [Message new];
-        [mesg setMessageId:[msgDic objectForKey:@"msgId"]];
-        [mesg setFrom:sid];
-        [mesg setMessageType:QIMMessageType_Shock];
-        [mesg setMessageDirection:[self getGroupMsgDirectionWithSendJid:nickName]];
-        [mesg setMessage:msg];
-        [mesg setNickName:nickName];
-        [mesg setMessageDate:msgDate];
-        [mesg setMsgRaw:msgRaw];
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            BOOL isRemind = [self groupPushState:sid];
-            if (mesg.messageDirection == QIMMessageDirection_Received && (![self.currentSessionUserId isEqualToString:sid])) {
-                
-                if (![sid isEqualToString:self.currentSessionUserId]) {
-                    if (isRemind) {
-                        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(playSound) object:nil];
-                        [self performSelector:@selector(playSound) withObject:nil afterDelay:0.1];
-                    }
-                    [self increasedNotReadMsgCountByJid:sid];
-                    [self updateNotReadCountCacheByJid:sid];
-                }
-            }
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
-            });
-            [self addSessionByType:ChatType_GroupChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
-        });
-    });
-}
-
-- (void)receivePublicNumberMsg:(NSDictionary *)msgDic {
-    // 消息ID
-    NSString *msgId = [msgDic objectForKey:@"MsgId"];
-    // 消息类型
-    int msgType = [[msgDic objectForKey:@"MsgType"] intValue];
-    // 消息
-    NSString *msg = [msgDic objectForKey:@"Message"];
-    // from
-    NSString *publicNumberId = [msgDic objectForKey:@"PublicNumberId"];
-    // Date
-    long long msgDate = [[msgDic objectForKey:@"MsgDate"] timeIntervalSince1970] * 1000;
-    
-    NSString *extendInfo = [msgDic objectForKey:@"extendInfo"];
-    if ([[IMDataManager qimDB_SharedInstance] qimDB_checkPublicNumberMsgById:msgId]) {
-        return;
-    }
-    BOOL isSystemMsg = NO;
-    if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
-        if ([publicNumberId hasPrefix:@"rbt-system"]) {
-            isSystemMsg = YES;
-        } else if ([publicNumberId hasPrefix:@"rbt-notice"]) {
-            isSystemMsg = YES;
-        } else if ([publicNumberId hasPrefix:@"rbt-qiangdan"]) {
-            isSystemMsg = YES;
-        } else if ([publicNumberId hasPrefix:@"rbt-zhongbao"]) {
-            isSystemMsg = YES;
-        }
-    }
-    
-    if (msgType != PublicNumberMsgType_Action && msgType != PublicNumberMsgType_ClientCookie && msgType != PublicNumberMsgType_PostBackCookie && msgType != QIMMessageType_ConsultResult && msgType != MessageType_C2BGrabSingleFeedBack) {
-        if (isSystemMsg) {
-            //Mark by DB
-//            [self checkMsgTimeWithJid:publicNumberId WithMsgDate:msgDate WithGroup:NO];
-        } else {
-            //Mark by DB
-//            [self checkPNMsgTimeWithJid:publicNumberId WithMsgDate:msgDate];
-        }
-    }
-    
-    NSDictionary *dic = [self getPublicNumberCardByJid:publicNumberId];
-    if (dic == nil) {
-        NSString *enName = [publicNumberId componentsSeparatedByString:@"@"].firstObject;
-        NSArray *cardList = [self updatePublicNumberCardByIds:@[@{@"robot_name": enName, @"version": @(0)}] WithNeedUpdate:YES];
-        if (cardList.count <= 0) {
-            NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-            [dic setObject:@(0) forKey:@"rbt_ver"];
-            [dic setObject:enName forKey:@"robotEnName"];
-            [dic setObject:enName forKey:@"robotCnName"];
-            [dic setObject:enName forKey:@"searchIndex"];
-            [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertPublicNumbers:@[dic]];
-        }
-    }
-    Message *c2bFeedBackMessage = [Message new];
-    Message *message = [Message new];
-    [message setMessageId:msgId];
-    [message setFrom:publicNumberId];
-    [message setMessageDirection:QIMMessageDirection_Received];
-    if (isSystemMsg) {
-        [message setChatType:ChatType_System];
-    } else {
-        [message setChatType:ChatType_PublicNumber];
-    }
-    [message setMessageType:msgType];
-    [message setMessage:msg];
-    [message setExtendInformation:extendInfo];
-    [message setMessageState:QIMMessageSendState_Success];
-    [message setMessageDate:msgDate];
-    if (msgType != PublicNumberMsgType_Action && msgType != PublicNumberMsgType_ClientCookie && msgType != PublicNumberMsgType_PostBackCookie && msgType != QIMMessageType_ConsultResult) {
-        [self saveMsg:message ByJid:publicNumberId];
-    } else if (msgType == QIMMessageType_ConsultResult) {
-        // 保存渠道信息
-        if (message.extendInformation) {
-            [message setMessage:message.extendInformation];
-        }
-        NSDictionary *resultContent = [[QIMJSONSerializer sharedInstance] deserializeObject:extendInfo error:nil];
-        BOOL result = [[resultContent objectForKey:@"result"] boolValue];
-        NSString *sessionId = [resultContent objectForKey:@"sessionid"];
-        if ([sessionId rangeOfString:@"@"].location == NSNotFound) {
-            sessionId = [sessionId stringByAppendingFormat:@"@%@", [self getDomain]];
-        }
-        NSString *name = [resultContent objectForKey:@"nickname"];
-        NSMutableDictionary *userDic = [NSMutableDictionary dictionary];
-        [userDic setObject:[sessionId componentsSeparatedByString:@"@"].firstObject forKey:@"U"];
-        [userDic setObject:name forKey:@"N"];
-        [[IMDataManager qimDB_SharedInstance] qimDB_InsertOrUpdateUserInfos:@[userDic]];
-        if (result) {
-            NSString *channelid = [msgDic objectForKey:@"channelid"];
-            [self setChannelInfo:channelid ForUserId:sessionId];
-        }
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self addSessionByType:ChatType_SingleChat ById:sessionId ByMsgId:message.messageId WithMsgTime:message.messageDate WithNeedUpdate:YES];
-        });
-    }
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (message.messageType == MessageType_C2BGrabSingleFeedBack) {
-            NSString *c2BExtendInfo = message.extendInformation;
-            NSDictionary *c2BMsgDict = [[QIMJSONSerializer sharedInstance] deserializeObject:c2BExtendInfo error:nil];
-            NSString *c2BMsgId = nil;
-            NSString *btnDisplay = nil;
-            BOOL c2BStatus = YES;
-            NSString *dealId = nil;
-            if (c2BMsgDict.count > 0) {
-                c2BMsgId = [c2BMsgDict objectForKey:@"msgId"];
-                btnDisplay = [c2BMsgDict objectForKey:@"btnDisplay"];
-                c2BStatus = [[c2BMsgDict objectForKey:@"status"] boolValue];
-                dealId = [c2BMsgDict objectForKey:@"dealId"];
-            }
-            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationC2BMessageFeedBackUpdate object:c2BMsgId userInfo:@{@"message": c2bFeedBackMessage}];
-            return ;
-        } else {
-            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:publicNumberId userInfo:@{@"message": message}];
-            QIMVerboseLog(@"抛出通知 QIMmanger receivePublicNumberMsg  kNotificationSessionListUpdate");
-            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSessionListUpdate object:nil];
-            if (isSystemMsg) {
-                [self addSessionByType:ChatType_System ById:publicNumberId ByMsgId:message.messageId WithMsgTime:message.messageDate WithNeedUpdate:YES];
-            }
-            if (![publicNumberId isEqualToString:[self getCurrentSessionUserId]] && message.messageDirection == QIMMessageDirection_Received) {
-                if (isSystemMsg == NO) {
-                    [self setNotReaderMsgCount:[self getNotReaderMsgCountByPublicNumberId:publicNumberId] + 1 ForPublicNumberId:publicNumberId];
-                } else {
-                    [self increasedNotReadMsgCountByJid:publicNumberId];
-                    [self updateNotReadCountCacheByJid:publicNumberId];
-                }
-                
-                [self playSound];
-            }
-        }
-    });
 }
 
 - (void)beginToConnect {

@@ -415,6 +415,7 @@
                 NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
                 [msgDic setObject:[self qimDB_getTimeSmtapMsgIdForDate:date WithUserId:xmppId] forKey:@"MsgId"];
                 [msgDic setObject:xmppId forKey:@"SessionId"];
+                [msgDic setObject:xmppId forKey:@"RealJid"];
                 [msgDic setObject:@(101) forKey:@"MsgType"];
                 [msgDic setObject:@(platform) forKey:@"Platform"];
                 [msgDic setObject:@(0) forKey:@"MsgDirection"];
@@ -431,6 +432,7 @@
             [msgDic setObject:msgId forKey:@"MsgId"];
             [msgDic setObject:xmppId forKey:@"SessionId"];
             [msgDic setObject:compensateJid?compensateJid:@"" forKey:@"From"];
+            [msgDic setObject:xmppId forKey:@"RealJid"];
             [msgDic setObject:rtxId?rtxId:@"" forKey:@"To"];
             [msgDic setObject:msg?msg:@"" forKey:@"Content"];
             [msgDic setObject:extendInfo?extendInfo:@"" forKey:@"ExtendInfo"];
@@ -439,21 +441,9 @@
             [msgDic setObject:@(direction) forKey:@"MsgDirection"];
             [msgDic setObject:@(msgType) forKey:@"MsgType"];
             [msgDic setObject:@(msec_times) forKey:@"MsgDateTime"];
-            [msgDic setObject:@(1) forKey:@"ChatType"];
-            NSInteger insertReadFlag = 0;
-            if (msec_times <= readMarkT) {
-                [msgDic setObject:@(didReadState) forKey:@"MsgState"];
-                insertReadFlag = 1;
-            } else {
-                if (direction == 0) {
-                    insertReadFlag = 1;
-                    [msgDic setObject:@(QIMMessageSendState_Success) forKey:@"MsgState"];
-                } else {
-                    insertReadFlag = 0;
-                    [msgDic setObject:@(QIMMessageSendState_Success) forKey:@"MsgState"];
-                }
-            }
-            [msgDic setObject:@(insertReadFlag) forKey:@"ReadedTag"];
+            [msgDic setObject:@(ChatType_GroupChat) forKey:@"ChatType"];
+            [msgDic setObject:@(QIMMessageSendState_Success) forKey:@"MsgState"];
+            [msgDic setObject:@(QIMMessageRemoteReadStateDidSent) forKey:@"ReadState"];
             NSData *xmlData = [NSJSONSerialization dataWithJSONObject:dic options:NSJSONWritingPrettyPrinted error:nil];
             NSString *xml = [[NSString alloc] initWithData:xmlData encoding:NSUTF8StringEncoding];
             [msgDic setObject:xml?xml:@"" forKey:@"MsgRaw"];
@@ -552,13 +542,14 @@
                 NSMutableDictionary *msgDic = [NSMutableDictionary dictionary];
                 [msgDic setObject:[self qimDB_getTimeSmtapMsgIdForDate:date WithUserId:xmppId] forKey:@"MsgId"];
                 [msgDic setObject:xmppId forKey:@"SessionId"];
+                [msgDic setObject:xmppId forKey:@"RealJid"];
                 [msgDic setObject:@(101) forKey:@"MsgType"];
                 [msgDic setObject:@(platform) forKey:@"Platform"];
                 [msgDic setObject:@(0) forKey:@"MsgDirection"];
                 [msgDic setObject:@(msec_times-1) forKey:@"MsgDateTime"];
-                [msgDic setObject:@(16) forKey:@"MsgState"];
-                [msgDic setObject:@(1) forKey:@"ReadedTag"];
-                [msgDic setObject:@(1) forKey:@"ChatType"];
+                [msgDic setObject:@(QIMMessageSendState_Success) forKey:@"MsgState"];
+                [msgDic setObject:@(QIMMessageRemoteReadStateGroupReaded) forKey:@"ReadState"];
+                [msgDic setObject:@(ChatType_GroupChat) forKey:@"ChatType"];
                 [msgList addObject:msgDic];
             }
             if (msgId == nil) {
@@ -567,6 +558,7 @@
             NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
             [msgDic setObject:msgId forKey:@"MsgId"];
             [msgDic setObject:xmppId forKey:@"SessionId"];
+            [msgDic setObject:xmppId forKey:@"RealJid"];
             [msgDic setObject:compensateJid?compensateJid:@"" forKey:@"From"];
             [msgDic setObject:rtxId?rtxId:@"" forKey:@"To"];
             [msgDic setObject:msg?msg:@"" forKey:@"Content"];
@@ -576,21 +568,9 @@
             [msgDic setObject:@(direction) forKey:@"MsgDirection"];
             [msgDic setObject:@(msgType) forKey:@"MsgType"];
             [msgDic setObject:@(msec_times) forKey:@"MsgDateTime"];
-            [msgDic setObject:@(1) forKey:@"ChatType"];
-            NSInteger insertReadFlag = 0;
-            if (msec_times <= readMarkT) {
-                [msgDic setObject:@(didReadState) forKey:@"MsgState"];
-                insertReadFlag = 1;
-            } else {
-                if (direction == 0) {
-                    insertReadFlag = 1;
-                    [msgDic setObject:@(2) forKey:@"MsgState"];
-                } else {
-                    insertReadFlag = 0;
-                    [msgDic setObject:@(0) forKey:@"MsgState"];
-                }
-            }
-            [msgDic setObject:@(insertReadFlag) forKey:@"ReadedTag"];
+            [msgDic setObject:@(ChatType_GroupChat) forKey:@"ChatType"];
+            [msgDic setObject:@(QIMMessageSendState_Success) forKey:@"MsgState"];
+            [msgDic setObject:@(QIMMessageRemoteReadStateGroupReaded) forKey:@"ReadState"];
             NSData *xmlData = [NSJSONSerialization dataWithJSONObject:dic options:NSJSONWritingPrettyPrinted error:nil];
             NSString *xml = [[NSString alloc] initWithData:xmlData encoding:NSUTF8StringEncoding];
             [msgDic setObject:xml?xml:@"" forKey:@"MsgRaw"];
@@ -1135,12 +1115,12 @@
                     }
                 }
             } else {
-                if ([xmppId isEqualToString:fromJid] == NO) {
+                if ([xmppId isEqualToString:self.dbOwnerId] == YES) {
                     
                     key = [toJid retain];
-                    direction = 0;
+                    direction = QIMMessageDirection_Sent;
                 } else {
-                    direction = 1;
+                    direction = QIMMessageDirection_Received;
                     key = [fromJid retain];
                 }
             }
@@ -1169,7 +1149,7 @@
                 [msgDic setObject:isConsult?xmppId:key forKey:@"SessionId"];
                 [msgDic setObject:@(101) forKey:@"MsgType"];
                 [msgDic setObject:@(platForm) forKey:@"Platform"];
-                [msgDic setObject:@(0) forKey:@"MsgDirection"];
+                [msgDic setObject:@(QIMMessageDirection_Sent) forKey:@"MsgDirection"];
                 [msgDic setObject:@(date.timeIntervalSince1970*1000-1) forKey:@"MsgDateTime"];
                 [msgDic setObject:@(QIMMessageSendState_Success) forKey:@"MsgState"];
                 [msgDic setObject:@(chatType) forKey:@"ChatType"];
@@ -2251,8 +2231,29 @@
         for (NSDictionary *msgInfo in msgs) {
             NSString *msgId = [msgInfo objectForKey:@"msgid"];
             NSInteger readFlag = [[msgInfo objectForKey:@"readflag"] integerValue];
-            //            QIMVerboseLog(@"MsgId : %@, 阅读状态 : %@", msgId, msgStateLog);
-            [paramList addObject:@[@(readFlag), msgId]];
+            QIMMessageRemoteReadState remoteReadState = QIMMessageRemoteReadStateNotSent;
+            switch (readFlag) {
+                case 0: {
+                    remoteReadState = QIMMessageRemoteReadStateNotSent;
+                }
+                    break;
+                case 1: {
+                    remoteReadState = QIMMessageRemoteReadStateDidSent;
+                }
+                    break;
+                case 3: {
+                    remoteReadState = QIMMessageRemoteReadStateDidReaded;
+                }
+                    break;
+                case 7: {
+                    remoteReadState = QIMMessageRemoteReadStateDidOperated;
+                }
+                    break;
+                default:
+                    break;
+            }
+//            QIMVerboseLog(@"MsgId : %@, 阅读状态 : %@", msgId, msgStateLog);
+            [paramList addObject:@[@(remoteReadState), msgId]];
         }
         [database executeBulkInsert:sql withParameters:paramList];
     }];

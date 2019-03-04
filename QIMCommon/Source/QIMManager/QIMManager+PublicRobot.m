@@ -331,7 +331,7 @@
     [mesg setTo:publicNumberId];
     [mesg setFrom:[[QIMManager sharedInstance] getLastJid]];
     [mesg setMessageDate:msgDate];
-    [mesg setMessageState:QIMMessageSendState_Waiting];
+    [mesg setMessageSendState:QIMMessageSendState_Waiting];
     [mesg setExtendInformation:extendInfo];
     [self saveMsg:mesg ByJid:publicNumberId];
     return mesg;
@@ -346,7 +346,7 @@
     [message setChatType:ChatType_PublicNumber];
     [message setMessageType:msgType];
     [message setMessage:msg];
-    [message setMessageState:QIMMessageSendState_Waiting];
+    [message setMessageSendState:QIMMessageSendState_Waiting];
     [message setMessageDate:([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff) * 1000];
     [[XmppImManager sharedInstance] sendPublicNumberMessage:msg WithInfo:nil toJid:publicNumberId WithMsgId:msgId WithMsgType:msgType];
     if (message.messageType != PublicNumberMsgType_Action && message.messageType != PublicNumberMsgType_ClientCookie && message.messageType != PublicNumberMsgType_PostBackCookie) {
@@ -378,7 +378,7 @@
             [msg setTo:to];
             [msg setMessage:content];
             [msg setMessageType:msgType];
-            [msg setMessageState:msgState];
+            [msg setMessageSendState:msgState];
             [msg setMessageDirection:msgDirection];
             [msg setMessageDate:msgDate];
             [result addObject:msg];

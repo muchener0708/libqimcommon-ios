@@ -65,7 +65,7 @@
                 [msg setExtendInformation:[infoDic objectForKey:@"ExtendInfo"]];
                 [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
                 [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-                [msg setMessageState:[[infoDic objectForKey:@"MsgState"] intValue]];
+                [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
                 [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
                 [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
                 [msg setReadTag:[[infoDic objectForKey:@"ReadTag"] intValue]];
@@ -110,7 +110,7 @@
                         [msg setExtendInformation:[infoDic objectForKey:@"ExtendInfo"]];
                         [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
                         [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-                        [msg setMessageState:[[infoDic objectForKey:@"MsgState"] intValue]];
+                        [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
                         [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
                         [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
                         [msg setMsgRaw:[infoDic objectForKey:@"msgRaw"]];
@@ -235,7 +235,7 @@
             [msg setExtendInformation:[infoDic objectForKey:@"ExtendInfo"]];
             [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
             [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-            [msg setMessageState:[[infoDic objectForKey:@"MsgState"] intValue]];
+            [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
             [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
             [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
             [list addObject:msg];

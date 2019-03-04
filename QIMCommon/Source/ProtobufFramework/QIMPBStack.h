@@ -101,8 +101,6 @@
 
 - (void)onReceivePublicNumberMsg:(NSDictionary *)msgDic;
 
-- (void)onUserPresenceChange:(NSString *) jid;
-
 @optional
 - (void) onMessageReceived:(NSString *) destId
                 withDomain:(NSString*) destDomain
@@ -157,6 +155,7 @@
                         WithMsgId:(NSString *)msgId
                      WithErrorCode:(NSString *)errcode;
     
+- (void)onMessageUpdateMState:(NSDictionary *)msgDic;
 
 - (void)receTransferChatWithFrom:(NSString *)from
                        WithMsgId:(NSString *)msgId;
@@ -322,9 +321,6 @@
  @param messageDict 消息体字典，具体需要什么在内层解析
  */
 - (BOOL)sendGroupMessageWithMessageDict:(NSDictionary *)messageDict;
-
-- (BOOL)sendReplyMessageId:(NSString *)replyMsgId WithReplyUser:(NSString *)replyUser WithMessageId:(NSString *)msgId WithMessage:(NSString *)message ToGroupId:(NSString *)groupId;
-- (BOOL)sendReplyMessageId:(NSString *)replyMsgId WithReplyUser:(NSString *)replyUser WithMessageId:(NSString *)msgId WithMessage:(NSString *)message ToGroupId:(NSString *)groupId OutMsgRaw:(NSString **)msgRaw;
 
 - (BOOL)revokeMessageId:(NSString *)msgId WithMessage:(NSString *)message ToJid:(NSString *)jid;
 

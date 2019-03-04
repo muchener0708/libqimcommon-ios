@@ -243,8 +243,8 @@ typedef enum {
 } QIMMessageReadFlag;   //向服务器发送的标识符
 
 typedef enum {
-    QIMMessageSendState_Faild      = 0x00,     //发送失败
-    QIMMessageSendState_Waiting    = 0x01,     //发送中
+    QIMMessageSendState_Waiting    = 0x00,     //发送中
+    QIMMessageSendState_Faild      = 0x01,     //发送失败
     QIMMessageSendState_Success    = 0x02,     //发送成功
 } QIMMessageSendState; //消息发送状态
 

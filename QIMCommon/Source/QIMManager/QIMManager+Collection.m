@@ -132,7 +132,7 @@
         [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
         [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
         [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-        [msg setMessageState:[[infoDic objectForKey:@"MsgState"] intValue]];
+        [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
         [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
         [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
         [msg setRealJid:[infoDic objectForKey:@"RealJid"]];
@@ -159,7 +159,7 @@
             [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
             [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
             [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-            [msg setMessageState:[[infoDic objectForKey:@"MsgState"] intValue]];
+            [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
             [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
             [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
             [msg setRealJid:[infoDic objectForKey:@"RealJid"]];

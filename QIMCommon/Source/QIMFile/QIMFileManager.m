@@ -380,7 +380,7 @@ typedef enum {
 //                            self.message.messageType = QIMMessageType_Encrypt;
 //                        }
                     }
-//                    self.message.messageState = MessageState_Success;
+//                    self.message.messageSendState = MessageState_Success;
                     if (self.message.chatType == ChatType_PublicNumber) {
                         [[QIMManager sharedInstance] sendMessage:self.message.message ToPublicNumberId:self.toJid WithMsgId:self.message.messageId WithMsgType:self.message.messageType];
                     } else if (self.message.chatType == ChatType_Consult) {
@@ -447,7 +447,7 @@ typedef enum {
 - (void)requestFailed:(ASIHTTPRequest *)request{
     
     if (self.fileReuqestType == FileRequest_Upload) {
-        self.message.messageState = QIMMessageSendState_Faild;
+        self.message.messageSendState = QIMMessageSendState_Faild;
         [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyFileManagerUpdate object:[NSDictionary dictionaryWithObjectsAndKeys:self.message,@"message",@"1.1",@"propress", @"failed",@"status",nil]];
         [[NSNotificationCenter defaultCenter] postNotificationName:@"kXmppStreamSendMessageFailed" object:@{@"messageId":self.message.messageId}];
     } else if (self.fileReuqestType == FileRequest_Download) {

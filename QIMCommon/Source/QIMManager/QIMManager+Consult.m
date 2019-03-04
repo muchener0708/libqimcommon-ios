@@ -77,7 +77,7 @@
     [message setMessageType:msgType];
     [message setMessage:msg];
     [message setExtendInformation:info];
-    [message setMessageState:QIMMessageSendState_Waiting];
+    [message setMessageSendState:QIMMessageSendState_Waiting];
     [message setMessageDate:([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff)*1000];
     
     NSString *sid = nil;

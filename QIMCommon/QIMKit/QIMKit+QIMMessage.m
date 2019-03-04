@@ -111,10 +111,6 @@
     return [[QIMManager sharedInstance] sendMessage:msg WithInfo:info ToUserId:userId WithMsgType:msgType];
 }
 
-- (Message *)createNoteReplyMessage:(NSString *)msg ToUserId:(NSString *)user {
-    return [[QIMManager sharedInstance] createNoteReplyMessage:msg ToUserId:user];
-}
-
 - (Message *)sendMessage:(NSString *)msg ToGroupId:(NSString *)groupId {
     return [[QIMManager sharedInstance] sendMessage:msg ToGroupId:groupId];
 }
@@ -127,14 +123,6 @@
     return [[QIMManager sharedInstance] sendMessage:msg WithInfo:info ToGroupId:groupId WithMsgType:msgType WithMsgId:msgId];
 }
 
-- (Message *)sendGroupShockToGroupId:(NSString *)groupId {
-    return [[QIMManager sharedInstance] sendGroupShockToGroupId:groupId];
-}
-
-- (BOOL)sendReplyMessageId:(NSString *)replyMsgId WithReplyUser:(NSString *)replyUser WithMessageId:(NSString *)msgId WithMessage:(NSString *)message ToGroupId:(NSString *)groupId {
-   return [[QIMManager sharedInstance] sendReplyMessageId:replyMsgId WithReplyUser:replyUser WithMessageId:msgId WithMessage:message ToGroupId:groupId];
-}
-
 - (void)revokeGroupMessageWithMessageId:(NSString *)messageId message:(NSString *)message ToJid:(NSString *)jid {
     [[QIMManager sharedInstance] revokeGroupMessageWithMessageId:messageId message:message ToJid:jid];
 }
@@ -145,10 +133,6 @@
 
 - (Message *)sendGroupVoiceUrl:(NSString *)voiceUrl withVoiceName:(NSString *)voiceName withSeconds:(int)seconds ToGroupId:(NSString *)groupId {
    return [[QIMManager sharedInstance] sendGroupVoiceUrl:voiceUrl withVoiceName:voiceName withSeconds:seconds ToGroupId:groupId];
-}
-
-- (Message *)createNoteReplyMessage:(NSString *)msg ToGroupId:(NSString *)groupId {
-    return [[QIMManager sharedInstance] createNoteReplyMessage:msg ToGroupId:groupId];
 }
 
 // 发送音视频消息

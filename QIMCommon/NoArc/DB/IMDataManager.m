@@ -302,6 +302,7 @@ static IMDataManager *__global_data_manager = nil;
                   for each row begin\
                   INSERT INTO logs(context, level, message, timestamp) VALUES (new.ReadState, '创建消息列表插入未读数触发器', new.XmppId||'--'||new.MsgId, datetime('now')) ;\
                   update IM_SessionList set UnreadCount = case when ((new.ReadState&2)<>2) then UnreadCount+1 else UnreadCount end where XmppId = new.XmppId and RealJid = new.RealJid and new.Direction=1 ;\
+                  update IM_SessionList set LastMessageId = new.MsgId, LastUpdateTime = new.LastUpdateTime where XmppId = new.XmppId and RealJid = new.RealJid;\
                   end" withParameters:nil];
         
         //创建消息列表未读数更新触发器
@@ -4112,12 +4113,12 @@ static IMDataManager *__global_data_manager = nil;
     }
     __block NSMutableArray *result = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"Select MsgId From IM_Message Where XmppId = :XmppId And RealJid = :RealJid And State <= :State And Direction = :MsgDirection;";
+        NSString *sql = @"Select MsgId From IM_Message Where XmppId = :XmppId And RealJid = :RealJid And ReadState&2 <> 2 And Direction = :MsgDirection;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:userId];
         [param addObject:realJid];
-        [param addObject:@(15)];
-        [param addObject:@(1)];
+//        [param addObject:@(15)];
+        [param addObject:@(QIMMessageDirection_Received)];
         DataReader *reader = [database executeReader:sql withParameters:param];
         [param release];
         param = nil;

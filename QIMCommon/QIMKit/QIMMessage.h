@@ -36,7 +36,8 @@
 
 @property (nonatomic, assign) IMPlatform        platform;                   //消息发送方的平台
 @property (nonatomic, assign) QIMMessageType    messageType;                //消息的Type
-@property (nonatomic, assign) QIMMessageSendState      messageState;               //消息当前状态
+@property (nonatomic, assign) QIMMessageSendState   messageSendState;       //消息当前发送状态
+@property (nonatomic, assign) QIMMessageRemoteReadState messageReadState;   //消息当前阅读状态
 @property (nonatomic, assign) QIMMessageDirection  messageDirection;           //消息方向
 @property (nonatomic, assign) QIMMessageRemoteReadState remoteReadState;    //消息已读状态
 

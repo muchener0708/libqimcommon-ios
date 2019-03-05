@@ -302,7 +302,7 @@
 - (void)deleteMessageByMessageId:(NSString *)messageId ByJid:(NSString *)sid {
     [[IMDataManager qimDB_SharedInstance] qimDB_deleteMessageByMessageId:messageId ByJid:sid];
 }
-
+/*
 - (void)insertMessageWithMsgId:(NSString *)msgId
                     WithXmppId:(NSString *)xmppId
                       WithFrom:(NSString *)from
@@ -392,6 +392,7 @@
                                                WithRealJid:realJid
                                               WithChatType:chatType];
 }
+*/
 
 - (void)updateMessageWithMsgId:(NSString *)msgId
                     WithMsgRaw:(NSString *)msgRaw {
@@ -608,10 +609,6 @@
 //    return [[IMDataManager qimDB_SharedInstance] qimDB_getLastMessage];
 }
 
-- (void)updateMsgsContent:(NSString *)content ByMsgId:(NSString *)msgId {
-    [[IMDataManager qimDB_SharedInstance] updateMsgsContent:content ByMsgId:msgId];
-}
-
 - (NSDictionary *)getMsgsByMsgId:(NSString *)msgId {
     return [[IMDataManager qimDB_SharedInstance] qimDB_getMsgsByMsgId:msgId];
 }
@@ -648,10 +645,6 @@
     return [[IMDataManager qimDB_SharedInstance] qimDB_getMsgIdsForDirection:msgDirection WithMsgState:msgState];
 }
 
-- (void)updateMsgIdToDidreadForNotReadMsgIdList:(NSArray *)notReadList AndSourceMsgIdList:(NSArray *)sourceMsgIdList WithDidReadState:(int)didReadState {
-    [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgIdToDidreadForNotReadMsgIdList:notReadList AndSourceMsgIdList:sourceMsgIdList WithDidReadState:didReadState];
-}
-
 - (NSArray *)searchMsgHistoryWithKey:(NSString *)key {
     return [[IMDataManager qimDB_SharedInstance] qimDB_searchMsgHistoryWithKey:key];
 }
@@ -672,10 +665,6 @@
 
 - (long long) lastestSystemMessageTime {
     return [[IMDataManager qimDB_SharedInstance] qimDB_lastestSystemMessageTime];
-}
-
-- (long long) lastestMessageTimeWithNotMessageState:(long long) messageState {
-    return [[IMDataManager qimDB_SharedInstance] qimDB_lastestMessageTimeWithNotMessageState:messageState];
 }
 
 - (NSString *) getLastMsgIdByJid:(NSString *)jid {

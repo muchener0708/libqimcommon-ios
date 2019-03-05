@@ -29,7 +29,7 @@
 @property (nonatomic, copy)   NSString          *originalMessage;
 @property (nonatomic, copy)   NSString          *originalExtendedInfo;
 
-@property (nonatomic, copy)   NSString          *nickName;
+//@property (nonatomic, copy)   NSString          *nickName;
 
 @property (nonatomic, copy)   NSString          *realJid;
 
@@ -38,19 +38,19 @@
 @property (nonatomic, assign) QIMMessageSendState   messageSendState;       //消息当前发送状态
 @property (nonatomic, assign) QIMMessageRemoteReadState messageReadState;   //消息当前阅读状态
 @property (nonatomic, assign) QIMMessageDirection  messageDirection;           //消息方向
-@property (nonatomic, assign) QIMMessageRemoteReadState remoteReadState;    //消息已读状态
+//@property (nonatomic, assign) QIMMessageRemoteReadState remoteReadState;    //消息已读状态
 
 @property (nonatomic, assign) ChatType          originChatType;             //代收消息 -> 原始消息的ChatType
 @property (nonatomic, assign) ChatType          chatType;                   //消息的ChatType
 @property (nonatomic, assign) long long         messageDate;                //消息时间戳
-@property (nonatomic, assign) long long         version;
+//@property (nonatomic, assign) long long         version;
 @property (nonatomic, strong) NSData            * imageData;
-@property (nonatomic, strong) NSString          *MD5;// 保存图片only
+//@property (nonatomic, strong) NSString          *MD5;// 保存图片only
 
 @property (nonatomic, copy)   NSString          *xmppId;
 
-@property (nonatomic, copy)   NSString          *fromUser;
-@property (nonatomic, assign) int               readTag;
+//@property (nonatomic, copy)   NSString          *fromUser;
+//@property (nonatomic, assign) int               readTag;
 @property (nonatomic, copy)   NSString          *msgRaw;                    //原始的消息完整体
 
 - (NSDictionary *)getMsgInfoDic;

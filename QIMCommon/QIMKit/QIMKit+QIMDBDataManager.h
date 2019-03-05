@@ -332,7 +332,6 @@
 - (NSArray *)getMsgIdsByMsgState:(int)notReadMsgState WithDirection:(int)receiveDirection;
 - (NSInteger)getMessageStateWithMsgId:(NSString *)msgId;
 - (NSArray *)getMsgIdsForDirection:(int)msgDirection WithMsgState:(int)msgState;
-- (void)updateMsgIdToDidreadForNotReadMsgIdList:(NSArray *)notReadList AndSourceMsgIdList:(NSArray *)sourceMsgIdList WithDidReadState:(int)didReadState;
 // 搜索
 - (NSArray *)searchMsgHistoryWithKey:(NSString *)key;
 
@@ -340,7 +339,6 @@
 - (NSArray *) existsMessageUsers;
 - (long long) lastestMessageTime;
 - (long long) lastestSystemMessageTime;
-- (long long) lastestMessageTimeWithNotMessageState:(long long) messageState;
 - (NSString *) getLastMsgIdByJid:(NSString *)jid;
 
 /****************** FriendSter Msg *******************/

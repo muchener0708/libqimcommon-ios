@@ -671,7 +671,8 @@ typedef enum {
     if ([fileExt.uppercaseString isEqualToString:@"GIF"]) {
         isGif = YES;
     }
-    message.MD5 = fileKey;
+    //Mark by DB
+//    message.MD5 = fileKey;
     __block NSString * fileName = fileExt.length ? [fileKey stringByAppendingPathExtension:fileExt] : fileKey;
     CGSize size = [self getFitSizeForImgSize:[UIImage imageWithData:fileData].size];
     //存小图

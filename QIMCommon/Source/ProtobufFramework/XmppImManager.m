@@ -583,66 +583,7 @@
     if (destId == nil || domain == nil) {
         return;
     }
-    if (msgType == QIMMessageType_Voice) {
-        NSDictionary *message = @{@"fromId": destId,
-                                  @"domain": domain,
-                                  @"msg": msg ? msg : @"",
-                                  @"stamp": date ? date : [NSDate date],
-                                  @"direction": @(direction),
-                                  @"msgId": msgId,
-                                  @"msgtype": @"msgVoice",
-                                  @"payformType": @(payformType),
-                                  @"msgType": @(msgType),
-                                  @"extendInfo": extendInfo ? extendInfo : @"",
-                                  @"chatId": chatId ? chatId : @"",
-                                  @"msgRaw": msgRaw ? msgRaw : @""
-                                  };
-        
-        NSMutableArray *methods = [_eventMapping objectForKey:@(XmppEvent_MessageIn)];
-        for (NSDictionary *info in methods) {
-            if (info) {
-                id obj = [info objectForKey:@"object"];
-                NSString *method = [info objectForKey:@"method"];
-                SEL sel = NSSelectorFromString(method);
-                
-                [obj performSelector:sel
-                            onThread:[NSThread mainThread]
-                          withObject:message
-                       waitUntilDone:NO];
-            }
-        }
-    } else if (msgType == QIMMessageType_File) {
-        NSMutableArray *methods = [_eventMapping objectForKey:@(XmppEvent_FileIn)];
-        
-        if (msg != nil) {
-            
-            NSDictionary *message = @{@"fromId": destId,
-                                      @"domain": domain,
-                                      @"msg": msg ? msg : @"",
-                                      @"stamp": date ? date : [NSDate date],
-                                      @"direction": @(direction),
-                                      @"msgId": msgId,
-                                      @"payformType": @(payformType),
-                                      @"msgType": @(msgType),
-                                      @"extendInfo": extendInfo ? extendInfo : @"",
-                                      @"chatId": chatId ? chatId : @"",
-                                      @"msgRaw": msgRaw ? msgRaw : @""
-                                      };
-            
-            for (NSDictionary *info in methods) {
-                if (info) {
-                    id obj = [info objectForKey:@"object"];
-                    NSString *method = [info objectForKey:@"method"];
-                    SEL sel = NSSelectorFromString(method);
-                    
-                    [obj performSelector:sel
-                                onThread:[NSThread mainThread]
-                              withObject:message
-                           waitUntilDone:NO];
-                }
-            }
-        }
-    } else if (msgType == QIMMessageType_Shock) {
+    if (msgType == QIMMessageType_Shock) {
         NSMutableArray *methods = [_eventMapping objectForKey:@(XmppEvent_ShockIn)];
         
         if (msg != nil) {
@@ -703,166 +644,33 @@
             }
         }
     }
-    
 }
 
-- (void)onGroupMessageReceived:(NSString *)destId
-                        domain:(NSString *)domain
-                       sendJid:(NSString *)nickName
-                   messageType:(int)msgType
-                  platformType:(int)payformType
-                       message:(NSString *)msg
-                   originalMsg:(NSString *)originalMsg
-                     messageId:(NSString *)msgId
+- (void)onGroupMessageReceived:(NSString *) destId
+                        domain:(NSString *) domain
+                       sendJid:(NSString *) sendJid
+                   messageType:(int) msgType
+                  platformType:(int) payformType
+                       message:(NSString *) message
+                     messageId:(NSString *) msgId
                          stamp:(NSDate *)date
                     extendInfo:(NSString *)extendInfo
-                    replyMsgId:(NSString *)replyMsgId
-                     replyUser:(NSString *)replyUser
-                        chatId:(NSString *)chatId
                     backupInfo:(NSString *)backupInfo
+                 carbonMessage:(BOOL)carbonMessage
+                     autoReply:(BOOL)autoReply
                         msgRaw:(NSString *)msgRaw {
-    if (msgType == 3) {
-        NSMutableArray *methods = [_eventMapping objectForKey:@(XmppEvent_GroupImageIn)];
-        
-        if (msg != nil) {
-            
-            NSDictionary *message = @{@"fromId": destId,
-                                      @"domain": domain,
-                                      @"nickName": nickName,
-                                      @"msg": msg,
-                                      @"stamp": date,
-                                      @"msgId": msgId,
-                                      @"payformType": @(payformType),
-                                      @"msgType": @(msgType),
-                                      @"extendInfo": extendInfo ? extendInfo : @"",
-                                      @"chatId": chatId ? chatId : @"",
-                                      @"backupInfo": backupInfo ? backupInfo : @"",
-                                      @"msgRaw": msgRaw ? msgRaw : @""
-                                      };
-            
-            for (NSDictionary *info in methods) {
-                if (info) {
-                    id obj = [info objectForKey:@"object"];
-                    NSString *method = [info objectForKey:@"method"];
-                    SEL sel = NSSelectorFromString(method);
-                    
-                    [obj performSelector:sel
-                                onThread:[NSThread mainThread]
-                              withObject:message
-                           waitUntilDone:NO];
-                }
-            }
-        }
-    } else if (msgType == QIMMessageType_Shock) {
-        NSMutableArray *methods = [_eventMapping objectForKey:@(XmppEvent_GroupShockIn)];
-        
-        if (msg != nil) {
-            
-            NSDictionary *message = @{@"fromId": destId,
-                                      @"domain": domain,
-                                      @"nickName": nickName,
-                                      @"msg": msg,
-                                      @"stamp": date,
-                                      @"msgId": msgId,
-                                      @"payformType": @(payformType),
-                                      @"msgType": @(msgType),
-                                      @"extendInfo": extendInfo ? extendInfo : @"",
-                                      @"chatId": chatId ? chatId : @"",
-                                      @"backupInfo": backupInfo ? backupInfo : @"",
-                                      @"msgRaw": msgRaw ? msgRaw : @""
-                                      };
-            
-            for (NSDictionary *info in methods) {
-                if (info) {
-                    id obj = [info objectForKey:@"object"];
-                    NSString *method = [info objectForKey:@"method"];
-                    SEL sel = NSSelectorFromString(method);
-                    
-                    [obj performSelector:sel
-                                onThread:[NSThread mainThread]
-                              withObject:message
-                           waitUntilDone:NO];
-                }
-            }
-        }
-        
-    } else if (msgType == QIMMessageType_Voice) {
-        //add by dan.zheng 15/4/28
-        //        NSXMLElement *body = (NSXMLElement *) originalMsg;
-#pragma mark - 语音消息
-        NSDictionary *message = @{@"fromId": destId,
-                                  @"domain": domain,
-                                  @"nickName": nickName,
-                                  @"msg": msg ? msg : @"",
-                                  @"stamp": date ? date : [NSDate date],
-                                  @"msgId": msgId,
-                                  @"msgtype": @"msgVoice",
-                                  @"payformType": @(payformType),
-                                  @"msgType": @(msgType),
-                                  @"extendInfo": extendInfo ? extendInfo : @"",
-                                  @"chatId": chatId ? chatId : @"",
-                                  @"backupInfo": backupInfo ? backupInfo : @"",
-                                  @"msgRaw": msgRaw ? msgRaw : @""
-                                  };
-        
-        NSMutableArray *methods = [_eventMapping objectForKey:@(XmppeventGroupMessageIn)];
-        for (NSDictionary *info in methods) {
-            if (info) {
-                id obj = [info objectForKey:@"object"];
-                NSString *method = [info objectForKey:@"method"];
-                SEL sel = NSSelectorFromString(method);
-                
-                [obj performSelector:sel
-                            onThread:[NSThread mainThread]
-                          withObject:message
-                       waitUntilDone:NO];
-            }
-        }
-    } else if (msgType == QIMMessageType_File) {
-        NSMutableArray *methods = [_eventMapping objectForKey:@(XmppEvent_GroupFileIn)];
-        
-        if (msg != nil) {
-            
-            NSDictionary *message = @{@"fromId": destId,
-                                      @"domain": domain,
-                                      @"nickName": nickName,
-                                      @"msg": msg,
-                                      @"stamp": date,
-                                      @"msgId": msgId,
-                                      @"payformType": @(payformType),
-                                      @"msgType": @(msgType),
-                                      @"extendInfo": extendInfo ? extendInfo : @"",
-                                      @"chatId": chatId ? chatId : @"",
-                                      @"backupInfo": backupInfo ? backupInfo : @"",
-                                      @"msgRaw": msgRaw ? msgRaw : @""
-                                      };
-            
-            for (NSDictionary *info in methods) {
-                if (info) {
-                    id obj = [info objectForKey:@"object"];
-                    NSString *method = [info objectForKey:@"method"];
-                    SEL sel = NSSelectorFromString(method);
-                    
-                    [obj performSelector:sel
-                                onThread:[NSThread mainThread]
-                              withObject:message
-                           waitUntilDone:NO];
-                }
-            }
-        }
-    } else if (msgType == QIMMessageTypeWebRtcMsgTypeVideoMeeting) {
+   if (msgType == QIMMessageTypeWebRtcMsgTypeVideoMeeting) {
         NSMutableArray *methods = [_eventMapping objectForKey:@(XmppEvent_CallMeetingAudioVideoConference)];
-        if (msg != nil) {
-            NSDictionary *message = @{@"fromId": destId,
+        if (message != nil) {
+            NSDictionary *messageDic = @{@"fromId": destId,
                                       @"domain": domain,
-                                      @"nickName": nickName,
-                                      @"msg": msg,
+                                      @"nickName": sendJid,
+                                      @"msg": message,
                                       @"stamp": date,
                                       @"msgId": msgId,
                                       @"payformType": @(payformType),
                                       @"msgType": @(msgType),
                                       @"extendInfo": extendInfo ? extendInfo : @"",
-                                      @"chatId": chatId ? chatId : @"",
                                       @"backupInfo": backupInfo ? backupInfo : @"",
                                       @"msgRaw": msgRaw ? msgRaw : @""
                                       };
@@ -874,7 +682,7 @@
                     
                     [obj performSelector:sel
                                 onThread:[NSThread mainThread]
-                              withObject:message
+                              withObject:messageDic
                            waitUntilDone:NO];
                 }
             }
@@ -882,22 +690,21 @@
     } else {
         NSMutableArray *methods = [_eventMapping objectForKey:@(XmppeventGroupMessageIn)];
         
-        if (msg != nil) {
-            NSMutableDictionary *message = [NSMutableDictionary dictionary];
-            [self safeSaveDic:message setObject:destId ForKey:@"fromId"];
-            [self safeSaveDic:message setObject:domain ForKey:@"domain"];
-            [self safeSaveDic:message setObject:nickName ForKey:@"nickName"];
-            [self safeSaveDic:message setObject:msg ForKey:@"msg"];
-            [self safeSaveDic:message setObject:date ForKey:@"stamp"];
-            [self safeSaveDic:message setObject:msgId ForKey:@"msgId"];
-            [self safeSaveDic:message setObject:@(payformType) ForKey:@"payformType"];
-            [self safeSaveDic:message setObject:@(msgType) ForKey:@"msgType"];
-            [self safeSaveDic:message setObject:extendInfo ForKey:@"extendInfo"];
-            [self safeSaveDic:message setObject:replyMsgId ForKey:@"replyMsgId"];
-            [self safeSaveDic:message setObject:replyUser ForKey:@"replyUser"];
-            [self safeSaveDic:message setObject:chatId ForKey:@"chatId"];
-            [self safeSaveDic:message setObject:backupInfo ForKey:@"backupInfo"];
-            [self safeSaveDic:message setObject:msgRaw ForKey:@"msgRaw"];
+        if (message != nil) {
+            NSMutableDictionary *messageDic = [NSMutableDictionary dictionary];
+            [self safeSaveDic:messageDic setObject:destId ForKey:@"fromId"];
+            [self safeSaveDic:messageDic setObject:domain ForKey:@"domain"];
+            [self safeSaveDic:messageDic setObject:sendJid ForKey:@"sendJid"];
+            [self safeSaveDic:messageDic setObject:message ForKey:@"msg"];
+            [self safeSaveDic:messageDic setObject:date ForKey:@"stamp"];
+            [self safeSaveDic:messageDic setObject:msgId ForKey:@"msgId"];
+            [self safeSaveDic:messageDic setObject:@(payformType) ForKey:@"payformType"];
+            [self safeSaveDic:messageDic setObject:@(msgType) ForKey:@"msgType"];
+            [self safeSaveDic:messageDic setObject:extendInfo ForKey:@"extendInfo"];
+            [self safeSaveDic:messageDic setObject:backupInfo ForKey:@"backupInfo"];
+            [self safeSaveDic:messageDic setObject:@(carbonMessage) ForKey:@"carbonMessage"];
+            [self safeSaveDic:messageDic setObject:@(autoReply) ForKey:@"autoReply"];
+            [self safeSaveDic:messageDic setObject:msgRaw ForKey:@"msgRaw"];
             
             for (NSDictionary *info in methods) {
                 if (info) {
@@ -907,7 +714,7 @@
                     
                     [obj performSelector:sel
                                 onThread:[NSThread mainThread]
-                              withObject:message
+                              withObject:messageDic
                            waitUntilDone:NO];
                 }
             }

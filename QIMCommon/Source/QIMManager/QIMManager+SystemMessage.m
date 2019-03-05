@@ -59,7 +59,6 @@
                QIMMessageModel *msg = [QIMMessageModel new];
                 [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
                 [msg setFrom:[infoDic objectForKey:@"From"]];
-                [msg setNickName:[infoDic objectForKey:@"From"]];
                 [msg setTo:[infoDic objectForKey:@"To"]];
                 [msg setMessage:[infoDic objectForKey:@"Content"]];
                 [msg setExtendInformation:[infoDic objectForKey:@"ExtendInfo"]];
@@ -68,7 +67,8 @@
                 [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
                 [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
                 [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
-                [msg setReadTag:[[infoDic objectForKey:@"ReadTag"] intValue]];
+                //Mark by DB
+//                [msg setReadTag:[[infoDic objectForKey:@"ReadTag"] intValue]];
                 [msg setMsgRaw:[infoDic objectForKey:@"msgRaw"]];
                 [list addObject:msg];
             }

@@ -266,7 +266,7 @@
     
     long long msgDate = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff) * 1000;
     [self checkMsgTimeWithJid:userId WithMsgDate:msgDate WithGroup:NO];
-   QIMMessageModel *mesg = [QIMMessageModel new];
+    QIMMessageModel *mesg = [QIMMessageModel new];
     [mesg setMessageId:[QIMUUIDTools UUID]];
     [mesg setMessageType:msgType];
     [mesg setChatType:userType];
@@ -281,9 +281,9 @@
     } else {
         [mesg setRealJid:userId];
     }
-    if (userType == ChatType_GroupChat) {
-        [mesg setNickName:[[QIMManager sharedInstance] getLastJid]];
-    }
+//    if (userType == ChatType_GroupChat) {
+//        [mesg setNickName:[[QIMManager sharedInstance] getLastJid]];
+//    }
     [mesg setMessageDate:msgDate];
     [mesg setMessageSendState:QIMMessageSendState_Waiting];
     [mesg setExtendInformation:extendInfo];
@@ -303,7 +303,7 @@
 - (QIMMessageModel *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId realJid:(NSString *)realJid userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId msgState:(QIMMessageSendState)msgState willSave:(BOOL)willSave {
     long long msgDate = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff) * 1000;
     [self checkMsgTimeWithJid:userId WithMsgDate:msgDate WithGroup:NO];
-   QIMMessageModel *mesg = [QIMMessageModel new];
+    QIMMessageModel *mesg = [QIMMessageModel new];
     [mesg setMessageId:mId.length ? mId : [QIMUUIDTools UUID]];
     [mesg setMessageType:msgType];
     [mesg setChatType:userType];
@@ -317,9 +317,9 @@
     } else {
         [mesg setRealJid:realJid?realJid:userId];
     }
-    if (userType == ChatType_GroupChat) {
-        [mesg setNickName:[[QIMManager sharedInstance] getLastJid]];
-    }
+//    if (userType == ChatType_GroupChat) {
+//        [mesg setNickName:[[QIMManager sharedInstance] getLastJid]];
+//    }
     [mesg setMessageDate:msgDate];
     if (msgState) {
         [mesg setMessageSendState:msgState];
@@ -337,7 +337,7 @@
     
     long long msgDate = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff) * 1000;
     [self checkMsgTimeWithJid:userId WithMsgDate:msgDate WithGroup:NO];
-   QIMMessageModel *mesg = [QIMMessageModel new];
+    QIMMessageModel *mesg = [QIMMessageModel new];
     [mesg setMessageId:mId.length ? mId : [QIMUUIDTools UUID]];
     [mesg setMessageType:msgType];
     [mesg setChatType:userType];
@@ -350,9 +350,9 @@
     } else {
         [mesg setRealJid:realJid?realJid:userId];
     }
-    if (userType == ChatType_GroupChat) {
-        [mesg setNickName:[[QIMManager sharedInstance] getLastJid]];
-    }
+//    if (userType == ChatType_GroupChat) {
+//        [mesg setNickName:[[QIMManager sharedInstance] getLastJid]];
+//    }
     [mesg setMessageDate:msgDate];
     [mesg setMessageSendState:QIMMessageSendState_Waiting];
     [mesg setExtendInformation:extendInfo];
@@ -729,7 +729,7 @@
        QIMMessageModel *msg = [QIMMessageModel new];
         [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
         [msg setFrom:[infoDic objectForKey:@"From"]];
-        [msg setNickName:[infoDic objectForKey:@"From"]];
+//        [msg setNickName:[infoDic objectForKey:@"From"]];
         [msg setTo:[infoDic objectForKey:@"To"]];
         [msg setMessage:[infoDic objectForKey:@"Content"]];
         NSString *extendInfo = [infoDic objectForKey:@"ExtendInfo"];
@@ -739,7 +739,8 @@
         [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
         [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
         [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
-        [msg setReadTag:[[infoDic objectForKey:@"ReadTag"] intValue]];
+        //Mark by DB
+//        [msg setReadTag:[[infoDic objectForKey:@"ReadTag"] intValue]];
         [msg setMsgRaw:[infoDic objectForKey:@"msgRaw"]];
         return msg;
     }
@@ -1047,7 +1048,7 @@
         
         NSString *messageId = msg.messageId;
         
-        NSString *from = (msg.chatType == ChatType_GroupChat) ? msg.nickName : msg.from;
+        NSString *from = msg.from;
         
         NSString *to = msg.to;
         
@@ -1229,7 +1230,7 @@
 
         NSString *messageId = msg.messageId;
         
-        NSString *from = (msg.chatType == ChatType_GroupChat) ? msg.nickName : msg.from;
+        NSString *from = msg.from;
         
         NSString *to = msg.to;
         
@@ -1255,19 +1256,25 @@
             if (msg.messageType == QIMMessageType_Consult || msg.messageType == QIMMessageType_ConsultResult || msg.messageType == QIMMessageType_MicroTourGuide) {
                 content = msg.extendInformation.length > 0 ? msg.extendInformation : msg.message;
             }
-            [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgId:messageId WithXmppId:xmppId WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:msg.platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:0 WithMsgRaw:msg.msgRaw WithRealJid:msg.realJid WithChatType:ChatType_CollectionChat];
+            NSDictionary *msgDic = [msg yy_modelToJSONObject];
+            [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgDic:msgDic];
+//            [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgId:messageId WithXmppId:xmppId WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:msg.platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:0 WithMsgRaw:msg.msgRaw WithRealJid:msg.realJid WithChatType:ChatType_CollectionChat];
             
         } else if (msg.chatType == ChatType_System) {
             if (msg.messageType == MessageType_C2BGrabSingle || msg.messageType == MessageType_C2BGrabSingleFeedBack || msg.messageType == MessageType_QCZhongbao) {
                 content = msg.extendInformation.length > 0 ? msg.extendInformation : msg.message;
             }
-            [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgId:messageId WithXmppId:xmppId WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:0 WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:0 WithMsgRaw:msg.msgRaw WithRealJid:msg.realJid WithChatType:ChatType_System];
+            NSDictionary *msgDic = [msg yy_modelToJSONObject];
+            [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgDic:msgDic];
+//            [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgId:messageId WithXmppId:xmppId WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:0 WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:0 WithMsgRaw:msg.msgRaw WithRealJid:msg.realJid WithChatType:ChatType_System];
         } else {
             if (!msg.msgRaw) {
                 NSDictionary *msgRawDict = @{@"content":msg.message?msg.message:@"", @"extendInfo":msg.extendInformation?msg.extendInformation:@"", @"localConvert":@(YES)};
                 msg.msgRaw = [[QIMJSONSerializer sharedInstance] serializeObject:msgRawDict];
             }
-            [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgId:messageId WithXmppId:xmppId WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:msg.platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:msg.messageReadState WithMsgRaw:msg.msgRaw WithRealJid:msg.realJid WithChatType:msg.chatType];
+            NSDictionary *msgDic = [msg yy_modelToJSONObject];
+            [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgDic:msgDic];
+//            [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgId:messageId WithXmppId:xmppId WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:msg.platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:msg.messageReadState WithMsgRaw:msg.msgRaw WithRealJid:msg.realJid WithChatType:msg.chatType];
         }
     }
 }
@@ -1299,7 +1306,7 @@
                QIMMessageModel *msg = [QIMMessageModel new];
                 [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
                 [msg setFrom:[infoDic objectForKey:@"From"]];
-                [msg setNickName:[infoDic objectForKey:@"From"]];
+//                [msg setNickName:[infoDic objectForKey:@"From"]];
                 [msg setTo:[infoDic objectForKey:@"To"]];
                 [msg setMessage:[infoDic objectForKey:@"Content"]];
                 NSString *extendInfo = [infoDic objectForKey:@"ExtendInfo"];
@@ -1309,7 +1316,8 @@
                 [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
                 [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
                 [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
-                [msg setReadTag:[[infoDic objectForKey:@"ReadTag"] intValue]];
+                //Mark by DB
+//                [msg setReadTag:[[infoDic objectForKey:@"ReadTag"] intValue]];
                 [msg setMsgRaw:[infoDic objectForKey:@"msgRaw"]];
                 
                 [list addObject:msg];
@@ -1335,7 +1343,7 @@
                QIMMessageModel *msg = [QIMMessageModel new];
                 [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
                 [msg setFrom:[infoDic objectForKey:@"From"]];
-                [msg setNickName:[infoDic objectForKey:@"From"]];
+//                [msg setNickName:[infoDic objectForKey:@"From"]];
                 [msg setTo:[infoDic objectForKey:@"To"]];
                 NSString *msgContent = [infoDic objectForKey:@"Content"];
                 [msg setMessage:msgContent];
@@ -1346,7 +1354,8 @@
                 [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
                 [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
                 [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
-                [msg setReadTag:[[infoDic objectForKey:@"ReadTag"] intValue]];
+                //Mark by DB
+//                [msg setReadTag:[[infoDic objectForKey:@"ReadTag"] intValue]];
                 [msg setMsgRaw:[infoDic objectForKey:@"msgRaw"]];
                 [list addObject:msg];
             }
@@ -1435,8 +1444,9 @@
                             [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
                             [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
                             [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
-                            [msg setNickName:[infoDic objectForKey:@"From"]];
-                            [msg setReadTag:[[infoDic objectForKey:@"ReadTag"] intValue]];
+//                            [msg setNickName:[infoDic objectForKey:@"From"]];
+                            //Mark by DB
+//                            [msg setReadTag:[[infoDic objectForKey:@"ReadTag"] intValue]];
                             [msg setMsgRaw:[infoDic objectForKey:@"msgRaw"]];
                             [list addObject:msg];
                         }
@@ -1461,7 +1471,7 @@
                            QIMMessageModel *msg = [QIMMessageModel new];
                             [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
                             [msg setFrom:[infoDic objectForKey:@"From"]];
-                            [msg setNickName:[infoDic objectForKey:@"From"]];
+//                            [msg setNickName:[infoDic objectForKey:@"From"]];
                             [msg setTo:[infoDic objectForKey:@"To"]];
                             [msg setMessage:[infoDic objectForKey:@"Content"]];
                             NSString *extendInfo = [infoDic objectForKey:@"ExtendInfo"];

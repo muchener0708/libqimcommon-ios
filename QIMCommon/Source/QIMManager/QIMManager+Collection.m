@@ -138,7 +138,7 @@
         [msg setRealJid:[infoDic objectForKey:@"RealJid"]];
         [msg setMsgRaw:[infoDic objectForKey:@"msgRaw"]];
         [msg setChatType:[[infoDic objectForKey:@"originType"] intValue]];
-        [msg setNickName:[infoDic objectForKey:@"nickName"]];
+//        [msg setNickName:[infoDic objectForKey:@"nickName"]];
         [msg setRealJid:[infoDic objectForKey:@"realJid"]];
         return msg;
     }
@@ -165,7 +165,7 @@
             [msg setRealJid:[infoDic objectForKey:@"RealJid"]];
             [msg setMsgRaw:[infoDic objectForKey:@"msgRaw"]];
             [msg setChatType:[[infoDic objectForKey:@"originType"] intValue]];
-            [msg setNickName:[infoDic objectForKey:@"nickName"]];
+//            [msg setNickName:[infoDic objectForKey:@"nickName"]];
             [msg setRealJid:[infoDic objectForKey:@"realJid"]];
             [list addObject:msg];
         }

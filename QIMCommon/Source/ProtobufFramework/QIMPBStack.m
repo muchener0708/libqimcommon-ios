@@ -1996,7 +1996,7 @@ enum PlaType {
                 }
                 NSString *sendJid = [pMessage sendjid];
                 NSDictionary *keyValues = [xmppMessage getHeadersDicForHeaders:xmppMessage.body.headers];
-                NSString *autoReply = [keyValues objectForKey:@"auto_reply"];
+                BOOL autoReply = [[[keyValues objectForKey:@"auto_reply"] lowercaseString] isEqualToString:@"true"];
                 int platform = xmppMessage.clientType;
                 int msgType = xmppMessage.messageType;
                 NSString *extendInfo = [keyValues objectForKey:@"extendInfo"];
@@ -2004,14 +2004,12 @@ enum PlaType {
                 NSString *msgId = [xmppMessage messageId];
                 BOOL carbonMessage = [[[keyValues objectForKey:@"carbon_message"] lowercaseString] isEqualToString:@"true"];
                 NSString *chatId = [keyValues objectForKey:@"chatid"];
-                NSString *replyMsgId = [keyValues objectForKey:@"replyMsgId"];
-                NSString *replyUser = [keyValues objectForKey:@"replyUser"];
                 NSString *backupInfo = [keyValues objectForKey:@"backupinfo"];
                 NSDate *date = [NSDate dateWithTimeIntervalSince1970:xmppMessage.receivedTime / 1000.0];
                 if (msgId == nil) {
                     msgId = [date description];
                 }
-                SEL selector = @selector(onGroupMessageReceived:domain:sendJid:messageType:platformType:message:originalMsg:messageId:stamp:extendInfo:replyMsgId:replyUser:chatId:backupInfo:msgRaw:);
+                SEL selector = @selector(onGroupMessageReceived:domain:sendJid:messageType:platformType:message:messageId:stamp:extendInfo:backupInfo:carbonMessage:autoReply:msgRaw:);
                 if ([[self delegate] respondsToSelector:selector]) {
                     [[self delegate] onGroupMessageReceived:[destJid user]
                                                      domain:[destJid domain]
@@ -2019,14 +2017,12 @@ enum PlaType {
                                                 messageType:msgType
                                                platformType:platform
                                                     message:msg
-                                                originalMsg:nil
                                                   messageId:msgId
                                                       stamp:date
                                                  extendInfo:extendInfo
-                                                 replyMsgId:replyMsgId
-                                                  replyUser:replyUser
-                                                     chatId:chatId
                                                  backupInfo:backupInfo
+                                              carbonMessage:carbonMessage
+                                                  autoReply:autoReply
                                                      msgRaw:msgRaw];
                 }
             }

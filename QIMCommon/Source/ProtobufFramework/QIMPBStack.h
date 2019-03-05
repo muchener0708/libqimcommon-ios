@@ -59,14 +59,12 @@
                     messageType:(int) msgType
                    platformType:(int) payformType
                         message:(NSString *) message
-                    originalMsg:(NSString *) orininalMsg
                       messageId:(NSString *) msgId
                           stamp:(NSDate *)date
                      extendInfo:(NSString *)extendInfo
-                     replyMsgId:(NSString *)replyMsgId
-                      replyUser:(NSString *)replyUser
-                         chatId:(NSString *)chatId
                      backupInfo:(NSString *)backupInfo
+                  carbonMessage:(BOOL)carbonMessage
+                      autoReply:(BOOL)autoReply
                          msgRaw:(NSString *)msgRaw;
 
 - (void) onConsultMessageReceivedWithFromJid:(NSString *)fromJid

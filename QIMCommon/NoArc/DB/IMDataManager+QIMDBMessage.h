@@ -66,50 +66,52 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)qimDB_updateMessageWithMsgId:(NSString *)msgId
                           WithMsgRaw:(NSString *)msgRaw;
 
-- (void)qimDB_insertMessageWithMsgId:(NSString *)msgId
-                          WithXmppId:(NSString *)xmppId
-                            WithFrom:(NSString *)from
-                              WithTo:(NSString *)to
-                         WithContent:(NSString *)content
-                      WithExtendInfo:(NSString *)extendInfo
-                        WithPlatform:(int)platform
-                         WithMsgType:(int)msgType
-                        WithMsgState:(int)msgState
-                    WithMsgDirection:(int)msgDirection
-                         WithMsgDate:(long long)msgDate
-                       WithReadedTag:(int)readedTag
-                        WithChatType:(NSInteger)chatType;
+//- (void)qimDB_insertMessageWithMsgId:(NSString *)msgId
+//                          WithXmppId:(NSString *)xmppId
+//                            WithFrom:(NSString *)from
+//                              WithTo:(NSString *)to
+//                         WithContent:(NSString *)content
+//                      WithExtendInfo:(NSString *)extendInfo
+//                        WithPlatform:(int)platform
+//                         WithMsgType:(int)msgType
+//                        WithMsgState:(int)msgState
+//                    WithMsgDirection:(int)msgDirection
+//                         WithMsgDate:(long long)msgDate
+//                       WithReadedTag:(int)readedTag
+//                        WithChatType:(NSInteger)chatType;
+//
+//- (void)qimDB_insertMessageWithMsgId:(NSString *)msgId
+//                          WithXmppId:(NSString *)xmppId
+//                            WithFrom:(NSString *)from
+//                              WithTo:(NSString *)to
+//                         WithContent:(NSString *)content
+//                      WithExtendInfo:(NSString *)extendInfo
+//                        WithPlatform:(int)platform
+//                         WithMsgType:(int)msgType
+//                        WithMsgState:(int)msgState
+//                    WithMsgDirection:(int)msgDirection
+//                         WithMsgDate:(long long)msgDate
+//                       WithReadedTag:(int)readedTag
+//                          WithMsgRaw:(NSString *)msgRaw
+//                        WithChatType:(NSInteger)chatType;
 
-- (void)qimDB_insertMessageWithMsgId:(NSString *)msgId
-                          WithXmppId:(NSString *)xmppId
-                            WithFrom:(NSString *)from
-                              WithTo:(NSString *)to
-                         WithContent:(NSString *)content
-                      WithExtendInfo:(NSString *)extendInfo
-                        WithPlatform:(int)platform
-                         WithMsgType:(int)msgType
-                        WithMsgState:(int)msgState
-                    WithMsgDirection:(int)msgDirection
-                         WithMsgDate:(long long)msgDate
-                       WithReadedTag:(int)readedTag
-                          WithMsgRaw:(NSString *)msgRaw
-                        WithChatType:(NSInteger)chatType;
+- (void)qimDB_insertMessageWithMsgDic:(NSDictionary *)msgDic;
 
-- (void)qimDB_insertMessageWithMsgId:(NSString *)msgId
-                          WithXmppId:(NSString *)xmppId
-                            WithFrom:(NSString *)from
-                              WithTo:(NSString *)to
-                         WithContent:(NSString *)content
-                      WithExtendInfo:(NSString *)extendInfo
-                        WithPlatform:(int)platform
-                         WithMsgType:(int)msgType
-                        WithMsgState:(int)msgState
-                    WithMsgDirection:(int)msgDirection
-                         WithMsgDate:(long long)msgDate
-                       WithReadedTag:(int)readedTag
-                          WithMsgRaw:(NSString *)msgRaw
-                         WithRealJid:(NSString *)realJid
-                        WithChatType:(NSInteger)chatType;
+//- (void)qimDB_insertMessageWithMsgId:(NSString *)msgId
+//                          WithXmppId:(NSString *)xmppId
+//                            WithFrom:(NSString *)from
+//                              WithTo:(NSString *)to
+//                         WithContent:(NSString *)content
+//                      WithExtendInfo:(NSString *)extendInfo
+//                        WithPlatform:(int)platform
+//                         WithMsgType:(int)msgType
+//                        WithMsgState:(int)msgState
+//                    WithMsgDirection:(int)msgDirection
+//                         WithMsgDate:(long long)msgDate
+//                       WithReadedTag:(int)readedTag
+//                          WithMsgRaw:(NSString *)msgRaw
+//                         WithRealJid:(NSString *)realJid
+//                        WithChatType:(NSInteger)chatType;
 
 - (BOOL)qimDB_checkMsgId:(NSString *)msgId;
 
@@ -166,8 +168,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray *)qimDB_getMgsListBySessionId:(NSString *)sesId;
 
-- (void)updateMsgsContent:(NSString *)content ByMsgId:(NSString *)msgId;
-
 - (NSDictionary *)qimDB_getMsgsByMsgId:(NSString *)msgId;
 
 - (NSArray *)qimDB_getMsgsByMsgType:(NSArray *)msgTypes ByXmppId:(NSString *)xmppId ByReadJid:(NSString *)realJid;
@@ -198,15 +198,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray *)qimDB_getMsgIdsByMsgState:(int)notReadMsgState WithDirection:(int)receiveDirection;
 
-- (void)qimDB_updateMsgIdToDidreadForNotReadMsgIdList:(NSArray *)notReadList AndSourceMsgIdList:(NSArray *)sourceMsgIdList WithDidReadState:(int)didReadState;
-
 - (NSArray *)qimDB_searchMsgHistoryWithKey:(NSString *)key;
 
 - (NSArray *)qimDB_searchMsgIdWithKey:(NSString *)key ByXmppId:(NSString *)xmppId;
 
 #pragma mark - 消息数据方法
-
-- (long long)qimDB_lastestMessageTimeWithNotMessageState:(long long) messageState;
 
 - (NSString *)qimDB_getLastMsgIdByJid:(NSString *)jid;
 

@@ -2535,78 +2535,78 @@ static IMDataManager *__global_data_manager = nil;
     }];
 }
 
-- (void)insertMessageWithMsgId:(NSString *)msgId
-                    WithXmppId:(NSString *)xmppId
-                      WithFrom:(NSString *)from
-                        WithTo:(NSString *)to
-                   WithContent:(NSString *)content
-                WithExtendInfo:(NSString *)extendInfo
-                  WithPlatform:(int)platform
-                   WithMsgType:(int)msgType
-                  WithMsgState:(int)msgState
-              WithMsgDirection:(int)msgDirection
-                   WithMsgDate:(long long)msgDate
-                 WithReadedTag:(int)readedTag
-                  WithChatType:(NSInteger)chatType{
-    return [self insertMessageWithMsgId:msgId WithXmppId:xmppId WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:readedTag WithMsgRaw:nil WithChatType:chatType];
-}
-
-- (void)insertMessageWithMsgId:(NSString *)msgId
-                    WithXmppId:(NSString *)xmppId
-                      WithFrom:(NSString *)from
-                        WithTo:(NSString *)to
-                   WithContent:(NSString *)content
-                WithExtendInfo:(NSString *)extendInfo
-                  WithPlatform:(int)platform
-                   WithMsgType:(int)msgType
-                  WithMsgState:(int)msgState
-              WithMsgDirection:(int)msgDirection
-                   WithMsgDate:(long long)msgDate
-                 WithReadedTag:(int)readedTag
-                    WithMsgRaw:(NSString *)msgRaw
-                  WithChatType:(NSInteger)chatType{
-    return [self insertMessageWithMsgId:msgId WithXmppId:xmppId WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:readedTag WithMsgRaw:msgRaw WithRealJid:nil WithChatType:chatType];
-}
-
-- (void) insertMessageWithMsgId:(NSString *)msgId
-                     WithXmppId:(NSString *)xmppId
-                       WithFrom:(NSString *)from
-                         WithTo:(NSString *)to
-                    WithContent:(NSString *)content
-                 WithExtendInfo:(NSString *)extendInfo
-                   WithPlatform:(int)platform
-                    WithMsgType:(int)msgType
-                   WithMsgState:(int)msgState
-               WithMsgDirection:(int)msgDirection
-                    WithMsgDate:(long long)msgDate
-                  WithReadedTag:(int)readedTag
-                     WithMsgRaw:(NSString *)msgRaw
-                    WithRealJid:(NSString *)realJid
-                   WithChatType:(NSInteger)chatType {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"insert or IGNORE into IM_Message(MsgId, XmppId, \"From\", \"To\", Content, ExtendInfo, Platform, Type, State, Direction,LastUpdateTime,ReadedTag,ExtendedFlag,MessageRaw,RealJid, ChatType) values(:MsgId, :XmppId, :From, :To, :Content, :ExtendInfo, :Platform, :Type, :State, :Direction, :LastUpdateTime, :ReadedTag,:ExtendedFlag,:MessageRaw,:RealJid, :ChatType);";
-        NSMutableArray *param = [[NSMutableArray alloc] init];
-        [param addObject:msgId?msgId:@":NULL"];
-        [param addObject:xmppId?xmppId:@":NULL"];
-        [param addObject:from?from:@":NULL"];
-        [param addObject:to?to:@":NULL"];
-        [param addObject:content?content:@":NULL"];
-        [param addObject:extendInfo?extendInfo:@":NULL"];
-        [param addObject:[NSNumber numberWithInt:platform]];
-        [param addObject:[NSNumber numberWithInt:msgType]];
-        [param addObject:[NSNumber numberWithInt:msgState]];
-        [param addObject:[NSNumber numberWithInt:msgDirection]];
-        [param addObject:[NSNumber numberWithLongLong:msgDate]];
-        [param addObject:[NSNumber numberWithInt:0]];
-        [param addObject:[NSNumber numberWithInt:0]];
-        [param addObject:msgRaw?msgRaw:@":NULL"];
-        [param addObject:realJid?realJid:@":NULL"];
-        [param addObject:[NSNumber numberWithInteger:chatType]];
-        [database executeNonQuery:sql withParameters:param];
-        [param release];
-        param = nil;
-    }];
-}
+//- (void)insertMessageWithMsgId:(NSString *)msgId
+//                    WithXmppId:(NSString *)xmppId
+//                      WithFrom:(NSString *)from
+//                        WithTo:(NSString *)to
+//                   WithContent:(NSString *)content
+//                WithExtendInfo:(NSString *)extendInfo
+//                  WithPlatform:(int)platform
+//                   WithMsgType:(int)msgType
+//                  WithMsgState:(int)msgState
+//              WithMsgDirection:(int)msgDirection
+//                   WithMsgDate:(long long)msgDate
+//                 WithReadedTag:(int)readedTag
+//                  WithChatType:(NSInteger)chatType{
+//    return [self insertMessageWithMsgId:msgId WithXmppId:xmppId WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:readedTag WithMsgRaw:nil WithChatType:chatType];
+//}
+//
+//- (void)insertMessageWithMsgId:(NSString *)msgId
+//                    WithXmppId:(NSString *)xmppId
+//                      WithFrom:(NSString *)from
+//                        WithTo:(NSString *)to
+//                   WithContent:(NSString *)content
+//                WithExtendInfo:(NSString *)extendInfo
+//                  WithPlatform:(int)platform
+//                   WithMsgType:(int)msgType
+//                  WithMsgState:(int)msgState
+//              WithMsgDirection:(int)msgDirection
+//                   WithMsgDate:(long long)msgDate
+//                 WithReadedTag:(int)readedTag
+//                    WithMsgRaw:(NSString *)msgRaw
+//                  WithChatType:(NSInteger)chatType{
+//    return [self insertMessageWithMsgId:msgId WithXmppId:xmppId WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:readedTag WithMsgRaw:msgRaw WithRealJid:nil WithChatType:chatType];
+//}
+//
+//- (void) insertMessageWithMsgId:(NSString *)msgId
+//                     WithXmppId:(NSString *)xmppId
+//                       WithFrom:(NSString *)from
+//                         WithTo:(NSString *)to
+//                    WithContent:(NSString *)content
+//                 WithExtendInfo:(NSString *)extendInfo
+//                   WithPlatform:(int)platform
+//                    WithMsgType:(int)msgType
+//                   WithMsgState:(int)msgState
+//               WithMsgDirection:(int)msgDirection
+//                    WithMsgDate:(long long)msgDate
+//                  WithReadedTag:(int)readedTag
+//                     WithMsgRaw:(NSString *)msgRaw
+//                    WithRealJid:(NSString *)realJid
+//                   WithChatType:(NSInteger)chatType {
+//    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+//        NSString *sql = @"insert or IGNORE into IM_Message(MsgId, XmppId, \"From\", \"To\", Content, ExtendInfo, Platform, Type, State, Direction,LastUpdateTime,ReadedTag,ExtendedFlag,MessageRaw,RealJid, ChatType) values(:MsgId, :XmppId, :From, :To, :Content, :ExtendInfo, :Platform, :Type, :State, :Direction, :LastUpdateTime, :ReadedTag,:ExtendedFlag,:MessageRaw,:RealJid, :ChatType);";
+//        NSMutableArray *param = [[NSMutableArray alloc] init];
+//        [param addObject:msgId?msgId:@":NULL"];
+//        [param addObject:xmppId?xmppId:@":NULL"];
+//        [param addObject:from?from:@":NULL"];
+//        [param addObject:to?to:@":NULL"];
+//        [param addObject:content?content:@":NULL"];
+//        [param addObject:extendInfo?extendInfo:@":NULL"];
+//        [param addObject:[NSNumber numberWithInt:platform]];
+//        [param addObject:[NSNumber numberWithInt:msgType]];
+//        [param addObject:[NSNumber numberWithInt:msgState]];
+//        [param addObject:[NSNumber numberWithInt:msgDirection]];
+//        [param addObject:[NSNumber numberWithLongLong:msgDate]];
+//        [param addObject:[NSNumber numberWithInt:0]];
+//        [param addObject:[NSNumber numberWithInt:0]];
+//        [param addObject:msgRaw?msgRaw:@":NULL"];
+//        [param addObject:realJid?realJid:@":NULL"];
+//        [param addObject:[NSNumber numberWithInteger:chatType]];
+//        [database executeNonQuery:sql withParameters:param];
+//        [param release];
+//        param = nil;
+//    }];
+//}
 
 - (BOOL)checkMsgId:(NSString *)msgId{
     __block BOOL flag = NO;
@@ -4209,13 +4209,6 @@ static IMDataManager *__global_data_manager = nil;
     return [result autorelease];
 }
 
-- (void)updateMsgsContent:(NSString *)content ByMsgId:(NSString *)msgId{
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"Update IM_Message Set Content=:Content Where msgId = :msgId";
-        [database executeNonQuery:sql withParameters:@[content,msgId]];
-    }];
-}
-
 - (NSDictionary *)getMsgsByMsgId:(NSString *)msgId {
     if (!msgId) {
         return nil;
@@ -4733,32 +4726,6 @@ static IMDataManager *__global_data_manager = nil;
     return [resultList autorelease];
 }
 
-- (void)updateMsgIdToDidreadForNotReadMsgIdList:(NSArray *)notReadList AndSourceMsgIdList:(NSArray *)sourceMsgIdList WithDidReadState:(int)didReadState{
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSMutableString *updateToDidRead = [NSMutableString stringWithString:@"Update IM_Message Set State=:State Where MsgId in ("];
-        NSMutableString *updateToNotRead = [NSMutableString stringWithString:@"Update IM_Message Set State=:State Where MsgId in ("];
-        for (NSString *msgId in notReadList) {
-            if ([msgId isEqual:notReadList.lastObject]) {
-                [updateToNotRead appendFormat:@"'%@');",msgId];
-            } else {
-                [updateToNotRead appendFormat:@"'%@',",msgId];
-            }
-        }
-        for (NSString *msgId in sourceMsgIdList) {
-            if ([msgId isEqual:sourceMsgIdList.lastObject]) {
-                [updateToDidRead appendFormat:@"'%@');",msgId];
-            } else {
-                [updateToDidRead appendFormat:@"'%@',",msgId];
-            }
-        }
-        [database executeNonQuery:updateToDidRead  withParameters:@[@(didReadState)]];
-        if (notReadList.count > 0) {
-            [database executeNonQuery:updateToNotRead withParameters:@[@(0)]];
-        }
-    }];
-    
-}
-
 - (NSArray *)searchMsgHistoryWithKey:(NSString *)key{
     __block NSMutableArray *contactList = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
@@ -4794,22 +4761,6 @@ static IMDataManager *__global_data_manager = nil;
 }
 
 #pragma mark - 消息数据方法
-
-- (long long) lastestMessageTimeWithNotMessageState:(long long) messageState {
-    
-    __block long long result = 0;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"select min(LastUpdateTime) from IM_Message where State & :p0 <> :p0 and Type <> 101;";
-        DataReader *reader = [database executeReader:sql
-                                      withParameters:[NSArray arrayWithObject:@(messageState)]];
-        if ([reader read]) {
-            result = [[reader objectForColumnIndex:0] longLongValue];
-        } else {
-            result = -1;
-        }
-    }];
-    return result;
-}
 
 - (NSString *) getLastMsgIdByJid:(NSString *)jid{
     __block NSString *lastMsgId = nil;
@@ -6492,7 +6443,8 @@ static IMDataManager *__global_data_manager = nil;
         return 0;
     }
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
-    NSString *sql = [NSString stringWithFormat:@"Update IM_Message Set ReadedTag = 1, State = 16 Where XmppId = :XmppId And LastUpdateTime <= :LastUpdateTime And ReadedTag = 0 And State < 16;"];
+    NSString *sql = [NSString stringWithFormat:@"UPDATE IM_Message SET ReadState = (ReadState| 3 ) WHERE XmppId = :XmppId and LastUpdateTime <= :LastUpdateTime and LastUpdateTime >= :LastUpdateTime"];
+//    NSString *sql = [NSString stringWithFormat:@"Update IM_Message Set ReadedTag = 1, State = 16 Where XmppId = :XmppId And LastUpdateTime <= :LastUpdateTime And ReadedTag = 0 And State < 16;"];
     __block long long maxRemarkUpdateTime = 0;
     [[self dbInstance] usingTransaction:^(Database *database) {
         NSMutableArray *params = nil;
@@ -6509,6 +6461,7 @@ static IMDataManager *__global_data_manager = nil;
             }
             NSMutableArray *param = [NSMutableArray array];
             [param addObject:groupId?groupId:@""];
+            [param addObject:@(mucLastReadFlagTime)];
             [param addObject:@(mucLastReadFlagTime)];
             [params addObject:param];
         }

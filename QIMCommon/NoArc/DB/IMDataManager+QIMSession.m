@@ -19,6 +19,58 @@
     }];
 }
 
+- (long long)qimDB_insertSessionWithMsgList:(NSDictionary *)msgLists {
+    QIMVerboseLog(@"qimDB_insertSessionWithMsgList : %@", msgLists);
+    long long lastMaxMsgTime = 0;
+    for (NSString *key in [msgLists allKeys]) {
+        NSDictionary *value = [msgLists objectForKey:key];
+        BOOL isConsult = [[value objectForKey:@"Consult"] boolValue];
+        NSString *userId = [value objectForKey:@"UserId"];
+        NSString *realJid = [value objectForKey:@"RealJid"];
+        ChatType chatType = [[value objectForKey:@"ChatType"] intValue];
+        NSArray *msgs = [value objectForKey:@"msgList"];
+        long long msgTime = [[value objectForKey:@"lastDate"] longLongValue];
+        if (lastMaxMsgTime <= msgTime) {
+            lastMaxMsgTime = msgTime;
+        }
+        if (isConsult) {
+
+            [[IMDataManager qimDB_SharedInstance] qimDB_insertSessionWithSessionId:userId WithUserId:userId WithLastMsgId:userId WithLastUpdateTime:msgTime ChatType:chatType WithRealJid:realJid];
+        } else {
+            if ([key containsString:@"collection_rbt"]) {
+                [[IMDataManager qimDB_SharedInstance] qimDB_insertSessionWithSessionId:key WithUserId:[[key componentsSeparatedByString:@"@"] objectAtIndex:0] WithLastMsgId:nil WithLastUpdateTime:msgTime ChatType:ChatType_CollectionChat WithRealJid:key];
+            } else {
+                [[IMDataManager qimDB_SharedInstance] qimDB_insertSessionWithSessionId:key WithUserId:[[key componentsSeparatedByString:@"@"] objectAtIndex:0] WithLastMsgId:nil WithLastUpdateTime:msgTime ChatType:chatType WithRealJid:key];
+            }
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"kNotificationOfflineMessageUpdate" object:key userInfo:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"kNotificationSessionListUpdate" object:nil];
+        });
+    }
+    return lastMaxMsgTime;
+}
+
+- (long long)qimDB_insertGroupSessionWithMsgList:(NSDictionary *)tempGroupDic {
+    long long lastMaxTime = 0;
+    for (NSString *groupId in tempGroupDic) {
+        if (groupId.length > 0) {
+            NSDictionary *groupMsgDic = [tempGroupDic objectForKey:groupId];
+            NSString *messageId = [groupMsgDic objectForKey:@"MsgId"];
+            long long msgDate = [[groupMsgDic objectForKey:@"MsgDateTime"] longLongValue];
+            if (lastMaxTime < msgDate) {
+                lastMaxTime = msgDate;
+            }
+            [[IMDataManager qimDB_SharedInstance] qimDB_insertSessionWithSessionId:groupId WithUserId:[[groupId componentsSeparatedByString:@"@"] objectAtIndex:0] WithLastMsgId:messageId WithLastUpdateTime:msgDate ChatType:ChatType_GroupChat WithRealJid:groupId];
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+//            [[NSNotificationCenter defaultCenter] postNotificationName:@"kNotificationOfflineMessageUpdate" object:key userInfo:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"kNotificationSessionListUpdate" object:nil];
+        });
+    }
+    return lastMaxTime;
+}
+
 - (void)qimDB_insertSessionWithSessionId:(NSString *)sessinId
                               WithUserId:(NSString *)userId
                            WithLastMsgId:(NSString *)lastMsgId
@@ -62,7 +114,7 @@
     __block NSMutableDictionary *result = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         
-        NSString *sql = [NSString stringWithFormat:@"SELECT XmppId, UserId, LastMessageId, LastUpdateTime, ChatType, ExtendedFlag FROM IM_SessionList WHERE ChatType = %d ORDER BY LastUpdateTime DESC LIMIT 1;", SingleChat];
+        NSString *sql = [NSString stringWithFormat:@"SELECT XmppId, UserId, LastMessageId, LastUpdateTime, ChatType, ExtendedFlag FROM IM_SessionList WHERE ChatType = %d ORDER BY LastUpdateTime DESC LIMIT 1;", ChatType_SingleChat];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             result = [[NSMutableDictionary alloc] init];
@@ -93,10 +145,10 @@
             [IMDataManager safeSaveForDic:dic setObject:[pReader objectForColumnIndex:2] forKey:@"Content"];
             [IMDataManager safeSaveForDic:dic setObject:[pReader objectForColumnIndex:3] forKey:@"MsgType"];
             [IMDataManager safeSaveForDic:dic setObject:[pReader objectForColumnIndex:4] forKey:@"MsgDateTime"];
-            [IMDataManager safeSaveForDic:dic setObject:@(PublicNumberChat) forKey:@"ChatType"];
+            [IMDataManager safeSaveForDic:dic setObject:@(ChatType_PublicNumber) forKey:@"ChatType"];
             pMaxLastTime = [pReader objectForColumnIndex:4];
         }
-        NSString *sql = [NSString stringWithFormat:@"select a.XmppId, a.UserId, case a.ChatType WHEN %d THEN (select name from IM_User where IM_User.XmppId = a.XmppId) ELSE (select name from IM_Group where IM_Group.GroupId = a.XmppId) end as Name, case a.ChatType When %d THEN (Select HeaderSrc From IM_User WHERE UserId = a.UserId) ELSE (SELECT HeaderSrc From IM_Group WHERE GroupId=a.XmppId) END as HeaderSrc, b.MsgId, b.Content, b.Type, b.State, b.Direction,CASE b.LastUpdateTime  When NULL THEN a.LastUpdateTime ELSE b.LastUpdateTime END as orderTime, a.ChatType, case a.ChatType When %d THEN '' ELSE b.[From] END as NickName, 0 as NotReadCount,a.RealJid from IM_SessionList as a left join IM_Message as b on a.XmppId = b.XmppId and b.MsgId = (SELECT MsgId FROM IM_Message WHERE XmppId = a.XmppId  AND (case When a.ChatType = %d or a.ChatType = %d THEN RealJid = a.RealJid ELSE RealJid is null END) Order by LastUpdateTime DESC LIMIT 1) order by OrderTime desc;", singleChatType, singleChatType+1,singleChatType, ConsultChat, ConsultServerChat];
+        NSString *sql = [NSString stringWithFormat:@"select a.XmppId, a.UserId, case a.ChatType WHEN %d THEN (select name from IM_User where IM_User.XmppId = a.XmppId) ELSE (select name from IM_Group where IM_Group.GroupId = a.XmppId) end as Name, case a.ChatType When %d THEN (Select HeaderSrc From IM_User WHERE UserId = a.UserId) ELSE (SELECT HeaderSrc From IM_Group WHERE GroupId=a.XmppId) END as HeaderSrc, b.MsgId, b.Content, b.Type, b.State, b.Direction,CASE b.LastUpdateTime  When NULL THEN a.LastUpdateTime ELSE b.LastUpdateTime END as orderTime, a.ChatType, case a.ChatType When %d THEN '' ELSE b.[From] END as NickName, 0 as NotReadCount,a.RealJid from IM_SessionList as a left join IM_Message as b on a.XmppId = b.XmppId and b.MsgId = (SELECT MsgId FROM IM_Message WHERE XmppId = a.XmppId  AND (case When a.ChatType = %d or a.ChatType = %d THEN RealJid = a.RealJid ELSE RealJid is null END) Order by LastUpdateTime DESC LIMIT 1) order by OrderTime desc;", singleChatType, singleChatType+1,singleChatType, ChatType_Consult, ChatType_ConsultServer];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         
         result = [[NSMutableArray alloc] initWithCapacity:100];
@@ -158,7 +210,7 @@
             [IMDataManager safeSaveForDic:dic setObject:[pReader objectForColumnIndex:2] forKey:@"Content"];
             [IMDataManager safeSaveForDic:dic setObject:[pReader objectForColumnIndex:3] forKey:@"MsgType"];
             [IMDataManager safeSaveForDic:dic setObject:[pReader objectForColumnIndex:4] forKey:@"MsgDateTime"];
-            [IMDataManager safeSaveForDic:dic setObject:@(PublicNumberChat) forKey:@"ChatType"];
+            [IMDataManager safeSaveForDic:dic setObject:@(ChatType_PublicNumber) forKey:@"ChatType"];
             pMaxLastTime = [pReader objectForColumnIndex:4];
         }
         
@@ -236,7 +288,7 @@
             [IMDataManager safeSaveForDic:dic setObject:[pReader objectForColumnIndex:2] forKey:@"Content"];
             [IMDataManager safeSaveForDic:dic setObject:[pReader objectForColumnIndex:3] forKey:@"MsgType"];
             [IMDataManager safeSaveForDic:dic setObject:[pReader objectForColumnIndex:4] forKey:@"MsgDateTime"];
-            [IMDataManager safeSaveForDic:dic setObject:@(PublicNumberChat) forKey:@"ChatType"];
+            [IMDataManager safeSaveForDic:dic setObject:@(ChatType_PublicNumber) forKey:@"ChatType"];
             pMaxLastTime = [pReader objectForColumnIndex:4];
         }
         
@@ -301,7 +353,7 @@
     
     __block NSMutableArray *result = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"SELECT XmppId FROM IM_SessionList WHERE ChatType = %d", SingleChat];
+        NSString *sql = [NSString stringWithFormat:@"SELECT XmppId FROM IM_SessionList WHERE ChatType = %d", ChatType_SingleChat];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         result = [[NSMutableArray alloc] initWithCapacity:30];
         while ([reader read]) {

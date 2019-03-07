@@ -114,16 +114,76 @@
     });
 }
 
-
 //存储代收消息
 - (void)saveCollectionMessage:(NSDictionary *)collectionMsgDic {
     [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertCollectionMsgWithMsgDics:@[collectionMsgDic]];
 }
 
+- (QIMMessageModel *)getCollectionMessageModelWithByDBMsgDic:(NSDictionary *)dbMsgDic {
+    /*
+     [IMDataManager safeSaveForDic:msgDic setObject:msgId forKey:@"MsgId"];
+     [IMDataManager safeSaveForDic:msgDic setObject:originfrom forKey:@"OriginFrom"];
+     [IMDataManager safeSaveForDic:msgDic setObject:originto forKey:@"OriginTo"];
+     [IMDataManager safeSaveForDic:msgDic setObject:originChatType forKey:@"OriginChatType"];
+     [IMDataManager safeSaveForDic:msgDic setObject:xmppId forKey:@"XmppId"];
+     [IMDataManager safeSaveForDic:msgDic setObject:platform forKey:@"Platform"];
+     [IMDataManager safeSaveForDic:msgDic setObject:from forKey:@"From"];
+     [IMDataManager safeSaveForDic:msgDic setObject:to forKey:@"To"];
+     [IMDataManager safeSaveForDic:msgDic setObject:content forKey:@"Content"];
+     [IMDataManager safeSaveForDic:msgDic setObject:extendInfo forKey:@"ExtendInfo"];
+     [IMDataManager safeSaveForDic:msgDic setObject:msgType forKey:@"MsgType"];
+     [IMDataManager safeSaveForDic:msgDic setObject:state forKey:@"MsgState"];
+     [IMDataManager safeSaveForDic:msgDic setObject:direction forKey:@"MsgDirection"];
+     [IMDataManager safeSaveForDic:msgDic setObject:contentResolve forKey:@"ContentResolve"];
+     [IMDataManager safeSaveForDic:msgDic setObject:readState forKey:@"ReadState"];
+     [IMDataManager safeSaveForDic:msgDic setObject:msgDateTime forKey:@"MsgDateTime"];
+     [IMDataManager safeSaveForDic:msgDic setObject:messageRaw forKey:@"MessageRaw"];
+     [IMDataManager safeSaveForDic:msgDic setObject:realJid forKey:@"RealJid"];
+     */
+    NSString *msgId = [dbMsgDic objectForKey:@"MsgId"];
+    NSString *originFrom = [dbMsgDic objectForKey:@"OriginFrom"];
+    NSString *originTo = [dbMsgDic objectForKey:@"OriginTo"];
+    NSString *originChatType = [dbMsgDic objectForKey:@"OriginChatType"];
+    NSString *xmppId = [dbMsgDic objectForKey:@"XmppId"];
+    IMPlatform platform = [[dbMsgDic objectForKey:@"Platform"] integerValue];
+    NSString *from = [dbMsgDic objectForKey:@"From"];
+    NSString *to = [dbMsgDic objectForKey:@"To"];
+    NSString *content = [dbMsgDic objectForKey:@"Content"];
+    NSString *extendInfo = [dbMsgDic objectForKey:@"ExtendInfo"];
+    QIMMessageType msgType = [[dbMsgDic objectForKey:@"MsgType"] integerValue];
+    QIMMessageSendState sendState = [[dbMsgDic objectForKey:@"MsgState"] integerValue];
+    QIMMessageDirection msgDirection = [[dbMsgDic objectForKey:@"MsgDirection"] integerValue];
+    NSString *contentResolve = [dbMsgDic objectForKey:@"ContentResolve"];
+    QIMMessageRemoteReadState readState = [[dbMsgDic objectForKey:@"ReadState"] integerValue];
+    long long msgDateTime = [[dbMsgDic objectForKey:@"MsgDateTime"] longLongValue];
+    id msgRaw = [dbMsgDic objectForKey:@"MsgRaw"];
+    NSString *realJid = [dbMsgDic objectForKey:@"RealJid"];
+    
+    QIMMessageModel *msgModel = [QIMMessageModel new];
+    msgModel.messageId = msgId;
+    msgModel.xmppId = xmppId;
+    msgModel.platform = platform;
+    msgModel.from = from;
+    msgModel.to = to;
+    msgModel.message = content;
+    msgModel.extendInformation = extendInfo;
+    msgModel.messageType = msgType;
+    msgModel.chatType = originChatType;
+    msgModel.messageSendState = sendState;
+    msgModel.messageDirection = msgDirection;
+    msgModel.messageReadState = readState;
+    msgModel.messageDate = msgDateTime;
+    msgModel.msgRaw = msgRaw;
+    msgModel.realJid = realJid;
+    return msgModel;
+}
+
 - (QIMMessageModel *)getCollectionMsgListForMsgId:(NSString *)msgId {
     NSDictionary *infoDic = [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionMsgListForMsgId:msgId];
     if (infoDic) {
-       QIMMessageModel *msg = [QIMMessageModel new];
+        return [self getCollectionMessageModelWithByDBMsgDic:infoDic];
+        /*
+        QIMMessageModel *msg = [QIMMessageModel new];
         [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
         [msg setFrom:[infoDic objectForKey:@"From"]];
         [msg setTo:[infoDic objectForKey:@"To"]];
@@ -141,6 +201,7 @@
 //        [msg setNickName:[infoDic objectForKey:@"nickName"]];
         [msg setRealJid:[infoDic objectForKey:@"realJid"]];
         return msg;
+        */
     }
     return nil;
 }
@@ -150,7 +211,8 @@
     NSMutableArray *list = [NSMutableArray array];
     if (array.count > 0) {
         for (NSDictionary *infoDic in array) {
-           QIMMessageModel *msg = [QIMMessageModel new];
+            QIMMessageModel *msg = [self getCollectionMessageModelWithByDBMsgDic:infoDic];
+            /*[QIMMessageModel new];
             [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
             [msg setFrom:[infoDic objectForKey:@"From"]];
             [msg setTo:[infoDic objectForKey:@"To"]];
@@ -167,6 +229,7 @@
             [msg setChatType:[[infoDic objectForKey:@"originType"] intValue]];
 //            [msg setNickName:[infoDic objectForKey:@"nickName"]];
             [msg setRealJid:[infoDic objectForKey:@"realJid"]];
+             */
             [list addObject:msg];
         }
     }

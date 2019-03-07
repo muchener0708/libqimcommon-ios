@@ -10,29 +10,24 @@
 #import "QIMCommonEnum.h"
 #import "QIMPublicRedefineHeader.h"
 
-@class QIMMessageModel,UserInfo,ChatSession;
-
-typedef enum {
-    SingleChat        = 0,
-    GroupChat         = 1,
-    SystemChat        = 2,
-    PublicNumberChat  = 3,
-    ConsultChat       = 4,
-    ConsultServerChat = 5,
-    CollectionChat    = 6,
-}IMDataManagerChat;
+@class UserInfo;
 
 @interface IMDataManager : NSObject
 
-@property (nonatomic, strong) NSString *dbOwnerId;  //数据库所有者Id
-
-@property (nonatomic, copy) NSString *dbOwnerDomain;  //数据库z所有者Domain
+//@property (nonatomic, strong) NSString *dbOwnerId;  //数据库所有者Id
+//
+//@property (nonatomic, copy) NSString *dbOwnerDomain;  //数据库z所有者Domain
+//
+//@property (nonatomic, copy) NSString *dbOwnerFullJid;   //数据库所有者XmppId
 
 @property (nonatomic, strong) NSDateFormatter *timeSmtapFormatter;
 
 
 + (IMDataManager *) qimDB_SharedInstance;
-+ (IMDataManager *) qimDB_sharedInstanceWithDBPath:(NSString *)dbPath;
++ (IMDataManager *) qimDB_sharedInstanceWithDBPath:(NSString *)dbPath withDBFullJid:(NSString *)dbOwnerFullJid;
+
+- (NSString *)getDbOwnerFullJid;
+
 + (void)safeSaveForDic:(NSMutableDictionary *)dic setObject:(id)value forKey:(id)key;
 
 - (NSString *) OriginalUUID;

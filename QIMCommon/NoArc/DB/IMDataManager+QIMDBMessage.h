@@ -120,10 +120,10 @@ NS_ASSUME_NONNULL_BEGIN
                                               RealJid:(NSString *)realJid;
 
 #pragma mark - 插入群JSON消息
-- (NSDictionary *)qimDB_bulkInsertIphoneHistoryGroupJSONMsg:(NSArray *)list WithMyNickName:(NSString *)myNickName WithReadMarkT:(long long)readMarkT WithDidReadState:(int)didReadState WithMyRtxId:(NSString *)rtxId WithAtAllMsgList:(NSMutableArray<NSDictionary *> **)atAllMsgList WithNormaleAtMsgList:(NSMutableArray <NSDictionary *> **)normalMsgList;
+- (long long)qimDB_bulkInsertIphoneHistoryGroupJSONMsg:(NSArray *)list WithAtAllMsgList:(NSMutableArray<NSDictionary *> **)atAllMsgList WithNormaleAtMsgList:(NSMutableArray <NSDictionary *> **)normalMsgList;
 
 //群翻页消息
-- (NSArray *)qimDB_bulkInsertIphoneMucJSONMsg:(NSArray *)list WithMyNickName:(NSString *)myNickName WithReadMarkT:(long long)readMarkT WithDidReadState:(int)didReadState WithMyRtxId:(NSString *)rtxId;
+- (NSArray *)qimDB_bulkInsertIphoneMucPageJSONMsg:(NSArray *)list;
 
 - (NSDictionary *)dictionaryWithJsonString:(NSString *)jsonString;
 
@@ -135,16 +135,13 @@ NS_ASSUME_NONNULL_BEGIN
  @param didReadState 是否已读
  */
 #pragma mark - 插入离线单人JSON消息
-- (NSMutableDictionary *)qimDB_bulkInsertHistoryChatJSONMsg:(NSArray *)list
-                                                         to:(NSString *)meJid
-                                           WithDidReadState:(int)didReadState;
+- (long long)qimDB_bulkInsertHistoryChatJSONMsg:(NSArray *)list;
 
 - (NSString *)qimDB_getC2BMessageFeedBackWithMsgId:(NSString *)msgId;
 
 #pragma mark - 单人JSON历史消息翻页
-- (NSArray *)qimDB_bulkInsertHistoryChatJSONMsg:(NSArray *)list
-                                     WithXmppId:(NSString *)xmppId
-                               WithDidReadState:(int)didReadState;
+- (NSArray *)qimDB_bulkInsertPageHistoryChatJSONMsg:(NSArray *)list
+                                         WithXmppId:(NSString *)xmppId;
 
 - (void)qimDB_bulkInsertMessage:(NSArray *)msgList;
 

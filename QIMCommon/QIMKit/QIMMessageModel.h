@@ -11,6 +11,7 @@
 
 @interface QIMMessageModel : NSObject
 
+@property (nonatomic, copy)   NSString          *xmppId;
 @property (nonatomic, copy)   NSString          *messageId;                 //消息Id
 @property (nonatomic, copy)   NSString          *from;                      //消息发送方
 @property (nonatomic, copy)   NSString          *to;                        //消息接收方
@@ -46,8 +47,6 @@
 //@property (nonatomic, assign) long long         version;
 @property (nonatomic, strong) NSData            * imageData;
 //@property (nonatomic, strong) NSString          *MD5;// 保存图片only
-
-@property (nonatomic, copy)   NSString          *xmppId;
 
 //@property (nonatomic, copy)   NSString          *fromUser;
 //@property (nonatomic, assign) int               readTag;

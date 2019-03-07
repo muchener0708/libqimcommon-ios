@@ -210,7 +210,7 @@
                  WithContent:(NSString *)content
                  WithMsgType:(int)msgType;
 
-- (BOOL)checkMsgId:(NSString *)msgId;
+- (BOOL)qimDB_checkMsgId:(NSString *)msgId;
 
 /**
  插入群聊JSON消息

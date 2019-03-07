@@ -58,7 +58,7 @@
         for (NSDictionary *infoDic in userInfos) {
             NSString *userId = [infoDic objectForKey:@"U"];
             NSString *domain = [infoDic objectForKey:@"Domain"];
-            NSString *xmppId = [NSString stringWithFormat:@"%@@%@",userId, (domain.length > 0) ? domain : self.dbOwnerDomain];
+            NSString *xmppId = [NSString stringWithFormat:@"%@@%@",userId, (domain.length > 0) ? domain : [self getDBOwnerDomain]];
             NSString *Name = [infoDic objectForKey:@"N"];
             NSString *DescInfo = [infoDic objectForKey:@"D"];
             NSString *HeaderSrc = @":NULL";
@@ -112,7 +112,7 @@
         NSMutableArray *params = [[NSMutableArray alloc] init];
         for (NSDictionary *infoDic in userInfos) {
             NSString *userId = [infoDic objectForKey:@"U"];
-            NSString *xmppId = [NSString stringWithFormat:@"%@@%@",userId, self.dbOwnerDomain];
+            NSString *xmppId = [NSString stringWithFormat:@"%@@%@",userId, [self getDBOwnerDomain]];
             NSString *Name = [infoDic objectForKey:@"N"];
             NSString *DescInfo = [infoDic objectForKey:@"D"] ? [infoDic objectForKey:@"D"] : @":NULL";
             NSString *HeaderSrc = [infoDic objectForKey:@"H"] ? [infoDic objectForKey:@"H"] : @":NULL";
@@ -203,7 +203,7 @@
         NSMutableArray *params = [[NSMutableArray alloc] init];
         for (NSDictionary *infoDic in userInfos) {
             NSString *userId = [infoDic objectForKey:@"U"];
-            NSString *xmppId = [NSString stringWithFormat:@"%@@%@", userId, self.dbOwnerDomain];
+            NSString *xmppId = [NSString stringWithFormat:@"%@@%@", userId, [self getDBOwnerDomain]];
             NSString *Name = [infoDic objectForKey:@"N"];
             NSString *DescInfo = [infoDic objectForKey:@"D"];
             NSString *HeaderSrc = @":NULL";
@@ -522,11 +522,11 @@
 }
 
 - (NSArray *)qimDB_selectUserListBySearchStr:(NSString *)searchStr {
-    return [self selectUserListBySearchStr:searchStr WithLimit:-1 WithOffset:-1];
+    return [self qimDB_selectUserListBySearchStr:searchStr WithLimit:-1 WithOffset:-1];
 }
 
 - (NSInteger)qimDB_selectUserListTotalCountBySearchStr:(NSString *)searchStr {
-    return [[self selectUserListBySearchStr:searchStr] count];
+    return [[self qimDB_selectUserListBySearchStr:searchStr] count];
 }
 
 - (NSArray *)qimDB_selectUserListBySearchStr:(NSString *)searchStr WithLimit:(NSInteger)limit WithOffset:(NSInteger)offset {

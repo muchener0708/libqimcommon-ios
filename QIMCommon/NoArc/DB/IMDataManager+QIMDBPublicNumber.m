@@ -27,7 +27,7 @@
             [IMDataManager safeSaveForDic:result setObject:[pReader objectForColumnIndex:2] forKey:@"Content"];
             [IMDataManager safeSaveForDic:result setObject:[pReader objectForColumnIndex:3] forKey:@"MsgType"];
             [IMDataManager safeSaveForDic:result setObject:[pReader objectForColumnIndex:4] forKey:@"MsgDateTime"];
-            [IMDataManager safeSaveForDic:result setObject:@(PublicNumberChat) forKey:@"ChatType"];
+            [IMDataManager safeSaveForDic:result setObject:@(ChatType_PublicNumber) forKey:@"ChatType"];
         }
     }];
     return [result autorelease];
@@ -52,7 +52,7 @@
             NSString *sql = @"INSERT OR IGNORE INTO IM_Public_Number(XmppId,PublicNumberId,LastUpdateTime) VALUES(:XmppId,:PublicNumberId,:LastUpdateTime);";
             NSMutableArray *paramList = [NSMutableArray array];
             for(NSString *publicId in publicNumberIds ) {
-                NSString *xmppId = [NSString stringWithFormat:@"%@@%@",publicId,self.dbOwnerDomain];
+                NSString *xmppId = [NSString stringWithFormat:@"%@@%@",publicId,[self getDBOwnerDomain]];
                 
                 NSMutableArray *params = [NSMutableArray array];
                 [params addObject:xmppId];
@@ -82,7 +82,7 @@
                 rbtBodyDict = dic;
             }
             NSString *publicNumberId = [rbtBodyDict objectForKey:@"robotEnName"];
-            NSString *xmppId = [NSString stringWithFormat:@"%@@%@", publicNumberId, self.dbOwnerDomain];
+            NSString *xmppId = [NSString stringWithFormat:@"%@@%@", publicNumberId, [self getDBOwnerDomain]];
             NSString *nickName = [rbtBodyDict objectForKey:@"robotCnName"];
             NSString *headerurl = [rbtBodyDict objectForKey:@"headerurl"];
             NSString *robotDesc = [rbtBodyDict objectForKey:@"robotDesc"];

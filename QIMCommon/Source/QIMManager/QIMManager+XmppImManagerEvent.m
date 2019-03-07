@@ -663,7 +663,7 @@
             }
                 break;
             case ShareLocationType_Info: {
-               QIMMessageModel *mesg = [QIMMessageModel new];
+                QIMMessageModel *mesg = [QIMMessageModel new];
                 [mesg setFrom:sid];
                 [mesg setMessageType:msgType];
                 [mesg setChatType:ChatType_SingleChat];
@@ -996,7 +996,7 @@
             return;
         }
         [self checkMsgTimeWithJid:fromJid WithRealJid:realFrom WithMsgDate:msgDate WithGroup:NO];
-       QIMMessageModel *mesg = [QIMMessageModel new];
+        QIMMessageModel *mesg = [QIMMessageModel new];
         [mesg setMessageId:msgId];
         [mesg setFrom:[msgDic objectForKey:@"realfrom"]];
         [mesg setTo:[[QIMManager sharedInstance] getLastJid]];

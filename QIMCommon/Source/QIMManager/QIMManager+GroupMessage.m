@@ -90,7 +90,7 @@
                              [[QIMAppInfo sharedInstance] AppBuildVersion]];
         
         if (self.lastGroupMsgTime <= 0) {
-            self.lastGroupMsgTime = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 3600 * 24 * 2) * 1000;
+            self.lastGroupMsgTime = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 3600 * 24 * 30) * 1000;
         }
         long long lastMsgTime = self.lastGroupMsgTime;
         destUrl = [destUrl stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
@@ -184,31 +184,13 @@
         NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
         NSMutableArray <NSDictionary *>*atAllMsgList = [[NSMutableArray alloc] initWithCapacity:3];
         NSMutableArray <NSDictionary *>*normalMsgList = [[NSMutableArray alloc] initWithCapacity:3];
-        NSDictionary *tempGroupDic = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertIphoneHistoryGroupJSONMsg:data WithMyNickName:[self getMyNickName] WithReadMarkT:0 WithDidReadState:QIMMessageRemoteReadStateDidSent WithMyRtxId:[[QIMManager sharedInstance] getLastJid] WithAtAllMsgList:&atAllMsgList WithNormaleAtMsgList:&normalMsgList];
-        for (NSString *groupId in tempGroupDic) {
-            if (groupId.length > 0) {
-                NSDictionary *groupMsgDic = [tempGroupDic objectForKey:groupId];
-               QIMMessageModel *msg = [QIMMessageModel new];
-                [msg setMessageId:[groupMsgDic objectForKey:@"MsgId"]];
-                [msg setFrom:[groupMsgDic objectForKey:@"From"]];
-                [msg setTo:[groupMsgDic objectForKey:@"To"]];
-                [msg setMessage:[groupMsgDic objectForKey:@"Content"]];
-                NSString *extendInfo = [groupMsgDic objectForKey:@"ExtendInfo"];
-                [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
-                [msg setPlatform:[[groupMsgDic objectForKey:@"Platform"] intValue]];
-                [msg setMessageType:[[groupMsgDic objectForKey:@"MsgType"] intValue]];
-                [msg setMessageSendState:[[groupMsgDic objectForKey:@"MsgState"] intValue]];
-                [msg setMessageDirection:[[groupMsgDic objectForKey:@"MsgDirection"] intValue]];
-                [msg setMessageDate:[[groupMsgDic objectForKey:@"MsgDateTime"] longLongValue]];
-                [self addSessionByType:ChatType_GroupChat ById:groupId ByMsgId:msg.messageId WithMsgTime:msg.messageDate WithNeedUpdate:YES];
-                if (self.lastGroupMsgTime < [[groupMsgDic objectForKey:@"MsgDateTime"] longLongValue]) {
-                    self.lastGroupMsgTime = [[groupMsgDic objectForKey:@"MsgDateTime"] longLongValue];
-                }
-            }
+        long long lastTime = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertIphoneHistoryGroupJSONMsg:data WithAtAllMsgList:&atAllMsgList WithNormaleAtMsgList:&normalMsgList];
+        if (self.lastGroupMsgTime <= lastTime) {
+            self.lastGroupMsgTime = lastTime;
         }
         for (NSDictionary *infoDic in atAllMsgList) {
             NSString *groupId = [infoDic objectForKey:@"SessionId"];
-           QIMMessageModel *msg = [QIMMessageModel new];
+            QIMMessageModel *msg = [QIMMessageModel new];
             [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
             [msg setFrom:[infoDic objectForKey:@"From"]];
             [msg setTo:[infoDic objectForKey:@"To"]];
@@ -224,7 +206,7 @@
         }
         for (NSDictionary *infoDic in normalMsgList) {
             NSString *groupId = [infoDic objectForKey:@"SessionId"];
-           QIMMessageModel *msg = [QIMMessageModel new];
+            QIMMessageModel *msg = [QIMMessageModel new];
             [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
             [msg setFrom:[infoDic objectForKey:@"From"]];
             [msg setTo:[infoDic objectForKey:@"To"]];

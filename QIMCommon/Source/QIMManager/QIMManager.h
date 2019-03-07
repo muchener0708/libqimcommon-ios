@@ -19,7 +19,7 @@
 #define DEFAULT_CHATMSG_NUM 1000
 #define DEFAULT_GROUPMSG_NUM 1500
 
-@class UserInfo,Message;
+@class UserInfo,QIMMessageModel;
 @interface QIMManager : NSObject
 
 #pragma mark - Definition Queue
@@ -137,7 +137,7 @@
 
 // userList
 
-@property (nonatomic, strong)QIMMessageModel *msg;    //获取历史消息用的模型
+@property (nonatomic, strong) QIMMessageModel *msg;    //获取历史消息用的模型
 @property (nonatomic, strong) NSMutableArray *memberMessageArray;
 
 @property (nonatomic, strong) NSMutableSet *sendFileMessageSet;

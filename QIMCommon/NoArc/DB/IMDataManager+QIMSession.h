@@ -13,6 +13,10 @@
 - (void)qimDB_updateSessionLastMsgIdWithSessionId:(NSString *)sessionId
                                     WithLastMsgId:(NSString *)lastMsgId;
 
+- (long long)qimDB_insertSessionWithMsgList:(NSDictionary *)msgLists;
+
+- (long long)qimDB_insertGroupSessionWithMsgList:(NSDictionary *)tempGroupDic;
+
 - (void)qimDB_insertSessionWithSessionId:(NSString *)sessinId
                               WithUserId:(NSString *)userId
                            WithLastMsgId:(NSString *)lastMsgId

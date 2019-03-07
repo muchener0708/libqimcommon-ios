@@ -30,8 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray *)qimDB_getCollectionMsgListWithBindId:(NSString *)bindId;
 
-- (NSArray *)qimDB_getLastCollectionSession;
-
 - (BOOL)qimDB_checkCollectionMsgById:(NSString *)msgId;
 
 - (void)qimDB_bulkInsertCollectionMsgWithMsgDics:(NSArray *)msgs;

@@ -56,9 +56,12 @@
         if (array.count > 0) {
             NSMutableArray *list = [NSMutableArray arrayWithCapacity:5];
             for (NSDictionary *infoDic in array) {
-               QIMMessageModel *msg = [QIMMessageModel new];
+                QIMMessageModel *msg = [self getMessageModelWithByDBMsgDic:infoDic];
+                /*
+                QIMMessageModel *msg = [QIMMessageModel new];
                 [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
                 [msg setFrom:[infoDic objectForKey:@"From"]];
+//                [msg setNickName:[infoDic objectForKey:@"From"]];
                 [msg setTo:[infoDic objectForKey:@"To"]];
                 [msg setMessage:[infoDic objectForKey:@"Content"]];
                 [msg setExtendInformation:[infoDic objectForKey:@"ExtendInfo"]];
@@ -70,6 +73,7 @@
                 //Mark by DB
 //                [msg setReadTag:[[infoDic objectForKey:@"ReadTag"] intValue]];
                 [msg setMsgRaw:[infoDic objectForKey:@"msgRaw"]];
+                 */
                 [list addObject:msg];
             }
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -85,7 +89,7 @@
                     NSArray *result = [self getSystemMsgListWithDirection:0 WithUserId:userId WithFromHost:fromHost WithLimit:limit - list.count withTimeVersion:version toId:[QIMManager getLastUserName] toHost:fromHost];
                     if (result.count > 0) {
                         NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
-                        [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:result to:[QIMManager getLastUserName] WithDidReadState:QIMMessageRemoteReadStateDidReaded];
+                        [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:result];
                     }
                 });
             }
@@ -98,11 +102,13 @@
                 NSArray *resultList = [self getSystemMsgListWithDirection:0 WithUserId:userId WithFromHost:fromHost WithLimit:limit withTimeVersion:version toId:[QIMManager getLastUserName] toHost:fromHost];
                 if (resultList.count > 0) {
                     NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
-                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:resultList to:[QIMManager getLastUserName] WithDidReadState:QIMMessageRemoteReadStateDidReaded];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:resultList];
                     NSArray *datas = [[IMDataManager qimDB_SharedInstance] qimDB_getMgsListBySessionId:userId WithRealJid:nil WithLimit:(int)(resultList.count) WithOffset:offset];
                     NSMutableArray *list = [NSMutableArray array];
                     for (NSDictionary *infoDic in datas) {
-                       QIMMessageModel *msg = [QIMMessageModel new];
+                        QIMMessageModel *msg = [self getMessageModelWithByDBMsgDic:infoDic];
+                        /*
+                        QIMMessageModel *msg = [QIMMessageModel new];
                         [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
                         [msg setFrom:[infoDic objectForKey:@"From"]];
                         [msg setTo:[infoDic objectForKey:@"To"]];
@@ -114,6 +120,7 @@
                         [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
                         [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
                         [msg setMsgRaw:[infoDic objectForKey:@"msgRaw"]];
+                         */
                         [list addObject:msg];
                     }
                     dispatch_async(dispatch_get_main_queue(), ^{
@@ -214,8 +221,13 @@
     if (systemMsgs.count <= 0) {
         return;
     }
+    long long lastMaxTime = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:systemMsgs];
+    if (lastMaxTime >= self.lastSystemMsgTime) {
+        self.lastSystemMsgTime = lastMaxTime;
+    }
+    /*
     NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
-    NSMutableDictionary *msgList = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:systemMsgs to:[self getLastJid] WithDidReadState:QIMMessageRemoteReadStateDidReaded];
+    NSMutableDictionary *msgList = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:systemMsgs];
     for (NSString *key in [msgList allKeys]) {
         NSDictionary *value = [msgList objectForKey:key];
         BOOL isConsult = [[value objectForKey:@"Consult"] boolValue];
@@ -246,6 +258,7 @@
                    WithMsgTime:msgTime
                 WithNeedUpdate:NO];
     }
+     */
 }
 
 

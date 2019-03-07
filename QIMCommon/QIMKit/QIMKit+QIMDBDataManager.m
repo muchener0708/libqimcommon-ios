@@ -12,7 +12,7 @@
 @implementation QIMKit (QIMDBDataManager)
 
 + (void) sharedInstanceWithDBPath:(NSString *)dbPath {
-    [IMDataManager qimDB_sharedInstanceWithDBPath:dbPath];
+//    [IMDataManager qimDB_sharedInstanceWithDBPath:dbPath];
 }
 
 - (void)setDomain:(NSString*)domain {
@@ -302,97 +302,6 @@
 - (void)deleteMessageByMessageId:(NSString *)messageId ByJid:(NSString *)sid {
     [[IMDataManager qimDB_SharedInstance] qimDB_deleteMessageByMessageId:messageId ByJid:sid];
 }
-/*
-- (void)insertMessageWithMsgId:(NSString *)msgId
-                    WithXmppId:(NSString *)xmppId
-                      WithFrom:(NSString *)from
-                        WithTo:(NSString *)to
-                   WithContent:(NSString *)content
-                WithExtendInfo:(NSString *)extendInfo
-                  WithPlatform:(int)platform
-                   WithMsgType:(int)msgType
-                  WithMsgState:(int)msgState
-              WithMsgDirection:(int)msgDirection
-                   WithMsgDate:(long long)msgDate
-                 WithReadedTag:(int)readedTag
-                  WithChatType:(NSInteger)chatType {
-    [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgId:msgId
-                                                WithXmppId:xmppId
-                                                  WithFrom:from
-                                                    WithTo:to
-                                               WithContent:content
-                                            WithExtendInfo:extendInfo
-                                              WithPlatform:platform
-                                               WithMsgType:msgType
-                                              WithMsgState:msgState
-                                          WithMsgDirection:msgDirection
-                                               WithMsgDate:msgDate
-                                             WithReadedTag:readedTag
-                                              WithChatType:chatType];
-}
-
-- (void)insertMessageWithMsgId:(NSString *)msgId
-                    WithXmppId:(NSString *)xmppId
-                      WithFrom:(NSString *)from
-                        WithTo:(NSString *)to
-                   WithContent:(NSString *)content
-                WithExtendInfo:(NSString *)extendInfo
-                  WithPlatform:(int)platform
-                   WithMsgType:(int)msgType
-                  WithMsgState:(int)msgState
-              WithMsgDirection:(int)msgDirection
-                   WithMsgDate:(long long)msgDate
-                 WithReadedTag:(int)readedTag
-                    WithMsgRaw:(NSString *)msgRaw
-                  WithChatType:(NSInteger)chatType {
-    [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgId:msgId
-                                                WithXmppId:xmppId
-                                                  WithFrom:from
-                                                    WithTo:to
-                                               WithContent:content
-                                            WithExtendInfo:extendInfo
-                                              WithPlatform:platform
-                                               WithMsgType:msgType
-                                              WithMsgState:msgState
-                                          WithMsgDirection:msgDirection
-                                               WithMsgDate:msgDate
-                                             WithReadedTag:readedTag
-                                                WithMsgRaw:msgRaw
-                                              WithChatType:chatType];
-}
-
-- (void) insertMessageWithMsgId:(NSString *)msgId
-                     WithXmppId:(NSString *)xmppId
-                       WithFrom:(NSString *)from
-                         WithTo:(NSString *)to
-                    WithContent:(NSString *)content
-                 WithExtendInfo:(NSString *)extendInfo
-                   WithPlatform:(int)platform
-                    WithMsgType:(int)msgType
-                   WithMsgState:(int)msgState
-               WithMsgDirection:(int)msgDirection
-                    WithMsgDate:(long long)msgDate
-                  WithReadedTag:(int)readedTag
-                     WithMsgRaw:(NSString *)msgRaw
-                    WithRealJid:(NSString *)realJid
-                   WithChatType:(NSInteger)chatType {
-    [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgId:msgId
-                                                WithXmppId:xmppId
-                                                  WithFrom:from
-                                                    WithTo:to
-                                               WithContent:content
-                                            WithExtendInfo:extendInfo
-                                              WithPlatform:platform
-                                               WithMsgType:msgType
-                                              WithMsgState:msgState
-                                          WithMsgDirection:msgDirection
-                                               WithMsgDate:msgDate
-                                             WithReadedTag:readedTag
-                                                WithMsgRaw:msgRaw
-                                               WithRealJid:realJid
-                                              WithChatType:chatType];
-}
-*/
 
 - (void)updateMessageWithMsgId:(NSString *)msgId
                     WithMsgRaw:(NSString *)msgRaw {
@@ -464,18 +373,18 @@
                                             WithMsgType:msgType];
 }
 
-- (BOOL)checkMsgId:(NSString *)msgId {
+- (BOOL)qimDB_checkMsgId:(NSString *)msgId {
     return [[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId];
 }
-
-- (NSArray *)bulkInsertIphoneMucJSONMsg:(NSArray *)list WithMyNickName:(NSString *)myNickName WithReadMarkT:(long long)readMarkT WithDidReadState:(int)didReadState WithMyRtxId:(NSString *)rtxId {
-    return [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertIphoneMucJSONMsg:list
-                                                       WithMyNickName:myNickName
-                                                        WithReadMarkT:readMarkT
-                                                     WithDidReadState:didReadState
-                                                          WithMyRtxId:rtxId];
-
-}
+//
+//- (NSArray *)bulkInsertIphoneMucJSONMsg:(NSArray *)list WithMyNickName:(NSString *)myNickName WithReadMarkT:(long long)readMarkT WithDidReadState:(int)didReadState WithMyRtxId:(NSString *)rtxId {
+//    return [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertIphoneMucJSONMsg:list
+//                                                       WithMyNickName:myNickName
+//                                                        WithReadMarkT:readMarkT
+//                                                     WithDidReadState:didReadState
+//                                                          WithMyRtxId:rtxId];
+//
+//}
 
 - (NSArray *)bulkInsertIphoneHistoryGroupMsg:(NSArray *)list WithXmppId:(NSString *)xmppId WithMyNickName:(NSString *)myNickName WithReadMarkT:(long long)readMarkT WithDidReadState:(int)didReadState WithMyRtxId:(NSString *)rtxId {
     return nil;
@@ -491,24 +400,18 @@
     return [[IMDataManager qimDB_SharedInstance] dictionaryWithJsonString:jsonString];
 }
 
-- (NSMutableDictionary *)bulkInsertHistoryChatJSONMsg:(NSArray *)list
-                                                   to:(NSString *)meJid
-                                     WithDidReadState:(int)didReadState {
-    return [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:list
-                                                                    to:meJid
-                                                      WithDidReadState:didReadState];
-}
+//- (NSMutableDictionary *)bulkInsertHistoryChatJSONMsg:(NSArray *)list {
+//    return [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:list];
+//}
 
 - (NSString *)getC2BMessageFeedBackWithMsgId:(NSString *)msgId {
     return [[IMDataManager qimDB_SharedInstance] qimDB_getC2BMessageFeedBackWithMsgId:msgId];
 }
 
-- (NSArray *)bulkInsertHistoryChatJSONMsg:(NSArray *)list
-                               WithXmppId:(NSString *)xmppId
-                         WithDidReadState:(int)didReadState {
-    return [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:list
-                                                            WithXmppId:xmppId
-                                                      WithDidReadState:didReadState];
+- (NSArray *)qimDB_bulkInsertPageHistoryChatJSONMsg:(NSArray *)list
+                                         WithXmppId:(NSString *)xmppId {
+    return [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertPageHistoryChatJSONMsg:list
+                                                                             WithXmppId:xmppId];
 }
 
 - (void)bulkInsertMessage:(NSArray *)msgList WithSessionId:(NSString *)sessionId {

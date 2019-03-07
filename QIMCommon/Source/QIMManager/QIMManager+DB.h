@@ -9,6 +9,8 @@
 
 @interface QIMManager (DB)
 
+- (NSString *)getDBPathWithUserXmppId:(NSString *)userJid;
+
 /**
  根据XmppId初始化数据库
  @param userJid 用户Id

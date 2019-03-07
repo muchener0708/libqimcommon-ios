@@ -9,6 +9,7 @@
 
 @interface QIMKit (QIMDB)
 
+- (NSString *)getDBPathWithUserXmppId:(NSString *)userJid;
 /**
  清空数据库文件
  */

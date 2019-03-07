@@ -24,9 +24,10 @@
 - (void)initDBWithUserXmppId:(NSString *)userJid {
     
     NSString *dbPath = [self getDBPathWithUserXmppId:userJid];
-    [IMDataManager qimDB_sharedInstanceWithDBPath:dbPath];
-    [[IMDataManager qimDB_SharedInstance] setDbOwnerId:[QIMManager getLastUserName]];
-    [[IMDataManager qimDB_SharedInstance] setDbOwnerDomain:[self getDomain]];
+    [IMDataManager qimDB_sharedInstanceWithDBPath:dbPath withDBFullJid:userJid];
+//    [[IMDataManager qimDB_SharedInstance] setDbOwnerId:[QIMManager getLastUserName]];
+//    [[IMDataManager qimDB_SharedInstance] setDbOwnerDomain:[self getDomain]];
+//    [[IMDataManager qimDB_SharedInstance] setDbOwnerFullJid:[[QIMManager sharedInstance] getLastJid]];
 }
 
 - (void)removeDataBase {

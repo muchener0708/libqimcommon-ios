@@ -146,7 +146,7 @@
                 [self updateRemoteLoginKey];
             }
             if (self.lastSingleMsgTime <= 0) {
-                self.lastSingleMsgTime = [[NSDate date] timeIntervalSince1970] - 3600 * 24 * 2;
+                self.lastSingleMsgTime = [[NSDate date] timeIntervalSince1970] - 3600 * 24 * 30;
             }
             QIMVerboseLog(@"self.lastSingleMsgTime : %f", self.lastSingleMsgTime);
             retryCount ++;
@@ -162,46 +162,9 @@
                 }
                 if ([chatlog count] > 0) {
                     @autoreleasepool {
-                        NSMutableDictionary *msgList = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:chatlog to:[self getLastJid] WithDidReadState:QIMMessageRemoteReadStateDidSent];
-                        for (NSString *key in [msgList allKeys]) {
-                            //                        int notReadCount = [self getNotReadMsgCountByJid:key];
-                            NSDictionary *value = [msgList objectForKey:key];
-                            BOOL isConsult = [[value objectForKey:@"Consult"] boolValue];
-                            NSString *userId = [value objectForKey:@"UserId"];
-                            NSString *realJid = [value objectForKey:@"RealJid"];
-                            ChatType chatType = [[value objectForKey:@"ChatType"] intValue];
-                            NSArray *msgs = [value objectForKey:@"msgList"];
-                            long long msgTime = [[value objectForKey:@"lastDate"] longLongValue];
-                            if (self.lastSingleMsgTime < msgTime) {
-                                self.lastSingleMsgTime = msgTime;
-                            }
-                            BOOL isSystem = NO;
-                            if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
-                                if ([key hasPrefix:@"rbt-system"] || [key hasPrefix:@"rbt-notice"] || [key hasPrefix:@"rbt-qiangdan"] || [key hasPrefix:@"rbt-zhongbao"]) {
-                                    isSystem = YES;
-                                }
-                            }
-                            if (isConsult) {
-                                
-                                [self addConsultSessionById:userId ByRealJid:realJid WithUserId:userId ByMsgId:nil WithOpen:NO WithLastUpdateTime:msgTime WithChatType:chatType];
-                            } else {
-                                if ([key containsString:@"collection_rbt"]) {
-                                    [self addSessionByType:ChatType_CollectionChat
-                                                      ById:key
-                                                   ByMsgId:nil
-                                               WithMsgTime:msgTime
-                                            WithNeedUpdate:NO];
-                                } else {
-                                    [self addSessionByType:isSystem ? ChatType_System : ChatType_SingleChat
-                                                      ById:key
-                                                   ByMsgId:nil
-                                               WithMsgTime:msgTime
-                                            WithNeedUpdate:YES];
-                                }
-                            }
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationOfflineMessageUpdate object:key userInfo:nil];
-                            });
+                        long long lastMaxTime = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:chatlog];
+                        if (lastMaxTime >= self.lastSingleMsgTime) {
+                            self.lastSingleMsgTime = lastMaxTime;
                         }
                     }
                 }
@@ -215,6 +178,7 @@
     return YES;
 }
 
+#pragma mark - 获取离线单人消息
 - (NSArray *)getUserChatlogSince:(NSTimeInterval)lastChatTime success:(BOOL *)flag timeOut:(NSTimeInterval)timeOut {
     
     NSArray *msgList = [[NSArray alloc] init];

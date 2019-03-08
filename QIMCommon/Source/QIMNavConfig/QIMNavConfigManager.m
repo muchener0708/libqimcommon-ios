@@ -449,6 +449,14 @@
         _RNPublicNumberListView = YES;
         _RNUserCardView = YES;
     }
+    _RNContactView = YES;
+    _RNMineView = YES;
+    _RNSettingView = YES;
+    _RNAboutView = NO;
+    _RNGroupCardView = YES;
+    _RNGroupListView = YES;
+    _RNPublicNumberListView = YES;
+    _RNUserCardView = YES;
     NSDictionary *baseAddess = [navConfig objectForKey:@"baseaddess"];
     if (baseAddess.count) {
         _xmppHost = [baseAddess objectForKey:@"xmpp"];

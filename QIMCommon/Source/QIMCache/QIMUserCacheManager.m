@@ -367,7 +367,7 @@ static NSString *const QTalkDiskCacheException = @"QTalkDiskCacheException";
 
 - (void)setCacheName:(NSString *)cacheName {
     if (cacheName.length > 0) {
-        _cacheName = cacheName;
+        _cacheName = [cacheName lowercaseString];
         self.yyCacheManager = nil;
 //        [self.userCacheFileManager setUserCachePath:cacheName];
 //        [self.memoryCache removeAllObjects];

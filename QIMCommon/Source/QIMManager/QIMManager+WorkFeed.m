@@ -138,7 +138,7 @@
 }
 
 - (void)getMomentHistoryWithLastUpdateTime:(long long)updateTime withOwnerXmppId:(NSString *)xmppId withCallBack:(QIMKitGetMomentHistorySuccessedBlock)callback {
-    NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/post/getPostList", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+    NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/post/getPostList/v2", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
     NSMutableDictionary *bodyDic = [NSMutableDictionary dictionaryWithCapacity:1];
     [bodyDic setQIMSafeObject:@(updateTime) forKey:@"postCreateTime"];
     [bodyDic setQIMSafeObject:[[xmppId componentsSeparatedByString:@"@"] firstObject] forKey:@"owner"];

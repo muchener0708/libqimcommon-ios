@@ -272,7 +272,7 @@
 
 #pragma mark - Remote Comment
 
-- (void)likeRemoteCommentWithCommentId:(NSString *)commentId withMomentId:(NSString *)momentId withLikeFlag:(BOOL)likeFlag withCallBack:(QIMKitLikeContentSuccessedBlock)callback {
+- (void)likeRemoteCommentWithCommentId:(NSString *)commentId withSuperParentUUID:(NSString *)superParentUUID withMomentId:(NSString *)momentId withLikeFlag:(BOOL)likeFlag withCallBack:(QIMKitLikeContentSuccessedBlock)callback {
     if (momentId.length <= 0 || commentId.length <= 0) {
         return;
     }
@@ -285,6 +285,7 @@
     [bodyDic setQIMSafeObject:[QIMManager getLastUserName] forKey:@"userId"];
     [bodyDic setQIMSafeObject:[[QIMManager sharedInstance] getDomain] forKey:@"userHost"];
     [bodyDic setQIMSafeObject:[NSString stringWithFormat:@"2-%@",[QIMUUIDTools UUID]] forKey:@"likeId"];
+    [bodyDic setQIMSafeObject:(superParentUUID.length > 0) ? superParentUUID : nil forKey:@"superParentUUID"];
     
     NSData *momentBodyData = [[QIMJSONSerializer sharedInstance] serializeObject:bodyDic error:nil];
     __weak __typeof(self) weakSelf = self;
@@ -378,10 +379,9 @@
 }
 
 - (void)getRemoteRecentHotCommentsWithMomentId:(NSString *)momentId withHotCommentCallBack:(QIMKitWorkCommentBlock)callback {
-    NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/getHotComment", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+    NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/getHotComment/V2", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
     NSMutableDictionary *bodyDic = [[NSMutableDictionary alloc] init];
     [bodyDic setObject:momentId forKey:@"uuid"];
-    [bodyDic setObject:@(3) forKey:@"item"];
     
     QIMVerboseLog(@"HotComment : %@", bodyDic);
     NSData *hotCommentBodyData = [[QIMJSONSerializer sharedInstance] serializeObject:bodyDic error:nil];
@@ -572,9 +572,40 @@
                     [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyReloadWorkFeedCommentNum object:postCommentData];
                 });
                 
+                NSDictionary *deleteCommentData = [data objectForKey:@"deleteCommentData"];
+                if ([deleteCommentData isKindOfClass:[NSDictionary class]]) {
+                    NSString *commentUUID = [data objectForKey:@"commentUUID"];
+                    BOOL isDeleteFlag = [[deleteCommentData objectForKey:@"isDelete"] boolValue];
+                    NSString *superParentCommentUUID = [deleteCommentData objectForKey:@"superParentCommentUUID"];
+                    NSInteger superParentStatus = [[deleteCommentData objectForKey:@"superParentStatus"] integerValue];
+                    if (isDeleteFlag == YES) {
+                        
+                        if (superParentStatus == 0) {
+                            //0主评论没有被删除,正常只删这一条评论
+                            NSDictionary *deleteCommentDic = @{@"uuid":commentUUID, @"isDelete":@(YES)};
+                            [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteComments:@[deleteCommentDic]];
+                        } else if (superParentStatus == 1) {
+                            //1标识主评论已被删除但是还有子评论在客户端需标识该评论已被删除
+                            NSDictionary *deleteCommentDic = @{@"uuid":commentUUID, @"isDelete":@(YES)};
+                            [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteComments:@[deleteCommentDic]];
+                            
+                            //更新主评论为“该评论已被删除”
+                            [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateComments:nil];
+                        } else if (superParentStatus == 2) {
+                            //2标识主评论已删除且没有了子评论在客户端可直接删除掉
+                            [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteCommentsAndAllChildComments:nil];
+                        }
+                        
+                    } else {
+                        
+                    }
+                    
+                }
+                
                 BOOL isDeleteFlag = [[data objectForKey:@"isDelete"] boolValue];
                 if (isDeleteFlag == YES) {
                     NSString *commentUUID = [data objectForKey:@"commentUUID"];
+                    
                     if (commentUUID.length > 0) {
                         NSDictionary *deleteCommentDic = @{@"uuid":commentUUID, @"isDelete":@(YES)};
                         [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteComments:@[deleteCommentDic]];

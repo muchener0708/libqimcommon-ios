@@ -326,6 +326,40 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
     return curCommentCreateTime;
 }
 
+- (void)qimDB_bulkUpdateComments:(NSArray *)comments {
+    if (comments.count <= 0) {
+        return;
+    }
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = @"update IM_Work_Comment set Comment='该评论已被删除'";
+        [database executeBulkInsert:sql withParameters:nil];
+    }];
+}
+
+- (void)qimDB_bulkDeleteCommentsAndAllChildComments:(NSArray *)comments {
+    if (comments.count <= 0) {
+        return;
+    }
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = @"delete from IM_Work_Comment where (commentUUID = :commentUUID Or ParentCommentUUID = :ParentCommentUUID or superCommentUUID = : superCommentUUID) or (ParentCommentUUID = :ParentCommentUUID or superCommentUUID = : superCommentUUID);";
+        NSMutableArray *paramList = [[NSMutableArray alloc] init];
+        for (NSDictionary *commentDic in comments) {
+            NSString *uuid = [commentDic objectForKey:@"uuid"];
+            NSNumber *isDelete = [commentDic objectForKey:@"isDelete"];
+            if ([isDelete boolValue] == YES) {
+                NSMutableArray *param = [[NSMutableArray alloc] init];
+                [param addObject:uuid];
+                [param addObject:uuid];
+                [param addObject:uuid];
+                [paramList addObject:param];
+            }
+        }
+        [database executeBulkInsert:sql withParameters:paramList];
+        [paramList release];
+        paramList = nil;
+    }];
+}
+
 - (void)qimDB_bulkDeleteComments:(NSArray *)comments {
     if (comments.count <= 0) {
         return;

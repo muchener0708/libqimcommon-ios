@@ -34,6 +34,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (long long)qimDB_getCommentCreateTimeWithCurCommentId:(NSInteger)commentId;
 
+- (void)qimDB_bulkUpdateComments:(NSArray *)comments;
+
+- (void)qimDB_bulkDeleteCommentsAndAllChildComments:(NSArray *)comments;
+
 - (void)qimDB_bulkDeleteComments:(NSArray *)comments;
 
 - (void)qimDB_bulkDeleteCommentsWithPostId:(NSString *)postUUID;

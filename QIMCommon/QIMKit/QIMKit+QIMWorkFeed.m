@@ -39,8 +39,8 @@
     [[QIMManager sharedInstance] likeRemoteMomentWithMomentId:momentId withLikeFlag:likeFlag withCallBack:callback];
 }
 
-- (void)likeRemoteCommentWithCommentId:(NSString *)commentId withMomentId:(NSString *)momentId withLikeFlag:(BOOL)likeFlag withCallBack:(QIMKitLikeMomentSuccessedBlock)callback {
-    [[QIMManager sharedInstance] likeRemoteCommentWithCommentId:commentId withMomentId:momentId withLikeFlag:likeFlag withCallBack:callback];
+- (void)likeRemoteCommentWithCommentId:(NSString *)commentId withSuperParentUUID:(NSString *)superParentUUID withMomentId:(NSString *)momentId withLikeFlag:(BOOL)likeFlag withCallBack:(QIMKitLikeContentSuccessedBlock)callback {
+    [[QIMManager sharedInstance] likeRemoteCommentWithCommentId:commentId withSuperParentUUID:superParentUUID withMomentId:momentId withLikeFlag:likeFlag withCallBack:callback];
 }
 
 - (void)uploadCommentWithCommentDic:(NSDictionary *)commentDic {

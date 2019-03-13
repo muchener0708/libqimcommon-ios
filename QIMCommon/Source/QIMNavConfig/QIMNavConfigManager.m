@@ -119,7 +119,7 @@
             _xmppHost = @"qchat.qunar.com";
             _httpHost = @"https://qcweb.qunar.com/api";
             _newerHttpUrl = @"https://qcweb.qunar.com/api/package/newapi";
-            _javaurl = @"https://qt.qunar.com/package";
+            _javaurl = @"https://qim.qunar.com/package";
             _domain = @"ejabhost2";
             _innerFileHttpHost = @"https://qcweb.qunar.com";
             _pubkey = @"pub_key_chat_release";
@@ -130,22 +130,22 @@
             _adShown = NO;
             _qcHost = @"https://qcadmin.qunar.com";
         } else if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
-            _xmppHost = @"qt.qunar.com";
+            _xmppHost = @"qim.qunar.com";
             _httpHost = @"https://qtapi.qunar.com";
             _javaurl = @"https://im.qunar.com/pubim/s/hosts";
-            _newerHttpUrl = @"https://qt.qunar.com/package/newapi";
+            _newerHttpUrl = @"https://qim.qunar.com/package/newapi";
             _domain = @"ejabhost1";
-            _innerFileHttpHost = @"https://qt.qunar.com";
+            _innerFileHttpHost = @"https://qim.qunar.com";
             _pubkey = @"pub_key_chat_release";
             _takeSmsUrl = @"https://smsauth.qunar.com/api/2.0/verify_code";
             _checkSmsUrl = @"https://smsauth.qunar.com/api/2.0/token/auth";
             _tokenSmsUrl = @"https://smsauth.qunar.com/api/2.0/token";
-            _getPushState = @"qt.qunar.com/package/qtapi/push/getState.qunar";
-            _setPushState = @"https://qt.qunar.com/package/qtapi/push/setState.qunar";
+            _getPushState = @"qim.qunar.com/package/qtapi/push/getState.qunar";
+            _setPushState = @"https://qim.qunar.com/package/qtapi/push/setState.qunar";
             _port = @"5223";
             _protobufPort = @"5202";
             _adShown = NO;
-            _healthcheckUrl = @"http://qt.qunar.com/healthcheck.html";
+            _healthcheckUrl = @"http://qim.qunar.com/healthcheck.html";
         }
     }
     
@@ -192,9 +192,9 @@
         appNavUrl = navUrlDict[QIMNavUrlKey];
     } else {
         if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
-            appNavUrl = @"https://qt.qunar.com/package/static/qtalk/nav";
+            appNavUrl = @"https://qim.qunar.com/package/static/qtalk/nav";
         } else {
-            appNavUrl = @"https://qt.qunar.com/package/static/qchat/nav";
+            appNavUrl = @"https://qim.qunar.com/package/static/qchat/nav";
         }
     }
     return appNavUrl;
@@ -224,14 +224,14 @@
 //Video
 - (NSString *)signal_host {
     if (!_signal_host) {
-        _signal_host = @"https://qt.qunar.com/rtc/pc/index.html";
+        _signal_host = @"https://qim.qunar.com/rtc/pc/index.html";
     }
     return _signal_host;
 }
 
 - (NSString *)group_room_host {
     if (!_group_room_host) {
-        _group_room_host = @"https://qt.qunar.com/rtc/index.php";
+        _group_room_host = @"https://qim.qunar.com/rtc/index.php";
     }
     return _group_room_host;
 }
@@ -252,7 +252,7 @@
 
 - (NSString *)javaurl {
     if (!_javaurl) {
-        _javaurl = @"https://qt.qunar.com/package";
+        _javaurl = @"https://qim.qunar.com/package";
     }
     return _javaurl;
 }
@@ -266,7 +266,7 @@
 
 - (NSString *)healthcheckUrl {
     if (!_healthcheckUrl.length) {
-        _healthcheckUrl = @"http://qt.qunar.com/healthcheck.html";
+        _healthcheckUrl = @"http://qim.qunar.com/healthcheck.html";
     }
     return _healthcheckUrl;
 }
@@ -538,7 +538,7 @@
         if (navConfig.count > 0) {
             [self setNavConfig:navConfig];
             QIMVerboseLog(@"QC_CurrentNavDictDict : %@ QC_NavConfigs : %@", navConfigUrl, navConfig);
-            NSRange range = [navConfigUrl rangeOfString:@"qt.qunar.com/s/qtalk"];
+            NSRange range = [navConfigUrl rangeOfString:@"qim.qunar.com/s/qtalk"];
             if (!navConfigUrl || (range.location != NSNotFound && range.length > 0)) {
                 [[QIMUserCacheManager sharedInstance] setUserObject:@(YES) forKey:@"isQunarQTalk"];
             }
@@ -586,7 +586,7 @@
         realNavUrl = [[realNavUrl stringByReplacingOccurrencesOfString:@" " withString:@""] lowercaseString];
         if (![realNavUrl containsString:@"https://"]) {
             if (![realNavUrl containsString:@"http://"]) {
-                 realNavUrl = [NSString stringWithFormat:@"https://qt.qunar.com/package/static/qtalk/publicnav?c=%@", realNavUrl];
+                 realNavUrl = [NSString stringWithFormat:@"https://qim.qunar.com/package/static/qtalk/publicnav?c=%@", realNavUrl];
             }
         }
         NSString *navConfigUrl = realNavUrl;
@@ -717,7 +717,7 @@
         NSString *user = [[[QIMUserCacheManager sharedInstance] userObjectForKey:@"kLastUserId"] lowercaseString];
         NSURL *url = [NSURL URLWithString:[self navUrl]];
         NSString *host = [url host];
-        NSString *advertConfigUrl = [NSString stringWithFormat:@"https://qt.qunar.com/advert/%@/advert.php?v=%@&p=%@&u=%@&debug=%@&ver=%d&nav=%@&mv=%@", [[QIMAppInfo sharedInstance] appName], appVersion, @"iphone",[user?user:@"unknow" stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],[self debug]?@"true":@"false",oldVersion, host ? host : @"unkown",@"v2"];
+        NSString *advertConfigUrl = [NSString stringWithFormat:@"https://qim.qunar.com/advert/%@/advert.php?v=%@&p=%@&u=%@&debug=%@&ver=%d&nav=%@&mv=%@", [[QIMAppInfo sharedInstance] appName], appVersion, @"iphone",[user?user:@"unknow" stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],[self debug]?@"true":@"false",oldVersion, host ? host : @"unkown",@"v2"];
         
         QIMHTTPRequest *request = [[QIMHTTPRequest alloc] initWithURL:[NSURL URLWithString:advertConfigUrl]];
         request.shouldASynchronous = YES;

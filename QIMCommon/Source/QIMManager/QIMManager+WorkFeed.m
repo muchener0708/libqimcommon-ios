@@ -74,7 +74,7 @@
 
 - (void)getAnonyMouseDicWithMomentId:(NSString *)momentId WithCallBack:(QIMKitgetAnonymouseSuccessedBlock)callback {
     NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/anonymouse/getAnonymouse", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
-    NSDictionary *anonyDic = @{@"user" : [QIMManager getLastUserName], @"postId": momentId ? momentId : [QIMUUIDTools UUID]};
+    NSDictionary *anonyDic = @{@"user" : [[QIMManager sharedInstance] getLastJid], @"postId": momentId ? momentId : [QIMUUIDTools UUID]};
     QIMVerboseLog(@"获取匿名Body : %@", [[QIMJSONSerializer sharedInstance] serializeObject:anonyDic]);
     NSData *momentBodyData = [[QIMJSONSerializer sharedInstance] serializeObject:anonyDic error:nil];
     
@@ -145,7 +145,8 @@
     [bodyDic setQIMSafeObject:[[xmppId componentsSeparatedByString:@"@"] lastObject] forKey:@"ownerHost"];
     [bodyDic setQIMSafeObject:@(20) forKey:@"pageSize"];
     [bodyDic setQIMSafeObject:@(1) forKey:@"getTop"];
-    
+    [bodyDic setQIMSafeObject:@(7) forKey:@"postType"];
+
     QIMVerboseLog(@"post/getPostList : %@", bodyDic);
     NSData *momentBodyData = [[QIMJSONSerializer sharedInstance] serializeObject:bodyDic error:nil];
     [self sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:momentBodyData withSuccessCallBack:^(NSData *responseData) {
@@ -322,7 +323,7 @@
 }
 
 - (void)uploadCommentWithCommentDic:(NSDictionary *)commentDic {
-    NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/uploadComment", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+    NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/uploadComment/V2", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
     NSString *commentStr = [[QIMJSONSerializer sharedInstance] serializeObject:commentDic];
     QIMVerboseLog(@"uploadCommentWithCommentDic Body : %@", commentStr);
     NSData *commentBodyData = [[QIMJSONSerializer sharedInstance] serializeObject:commentDic error:nil];
@@ -420,12 +421,12 @@
 }
 
 - (void)getRemoteRecentNewCommentsWithMomentId:(NSString *)momentId withNewCommentCallBack:(QIMKitWorkCommentBlock)callback {
-    NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/getNewComment", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+    NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/getNewComment/V2", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
     NSMutableDictionary *bodyDic = [[NSMutableDictionary alloc] init];
     [bodyDic setObject:momentId forKey:@"postUUID"];
     [bodyDic setObject:@(20) forKey:@"pgSize"];
     
-    QIMVerboseLog(@"cricle_camel/getNewComment : %@", bodyDic);
+    QIMVerboseLog(@"cricle_camel/getNewComment/V2 : %@", bodyDic);
     NSData *hotCommentBodyData = [[QIMJSONSerializer sharedInstance] serializeObject:bodyDic error:nil];
     __weak __typeof(self) weakSelf = self;
     
@@ -486,7 +487,7 @@
 }
 
 - (void)getRemoteCommentsHistoryWithLastCommentId:(NSInteger)commentRId withMomentId:(NSString *)momentId withCommentCallBack:(QIMKitWorkCommentBlock)callback {
-    NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/getHistoryComment", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+    NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/getHistoryComment/V2", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
     NSMutableDictionary *bodyDic = [[NSMutableDictionary alloc] init];
     [bodyDic setObject:@(commentRId) forKey:@"curCommentId"];
     [bodyDic setObject:momentId forKey:@"postUUID"];
@@ -548,12 +549,12 @@
     }];
 }
 
-- (void)deleteRemoteCommentWithComment:(NSString *)commentId withPostUUId:(NSString *)postUUId withCallback:(QIMKitWorkCommentDeleteSuccessBlock)callback {
+- (void)deleteRemoteCommentWithComment:(NSString *)commentId withPostUUId:(NSString *)postUUId withSuperParentUUId:(NSString *)superParentUUID withCallback:(QIMKitWorkCommentDeleteSuccessBlock)callback {
     if (commentId.length <= 0 || postUUId <= 0) {
         return;
     }
-    NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/deleteComment", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
-    NSDictionary *bodyDic = @{@"commentUUID":commentId, @"postUUID":postUUId};
+    NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/deleteComment/V2", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+    NSDictionary *bodyDic = @{@"commentUUID":commentId, @"postUUID":postUUId, @"superParentUUID":superParentUUID};
     NSData *momentBodyData = [[QIMJSONSerializer sharedInstance] serializeObject:bodyDic error:nil];
     [self sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:momentBodyData withSuccessCallBack:^(NSData *responseData) {
         NSDictionary *result = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
@@ -713,50 +714,53 @@
 #pragma mark - Local Moments
 
 - (void)getRemoteLastWorkMoment {
-    NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/post/getPostList", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
-    NSMutableDictionary *bodyDic = [NSMutableDictionary dictionaryWithCapacity:1];
-    [bodyDic setQIMSafeObject:@(0) forKey:@"postCreateTime"];
-    [bodyDic setQIMSafeObject:nil forKey:@"owner"];
-    [bodyDic setQIMSafeObject:nil forKey:@"ownerHost"];
-    [bodyDic setQIMSafeObject:@(1) forKey:@"pageSize"];
-    [bodyDic setQIMSafeObject:@(0) forKey:@"getTop"];
-    
-    QIMVerboseLog(@"post/getPostList : %@", bodyDic);
-    NSData *momentBodyData = [[QIMJSONSerializer sharedInstance] serializeObject:bodyDic error:nil];
-    [self sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:momentBodyData withSuccessCallBack:^(NSData *responseData) {
-        NSDictionary *result = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
-        BOOL ret = [[result objectForKey:@"ret"] boolValue];
-        NSInteger errcode = [[result objectForKey:@"errcode"] integerValue];
-        if (ret && errcode == 0) {
-            NSDictionary *moments = [result objectForKey:@"data"];
-            if ([moments isKindOfClass:[NSDictionary class]]) {
-                NSArray *deletePosts = [moments objectForKey:@"deletePost"];
-                NSArray *newPosts = [moments objectForKey:@"newPost"];
-                if ([deletePosts isKindOfClass:[NSArray class]]) {
-                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkdeleteMoments:deletePosts];
-                }
-                if ([newPosts isKindOfClass:[NSArray class]]) {
-                    if (newPosts.count > 0) {
-                        NSDictionary *lastMomentDic = [newPosts firstObject];
-                        NSDictionary *momoentDic = [self getLastWorkMomentWithDic:lastMomentDic];
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [[NSNotificationCenter defaultCenter] postNotificationName:kNotify_RN_QTALK_SUGGEST_WorkFeed_UPDATE object:momoentDic];
-                        });
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+        NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/post/getPostList", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+        NSMutableDictionary *bodyDic = [NSMutableDictionary dictionaryWithCapacity:1];
+        [bodyDic setQIMSafeObject:@(0) forKey:@"postCreateTime"];
+        [bodyDic setQIMSafeObject:nil forKey:@"owner"];
+        [bodyDic setQIMSafeObject:nil forKey:@"ownerHost"];
+        [bodyDic setQIMSafeObject:@(1) forKey:@"pageSize"];
+        [bodyDic setQIMSafeObject:@(0) forKey:@"getTop"];
+        [bodyDic setQIMSafeObject:@(0) forKey:@"postType"];
+        
+        QIMVerboseLog(@"post/getPostList : %@", bodyDic);
+        NSData *momentBodyData = [[QIMJSONSerializer sharedInstance] serializeObject:bodyDic error:nil];
+        [self sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:momentBodyData withSuccessCallBack:^(NSData *responseData) {
+            NSDictionary *result = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
+            BOOL ret = [[result objectForKey:@"ret"] boolValue];
+            NSInteger errcode = [[result objectForKey:@"errcode"] integerValue];
+            if (ret && errcode == 0) {
+                NSDictionary *moments = [result objectForKey:@"data"];
+                if ([moments isKindOfClass:[NSDictionary class]]) {
+                    NSArray *deletePosts = [moments objectForKey:@"deletePost"];
+                    NSArray *newPosts = [moments objectForKey:@"newPost"];
+                    if ([deletePosts isKindOfClass:[NSArray class]]) {
+                        [[IMDataManager qimDB_SharedInstance] qimDB_bulkdeleteMoments:deletePosts];
+                    }
+                    if ([newPosts isKindOfClass:[NSArray class]]) {
+                        if (newPosts.count > 0) {
+                            NSDictionary *lastMomentDic = [newPosts firstObject];
+                            NSDictionary *momoentDic = [self getLastWorkMomentWithDic:lastMomentDic];
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                [[NSNotificationCenter defaultCenter] postNotificationName:kNotify_RN_QTALK_SUGGEST_WorkFeed_UPDATE object:momoentDic];
+                            });
+                        } else {
+                            NSDictionary *localLastMomentDic = [self getLastWorkMoment];
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                [[NSNotificationCenter defaultCenter] postNotificationName:kNotify_RN_QTALK_SUGGEST_WorkFeed_UPDATE object:localLastMomentDic];
+                            });
+                        }
                     } else {
-                        NSDictionary *localLastMomentDic = [self getLastWorkMoment];
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [[NSNotificationCenter defaultCenter] postNotificationName:kNotify_RN_QTALK_SUGGEST_WorkFeed_UPDATE object:localLastMomentDic];
-                        });
+                        
                     }
                 } else {
-      
                 }
-            } else {
             }
-        }
-    } withFailedCallBack:^(NSError *error) {
-
-    }];
+        } withFailedCallBack:^(NSError *error) {
+            
+        }];
+    });
 }
 
 - (NSDictionary *)getLastWorkOnlineMomentWithDic:(NSDictionary *)dic {

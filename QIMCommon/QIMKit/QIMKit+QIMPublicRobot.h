@@ -62,17 +62,6 @@
 #pragma mark - sss
 
 /**
- 获取推荐机器人
- */
-- (NSArray *)recommendRobot;
-
-/**
- 注册公众号
- */
-- (void)registerPublicNumber;
-
-
-/**
  获取本地公众号列表
  */
 - (NSArray *)getPublicNumberList;

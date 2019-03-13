@@ -317,7 +317,7 @@ static IMDataManager *__global_data_manager = nil;
                   IM_Message('From');" withParameters:nil];
         
         //创建消息列表插入未读数触发器
-        result = [database executeNonQuery:@"CREATE TRIGGER sessionlist_unread_insert after insert on IM_Message\
+        result = [database executeNonQuery:@"CREATE TRIGGER IF NOT EXISTS sessionlist_unread_insert after insert on IM_Message\
                   for each row begin\
                   INSERT INTO logs(context, level, message, timestamp) VALUES (new.ReadState, '创建消息列表插入未读数触发器', new.XmppId||'--'||new.MsgId, datetime('now')) ;\
                   update IM_SessionList set UnreadCount = case when ((new.ReadState&2)<>2) then UnreadCount+1 else UnreadCount end where XmppId = new.XmppId and RealJid = new.RealJid and new.Direction=1 ;\
@@ -325,39 +325,39 @@ static IMDataManager *__global_data_manager = nil;
                   end" withParameters:nil];
         
         //创建消息列表未读数更新触发器
-        result = [database executeNonQuery:@"CREATE TRIGGER sessionlist_unread_update after update of ReadState on IM_Message\
+        result = [database executeNonQuery:@"CREATE TRIGGER IF NOT EXISTS sessionlist_unread_update after update of ReadState on IM_Message\
                   for each row begin\
                   INSERT INTO logs(context, level, message, timestamp) VALUES (new.ReadState, '创建消息列表未读数更新触发器', new.XmppId||'--'||new.MsgId, datetime('now')) ;\
                   update IM_SessionList set UnreadCount = case when (new.ReadState& 2) =2 and old.ReadState & 2 <>2 then (case when\ UnreadCount >0 then (unreadcount -1) else 0 end ) when (new.ReadState & 2) <>2 and old.ReadState & 2 =2 then\ UnreadCount + 1 else UnreadCount end where XmppId = new.XmppId and RealJid = new.RealJid and new.Direction = 1;\
                   end" withParameters:nil];
         
         //插入单人消息时更新单人消息最后一条消息时间戳
-        result = [database executeNonQuery:@"CREATE TRIGGER singlelastupdatetime_insert after insert on IM_Message\
+        result = [database executeNonQuery:@"CREATE TRIGGER IF NOT EXISTS singlelastupdatetime_insert after insert on IM_Message\
                   for each row begin\
                   update IM_Cache_Data set valueInt = case when (valueInt<new.LastUpdateTime and new.State&2=2 and (new.ChatType=0 or new.ChatType=4 or new.ChatType=5 or new.ChatType=6)) then new.LastUpdateTime else valueInt end where key='singlelastupdatetime' and type=10 ;\
                   end" withParameters:nil];
         //更新群消息最后一条消息时间戳
-        result = [database executeNonQuery:@"CREATE TRIGGER grouplastupdatetime_insert after insert on IM_Message\
+        result = [database executeNonQuery:@"CREATE TRIGGER IF NOT EXISTS grouplastupdatetime_insert after insert on IM_Message\
                   for each row begin\
                   update IM_Cache_Data set valueInt = case when (valueInt<new.LastUpdateTime and new.State&2=2 and new.ChatType=1) then new.LastUpdateTime else valueInt end where key='grouplastupdatetime' and type=10 ;\
                   end" withParameters:nil];
         //更新系统消息最后一条消息时间戳
-        result = [database executeNonQuery:@"CREATE TRIGGER systemlastupdatetime_insert after insert on IM_Message\
+        result = [database executeNonQuery:@"CREATE TRIGGER IF NOT EXISTS systemlastupdatetime_insert after insert on IM_Message\
                   for each row begin\
                   update IM_Cache_Data set valueInt = case when (valueInt<new.LastUpdateTime and new.State&2=2 and new.ChatType=2) then new.LastUpdateTime else valueInt end where key='systemlastupdatetime' and type=10 ;\
                   end" withParameters:nil];
         
-        result = [database executeNonQuery:@"CREATE TRIGGER singlelastupdatetime_update after update of State on IM_Message\
+        result = [database executeNonQuery:@"CREATE TRIGGER IF NOT EXISTS singlelastupdatetime_update after update of State on IM_Message\
                   for each row begin\
                   update IM_Cache_Data set valueInt = case when (valueInt<new.LastUpdateTime and old.State&2<>2 and new.State&2=2 and (new.ChatType=0 or new.ChatType=4 or new.ChatType=5 or new.ChatType=6)) then new.LastUpdateTime else valueInt end where key='singlelastupdatetime' and type=10 ;\
                   end" withParameters:nil];
         
-        result = [database executeNonQuery:@"CREATE TRIGGER grouplastupdatetime_update after update of State on IM_Message\
+        result = [database executeNonQuery:@"CREATE TRIGGER IF NOT EXISTS grouplastupdatetime_update after update of State on IM_Message\
                   for each row begin\
                   update IM_Cache_Data set valueInt = case when (valueInt<new.LastUpdateTime and old.State&2<>2 and new.State&2=2 and new.ChatType=1) then new.LastUpdateTime else valueInt end where key='grouplastupdatetime' and type=10 ;\
                   end" withParameters:nil];
         
-        result = [database executeNonQuery:@"CREATE TRIGGER systemlastupdatetime_update after update of State on IM_Message\
+        result = [database executeNonQuery:@"CREATE TRIGGER IF NOT EXISTS systemlastupdatetime_update after update of State on IM_Message\
                   for each row begin\
                   update IM_Cache_Data set valueInt = case when (valueInt<new.LastUpdateTime and old.State&2<>2 and new.State&2=2 and new.ChatType=2) then new.LastUpdateTime else valueInt end where key='systemlastupdatetime' and type=10 ;\
                   end" withParameters:nil];
@@ -788,6 +788,11 @@ static IMDataManager *__global_data_manager = nil;
               toUser                TEXT,\
               toisAnonymous         INTEGER,\
               updateTime            INTEGER);" withParameters:nil];
+    if (result) {
+        if ([database checkExistsOnTable:@"IM_Work_Comment" withColumn:@"superParentUUID"] == NO) {
+            [database executeNonQuery:@"ALTER TABLE IM_Work_Comment ADD superParentUUID TEXT;" withParameters:nil];
+        }
+    }
     
     //创建工作圈通知消息表
     result = [database executeNonQuery:@"create table IF NOT EXISTS IM_Work_NoticeMessage (\

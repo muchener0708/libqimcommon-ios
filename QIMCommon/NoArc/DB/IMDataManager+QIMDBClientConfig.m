@@ -129,7 +129,7 @@
         NSMutableArray *params = [[NSMutableArray alloc] init];
         for (NSDictionary * info in configArray) {
             /* {
-                configinfo = "https://qt.qunar.com/file/v2/download/perm/4c2fa68a2ea22d741de647167795a584.gif";
+                configinfo = "https://qim.qunar.com/file/v2/download/perm/4c2fa68a2ea22d741de647167795a584.gif";
                 isdel = 0;
                 subkey = 4c2fa68a2ea22d741de647167795a584;
             } */

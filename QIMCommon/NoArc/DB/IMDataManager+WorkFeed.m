@@ -362,8 +362,12 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
     if (comments.count <= 0) {
         return;
     }
+    NSMutableArray *newChilds = [[NSMutableArray alloc] init];
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"insert or Replace into IM_Work_Comment(anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, parentCommentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime) values(:anonymousName, :anonymousPhoto, :commentUUID, :content, :createTime, :fromHost, :fromUser, :id, :isAnonymous, :isDelete, :isLike, :likeNum, :parentCommentUUID, :postUUID, :reviewStatus, :toAnonymousName, :toAnonymousPhoto, :toHost, :toUser, :toisAnonymous, :updateTime);";
+        NSString *deleteSql = @"delete from IM_Work_Comment where commentUUID=:commentUUID or parentCommentUUID=:parentCommentUUID or superParentUUID=:superParentUUID;";
+        
+        NSString *sql = @"insert or Replace into IM_Work_Comment(anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, superParentUUID, parentCommentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime) values(:anonymousName, :anonymousPhoto, :commentUUID, :content, :createTime, :fromHost, :fromUser, :id, :isAnonymous, :isDelete, :isLike, :likeNum, :superParentUUID, :parentCommentUUID, :postUUID, :reviewStatus, :toAnonymousName, :toAnonymousPhoto, :toHost, :toUser, :toisAnonymous, :updateTime);";
+        NSMutableArray *deleteParamList = [[NSMutableArray alloc] init];
         NSMutableArray *paramList = [[NSMutableArray alloc] init];
         for (NSDictionary *commentDic in comments) {
             
@@ -379,6 +383,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             NSNumber *isDelete = [commentDic objectForKey:@"isDelete"];
             NSNumber *isLike = [commentDic objectForKey:@"isLike"];
             NSNumber *likeNum = [commentDic objectForKey:@"likeNum"];
+            NSString *superParentUUID = [commentDic objectForKey:@"superParentUUID"];
             NSString *parentCommentUUID = [commentDic objectForKey:@"parentCommentUUID"];
             NSString *postUUID = [commentDic objectForKey:@"postUUID"];
             NSNumber *reviewStatus = [commentDic objectForKey:@"reviewStatus"];
@@ -388,7 +393,9 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             NSString *toUser = [commentDic objectForKey:@"toUser"];
             NSNumber *toisAnonymous = [commentDic objectForKey:@"toisAnonymous"];
             NSNumber *updateTime = [commentDic objectForKey:@"updateTime"];
+            NSArray *newChild = [commentDic objectForKey:@"newChild"];
             
+            NSMutableArray *deleteParam = [[NSMutableArray alloc] init];
             NSMutableArray *param = [[NSMutableArray alloc] init];
             [param addObject:anonymousName?anonymousName:@":NULL"];
             [param addObject:anonymousPhoto?anonymousPhoto:@":NULL"];
@@ -402,6 +409,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             [param addObject:isDelete?isDelete:@(0)];
             [param addObject:isLike?isLike:@(0)];
             [param addObject:likeNum?likeNum:@(0)];
+            [param addObject:superParentUUID?superParentUUID:@":NULL"];
             [param addObject:parentCommentUUID?parentCommentUUID:@":NULL"];
             [param addObject:postUUID?postUUID:@":NULL"];
             [param addObject:reviewStatus?reviewStatus:@(0)];
@@ -411,10 +419,101 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             [param addObject:toUser?toUser:@":NULL"];
             [param addObject:toisAnonymous?toisAnonymous:@(0)];
             [param addObject:updateTime?updateTime:@(0)];
-
+            
+            [deleteParam addObject:commentUUID];
+            [deleteParam addObject:commentUUID];
+            [deleteParam addObject:commentUUID];
+            [deleteParamList addObject:deleteParam];
             [paramList addObject:param];
+            NSMutableDictionary *newChildDic = [[NSMutableDictionary alloc] init];
+            [IMDataManager safeSaveForDic:newChildDic setObject:newChild forKey:commentUUID];
+            [newChilds addObject:newChildDic];
         }
+        [database executeBulkInsert:deleteSql withParameters:deleteParamList];
         [database executeBulkInsert:sql withParameters:paramList];
+        [deleteParamList release];
+        deleteParamList = nil;
+        [paramList release];
+        paramList = nil;
+    }];
+    [self qimDB_bulkinsertNewChildComments:newChilds];
+}
+
+- (void)qimDB_bulkinsertNewChildComments:(NSArray *)comments {
+    if (comments.count <= 0) {
+        return;
+    }
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *deleteSql = @"delete from IM_Work_Comment where parentCommentUUID=:parentCommentUUID or superParentUUID=:superParentUUID;";
+        
+        NSString *sql = @"insert or Replace into IM_Work_Comment(anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, superParentUUID, parentCommentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime) values(:anonymousName, :anonymousPhoto, :commentUUID, :content, :createTime, :fromHost, :fromUser, :id, :isAnonymous, :isDelete, :isLike, :likeNum, :superParentUUID, :parentCommentUUID, :postUUID, :reviewStatus, :toAnonymousName, :toAnonymousPhoto, :toHost, :toUser, :toisAnonymous, :updateTime);";
+        NSMutableArray *deleteParamList = [[NSMutableArray alloc] init];
+        NSMutableArray *paramList = [[NSMutableArray alloc] init];
+        NSMutableArray *newChilds = [[NSMutableArray alloc] init];
+        for (NSDictionary *newChildDic in comments) {
+            NSString *ChildParCommentUUID = [[newChildDic allKeys] firstObject];
+            NSArray *childComments = [newChildDic objectForKey:ChildParCommentUUID];
+            
+            for (NSDictionary *commentDic in childComments) {
+                NSString *anonymousName = [commentDic objectForKey:@"anonymousName"];
+                NSString *anonymousPhoto = [commentDic objectForKey:@"anonymousPhoto"];
+                NSString *commentUUID = [commentDic objectForKey:@"commentUUID"];
+                NSString *content = [commentDic objectForKey:@"content"];
+                NSNumber *createTime = [commentDic objectForKey:@"createTime"];
+                NSString *fromHost = [commentDic objectForKey:@"fromHost"];
+                NSString *fromUser = [commentDic objectForKey:@"fromUser"];
+                NSNumber *rid = [commentDic objectForKey:@"id"];
+                NSNumber *isAnonymous = [commentDic objectForKey:@"isAnonymous"];
+                NSNumber *isDelete = [commentDic objectForKey:@"isDelete"];
+                NSNumber *isLike = [commentDic objectForKey:@"isLike"];
+                NSNumber *likeNum = [commentDic objectForKey:@"likeNum"];
+                NSString *superParentUUID = [commentDic objectForKey:@"superParentUUID"];
+                NSString *parentCommentUUID = [commentDic objectForKey:@"parentCommentUUID"];
+                NSString *postUUID = [commentDic objectForKey:@"postUUID"];
+                NSNumber *reviewStatus = [commentDic objectForKey:@"reviewStatus"];
+                NSString *toAnonymousName = [commentDic objectForKey:@"toAnonymousName"];
+                NSString *toAnonymousPhoto = [commentDic objectForKey:@"toAnonymousPhoto"];
+                NSString *toHost = [commentDic objectForKey:@"toHost"];
+                NSString *toUser = [commentDic objectForKey:@"toUser"];
+                NSNumber *toisAnonymous = [commentDic objectForKey:@"toisAnonymous"];
+                NSNumber *updateTime = [commentDic objectForKey:@"updateTime"];
+                
+                NSMutableArray *deleteParam = [[NSMutableArray alloc] init];
+                NSMutableArray *param = [[NSMutableArray alloc] init];
+                [param addObject:anonymousName?anonymousName:@":NULL"];
+                [param addObject:anonymousPhoto?anonymousPhoto:@":NULL"];
+                [param addObject:commentUUID?commentUUID:@":NULL"];
+                [param addObject:content?content:@":NULL"];
+                [param addObject:createTime?createTime:@(0)];
+                [param addObject:fromHost?fromHost:@":NULL"];
+                [param addObject:fromUser?fromUser:@":NULL"];
+                [param addObject:rid?rid:@(0)];
+                [param addObject:isAnonymous?isAnonymous:@(0)];
+                [param addObject:isDelete?isDelete:@(0)];
+                [param addObject:isLike?isLike:@(0)];
+                [param addObject:likeNum?likeNum:@(0)];
+                [param addObject:superParentUUID?superParentUUID:@":NULL"];
+                [param addObject:parentCommentUUID?parentCommentUUID:@":NULL"];
+                [param addObject:postUUID?postUUID:@":NULL"];
+                [param addObject:reviewStatus?reviewStatus:@(0)];
+                [param addObject:toAnonymousName?toAnonymousName:@":NULL"];
+                [param addObject:toAnonymousPhoto?toAnonymousPhoto:@":NULL"];
+                [param addObject:toHost?toHost:@":NULL"];
+                [param addObject:toUser?toUser:@":NULL"];
+                [param addObject:toisAnonymous?toisAnonymous:@(0)];
+                [param addObject:updateTime?updateTime:@(0)];
+                
+                [deleteParam addObject:ChildParCommentUUID];
+                [deleteParam addObject:ChildParCommentUUID];
+                [deleteParamList addObject:deleteParam];
+                [paramList addObject:param];
+            }
+            NSLog(@"newChildDic : %@", newChildDic);
+        }
+        [database executeBulkInsert:deleteSql withParameters:deleteParamList];
+        [database executeBulkInsert:sql withParameters:paramList];
+        [deleteParamList release];
+        deleteParamList = nil;
         [paramList release];
         paramList = nil;
     }];

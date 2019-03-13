@@ -39,14 +39,6 @@
 
 #pragma mark - sss
 
-- (NSArray *)recommendRobot {
-    return [[QIMManager sharedInstance] recommendRobot];
-}
-
-- (void)registerPublicNumber {
-    [[QIMManager sharedInstance] registerPublicNumber];
-}
-
 - (NSArray *)getPublicNumberList {
     return [[QIMManager sharedInstance] getPublicNumberList];
 }

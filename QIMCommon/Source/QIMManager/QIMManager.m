@@ -508,7 +508,7 @@ static QIMManager *__IMManager = nil;
         
         QIMVerboseLog(@"开始Check组织架构2");
         CFAbsoluteTime startTime9 = [[QIMWatchDog sharedInstance] startTime];
-        [self checkRosterListWithForceUpdate:NO];
+        [self checkRosterListWithForceUpdate:YES];
         QIMVerboseLog(@"Check组织架构2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime9]);
         QIMVerboseLog(@"Check组织架构结束2");
     
@@ -978,7 +978,7 @@ static QIMManager *__IMManager = nil;
             long long getRostListVersion = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetRostListVersion] longLongValue];
             NSTimeInterval nowTime = [[NSDate date] timeIntervalSince1970];
             QIMWarnLog(@"qchat拉取组织架构当前时间 : %f \n qchat上次拉取组织架构时间 : %lld", nowTime, getRostListVersion);
-            if (nowTime - getRostListVersion >= 24 * 60 * 60 || forceUpdate) {
+            if (forceUpdate) {
                 QIMWarnLog(@"qchat拉取组织架构 时间戳 允许重新拉取");
                 NSError *error = nil;
                 { //Roster List
@@ -1091,7 +1091,7 @@ static QIMManager *__IMManager = nil;
             long long getRostListVersion = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetRostListVersion] longLongValue];
             NSTimeInterval nowTime = [[NSDate date] timeIntervalSince1970];
             QIMWarnLog(@"qtalk拉取组织架构当前时间 : %f \n qtalk上次拉取组织架构时间 : %lld", nowTime, getRostListVersion);
-            if (nowTime - getRostListVersion >= 24 * 60 * 60 || forceUpdate) {
+            if (forceUpdate) {
                 QIMWarnLog(@"qtalk拉取组织架构 时间戳 允许重新拉取");
                 NSError *error = nil;
                 { //Roster List

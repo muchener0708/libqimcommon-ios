@@ -121,7 +121,6 @@
 @property (atomic, strong) NSMutableDictionary *appendInfoDic;         //各业务线或部门追加信息
 @property (atomic, strong) NSMutableArray *clientConfigUpgradeArray;   //个人配置升级 2018.7.13
 
-
 //Login
 @property (nonatomic, assign) BOOL isBackgroundLogin;   //是否是后台登录，YES 是后台重新登录，NO 是前台人工登录
 @property (nonatomic, assign) BOOL willCancelLogin;
@@ -162,6 +161,8 @@
 @property (nonatomic, strong) NSMutableDictionary *groupVCardDict;  //群聊名片缓存Dict
 @property (nonatomic, strong) NSMutableDictionary *userVCardDict;   //用户名片缓存Dict
 @property (nonatomic, strong) NSMutableDictionary *collectionUserVCardDict; //代收用户缓存Dict
+
+@property (nonatomic, strong) NSMutableDictionary *hotCommentUUIdsDic;     //驼圈热门评论UUIds
 
 @property (nonatomic, assign) BOOL latestGroupMessageFlag;  //是否还能继续拉群消息
 @property (nonatomic, assign) BOOL latestSingleMessageFlag;  //是否还能继续拉群消息

@@ -7,8 +7,27 @@
 //
 
 #import "QIMManager+WorkFeed.h"
+#import <objc/runtime.h>
 
 @implementation QIMManager (WorkFeed)
+
+- (NSArray *)getHotCommentUUIdsForMomentId:(NSString *)momentId {
+    return [self.hotCommentUUIdsDic objectForKey:momentId];
+}
+
+- (void)setHotCommentUUIds:(NSArray *)hotCommentUUIds ForMomentId:(NSString *)momentId {
+    [self.hotCommentUUIdsDic setQIMSafeObject:hotCommentUUIds forKey:momentId];
+}
+
+- (void)removeHotCommentUUIdsForMomentId:(NSString *)momentId {
+    if (momentId.length > 0) {
+        [self.hotCommentUUIdsDic removeObjectForKey:momentId];
+    }
+}
+
+- (void)removeAllHotCommentUUIds {
+    [self.hotCommentUUIdsDic removeAllObjects];
+}
 
 - (void)updateLastWorkFeedMsgTime {
     QIMVerboseLog(@"更新本地未读的驼圈消息时间戳");
@@ -325,6 +344,7 @@
 
 - (void)uploadCommentWithCommentDic:(NSDictionary *)commentDic {
     NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/uploadComment/V2", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+
     NSString *commentStr = [[QIMJSONSerializer sharedInstance] serializeObject:commentDic];
     QIMVerboseLog(@"uploadCommentWithCommentDic Body : %@", commentStr);
     NSData *commentBodyData = [[QIMJSONSerializer sharedInstance] serializeObject:commentDic error:nil];
@@ -358,7 +378,7 @@
                 if ([newComment isKindOfClass:[NSArray class]]) {
                     [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertComments:newComment];
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyReloadWorkComment object:nil];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyReloadWorkComment object:[newComment firstObject]];
                         NSInteger likeNum = [[data objectForKey:@"postLikeNum"] integerValue];
                         BOOL isPostLike = [[data objectForKey:@"isPostLike"] boolValue];
                         NSDictionary *likeData = @{@"postId":[commentDic objectForKey:@"postUUID"], @"likeNum":@(likeNum), @"isLike":@(isPostLike)};
@@ -392,17 +412,20 @@
         BOOL ret = [[result objectForKey:@"ret"] boolValue];
         NSInteger errcode = [[result objectForKey:@"errcode"] integerValue];
         if (ret && errcode == 0) {
-            NSData *data = [result objectForKey:@"data"];
+            NSDictionary *data = [result objectForKey:@"data"];
             __typeof(self) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
-            if ([data isKindOfClass:[NSArray class]]) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    if (callback) {
-                        callback(data);
-                    }
-                });
+            if ([data isKindOfClass:[NSDictionary class]]) {
+                NSArray *newComment = [data objectForKey:@"newComment"];
+                if ([newComment isKindOfClass:[NSArray class]]) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        if (callback) {
+                            callback(newComment);
+                        }
+                    });
+                }
             } else {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (callback) {
@@ -423,9 +446,10 @@
 - (void)getRemoteRecentNewCommentsWithMomentId:(NSString *)momentId withNewCommentCallBack:(QIMKitWorkCommentBlock)callback {
     NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/getNewComment/V2", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
     NSMutableDictionary *bodyDic = [[NSMutableDictionary alloc] init];
-    [bodyDic setObject:momentId forKey:@"postUUID"];
-    [bodyDic setObject:@(20) forKey:@"pgSize"];
-    
+    [bodyDic setQIMSafeObject:momentId forKey:@"postUUID"];
+    [bodyDic setQIMSafeObject:@(20) forKey:@"pgSize"];
+    [bodyDic setQIMSafeObject:[self getHotCommentUUIdsForMomentId:momentId] forKey:@"hotCommentUUID"];
+
     QIMVerboseLog(@"cricle_camel/getNewComment/V2 : %@", bodyDic);
     NSData *hotCommentBodyData = [[QIMJSONSerializer sharedInstance] serializeObject:bodyDic error:nil];
     __weak __typeof(self) weakSelf = self;
@@ -492,6 +516,7 @@
     [bodyDic setObject:@(commentRId) forKey:@"curCommentId"];
     [bodyDic setObject:momentId forKey:@"postUUID"];
     [bodyDic setObject:@(20) forKey:@"pgSize"];
+    [bodyDic setQIMSafeObject:[self getHotCommentUUIdsForMomentId:momentId] forKey:@"hotCommentUUID"];
     
     QIMVerboseLog(@"cricle_camel/getHistoryComment : %@", bodyDic);
     NSData *hotCommentBodyData = [[QIMJSONSerializer sharedInstance] serializeObject:bodyDic error:nil];
@@ -574,7 +599,7 @@
                 
                 NSDictionary *deleteCommentData = [data objectForKey:@"deleteCommentData"];
                 if ([deleteCommentData isKindOfClass:[NSDictionary class]]) {
-                    NSString *commentUUID = [data objectForKey:@"commentUUID"];
+                    NSString *commentUUID = [deleteCommentData objectForKey:@"commentUUID"];
                     BOOL isDeleteFlag = [[deleteCommentData objectForKey:@"isDelete"] boolValue];
                     NSString *superParentCommentUUID = [deleteCommentData objectForKey:@"superParentCommentUUID"];
                     NSInteger superParentStatus = [[deleteCommentData objectForKey:@"superParentStatus"] integerValue];
@@ -584,6 +609,11 @@
                             //0主评论没有被删除,正常只删这一条评论
                             NSDictionary *deleteCommentDic = @{@"uuid":commentUUID, @"isDelete":@(YES)};
                             [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteComments:@[deleteCommentDic]];
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                if (callback) {
+                                    callback(YES);
+                                }
+                            });
                         } else if (superParentStatus == 1) {
                             //1标识主评论已被删除但是还有子评论在客户端需标识该评论已被删除
                             NSDictionary *deleteCommentDic = @{@"uuid":commentUUID, @"isDelete":@(YES)};
@@ -591,29 +621,26 @@
                             
                             //更新主评论为“该评论已被删除”
                             [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateComments:nil];
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                if (callback) {
+                                    callback(YES);
+                                }
+                            });
                         } else if (superParentStatus == 2) {
                             //2标识主评论已删除且没有了子评论在客户端可直接删除掉
                             [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteCommentsAndAllChildComments:nil];
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                if (callback) {
+                                    callback(YES);
+                                }
+                            });
+                        } else {
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                if (callback) {
+                                    callback(NO);
+                                }
+                            });
                         }
-                        
-                    } else {
-                        
-                    }
-                    
-                }
-                
-                BOOL isDeleteFlag = [[data objectForKey:@"isDelete"] boolValue];
-                if (isDeleteFlag == YES) {
-                    NSString *commentUUID = [data objectForKey:@"commentUUID"];
-                    
-                    if (commentUUID.length > 0) {
-                        NSDictionary *deleteCommentDic = @{@"uuid":commentUUID, @"isDelete":@(YES)};
-                        [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteComments:@[deleteCommentDic]];
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            if (callback) {
-                                callback(YES);
-                            }
-                        });
                     } else {
                         dispatch_async(dispatch_get_main_queue(), ^{
                             if (callback) {
@@ -621,12 +648,6 @@
                             }
                         });
                     }
-                } else {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        if (callback) {
-                            callback(NO);
-                        }
-                    });
                 }
             } else {
                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -906,15 +927,6 @@
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
             [[QIMManager sharedInstance] getMomentHistoryWithLastUpdateTime:lastMomentTime withOwnerXmppId:xmppId withCallBack:^(NSArray *moments) {
                 if (moments.count > 0) {
-                    /*
-                    NSArray *newMoments = [moments sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
-                        NSDictionary *momentDic1 = (NSDictionary *)obj1;
-                        NSDictionary *momentDic2 = (NSDictionary *)obj2;
-                        NSInteger rId1 = [[momentDic1 objectForKey:@"id"] integerValue];
-                        NSInteger rId2 = [[momentDic2 objectForKey:@"id"] integerValue];
-                        return rId1 < rId2;
-                    }];
-                    */
                     dispatch_async(dispatch_get_main_queue(), ^{
                         complete(moments);
                     });
@@ -975,6 +987,10 @@
             }];
         });
     }
+}
+
+- (NSArray *)getWorkChildCommentsWithParentCommentUUID:(NSString *)parentCommentUUID {
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getWorkChildCommentsWithParentCommentUUID:parentCommentUUID];
 }
 
 - (NSInteger)getWorkNoticeMessagesCount {

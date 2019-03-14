@@ -13,6 +13,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface QIMManager (WorkFeed)
 
+- (NSArray *)getHotCommentUUIdsForMomentId:(NSString *)momentId;
+
+- (void)setHotCommentUUIds:(NSArray *)hotCommentUUIds ForMomentId:(NSString *)momentId;
+
+- (void)removeHotCommentUUIdsForMomentId:(NSString *)momentId;
+
+- (void)removeAllHotCommentUUIds;
+
 - (void)updateLastWorkFeedMsgTime;
 
 - (void)getRemoteMomentDetailWithMomentUUId:(NSString *)momentId withCallback:(QIMKitgetMomentDetailSuccessedBlock)callback;
@@ -64,6 +72,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSDictionary *)getLastWorkOnlineMomentWithDic:(NSDictionary *)dic;
 
 - (NSDictionary *)getLastWorkMomentWithDic:(NSDictionary *)dic;
+
+- (NSArray *)getWorkChildCommentsWithParentCommentUUID:(NSString *)parentCommentUUID;
 
 - (NSInteger)getWorkNoticeMessagesCount;
 

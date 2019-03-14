@@ -542,7 +542,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
                 [deleteParamList addObject:deleteParam];
                 [paramList addObject:param];
             }
-            NSLog(@"newChildDic : %@", newChildDic);
+//            NSLog(@"newChildDic : %@", newChildDic);
         }
         [database executeBulkInsert:deleteSql withParameters:deleteParamList];
         [database executeBulkInsert:sql withParameters:paramList];
@@ -556,7 +556,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
 - (NSArray *)qimDB_getWorkCommentsWithMomentId:(NSString *)momentId WithLimit:(int)limit WithOffset:(int)offset {
     __block NSMutableArray *result = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"select anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, parentCommentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime from IM_Work_Comment where postUUID='%@' and isDelete=0 order by createTime desc limit %d offset %d;", momentId, limit, offset];
+        NSString *sql = [NSString stringWithFormat:@"select anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, parentCommentUUID, superParentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime from IM_Work_Comment where postUUID='%@' and isDelete=0 and parentCommentUUID='' and superParentUUID='' order by createTime desc limit %d offset %d;", momentId, limit, offset];
         NSLog(@"sql : %@", sql);
         DataReader *reader = [database executeReader:sql withParameters:nil];
         NSMutableArray *tempList = nil;
@@ -578,14 +578,15 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             NSNumber *isLike = [reader objectForColumnIndex:10];
             NSNumber *likeNum = [reader objectForColumnIndex:11];
             NSString *parentCommentUUID = [reader objectForColumnIndex:12];
-            NSString *postUUID = [reader objectForColumnIndex:13];
-            NSNumber *reviewStatus = [reader objectForColumnIndex:14];
-            NSString *toAnonymousName = [reader objectForColumnIndex:15];
-            NSString *toAnonymousPhoto = [reader objectForColumnIndex:16];
-            NSString *toHost = [reader objectForColumnIndex:17];
-            NSString *toUser = [reader objectForColumnIndex:18];
-            NSNumber *toisAnonymous = [reader objectForColumnIndex:19];
-            NSNumber *updateTime = [reader objectForColumnIndex:20];
+            NSString *superParentUUID = [reader objectForColumnIndex:13];
+            NSString *postUUID = [reader objectForColumnIndex:14];
+            NSNumber *reviewStatus = [reader objectForColumnIndex:15];
+            NSString *toAnonymousName = [reader objectForColumnIndex:16];
+            NSString *toAnonymousPhoto = [reader objectForColumnIndex:17];
+            NSString *toHost = [reader objectForColumnIndex:18];
+            NSString *toUser = [reader objectForColumnIndex:19];
+            NSNumber *toisAnonymous = [reader objectForColumnIndex:20];
+            NSNumber *updateTime = [reader objectForColumnIndex:21];
             
             NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
             [IMDataManager safeSaveForDic:msgDic setObject:anonymousName forKey:@"anonymousName"];
@@ -602,6 +603,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             [IMDataManager safeSaveForDic:msgDic setObject:isLike forKey:@"isLike"];
             [IMDataManager safeSaveForDic:msgDic setObject:likeNum forKey:@"likeNum"];
             [IMDataManager safeSaveForDic:msgDic setObject:parentCommentUUID forKey:@"parentCommentUUID"];
+            [IMDataManager safeSaveForDic:msgDic setObject:superParentUUID forKey:@"superParentUUID"];
             [IMDataManager safeSaveForDic:msgDic setObject:postUUID forKey:@"postUUID"];
             
             [IMDataManager safeSaveForDic:msgDic setObject:reviewStatus forKey:@"reviewStatus"];
@@ -618,9 +620,151 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
         }
     }];
     //    QIMVerboseLog(@"sql取消息耗时。: %llf", [[QIMWatchDog sharedInstance] escapedTime]);
+    return [self qimDB_getWorkChildCommentsWithParentComments:[result autorelease]];
+}
+
+- (NSArray *)qimDB_getWorkChildCommentsWithParentComments:(NSArray *)comments {
+    __block NSMutableArray *result = [[NSMutableArray alloc] init];
+    for (NSInteger i = 0; i < comments.count; i++) {
+        NSMutableDictionary *parentCommentDic = [comments objectAtIndex:i];
+        NSString *commentUUID = [parentCommentDic objectForKey:@"commentUUID"];
+        __block NSMutableArray *childComments = nil;
+        [[self dbInstance] syncUsingTransaction:^(Database *database) {
+            NSString *sql = [NSString stringWithFormat:@"select anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, parentCommentUUID, superParentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime from IM_Work_Comment where isDelete=0 and (parentCommentUUID=:parentCommentUUID Or superParentUUID=:superParentUUID) order by createTime desc;"];
+            NSLog(@"child sql : %@ - %@", sql, @[commentUUID, commentUUID]);
+            DataReader *reader = [database executeReader:sql withParameters:@[commentUUID, commentUUID]];
+            if (childComments == nil) {
+                childComments = [[NSMutableArray alloc] init];
+            }
+            
+            while ([reader read]) {
+                NSString *anonymousName = [reader objectForColumnIndex:0];
+                NSString *anonymousPhoto = [reader objectForColumnIndex:1];
+                NSString *commentUUID = [reader objectForColumnIndex:2];
+                NSString *content = [reader objectForColumnIndex:3];
+                NSNumber *createTime = [reader objectForColumnIndex:4];
+                NSString *fromHost = [reader objectForColumnIndex:5];
+                NSString *fromUser = [reader objectForColumnIndex:6];
+                NSNumber *rid = [reader objectForColumnIndex:7];
+                NSNumber *isAnonymous = [reader objectForColumnIndex:8];
+                NSNumber *isDelete = [reader objectForColumnIndex:9];
+                NSNumber *isLike = [reader objectForColumnIndex:10];
+                NSNumber *likeNum = [reader objectForColumnIndex:11];
+                NSString *parentCommentUUID = [reader objectForColumnIndex:12];
+                NSString *superParentUUID = [reader objectForColumnIndex:13];
+                NSString *postUUID = [reader objectForColumnIndex:14];
+                NSNumber *reviewStatus = [reader objectForColumnIndex:15];
+                NSString *toAnonymousName = [reader objectForColumnIndex:16];
+                NSString *toAnonymousPhoto = [reader objectForColumnIndex:17];
+                NSString *toHost = [reader objectForColumnIndex:18];
+                NSString *toUser = [reader objectForColumnIndex:19];
+                NSNumber *toisAnonymous = [reader objectForColumnIndex:20];
+                NSNumber *updateTime = [reader objectForColumnIndex:21];
+                
+                NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
+                [IMDataManager safeSaveForDic:msgDic setObject:anonymousName forKey:@"anonymousName"];
+                [IMDataManager safeSaveForDic:msgDic setObject:anonymousPhoto forKey:@"anonymousPhoto"];
+                [IMDataManager safeSaveForDic:msgDic setObject:commentUUID forKey:@"commentUUID"];
+                [IMDataManager safeSaveForDic:msgDic setObject:content forKey:@"content"];
+                [IMDataManager safeSaveForDic:msgDic setObject:createTime forKey:@"createTime"];
+                [IMDataManager safeSaveForDic:msgDic setObject:fromHost forKey:@"fromHost"];
+                [IMDataManager safeSaveForDic:msgDic setObject:fromUser forKey:@"fromUser"];
+                [IMDataManager safeSaveForDic:msgDic setObject:rid forKey:@"rid"];
+                
+                [IMDataManager safeSaveForDic:msgDic setObject:isAnonymous forKey:@"isAnonymous"];
+                [IMDataManager safeSaveForDic:msgDic setObject:isDelete forKey:@"isDelete"];
+                [IMDataManager safeSaveForDic:msgDic setObject:isLike forKey:@"isLike"];
+                [IMDataManager safeSaveForDic:msgDic setObject:likeNum forKey:@"likeNum"];
+                [IMDataManager safeSaveForDic:msgDic setObject:parentCommentUUID forKey:@"parentCommentUUID"];
+                [IMDataManager safeSaveForDic:msgDic setObject:superParentUUID forKey:@"superParentUUID"];
+                [IMDataManager safeSaveForDic:msgDic setObject:postUUID forKey:@"postUUID"];
+                
+                [IMDataManager safeSaveForDic:msgDic setObject:reviewStatus forKey:@"reviewStatus"];
+                [IMDataManager safeSaveForDic:msgDic setObject:toAnonymousName forKey:@"toAnonymousName"];
+                [IMDataManager safeSaveForDic:msgDic setObject:toAnonymousPhoto forKey:@"toAnonymousPhoto"];
+                [IMDataManager safeSaveForDic:msgDic setObject:toHost forKey:@"toHost"];
+                [IMDataManager safeSaveForDic:msgDic setObject:toUser forKey:@"toUser"];
+                [IMDataManager safeSaveForDic:msgDic setObject:toisAnonymous forKey:@"toisAnonymous"];
+                [IMDataManager safeSaveForDic:msgDic setObject:updateTime forKey:@"updateTime"];
+                
+                
+                [childComments addObject:msgDic];
+                [msgDic release];
+            }
+        }];
+        [IMDataManager safeSaveForDic:parentCommentDic setObject:childComments forKey:@"newChild"];
+        [result addObject:parentCommentDic];
+    }
     return [result autorelease];
 }
 
+- (NSArray *)qimDB_getWorkChildCommentsWithParentCommentUUID:(NSString *)commentUUID {
+    __block NSMutableArray *childComments = nil;
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = [NSString stringWithFormat:@"select anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, parentCommentUUID, superParentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime from IM_Work_Comment where isDelete=0 and (parentCommentUUID=:parentCommentUUID Or superParentUUID=:superParentUUID) order by createTime desc;"];
+        NSLog(@"child sql : %@ - %@", sql, @[commentUUID, commentUUID]);
+        DataReader *reader = [database executeReader:sql withParameters:@[commentUUID, commentUUID]];
+        if (childComments == nil) {
+            childComments = [[NSMutableArray alloc] init];
+        }
+        
+        while ([reader read]) {
+            NSString *anonymousName = [reader objectForColumnIndex:0];
+            NSString *anonymousPhoto = [reader objectForColumnIndex:1];
+            NSString *commentUUID = [reader objectForColumnIndex:2];
+            NSString *content = [reader objectForColumnIndex:3];
+            NSNumber *createTime = [reader objectForColumnIndex:4];
+            NSString *fromHost = [reader objectForColumnIndex:5];
+            NSString *fromUser = [reader objectForColumnIndex:6];
+            NSNumber *rid = [reader objectForColumnIndex:7];
+            NSNumber *isAnonymous = [reader objectForColumnIndex:8];
+            NSNumber *isDelete = [reader objectForColumnIndex:9];
+            NSNumber *isLike = [reader objectForColumnIndex:10];
+            NSNumber *likeNum = [reader objectForColumnIndex:11];
+            NSString *parentCommentUUID = [reader objectForColumnIndex:12];
+            NSString *superParentUUID = [reader objectForColumnIndex:13];
+            NSString *postUUID = [reader objectForColumnIndex:14];
+            NSNumber *reviewStatus = [reader objectForColumnIndex:15];
+            NSString *toAnonymousName = [reader objectForColumnIndex:16];
+            NSString *toAnonymousPhoto = [reader objectForColumnIndex:17];
+            NSString *toHost = [reader objectForColumnIndex:18];
+            NSString *toUser = [reader objectForColumnIndex:19];
+            NSNumber *toisAnonymous = [reader objectForColumnIndex:20];
+            NSNumber *updateTime = [reader objectForColumnIndex:21];
+            
+            NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
+            [IMDataManager safeSaveForDic:msgDic setObject:anonymousName forKey:@"anonymousName"];
+            [IMDataManager safeSaveForDic:msgDic setObject:anonymousPhoto forKey:@"anonymousPhoto"];
+            [IMDataManager safeSaveForDic:msgDic setObject:commentUUID forKey:@"commentUUID"];
+            [IMDataManager safeSaveForDic:msgDic setObject:content forKey:@"content"];
+            [IMDataManager safeSaveForDic:msgDic setObject:createTime forKey:@"createTime"];
+            [IMDataManager safeSaveForDic:msgDic setObject:fromHost forKey:@"fromHost"];
+            [IMDataManager safeSaveForDic:msgDic setObject:fromUser forKey:@"fromUser"];
+            [IMDataManager safeSaveForDic:msgDic setObject:rid forKey:@"rid"];
+            
+            [IMDataManager safeSaveForDic:msgDic setObject:isAnonymous forKey:@"isAnonymous"];
+            [IMDataManager safeSaveForDic:msgDic setObject:isDelete forKey:@"isDelete"];
+            [IMDataManager safeSaveForDic:msgDic setObject:isLike forKey:@"isLike"];
+            [IMDataManager safeSaveForDic:msgDic setObject:likeNum forKey:@"likeNum"];
+            [IMDataManager safeSaveForDic:msgDic setObject:parentCommentUUID forKey:@"parentCommentUUID"];
+            [IMDataManager safeSaveForDic:msgDic setObject:superParentUUID forKey:@"superParentUUID"];
+            [IMDataManager safeSaveForDic:msgDic setObject:postUUID forKey:@"postUUID"];
+            
+            [IMDataManager safeSaveForDic:msgDic setObject:reviewStatus forKey:@"reviewStatus"];
+            [IMDataManager safeSaveForDic:msgDic setObject:toAnonymousName forKey:@"toAnonymousName"];
+            [IMDataManager safeSaveForDic:msgDic setObject:toAnonymousPhoto forKey:@"toAnonymousPhoto"];
+            [IMDataManager safeSaveForDic:msgDic setObject:toHost forKey:@"toHost"];
+            [IMDataManager safeSaveForDic:msgDic setObject:toUser forKey:@"toUser"];
+            [IMDataManager safeSaveForDic:msgDic setObject:toisAnonymous forKey:@"toisAnonymous"];
+            [IMDataManager safeSaveForDic:msgDic setObject:updateTime forKey:@"updateTime"];
+            
+            
+            [childComments addObject:msgDic];
+            [msgDic release];
+        }
+    }];
+    return [childComments autorelease];
+}
 
 #pragma mark - NoticeMessage
 

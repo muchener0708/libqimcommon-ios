@@ -46,6 +46,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray *)qimDB_getWorkCommentsWithMomentId:(NSString *)momentId WithLimit:(int)limit WithOffset:(int)offset;
 
+- (NSArray *)qimDB_getWorkChildCommentsWithParentCommentUUID:(NSString *)commentUUID;
+
 #pragma mark - NoticeMessage
 
 - (void)qimDB_bulkinsertNoticeMessage:(NSArray *)notices;

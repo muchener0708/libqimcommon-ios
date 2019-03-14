@@ -268,7 +268,7 @@ static QIMManager *__IMManager = nil;
             [_userBigHeaderDic setDictionary:dic];
         }
     }
-    
+    _hotCommentUUIdsDic = [NSMutableDictionary dictionaryWithCapacity:2];
     _userNormalHeaderDic = [NSMutableDictionary dictionaryWithCapacity:5];
     
     _userInfoDic = [NSMutableDictionary dictionaryWithCapacity:5];

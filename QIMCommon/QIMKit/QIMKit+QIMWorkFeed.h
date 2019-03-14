@@ -12,6 +12,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface QIMKit (QIMWorkFeed)
 
+- (NSArray *)getHotCommentUUIdsForMomentId:(NSString *)momentId;
+
+- (void)setHotCommentUUIds:(NSArray *)hotCommentUUIds ForMomentId:(NSString *)momentId;
+
+- (void)removeHotCommentUUIdsForMomentId:(NSString *)momentId;
+
+- (void)removeAllHotCommentUUIds;
+
 - (void)updateLastWorkFeedMsgTime;
 
 - (void)getRemoteMomentDetailWithMomentUUId:(NSString *)momentId withCallback:(QIMKitgetMomentDetailSuccessedBlock)callback;
@@ -47,6 +55,8 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Local Comment
 
 - (void)getWorkCommentWithLastCommentRId:(NSInteger)lastCommentRId withMomentId:(NSString *)momentId WithLimit:(int)limit WithOffset:(int)offset withFirstLocalComment:(BOOL)firstLocal WithComplete:(void (^)(NSArray *))complete;
+
+- (NSArray *)getWorkChildCommentsWithParentCommentUUID:(NSString *)parentCommentUUID;
 
 #pragma mark - Local NoticeMsg
 

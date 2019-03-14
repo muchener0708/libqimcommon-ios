@@ -11,6 +11,22 @@
 
 @implementation QIMKit (QIMWorkFeed)
 
+- (NSArray *)getHotCommentUUIdsForMomentId:(NSString *)momentId {
+    return [[QIMManager sharedInstance] getHotCommentUUIdsForMomentId:momentId];
+}
+
+- (void)setHotCommentUUIds:(NSArray *)hotCommentUUIds ForMomentId:(NSString *)momentId {
+    [[QIMManager sharedInstance] setHotCommentUUIds:hotCommentUUIds ForMomentId:momentId];
+}
+
+- (void)removeHotCommentUUIdsForMomentId:(NSString *)momentId {
+    [[QIMManager sharedInstance] removeHotCommentUUIdsForMomentId:momentId];
+}
+
+- (void)removeAllHotCommentUUIds {
+    [[QIMManager sharedInstance] removeAllHotCommentUUIds];
+}
+
 - (void)updateLastWorkFeedMsgTime {
     [[QIMManager sharedInstance] updateLastWorkFeedMsgTime];
 }
@@ -77,6 +93,10 @@
 
 - (void)getWorkCommentWithLastCommentRId:(NSInteger)lastCommentRId withMomentId:(NSString *)momentId WithLimit:(int)limit WithOffset:(int)offset withFirstLocalComment:(BOOL)firstLocal WithComplete:(void (^)(NSArray *))complete {
     [[QIMManager sharedInstance] getWorkCommentWithLastCommentRId:lastCommentRId withMomentId:momentId WithLimit:limit WithOffset:offset withFirstLocalComment:firstLocal WithComplete:complete];
+}
+
+- (NSArray *)getWorkChildCommentsWithParentCommentUUID:(NSString *)parentCommentUUID {
+    return [[QIMManager sharedInstance] getWorkChildCommentsWithParentCommentUUID:parentCommentUUID];
 }
 
 #pragma mark - Local NoticeMsg

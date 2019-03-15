@@ -79,6 +79,10 @@
     [[QIMManager sharedInstance] getWorkMomentWithLastMomentTime:lastMomentTime withUserXmppId:xmppId WithLimit:limit WithOffset:offset withFirstLocalMoment:firstLocal WithComplete:complete];
 }
 
+- (void)getWorkMoreMomentWithLastMomentTime:(long long)lastMomentTime withUserXmppId:(NSString *)xmppId WithLimit:(int)limit WithOffset:(int)offset withFirstLocalMoment:(BOOL)firstLocal WithComplete:(void (^)(NSArray *))complete {
+    [[QIMManager sharedInstance] getWorkMoreMomentWithLastMomentTime:lastMomentTime withUserXmppId:xmppId WithLimit:limit WithOffset:offset withFirstLocalMoment:firstLocal WithComplete:complete];
+}
+
 - (void)deleteRemoteCommentWithComment:(NSString *)commentId withPostUUId:(NSString *)postUUId withSuperParentUUId:(NSString *)superParentUUID withCallback:(QIMKitWorkCommentDeleteSuccessBlock)callback {
     [[QIMManager sharedInstance] deleteRemoteCommentWithComment:commentId withPostUUId:postUUId withSuperParentUUId:superParentUUID withCallback:callback];
 }

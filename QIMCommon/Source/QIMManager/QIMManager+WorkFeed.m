@@ -156,7 +156,7 @@
     }];
 }
 
-- (void)getMomentHistoryWithLastUpdateTime:(long long)updateTime withOwnerXmppId:(NSString *)xmppId withCallBack:(QIMKitGetMomentHistorySuccessedBlock)callback {
+- (void)getMomentHistoryWithLastUpdateTime:(long long)updateTime withOwnerXmppId:(NSString *)xmppId withPostType:(NSInteger)postType withCallBack:(QIMKitGetMomentHistorySuccessedBlock)callback {
     NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/post/getPostList/v2", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
     NSMutableDictionary *bodyDic = [NSMutableDictionary dictionaryWithCapacity:1];
     [bodyDic setQIMSafeObject:@(updateTime) forKey:@"postCreateTime"];
@@ -164,7 +164,7 @@
     [bodyDic setQIMSafeObject:[[xmppId componentsSeparatedByString:@"@"] lastObject] forKey:@"ownerHost"];
     [bodyDic setQIMSafeObject:@(20) forKey:@"pageSize"];
     [bodyDic setQIMSafeObject:@(1) forKey:@"getTop"];
-    [bodyDic setQIMSafeObject:@(7) forKey:@"postType"];
+    [bodyDic setQIMSafeObject:@(postType) forKey:@"postType"];
 
     QIMVerboseLog(@"post/getPostList : %@", bodyDic);
     NSData *momentBodyData = [[QIMJSONSerializer sharedInstance] serializeObject:bodyDic error:nil];
@@ -913,7 +913,7 @@
                         self.load_history_msg = dispatch_queue_create("Load History", 0);
                     }
                     dispatch_async(self.load_history_msg, ^{
-                        [[QIMManager sharedInstance] getMomentHistoryWithLastUpdateTime:time withOwnerXmppId:xmppId withCallBack:^(NSArray *moments) {
+                        [[QIMManager sharedInstance] getMomentHistoryWithLastUpdateTime:time withOwnerXmppId:xmppId withPostType:7 withCallBack:^(NSArray *moments) {
                             [list addObjectsFromArray:moments];
                             dispatch_async(dispatch_get_main_queue(), ^{
                                 complete(list);
@@ -925,7 +925,54 @@
         });
     } else {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-            [[QIMManager sharedInstance] getMomentHistoryWithLastUpdateTime:lastMomentTime withOwnerXmppId:xmppId withCallBack:^(NSArray *moments) {
+            [[QIMManager sharedInstance] getMomentHistoryWithLastUpdateTime:lastMomentTime withOwnerXmppId:xmppId withPostType:7 withCallBack:^(NSArray *moments) {
+                if (moments.count > 0) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        complete(moments);
+                    });
+                } else {
+                    NSArray *array = [[IMDataManager qimDB_SharedInstance] qimDB_getWorkMomentWithXmppId:xmppId WithLimit:limit WithOffset:offset];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        complete(array);
+                    });
+                }
+            }];
+        });
+    }
+}
+
+- (void)getWorkMoreMomentWithLastMomentTime:(long long)lastMomentTime withUserXmppId:(NSString *)xmppId WithLimit:(int)limit WithOffset:(int)offset withFirstLocalMoment:(BOOL)firstLocal WithComplete:(void (^)(NSArray *))complete{
+    if (firstLocal) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+            NSArray *array = [[IMDataManager qimDB_SharedInstance] qimDB_getWorkMomentWithXmppId:xmppId WithLimit:limit WithOffset:offset];
+            if (array.count > 0) {
+                __block NSMutableArray *list = [NSMutableArray arrayWithArray:array];
+                if (list.count >= limit) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        complete(list);
+                    });
+                } else {
+                    
+                    NSDictionary *momentDic = [array lastObject];
+                    QIMVerboseLog(@"last momentDic : %@", momentDic);
+                    long long time = [[momentDic objectForKey:@"createTime"] longLongValue];
+                    if (self.load_history_msg == nil) {
+                        self.load_history_msg = dispatch_queue_create("Load History", 0);
+                    }
+                    dispatch_async(self.load_history_msg, ^{
+                        [[QIMManager sharedInstance] getMomentHistoryWithLastUpdateTime:time withOwnerXmppId:xmppId withPostType:1 withCallBack:^(NSArray *moments) {
+                            [list addObjectsFromArray:moments];
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                complete(list);
+                            });
+                        }];
+                    });
+                }
+            }
+        });
+    } else {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+            [[QIMManager sharedInstance] getMomentHistoryWithLastUpdateTime:lastMomentTime withOwnerXmppId:xmppId withPostType:1 withCallBack:^(NSArray *moments) {
                 if (moments.count > 0) {
                     dispatch_async(dispatch_get_main_queue(), ^{
                         complete(moments);

@@ -1044,8 +1044,16 @@
     return [[IMDataManager qimDB_SharedInstance] qimDB_getWorkNoticeMessagesCount];
 }
 
-- (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset {
-    return [[IMDataManager qimDB_SharedInstance] qimDB_getWorkNoticeMessagesWithLimit:limit WithOffset:offset];
+- (NSInteger)getWorkNoticePOSTCount {
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getWorkNoticePOSTCount];
+}
+
+- (void)updateWorkNoticePOSTMessageReadState {
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateWorkNoticePOSTMessageReadState];
+}
+
+- (NSArray *)getWorkNoticeMessagesWihtLimit:(int)limit WithOffset:(int)offset {
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getWorkNoticeMessagesWihtLimit:limit WithOffset:offset];
 }
 
 - (void)updateLocalWorkNoticeMsgReadStateWithTime:(long long)time {

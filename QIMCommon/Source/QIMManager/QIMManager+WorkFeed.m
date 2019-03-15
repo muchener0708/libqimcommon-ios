@@ -127,7 +127,7 @@
 }
 
 - (void)pushNewMomentWithMomentDic:(NSDictionary *)momentDic {
-    NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/post", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+    NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/post/V2", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
     NSData *momentBodyData = [[QIMJSONSerializer sharedInstance] serializeObject:momentDic error:nil];
     NSString *momentBodyStr = [[QIMJSONSerializer sharedInstance] serializeObject:momentDic];
     QIMVerboseLog(@"pushNewMomentWithMomentDic Body : %@", momentBodyStr);

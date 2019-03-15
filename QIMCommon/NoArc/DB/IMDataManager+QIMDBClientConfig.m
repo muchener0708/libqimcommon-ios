@@ -16,6 +16,7 @@
         NSString *sql = @"delete from IM_Client_Config";
         [database executeNonQuery:sql withParameters:nil];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (NSInteger)qimDB_getConfigVersion {
@@ -27,6 +28,7 @@
             configVersion = [[reader objectForColumnIndex:0] integerValue];
         }
     }];
+    QIMVerboseLog(@"");
     return configVersion;
 }
 
@@ -35,6 +37,7 @@
         NSString *sql = [NSString stringWithFormat:@"delete from IM_Client_Config Where ConfigKey = '%@'", configKey];
         [database executeNonQuery:sql withParameters:nil];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (NSInteger)qimDB_getConfigDeleteFlagWithConfigKey:(NSString *)configKey WithSubKey:(NSString *)subKey {
@@ -46,6 +49,7 @@
             delegetFlag = [[reader objectForColumnIndex:0] integerValue];
         }
     }];
+    QIMVerboseLog(@"");
     return delegetFlag;
 }
 
@@ -58,6 +62,7 @@
             configValue = [[reader objectForColumnIndex:0] retain];
         }
     }];
+    QIMVerboseLog(@"");
     return [configValue autorelease];
 }
 
@@ -79,6 +84,7 @@
             [result setQIMSafeObject:dic forKey:configSubKey];
         }
     }];
+    QIMVerboseLog(@"");
     return [result autorelease];
 }
 
@@ -101,6 +107,7 @@
             [result addObject:dic];
         }
     }];
+    QIMVerboseLog(@"");
     return [result autorelease];
 }
 
@@ -117,6 +124,7 @@
             [result addObject:configValue];
         }
     }];
+    QIMVerboseLog(@"");
     return [result autorelease];
 }
 
@@ -152,6 +160,7 @@
         [database executeBulkInsert:sql withParameters:params];
         [params release];
     }];
+    QIMVerboseLog(@"");
 }
 
 // ********************* 黑名单&星标联系人 ************************ //
@@ -187,6 +196,7 @@
         }
         
     }];
+    QIMVerboseLog(@"");
     return [resultList autorelease];
 }
 
@@ -220,8 +230,8 @@
             [value release];
             value = nil;
         }
-        
     }];
+    QIMVerboseLog(@"");
     return [resultList autorelease];
 }
 
@@ -254,8 +264,8 @@
             [value release];
             value = nil;
         }
-        
     }];
+    QIMVerboseLog(@"");
     return [resultList autorelease];
 }
 

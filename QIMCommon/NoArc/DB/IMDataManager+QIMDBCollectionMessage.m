@@ -35,6 +35,7 @@
             value = nil;
         }
     }];
+    QIMVerboseLog(@"");
     return [resultList autorelease];
 }
 
@@ -60,6 +61,7 @@
         }
         [database executeBulkInsert:sql withParameters:paramList];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (NSDictionary *)qimDB_selectCollectionUserByJID:(NSString *)jid{
@@ -95,6 +97,7 @@
         }
         
     }];
+    QIMVerboseLog(@"");
     return [user autorelease];
 }
 
@@ -141,6 +144,7 @@
         }
         [database executeBulkInsert:sql withParameters:paramList];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (NSDictionary *)qimDB_getCollectionGroupCardByGroupId:(NSString *)groupId{
@@ -168,6 +172,7 @@
             [IMDataManager safeSaveForDic:groupCardDic setObject:lastUpdateTime forKey:@"LastUpdateTime"];
         }
     }];
+    QIMVerboseLog(@"");
     return [groupCardDic autorelease];
 }
 
@@ -196,6 +201,7 @@
         [paramList release];
         paramList = nil;
     }];
+    QIMVerboseLog(@"");
 }
 
 - (NSDictionary *)qimDB_getLastCollectionMsgWithLastMsgId:(NSString *)lastMsgId {
@@ -213,6 +219,7 @@
             [IMDataManager safeSaveForDic:resultDic setObject:content forKey:@"Content"];
         }
     }];
+    QIMVerboseLog(@"");
     return [resultDic autorelease];
 }
 
@@ -258,6 +265,7 @@
             [sessionDic release];
         }
     }];
+    QIMVerboseLog(@"");
     return [resultList autorelease];
 }
 
@@ -302,6 +310,7 @@
             [msgDic release];
         }
     }];
+    QIMVerboseLog(@"");
     return [result autorelease];
 }
 
@@ -314,6 +323,7 @@
             flag = YES;
         }
     }];
+    QIMVerboseLog(@"");
     return flag;
 }
 
@@ -338,6 +348,7 @@
         }
         [database executeBulkInsert:sql withParameters:paramList];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (NSInteger)qimDB_getCollectionMsgNotReadCountByDidReadState:(NSInteger)readState {
@@ -349,6 +360,7 @@
             count = [[reader objectForColumnIndex:0] integerValue];
         }
     }];
+    QIMVerboseLog(@"");
     return count;
 }
 
@@ -361,6 +373,7 @@
             count = [[reader objectForColumnIndex:0] integerValue];
         }
     }];
+    QIMVerboseLog(@"");
     return count;
 }
 
@@ -373,6 +386,7 @@
             count = [[reader objectForColumnIndex:0] integerValue];
         }
     }];
+    QIMVerboseLog(@"");
     return count;
 }
 
@@ -382,6 +396,7 @@
         NSString *sql = @"Update IM_Message Set ReadedTag = 1, State = :State Where XmppId=:XmppId;";
         [database executeNonQuery:sql withParameters:@[@(msgState), jid]];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_updateCollectionMsgNotReadStateForBindId:(NSString *)bindId originUserId:(NSString *)originUserId WithMsgState:(NSInteger)msgState{
@@ -401,6 +416,7 @@
         }
         [database executeBulkInsert:sql withParameters:params];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (NSDictionary *)qimDB_getCollectionMsgListForMsgId:(NSString *)msgId {
@@ -448,6 +464,7 @@
             [IMDataManager safeSaveForDic:msgDic setObject:realJid forKey:@"RealJid"];
         }
     }];
+    QIMVerboseLog(@"");
     return [msgDic autorelease];
 }
 
@@ -503,6 +520,7 @@
         }
         
     }];
+    QIMVerboseLog(@"");
     return [result autorelease];
 }
 

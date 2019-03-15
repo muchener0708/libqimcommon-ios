@@ -69,6 +69,7 @@
             param = nil;
         }
     }];
+    QIMVerboseLog(@"");
     return [areaList autorelease];
 }
 
@@ -135,6 +136,7 @@
         BOOL result = [database executeBulkInsert:sql withParameters:paramList];
         QIMVerboseLog(@"result = :%d", result);
     }];
+    QIMVerboseLog(@"");
 }
 
 - (NSArray *)qimDB_getLocalArea {
@@ -165,6 +167,7 @@
             param = nil;
         }
     }];
+    QIMVerboseLog(@"");
     return [areaList autorelease];
 }
 
@@ -194,6 +197,7 @@
         }
         [database executeBulkInsert:sql withParameters:paramList];
     }];
+    QIMVerboseLog(@"");
 }
 
 @end

@@ -21,6 +21,7 @@
             count = [[reader objectForColumnIndex:0] intValue];
         }
     }];
+    QIMVerboseLog(@"");
     return count;
 }
 
@@ -57,6 +58,7 @@
             value = nil;
         }
     }];
+    QIMVerboseLog(@"");
     return [ejabHost2GroupList autorelease];
 }
 
@@ -82,6 +84,7 @@
             count = [[reader objectForColumnIndex:0] intValue];
         }
     }];
+    QIMVerboseLog(@"");
     return count;
 }
 
@@ -128,6 +131,7 @@
             
         }
     }];
+    QIMVerboseLog(@"");
     return [groupList autorelease];
 }
 
@@ -149,6 +153,7 @@
             
         }
     }];
+    QIMVerboseLog(@"");
     return [groupList autorelease];
 }
 
@@ -182,6 +187,7 @@
             
         }
     }];
+    QIMVerboseLog(@"");
     return [groupList autorelease];
 }
 
@@ -214,6 +220,7 @@
             [IMDataManager safeSaveForDic:groupCardDic setObject:lastUpdateTime forKey:@"LastUpdateTime"];
         }
     }];
+    QIMVerboseLog(@"");
 //    QIMVerboseLog(@"数据库取群名片耗时 : %lf", [[QIMWatchDog sharedInstance] escapedTime]);
     return [groupCardDic autorelease];
 }
@@ -259,6 +266,7 @@
             
         }
     }];
+    QIMVerboseLog(@"");
     return [groupList autorelease];
 }
 
@@ -279,6 +287,7 @@
             }
         }
     }];
+    QIMVerboseLog(@"");
     return [Im_groupList autorelease];
 }
 
@@ -301,6 +310,7 @@
             }
         }
     }];
+    QIMVerboseLog(@"");
     return [groupList autorelease];
 }
 
@@ -317,6 +327,7 @@
             flag = ![[reader objectForColumnIndex:0] boolValue];
         }
     }];
+    QIMVerboseLog(@"");
     return flag;
 }
 
@@ -334,6 +345,7 @@
             groupHeaderSrc = [[reader objectForColumnIndex:0] retain];
         }
     }];
+    QIMVerboseLog(@"");
     return [groupHeaderSrc autorelease];
 }
 
@@ -346,6 +358,7 @@
             flag = YES;
         }
     }];
+    QIMVerboseLog(@"");
     return flag;
 }
 
@@ -353,6 +366,7 @@
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         [database executeBulkInsert:@"insert or IGNORE into IM_Group(GroupId, Name, LastUpdateTime) values(:GroupId, :Name, :LastUpdateTime);" withParameters:groups];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_insertGroup:(NSString *)groupId {
@@ -366,6 +380,7 @@
         [param release];
         param = nil;
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_updateGroup:(NSString *)groupId WithTopic:(NSString *)topic{
@@ -378,6 +393,7 @@
         [param release];
         param = nil;
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_bulkUpdateGroupCards:(NSArray *)array{
@@ -409,6 +425,7 @@
         [paramList release];
         paramList = nil;
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_updateGroup:(NSString *)groupId
@@ -432,6 +449,7 @@
         [param addObject:groupId];
         [database executeNonQuery:sql withParameters:param];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_updateGroup:(NSString *)groupId WithNickName:(NSString *)nickName{
@@ -445,6 +463,7 @@
         [param release];
         param = nil;
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_updateGroup:(NSString *)groupId WithDesc:(NSString *)desc{
@@ -458,6 +477,7 @@
         [param release];
         param = nil;
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_updateGroup:(NSString *)groupId WithHeaderSrc:(NSString *)headerSrc{
@@ -470,6 +490,7 @@
         [param release];
         param = nil;
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_deleteGroup:(NSString *)groupId{
@@ -479,6 +500,7 @@
         sql = @"Delete From IM_Group_Member Where GroupId = :GroupId;";
         [database executeNonQuery:sql withParameters:@[groupId]];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (NSDictionary *)qimDB_getGroupMemberInfoByNickName:(NSString *)nickName{
@@ -498,6 +520,7 @@
             }
         }];
     }
+    QIMVerboseLog(@"");
     return [infoDic autorelease];
 }
 
@@ -516,6 +539,7 @@
             [infoDic setObject:affiliation forKey:@"affiliation"];
         }
     }];
+    QIMVerboseLog(@"");
     return [infoDic autorelease];
 }
 
@@ -529,6 +553,7 @@
             flag = YES;
         }
     }];
+    QIMVerboseLog(@"");
     return flag;
 }
 
@@ -551,6 +576,7 @@
         [param release];
         param = nil;
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_bulkInsertGroupMember:(NSArray *)members WithGroupId:(NSString *)groupId{
@@ -593,6 +619,7 @@
         [database executeBulkInsert:sql withParameters:params];
         [params release];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (NSArray *)qimDB_getQChatGroupMember:(NSString *)groupId{
@@ -620,6 +647,7 @@
             dic = nil;
         }
     }];
+    QIMVerboseLog(@"");
     return [members autorelease];
 }
 
@@ -648,6 +676,7 @@
             dic = nil;
         }
     }];
+    QIMVerboseLog(@"");
     return [members autorelease];
 }
 
@@ -676,6 +705,7 @@
             dic = nil;
         }
     }];
+    QIMVerboseLog(@"");
     return [members autorelease];
 }
 
@@ -705,6 +735,7 @@
             dic = nil;
         }
     }];
+    QIMVerboseLog(@"");
     return [members autorelease];
 }
 
@@ -736,6 +767,7 @@
             [IMDataManager safeSaveForDic:user setObject:searchIndex forKey:@"SearchIndex"];
         }
     }];
+    QIMVerboseLog(@"");
     return [user autorelease];
 }
 
@@ -744,6 +776,7 @@
         NSString *sql = @"Delete From IM_Group_Member Where GroupId=:GroupId;";
         [database executeNonQuery:sql withParameters:@[groupId]];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_deleteGroupMemberJid:(NSString *)memberJid WithGroupId:(NSString *)groupId{
@@ -751,6 +784,7 @@
         NSString *sql = @"Delete From IM_Group_Member Where GroupId=:GroupId and MemberJid = :MemberJid;";
         [database executeNonQuery:sql withParameters:@[groupId,memberJid]];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_deleteGroupMember:(NSString *)nickname WithGroupId:(NSString *)groupId{
@@ -759,6 +793,7 @@
         NSString *memId = [groupId stringByAppendingFormat:@"/%@",nickname];
         [database executeNonQuery:sql withParameters:@[memId]];
     }];
+    QIMVerboseLog(@"");
 }
 
 
@@ -782,6 +817,7 @@
         }
         [database executeBulkInsert:sql withParameters:params];
     }];
+    QIMVerboseLog(@"");
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"更新群勿扰模式列表%ld条数据 耗时 = %f s", stateList.count, end - start); //s
 }
@@ -801,6 +837,7 @@
             }
         }
     }];
+    QIMVerboseLog(@"");
     return state;
 }
 
@@ -809,6 +846,7 @@
         NSString *sql = @"Update IM_Group Set PushState = :PushState Where GroupId = :GroupId;";
         [database executeNonQuery:sql withParameters:@[@(pushState),groupId]];
     }];
+    QIMVerboseLog(@"");
 }
 
 @end

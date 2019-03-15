@@ -280,7 +280,7 @@ done:
 + (NSString *) updateLoadFile:(NSData *)fileData WithMsgId:(NSString *)key WithMsgType:(int)type WithPathExtension:(NSString *)extension{
     NSString *fileKey = [self getFileDataMD5WithPath:fileData];
     NSString *fileExt = [self getFileExt:fileData];
-    if (fileExt.length <= 0) {
+    if (fileExt.length > 0) {
         extension = fileExt;
     }
     NSString *httpUrl = [self checkFileKey:fileKey WithFileLength:fileData.length WithPathExtension:extension];

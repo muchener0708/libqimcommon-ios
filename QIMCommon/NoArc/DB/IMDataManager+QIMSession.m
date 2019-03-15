@@ -17,6 +17,7 @@
         NSString *sql = @"Update IM_SessionList Set LastMessageId = :LastMessageId Where XmppId = :XmppId;";
         [database executeNonQuery:sql withParameters:[NSArray arrayWithObjects:lastMsgId,sessionId, nil]];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (long long)qimDB_insertSessionWithMsgList:(NSDictionary *)msgLists {
@@ -48,6 +49,7 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:@"kNotificationSessionListUpdate" object:nil];
         });
     }
+    QIMVerboseLog(@"");
     return lastMaxMsgTime;
 }
 
@@ -68,6 +70,7 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:@"kNotificationSessionListUpdate" object:nil];
         });
     }
+    QIMVerboseLog(@"");
     return lastMaxTime;
 }
 
@@ -90,6 +93,7 @@
         [param release];
         param = nil;
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_deleteSession:(NSString *)xmppId RealJid:(NSString *)realJid{
@@ -97,6 +101,7 @@
         NSString *sql = @"Delete From IM_SessionList Where XmppId=:XmppId AND RealJid=:RealJid;";
         [database executeNonQuery:sql withParameters:@[xmppId, realJid]];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_deleteSession:(NSString *)xmppId{
@@ -108,6 +113,7 @@
         NSString *sql = [NSString stringWithFormat:@"Delete From IM_Message Where XmppId Like '%%%@%%'", xmppId];
         [database executeNonQuery:sql withParameters:nil];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (NSDictionary *)qimDB_getLastedSingleChatSession {
@@ -126,6 +132,7 @@
             [IMDataManager safeSaveForDic:result setObject:chatType forKey:@"ChatType"];
         }
     }];
+    QIMVerboseLog(@"");
     return [result autorelease];
 }
 
@@ -191,6 +198,7 @@
             }
         }
     }];
+    QIMVerboseLog(@"");
     return [result autorelease];
 }
 
@@ -268,6 +276,7 @@
         CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
         NSLog(@"生成%ld条未读会话列表 耗时 = %f s", result.count, end - start); //s
     }];
+    QIMVerboseLog(@"");
     return [result autorelease];
 }
 
@@ -346,6 +355,7 @@
         CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
         NSLog(@"生成%ld条会话列表 耗时 = %f s", result.count, end - start); //s
     }];
+    QIMVerboseLog(@"");
     return [result autorelease];
 }
 
@@ -366,6 +376,7 @@
             }
         }
     }];
+    QIMVerboseLog(@"");
     return [result autorelease];
 }
 
@@ -410,7 +421,7 @@
             [IMDataManager safeSaveForDic:chatSession setObject:nickName forKey:@"NickName"];
         }
     }];
-    
+    QIMVerboseLog(@"");
     return [chatSession autorelease];
 }
 
@@ -442,7 +453,7 @@
             [IMDataManager safeSaveForDic:chatSession setObject:realJid forKey:@"RealJid"];
         }
     }];
-    
+    QIMVerboseLog(@"");
     return [chatSession autorelease];
 }
 
@@ -486,7 +497,7 @@
             [IMDataManager safeSaveForDic:chatSession setObject:chatType forKey:@"ChatType"];
         }
     }];
-    
+    QIMVerboseLog(@"");
     return [chatSession autorelease];
 }
 
@@ -501,6 +512,7 @@
         }
     }];
     //    QIMVerboseLog(@"获取未读数耗时 :%lf", [[QIMWatchDog sharedInstance] escapedTime]);
+    QIMVerboseLog(@"");
     return count;
 }
 

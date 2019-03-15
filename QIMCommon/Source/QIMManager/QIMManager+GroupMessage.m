@@ -11,25 +11,28 @@
 @implementation QIMManager (GroupMessage)
 
 - (void)updateLastGroupMsgTime {
-    QIMVerboseLog(@"更新本地群消息时间戳");
-    long long defaultTime = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 3600 * 24 * 2) * 1000;
-    long long errorTime = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetGroupHistoryMsgError] longLongValue];
-    if (errorTime > 0) {
-        self.lastGroupMsgTime = errorTime;
-        QIMVerboseLog(@"本地群消息错误时间戳 : %lld", errorTime);
-    } else {
-        self.lastGroupMsgTime = [[IMDataManager qimDB_SharedInstance] qimDB_lastestGroupMessageTime];
-    }
-    if (self.lastGroupMsgTime == 0) {
-        self.lastGroupMsgTime = defaultTime;
-    }
-    QIMVerboseLog(@"强制塞本地群消息时间戳到为 kGetGroupHistoryMsgError : %f", self.lastGroupMsgTime);
-    [[QIMUserCacheManager sharedInstance] setUserObject:@(self.lastGroupMsgTime) forKey:kGetGroupHistoryMsgError];
-    QIMVerboseLog(@"强制塞本地群消息时间戳到为 kGetGroupHistoryMsgError : %f完成", self.lastGroupMsgTime);
-    
-    QIMVerboseLog(@"强制塞本地群消息时间戳完成之后再取一下本地错误时间戳 : %lld", [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetGroupHistoryMsgError] longLongValue]);
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 
-    QIMVerboseLog(@"最终获取到的本地群最后消息时间戳为 : %f", self.lastGroupMsgTime);
+        QIMVerboseLog(@"更新本地群消息时间戳");
+        long long defaultTime = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 3600 * 24 * 2) * 1000;
+        long long errorTime = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetGroupHistoryMsgError] longLongValue];
+        if (errorTime > 0) {
+            self.lastGroupMsgTime = errorTime;
+            QIMVerboseLog(@"本地群消息错误时间戳 : %lld", errorTime);
+        } else {
+            self.lastGroupMsgTime = [[IMDataManager qimDB_SharedInstance] qimDB_lastestGroupMessageTime];
+        }
+        if (self.lastGroupMsgTime == 0) {
+            self.lastGroupMsgTime = defaultTime;
+        }
+        QIMVerboseLog(@"强制塞本地群消息时间戳到为 kGetGroupHistoryMsgError : %f", self.lastGroupMsgTime);
+        [[QIMUserCacheManager sharedInstance] setUserObject:@(self.lastGroupMsgTime) forKey:kGetGroupHistoryMsgError];
+        QIMVerboseLog(@"强制塞本地群消息时间戳到为 kGetGroupHistoryMsgError : %f完成", self.lastGroupMsgTime);
+        
+        QIMVerboseLog(@"强制塞本地群消息时间戳完成之后再取一下本地错误时间戳 : %lld", [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetGroupHistoryMsgError] longLongValue]);
+
+        QIMVerboseLog(@"最终获取到的本地群最后消息时间戳为 : %f", self.lastGroupMsgTime);
+    });
 }
 
 - (void)updateLastMaxMucReadMarkTime {

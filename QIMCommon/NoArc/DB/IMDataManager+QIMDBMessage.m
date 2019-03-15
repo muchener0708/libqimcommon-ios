@@ -37,6 +37,7 @@
             maxRemoteTime = [[newReader objectForColumnIndex:0] longLongValue];
         }
     }];
+    QIMVerboseLog(@"");
     return maxRemoteTime;
 }
 
@@ -49,6 +50,7 @@
             maxRemoteTimeStamp = [[newReader objectForColumnIndex:0] longLongValue];
         }
     }];
+    QIMVerboseLog(@"");
     return maxRemoteTimeStamp;
 }
 
@@ -62,6 +64,7 @@
             maxRemoteTime = [[newReader objectForColumnIndex:0] longLongValue];
         }
     }];
+    QIMVerboseLog(@"");
     return maxRemoteTime;
 }
 
@@ -76,6 +79,7 @@
         [[NSUserDefaults standardUserDefaults] setObject:@(YES) forKey:@"UpdateMsgTimeToMillSecond"];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
+    QIMVerboseLog(@"");
 }
 
 - (long long)qimDB_getMinMsgTimeStampByXmppId:(NSString *)xmppId RealJid:(NSString *)realJid {
@@ -94,6 +98,7 @@
             timeStamp = [[NSDate date] timeIntervalSince1970] * 1000;
         }
     }];
+    QIMVerboseLog(@"");
     return timeStamp;
 }
 
@@ -113,6 +118,7 @@
             timeStamp = [[NSDate date] timeIntervalSince1970] * 1000;
         }
     }];
+    QIMVerboseLog(@"");
     return timeStamp;
 }
 
@@ -125,6 +131,7 @@
             timeStamp = ceil([[reader objectForColumnIndex:0] doubleValue]);
         }
     }];
+    QIMVerboseLog(@"");
     return timeStamp;
 }
 
@@ -180,6 +187,7 @@
         [param release];
         param = nil;
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_revokeMessageByMsgList:(NSArray *)revokeMsglist {
@@ -200,6 +208,7 @@
         [database executeBulkInsert:sql withParameters:params];
         [params release];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_revokeMessageByMsgId:(NSString *)msgId
@@ -215,6 +224,7 @@
         [param release];
         param = nil;
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_updateMessageWithExtendInfo:(NSString *)extendInfo ForMsgId:(NSString *)msgId {
@@ -222,6 +232,7 @@
         NSString *sql = @"Update IM_Message Set ExtendedFlag=:ExtendedFlag Where MsgId=:MsgId;";
         [database executeNonQuery:sql withParameters:@[extendInfo,msgId]];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_deleteMessageWithXmppId:(NSString *)xmppId {
@@ -229,6 +240,7 @@
         NSString *sql = @"Delete From IM_Message Where XmppId=:XmppId;";
         [database executeNonQuery:sql withParameters:@[xmppId]];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_deleteMessageByMessageId:(NSString *)messageId ByJid:(NSString *)sid {
@@ -236,6 +248,7 @@
         NSString *sql = @"Delete From IM_Message Where MsgId=:MsgId;";
         [database executeNonQuery:sql withParameters:@[messageId]];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_updateMessageWithMsgId:(NSString *)msgId
@@ -249,6 +262,7 @@
         [param release];
         param = nil;
     }];
+    QIMVerboseLog(@"");
 }
 
 /*
@@ -348,6 +362,7 @@
         [param release];
         param = nil;
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_insertMessageWithMsgId:(NSString *)msgId
@@ -388,6 +403,7 @@
         [param release];
         param = nil;
     }];
+    QIMVerboseLog(@"");
 }
 
 - (BOOL)qimDB_checkMsgId:(NSString *)msgId{
@@ -399,6 +415,7 @@
             flag = YES;
         }
     }];
+    QIMVerboseLog(@"");
     return flag;
 }
 
@@ -436,6 +453,7 @@
             value = nil;
         }
     }];
+    QIMVerboseLog(@"");
     return [resultList autorelease];
 }
 
@@ -575,6 +593,7 @@
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"插入群消息历史记录%ld条，耗时%fs", msgList.count, end - start); //s
     [resultDic autorelease];
+    QIMVerboseLog(@"");
     return lastTime;
 }
 
@@ -672,6 +691,7 @@
     if (updateMsgList.count > 0) {
         [self qimDB_revokeMessageByMsgList:updateMsgList];
     }
+    QIMVerboseLog(@"");
     return [msgList autorelease];
 }
 
@@ -1026,6 +1046,7 @@
     [insertMsgList release];
     [updateMsgList release];
     [resultDic release];
+    QIMVerboseLog(@"");
     return lastMaxTime;
 }
 
@@ -1039,6 +1060,7 @@
             c2BMessageFeedBackStr = [[reader objectForColumnIndex:0] retain];
         }
     }];
+    QIMVerboseLog(@"");
     return [c2BMessageFeedBackStr autorelease];
 }
 
@@ -1327,6 +1349,7 @@
         }
     }
     [self qimDB_bulkInsertMessage:msgList WithSessionId:xmppId];
+    QIMVerboseLog(@"");
     return [msgList autorelease];
 }
 
@@ -1427,9 +1450,8 @@
         }
         [database executeBulkInsert:sql withParameters:params];
         [params release];
-        
     }];
-    
+    QIMVerboseLog(@"");
 }
 
 //更新消息发送状态
@@ -1439,6 +1461,7 @@
         NSString *sql = @"Update IM_Message Set State = :State Where MsgId = :MsgId;";
         [database executeNonQuery:sql withParameters:[NSArray arrayWithObjects:@(msgState), msgId, nil]];
     }];
+    QIMVerboseLog(@"");
 }
 
 //更新消息发送时间戳
@@ -1450,6 +1473,7 @@
         NSString *sql = @"Update IM_Message Set LastUpdateTime = :LastUpdateTime Where MsgId = :MsgId;";
         [database executeNonQuery:sql withParameters:[NSArray arrayWithObjects:@(msgDate),msgId, nil]];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (long long)qimDB_getReadedTimeStampForUserId:(NSString *)userId WithMsgDirection:(int)msgDirection WithReadedState:(int)readedState{
@@ -1469,8 +1493,8 @@
                 timeStamp = -1;
             }
         }
-        
     }];
+    QIMVerboseLog(@"");
     return timeStamp;
 }
 
@@ -1527,6 +1551,7 @@
             [msgDic release];
         }
     }];
+    QIMVerboseLog(@"");
     return [result autorelease];
 }
 
@@ -1582,6 +1607,7 @@
             [IMDataManager safeSaveForDic:result setObject:realJid forKey:@"RealJid"];
         }
     }];
+    QIMVerboseLog(@"");
     return [result autorelease];
 }
 
@@ -1654,6 +1680,7 @@
             [msgs addObject:result];
         }
     }];
+    QIMVerboseLog(@"");
     return msgs;
 }
 
@@ -1707,6 +1734,7 @@
             [msgs addObject:result];
         }
     }];
+    QIMVerboseLog(@"");
     return msgs;
 }
 
@@ -1758,6 +1786,7 @@
             [msgs addObject:result];
         }
     }];
+    QIMVerboseLog(@"");
     return msgs;
 }
 
@@ -1847,6 +1876,7 @@
         [tempList release];
     }];
 //    QIMVerboseLog(@"sql取消息耗时。: %llf", [[QIMWatchDog sharedInstance] escapedTime]);
+    QIMVerboseLog(@"");
     return [result autorelease];
 }
 
@@ -1926,6 +1956,7 @@
         }
         [tempList release];
     }];
+    QIMVerboseLog(@"");
     return [result autorelease];
 }
 
@@ -1995,6 +2026,7 @@
         }
         [tempList release];
     }];
+    QIMVerboseLog(@"");
     return [result autorelease];
 }
 
@@ -2009,6 +2041,7 @@
         }
     }];
     //    QIMVerboseLog(@"获取未读数耗时 :%lf", [[QIMWatchDog sharedInstance] escapedTime]);
+    QIMVerboseLog(@"");
     return count;
 }
 
@@ -2021,6 +2054,7 @@
             count = [[reader objectForColumnIndex:0] integerValue];
         }
     }];
+    QIMVerboseLog(@"");
     return count;
 }
 
@@ -2035,6 +2069,7 @@
         }
     }];
     //    QIMVerboseLog(@"获取不提醒未读数耗时 :%lf", [[QIMWatchDog sharedInstance] escapedTime]);
+    QIMVerboseLog(@"");
     return count;
 }
 
@@ -2047,6 +2082,7 @@
             count = [[reader objectForColumnIndex:0] integerValue];
         }
     }];
+    QIMVerboseLog(@"");
     return count;
 }
 
@@ -2055,6 +2091,7 @@
         NSString *sql = @"Update IM_Message Set State=:tMsgState Where State=:fMsgState;";
         [database executeNonQuery:sql withParameters:@[@(tState),@(fState)]];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (NSInteger)qimDB_getMessageStateWithMsgId:(NSString *)msgId {
@@ -2066,6 +2103,7 @@
             msgState = [[reader objectForColumnIndex:0] integerValue];
         }
     }];
+    QIMVerboseLog(@"");
     return msgState;
 }
 
@@ -2082,6 +2120,7 @@
             [resultList addObject:msgId];
         }
     }];
+    QIMVerboseLog(@"");
     return [resultList autorelease];
 }
 
@@ -2101,6 +2140,7 @@
             }
         }
     }];
+    QIMVerboseLog(@"");
     return [resultList autorelease];
 }
 
@@ -2115,6 +2155,7 @@
             lastMsgId = [[reader objectForColumnIndex:0] retain];
         }
     }];
+    QIMVerboseLog(@"");
     return [lastMsgId autorelease];
 }
 
@@ -2130,6 +2171,7 @@
             maxRemoteTime = [[reader objectForColumnIndex:0] longLongValue];
         }
     }];
+    QIMVerboseLog(@"");
     return maxRemoteTime;
 }
 
@@ -2142,6 +2184,7 @@
             maxRemoteTime = [[reader objectForColumnIndex:0] longLongValue];
         }
     }];
+    QIMVerboseLog(@"");
     return maxRemoteTime;
 }
 
@@ -2150,6 +2193,7 @@
         NSString *sql = @"Delete From IM_Message;";
         [database executeNonQuery:sql withParameters:nil];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_updateSystemMsgState:(int)msgState WithXmppId:(NSString *)xmppId {
@@ -2157,6 +2201,7 @@
         NSString *sql = @"Update IM_Message Set State=:State Where XmppId=:XmppId;";
         [database executeNonQuery:sql withParameters:@[@(msgState),xmppId]];
     }];
+    QIMVerboseLog(@"");
 }
 
 
@@ -2181,6 +2226,7 @@
             dict = nil;
         }
     }];
+    QIMVerboseLog(@"");
     return [resultList autorelease];
 }
 
@@ -2211,6 +2257,7 @@
             }
         }
     }];
+    QIMVerboseLog(@"");
     return [result autorelease];
 }
 
@@ -2238,6 +2285,7 @@
         }
     }];
     //    QIMVerboseLog(@"查未读消息MsgIds耗时: %llf", [[QIMWatchDog sharedInstance] escapedTime]);
+    QIMVerboseLog(@"");
     return [result autorelease];
 }
 
@@ -2247,6 +2295,7 @@
         NSString *sql = @"Update IM_Message Set ReadedTag = 1 Where  MsgId = :MsgId;";
         [database executeNonQuery:sql withParameters:[NSArray arrayWithObjects:msgId, nil]];
     }];
+    QIMVerboseLog(@"");
 }
 
 //批量更新消息阅读状态
@@ -2296,6 +2345,7 @@
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"批量更新%ld条消息阅读状态 耗时 = %f s", msgs.count, end - start); //
+    QIMVerboseLog(@"");
 }
 
 - (long long)qimDB_bulkUpdateGroupMessageReadFlag:(NSArray *)mucArray {
@@ -2348,6 +2398,7 @@
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"DB更新群阅读指针%ld条数据 耗时 = %f s", mucArray.count, end - start); //s
+    QIMVerboseLog(@"");
     return maxRemarkUpdateTime;
 }
 
@@ -2372,6 +2423,7 @@
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"更新%ld条消息的MsgState状态 耗时 = %f s", msgIdList.count, end - start); //
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_updateAllMsgWithMsgState:(int)msgState ByMsgDirection:(int)msgDirection ByReadMarkT:(long long)readMarkT {
@@ -2379,6 +2431,7 @@
         NSString *sql = @"Update IM_Message Set State=:State Where Direction = :Direction And LastUpdateTime <= :LastUpdateTime;";
         [database executeNonQuery:sql withParameters:@[@(msgState),@(msgDirection),@(readMarkT)]];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_updateAllMsgWithMsgRemoteState:(int)msgRemoteFlag ByMsgDirection:(int)msgDirection ByReadMarkT:(long long)readMarkT {
@@ -2386,6 +2439,7 @@
         NSString *sql = @"Update IM_Message Set ReadState=:ReadState Where Direction = :Direction And LastUpdateTime <= :LastUpdateTime;";
         [database executeNonQuery:sql withParameters:@[@(msgRemoteFlag),@(msgDirection),@(readMarkT)]];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_updateGroupMessageRemoteState:(NSInteger)msgRemoteFlag ByGroupReadList:(NSArray *)groupReadList {
@@ -2426,6 +2480,7 @@
             QIMVerboseLog(@"更新消息RemoteState状态的参数成功 : %@", paramList);
         }
     }];
+    QIMVerboseLog(@"");
 }
 
 #pragma mark - 本地消息搜索
@@ -2443,8 +2498,8 @@
             [contactList addObject:@{@"XmppId":xmppId}];
         }
     }];
+    QIMVerboseLog(@"");
     return contactList;
-    
 }
 
 - (NSArray *)qimDB_searchMsgIdWithKey:(NSString *)key ByXmppId:(NSString *)xmppId {
@@ -2461,6 +2516,7 @@
             [result addObject:@{@"MsgId":msgId,@"Content":content}];
         }
     }];
+    QIMVerboseLog(@"");
     return result;
 }
 
@@ -2513,6 +2569,7 @@
             [msgs addObject:msgDic];
         }
     }];
+    QIMVerboseLog(@"");
     return msgs;
 }
 
@@ -2568,6 +2625,7 @@
             [msgs addObject:msgDic];
         }
     }];
+    QIMVerboseLog(@"");
     return msgs;
 }
 

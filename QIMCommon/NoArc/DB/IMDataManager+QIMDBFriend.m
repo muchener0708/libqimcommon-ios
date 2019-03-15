@@ -66,6 +66,7 @@
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"插入好友列表%ld条数据 耗时 = %f s", friendList.count, end - start); //s
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_insertFriendWithUserId:(NSString *)userId
@@ -98,6 +99,7 @@
         [param addObject:@(lastUpdateTime)];
         [database executeNonQuery:sql withParameters:param];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_deleteFriendListWithXmppId:(NSString *)xmppId {
@@ -105,6 +107,7 @@
         NSString *sql = @"Delete From IM_Friend_List Where XmppId=:XmppId;";
         [database executeNonQuery:sql withParameters:@[xmppId]];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_deleteFriendListWithUserId:(NSString *)userId {
@@ -112,6 +115,7 @@
         NSString *sql = @"Delete From IM_Friend_List Where UserId=:UserId;";
         [database executeNonQuery:sql withParameters:@[userId]];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_deleteFriendList {
@@ -119,6 +123,7 @@
         NSString *deleteSql = @"Delete From IM_Friend_List;";
         [database executeNonQuery:deleteSql withParameters:nil];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_deleteSessionList {
@@ -126,6 +131,7 @@
         NSString *deleteSql = @"Delete From IM_SessionList;";
         [database executeNonQuery:deleteSql withParameters:nil];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (NSMutableArray *)qimDB_selectFriendList {
@@ -159,6 +165,7 @@
             paramDic = nil;
         }
     }];
+    QIMVerboseLog(@"");
     return [resultList autorelease];
 }
 
@@ -190,6 +197,7 @@
             paramDic = nil;
         }
     }];
+    QIMVerboseLog(@"");
     return [resultList autorelease];
 }
 
@@ -216,6 +224,7 @@
             }
         }
     }];
+    QIMVerboseLog(@"");
     return [resultDic autorelease];
 }
 
@@ -242,6 +251,7 @@
             }
         }
     }];
+    QIMVerboseLog(@"");
     return [resultDic autorelease];
 }
 
@@ -283,6 +293,7 @@
         [params release];
         params = nil;
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_bulkInsertFriendNotifyList:(NSArray *)notifyList {
@@ -322,6 +333,7 @@
         [database executeBulkInsert:sql withParameters:params];
         [params release];
     }];
+    QIMVerboseLog(@"");
 }
 - (void)qimDB_insertFriendNotifyWithUserId:(NSString *)userId
                                 WithXmppId:(NSString *)xmppId
@@ -352,6 +364,7 @@
         [params addObject:@(lastUpdateTime)];
         [database executeNonQuery:sql withParameters:params];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_deleteFriendNotifyWithUserId:(NSString *)userId {
@@ -359,6 +372,7 @@
         NSString *sql = @"Delete From IM_Friend_Notify Where UserId=:UserId;";
         [database executeNonQuery:sql withParameters:@[userId]];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (NSMutableArray *)qimDB_selectFriendNotifys {
@@ -394,6 +408,7 @@
             paramDic = nil;
         }
     }];
+    QIMVerboseLog(@"");
     return [resultList autorelease];
 }
 
@@ -427,6 +442,7 @@
             [IMDataManager safeSaveForDic:friendNotify setObject:lastUpdateTime forKey:@"LastUpdateTime"];
         }
     }];
+    QIMVerboseLog(@"");
     return [friendNotify autorelease];
 }
 
@@ -443,6 +459,7 @@
             }
         }
     }];
+    QIMVerboseLog(@"");
     return FriendNotifyCount;
 }
 
@@ -451,6 +468,7 @@
         NSString *sql = @"Update IM_Friend_Notify Set State = :State Where XmppId=:XmppId;";
         [database executeNonQuery:sql withParameters:@[@(state),xmppId]];
     }];
+    QIMVerboseLog(@"");
 }
 
 - (long long)qimDB_getMaxTimeFriendNotify {
@@ -462,6 +480,7 @@
             maxTime = [[reader objectForColumnIndex:0] longLongValue];
         }
     }];
+    QIMVerboseLog(@"");
     return maxTime;
 }
 

@@ -19,35 +19,37 @@
 }
 
 - (void)updateLastMsgTime {
-    QIMVerboseLog(@"更新本地单人消息时间戳");
-    long long defaultTime = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 3600 * 24 * 2) * 1000;
-    long long errorTime = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetSingleHistoryMsgError] longLongValue];
-    if (errorTime > 0) {
-        self.lastSingleMsgTime = errorTime;
-        QIMVerboseLog(@"本地单人错误时间戳 : %lld", errorTime);
-    } else {
-        self.lastSingleMsgTime = [[IMDataManager qimDB_SharedInstance] qimDB_lastestMessageTime];
-    }
-    if (self.lastSingleMsgTime == 0) {
-        self.lastSingleMsgTime = defaultTime;
-    }
-    QIMVerboseLog(@"强制塞本地单人消息时间戳到为 kGetSingleHistoryMsgError : %f", self.lastSingleMsgTime);
-    [[QIMUserCacheManager sharedInstance] setUserObject:@(self.lastSingleMsgTime) forKey:kGetSingleHistoryMsgError];
-    QIMVerboseLog(@"强制塞本地单人消息时间戳到为 kGetSingleHistoryMsgError : %f完成", self.lastSingleMsgTime);
-    
-    QIMVerboseLog(@"强制塞本地单人消息消息时间戳完成之后再取一下本地错误时间戳 : %lld", [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetSingleHistoryMsgError] longLongValue]);
-    
-    long long defaultTime2 = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 3600 * 24 * 2) * 1000;
-    long long errorTime2 = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetSingleReadFlagError] longLongValue];
-    if (errorTime2 > 0) {
-        self.lastSingleReadFlagMsgTime = errorTime2;
-        QIMVerboseLog(@"本地单人消息已读z未读状态错误时间戳 : %lld", errorTime2);
-    } else {
-        self.lastSingleReadFlagMsgTime = self.lastSingleMsgTime;
-    }
-    
-    QIMVerboseLog(@"最终获取到的本地单人最后消息时间戳为 : %lf", self.lastSingleMsgTime);
-    QIMVerboseLog(@"最终获取到的本地单人已读未读最后消息时间戳为 : %lf", self.lastSingleReadFlagMsgTime);
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        QIMVerboseLog(@"更新本地单人消息时间戳");
+        long long defaultTime = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 3600 * 24 * 2) * 1000;
+        long long errorTime = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetSingleHistoryMsgError] longLongValue];
+        if (errorTime > 0) {
+            self.lastSingleMsgTime = errorTime;
+            QIMVerboseLog(@"本地单人错误时间戳 : %lld", errorTime);
+        } else {
+            self.lastSingleMsgTime = [[IMDataManager qimDB_SharedInstance] qimDB_lastestMessageTime];
+        }
+        if (self.lastSingleMsgTime == 0) {
+            self.lastSingleMsgTime = defaultTime;
+        }
+        QIMVerboseLog(@"强制塞本地单人消息时间戳到为 kGetSingleHistoryMsgError : %f", self.lastSingleMsgTime);
+        [[QIMUserCacheManager sharedInstance] setUserObject:@(self.lastSingleMsgTime) forKey:kGetSingleHistoryMsgError];
+        QIMVerboseLog(@"强制塞本地单人消息时间戳到为 kGetSingleHistoryMsgError : %f完成", self.lastSingleMsgTime);
+        
+        QIMVerboseLog(@"强制塞本地单人消息消息时间戳完成之后再取一下本地错误时间戳 : %lld", [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetSingleHistoryMsgError] longLongValue]);
+        
+        long long defaultTime2 = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 3600 * 24 * 2) * 1000;
+        long long errorTime2 = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetSingleReadFlagError] longLongValue];
+        if (errorTime2 > 0) {
+            self.lastSingleReadFlagMsgTime = errorTime2;
+            QIMVerboseLog(@"本地单人消息已读z未读状态错误时间戳 : %lld", errorTime2);
+        } else {
+            self.lastSingleReadFlagMsgTime = self.lastSingleMsgTime;
+        }
+        
+        QIMVerboseLog(@"最终获取到的本地单人最后消息时间戳为 : %lf", self.lastSingleMsgTime);
+        QIMVerboseLog(@"最终获取到的本地单人已读未读最后消息时间戳为 : %lf", self.lastSingleReadFlagMsgTime);
+    });
 }
 
 - (void)getReadFlag {

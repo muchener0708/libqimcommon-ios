@@ -21,24 +21,27 @@
 }
 
 - (void)updateLastSystemMsgTime {
-    QIMVerboseLog(@"更新本地HeadLine消息时间戳");
-    long long defaultTime = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 3600 * 24 * 2) * 1000;
-    long long errorTime = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetSystemHistoryMsgError] longLongValue];
-    if (errorTime > 0) {
-        self.lastSystemMsgTime = errorTime;
-        QIMVerboseLog(@"本地HeadLine消息错误时间戳 : %lld", errorTime);
-    } else {
-        self.lastSystemMsgTime = [[IMDataManager qimDB_SharedInstance] qimDB_lastestSystemMessageTime];
-    }
-    if (self.lastSystemMsgTime == 0) {
-        self.lastSystemMsgTime = defaultTime;
-    }
-    QIMVerboseLog(@"强制塞本地HeadLine消息时间戳到为 kGetSystemHistoryMsgError : %f", self.lastSystemMsgTime);
-    [[QIMUserCacheManager sharedInstance] setUserObject:@(self.lastSystemMsgTime) forKey:kGetSystemHistoryMsgError];
-    QIMVerboseLog(@"强制塞本地HeadLine消息时间戳到为 kGetSystemHistoryMsgError : %f完成", self.lastSystemMsgTime);
-    QIMVerboseLog(@"强制塞本地HeadLine消息消息时间戳完成之后再取一下本地错误时间戳 : %lld", [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetSystemHistoryMsgError] longLongValue]);
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 
-    QIMVerboseLog(@"最终获取到的本地HeadLine最后消息时间戳为 : %lf", self.lastSystemMsgTime);
+        QIMVerboseLog(@"更新本地HeadLine消息时间戳");
+        long long defaultTime = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 3600 * 24 * 2) * 1000;
+        long long errorTime = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetSystemHistoryMsgError] longLongValue];
+        if (errorTime > 0) {
+            self.lastSystemMsgTime = errorTime;
+            QIMVerboseLog(@"本地HeadLine消息错误时间戳 : %lld", errorTime);
+        } else {
+            self.lastSystemMsgTime = [[IMDataManager qimDB_SharedInstance] qimDB_lastestSystemMessageTime];
+        }
+        if (self.lastSystemMsgTime == 0) {
+            self.lastSystemMsgTime = defaultTime;
+        }
+        QIMVerboseLog(@"强制塞本地HeadLine消息时间戳到为 kGetSystemHistoryMsgError : %f", self.lastSystemMsgTime);
+        [[QIMUserCacheManager sharedInstance] setUserObject:@(self.lastSystemMsgTime) forKey:kGetSystemHistoryMsgError];
+        QIMVerboseLog(@"强制塞本地HeadLine消息时间戳到为 kGetSystemHistoryMsgError : %f完成", self.lastSystemMsgTime);
+        QIMVerboseLog(@"强制塞本地HeadLine消息消息时间戳完成之后再取一下本地错误时间戳 : %lld", [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetSystemHistoryMsgError] longLongValue]);
+
+        QIMVerboseLog(@"最终获取到的本地HeadLine最后消息时间戳为 : %lf", self.lastSystemMsgTime);
+    });
 }
 
 - (void)updateOfflineSystemNoticeMessages {

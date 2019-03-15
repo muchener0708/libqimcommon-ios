@@ -15,6 +15,7 @@
 #import "QIMManager+Consult.h"
 #import "QIMManager+DB.h"
 #import "QIMManager+UserMedal.h"
+#import "QIMManager+PublicNavUserManager.h"
 #import "QIMManager+Friend.h"
 #import "QIMManager+Group.h"
 #import "QIMManager+GroupMessage.h"
@@ -365,235 +366,235 @@ static QIMManager *__IMManager = nil;
 - (void)loginComplateOperation {
     [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationLoginState object:[NSNumber numberWithBool:YES]];
     [self updateAppWorkState:AppWorkState_Updating];
-
-        self.needTryRelogin = YES;
-        QIMVerboseLog(@"<Method: %s, Set _needTryRelogin == YES>", __func__);
-        //重置消息是否最新Flag
-        _latestGroupMessageFlag = YES;
-        _latestSingleMessageFlag = YES;
-        _latestSystemMessageFlag = YES;
-        
-        [[QIMUserCacheManager sharedInstance] setCacheName:[[QIMManager sharedInstance] getLastJid]];
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-            NSString *userName = [[QIMUserCacheManager sharedInstance] userObjectForKey:kLastUserId];
-            NSString *userFullJid = [userName stringByAppendingFormat:@"@%@", [[XmppImManager sharedInstance] domain]];
-            [[QIMUserCacheManager sharedInstance] setUserObject:userFullJid forKey:@"kFullUserJid"];
-            QIMVerboseLog(@"LoginComplate 之后的userFullJid : %@", userFullJid);
-            NSString *tempUserToken = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"kTempUserToken"];
-            [[QIMUserCacheManager sharedInstance] setUserObject:tempUserToken?tempUserToken:@"" forKey:@"userToken"];
-            QIMVerboseLog(@"LoginComplate 之后的tempUserToken : %@", tempUserToken);
+    self.notNeedCheckNetwotk = NO;
+    self.needTryRelogin = YES;
+    QIMVerboseLog(@"<Method: %s, Set _needTryRelogin == YES>", __func__);
+    //重置消息是否最新Flag
+    _latestGroupMessageFlag = YES;
+    _latestSingleMessageFlag = YES;
+    _latestSystemMessageFlag = YES;
+    
+    [[QIMUserCacheManager sharedInstance] setCacheName:[[QIMManager sharedInstance] getLastJid]];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+        NSString *userName = [[QIMUserCacheManager sharedInstance] userObjectForKey:kLastUserId];
+        NSString *userFullJid = [userName stringByAppendingFormat:@"@%@", [[XmppImManager sharedInstance] domain]];
+        [[QIMUserCacheManager sharedInstance] setUserObject:userFullJid forKey:@"kFullUserJid"];
+        QIMVerboseLog(@"LoginComplate 之后的userFullJid : %@", userFullJid);
+        NSString *tempUserToken = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"kTempUserToken"];
+        [[QIMUserCacheManager sharedInstance] setUserObject:tempUserToken?tempUserToken:@"" forKey:@"userToken"];
+        QIMVerboseLog(@"LoginComplate 之后的tempUserToken : %@", tempUserToken);
 #warning NavDict NavConfig
-            NSDictionary *currentLoginNavConfig = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"NavConfig"];
-            NSDictionary *navDict = @{@"NavConfig":currentLoginNavConfig?currentLoginNavConfig:@{}, @"NavUrl":[[QIMUserCacheManager sharedInstance] userObjectForKey:@"QC_CurrentNavDict"]};
-            [self addUserCacheWithUserId:userName WithUserFullJid:userFullJid WithNavDict:navDict];
-            
-            NSString *oldLoginUser = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"LastestLoginUser"];
-            if (oldLoginUser && ![oldLoginUser isEqualToString:[[QIMManager sharedInstance] getLastJid]]) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    QIMVerboseLog(@"抛出通知 : kNotifySwichUserSuccess");
-                    [[NSNotificationCenter defaultCenter] postNotificationName:kNotifySwichUserSuccess object:@(YES)];
-                });
-            }
-            [[QIMUserCacheManager sharedInstance] setUserObject:[[QIMManager sharedInstance] getLastJid] forKey:@"LastestLoginUser"];
-        });
-        QIMVerboseLog(@"userDocuments : %@", UserDocumentsPath);
-        QIMVerboseLog(@"userPath : %@", UserPath);
-        //防止数据库及Beta环境本地路径出错
-        _imageCachePath = [UserCachesPath stringByAppendingPathComponent:[NSString stringWithFormat:@"/imageCache/"]];
-        if (![[NSFileManager defaultManager] fileExistsAtPath:_imageCachePath]) {
-            [[NSFileManager defaultManager] createDirectoryAtPath:_imageCachePath withIntermediateDirectories:YES attributes:nil error:nil];
-        }
+        NSDictionary *currentLoginNavConfig = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"NavConfig"];
+        NSDictionary *navDict = @{@"NavConfig":currentLoginNavConfig?currentLoginNavConfig:@{}, @"NavUrl":[[QIMUserCacheManager sharedInstance] userObjectForKey:@"QC_CurrentNavDict"]};
+        [self addUserCacheWithUserId:userName WithUserFullJid:userFullJid WithNavDict:navDict];
         
-        _userProfilePath = [UserDocumentsPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@%@/profile/", [self getLastJid], UserPath]];
-        if (![[NSFileManager defaultManager] fileExistsAtPath:_userProfilePath]) {
-            [[NSFileManager defaultManager] createDirectoryAtPath:_userProfilePath withIntermediateDirectories:YES attributes:nil error:nil];
-        }
-        
-        _userVcard = [UserDocumentsPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@%@/userVcard/", [self getLastJid], UserPath]];
-        if (![[NSFileManager defaultManager] fileExistsAtPath:_userVcard]) {
-            
-            [[NSFileManager defaultManager] createDirectoryAtPath:_userVcard withIntermediateDirectories:YES attributes:nil error:nil];
-        }
-        
-        _downLoadFile = [UserCachesPath stringByAppendingPathComponent:[NSString stringWithFormat:@"/imageCache/"]];
-        
-        if (![[NSFileManager defaultManager] fileExistsAtPath:_downLoadFile]) {
-            [[NSFileManager defaultManager] createDirectoryAtPath:_downLoadFile withIntermediateDirectories:YES attributes:nil error:nil];
-        }
-        
-        _groupHeaderImageCachePath = [UserCachesPath stringByAppendingPathComponent:[NSString stringWithFormat:@"/imageCache/"]];
-        if (![[NSFileManager defaultManager] fileExistsAtPath:_groupHeaderImageCachePath]) {
-            [[NSFileManager defaultManager] createDirectoryAtPath:_groupHeaderImageCachePath withIntermediateDirectories:YES attributes:nil error:nil];
-        }
-        
-        _configPath = [UserDocumentsPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@%@/config", [self getLastJid], UserPath]];
-        if (![[NSFileManager defaultManager] fileExistsAtPath:_configPath]) {
-            [[NSFileManager defaultManager] createDirectoryAtPath:_configPath withIntermediateDirectories:YES attributes:nil error:nil];
-        }
-        QIMVerboseLog(@"开始获取单人历史记录2");
-        CFAbsoluteTime startTime1 = [[QIMWatchDog sharedInstance] startTime];
-        [self updateOfflineMessagesV2];
-        QIMVerboseLog(@"获取单人历史记录2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime1]);
-        QIMVerboseLog(@"获取单人历史记录结束2");
-
-        QIMVerboseLog(@"开始获取消息已读状态2");
-        CFAbsoluteTime startTime2 = [[QIMWatchDog sharedInstance] startTime];
-        [self getReadFlag];
-        QIMVerboseLog(@"获取消息已读状态2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime2]);
-        QIMVerboseLog(@"获取消息已读状态结束2");
-
-        dispatch_async(dispatch_get_main_queue(), ^{
-            QIMVerboseLog(@"强制刷一下单聊会话框界面的消息开始2");
-            [[NSNotificationCenter defaultCenter] postNotificationName:kSingleChatMsgReloadNotification object:nil];
-            QIMVerboseLog(@"强制刷一下单聊会话框界面的消息结束2");
-        });
-
-        QIMVerboseLog(@"开始获取群历史记录2");
-        CFAbsoluteTime startTime3 = [[QIMWatchDog sharedInstance] startTime];
-        [self updateOfflineGroupMessages];
-        QIMVerboseLog(@"获取群历史记录2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime3]);
-        QIMVerboseLog(@"获取群历史记录结束2");
-
-        dispatch_async(dispatch_get_main_queue(), ^{
-            QIMVerboseLog(@"强制刷新列表页");
-            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSessionListUpdate object:@"ForceRefresh"];
-            QIMVerboseLog(@"强制刷新列表页结束");
-            
-            QIMVerboseLog(@"强制刷一下群聊会话框界面的消息开始2");
-            [[NSNotificationCenter defaultCenter] postNotificationName:kGroupChatMsgReloadNotification object:nil];
-            QIMVerboseLog(@"强制刷一下群聊会话框界面的消息结束2");
-        });
-        [self updateAppWorkState:AppWorkState_Login];
-        QIMVerboseLog(@"主页Title已经更新为登录完成");
-        
-        QIMVerboseLog(@"开始获取群阅读指针2");
-        CFAbsoluteTime startTime4 = [[QIMWatchDog sharedInstance] startTime];
-        [self updateMucReadMark];
-    QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime4]);
-        QIMVerboseLog(@"获取群阅读指针结束2");
-        dispatch_async(dispatch_get_main_queue(), ^{
-            QIMVerboseLog(@"获取阅读指针之后再次强制刷新列表页");
-            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSessionListUpdate object:@"ForceRefresh"];
-            QIMVerboseLog(@"获取阅读指针之后再次强制刷新列表页结束");
-        });
-        QIMVerboseLog(@"同步消息完成耗时 : %lf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime1]);
-        
-        QIMVerboseLog(@"开始获取系统历史记录2");
-        CFAbsoluteTime startTime5 = [[QIMWatchDog sharedInstance] startTime];
-        [self updateOfflineSystemNoticeMessages];
-        QIMVerboseLog(@"获取系统历史记录2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime5]);
-        QIMVerboseLog(@"获取系统历史记录结束2");
-        
-        [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageFromState:QIMMessageSendState_Waiting ToState:QIMMessageSendState_Faild];
-        QIMVerboseLog(@"开始同步服务端漫游的个人配置2");
-        CFAbsoluteTime startTime6 = [[QIMWatchDog sharedInstance] startTime];
-        [self getRemoteClientConfig];
-        QIMVerboseLog(@"同步服务端漫游的个人配置2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime6]);
-        QIMVerboseLog(@"同步服务端漫游的个人配置完成2");
-        
-        if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
-            QIMVerboseLog(@"开始获取我的关联账户2");
-            CFAbsoluteTime startTime7 = [[QIMWatchDog sharedInstance] startTime];
-            [self getRemoteCollectionAccountList];
-            QIMVerboseLog(@"获取我的关联账户2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime7]);
-            
-            QIMVerboseLog(@"开始同步公众号列表2");
-            CFAbsoluteTime startTime8 = [[QIMWatchDog sharedInstance] startTime];
-            [self updatePublicNumberList];
-            QIMVerboseLog(@"同步公众号列表2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime8]);
-            QIMVerboseLog(@"同步公众号列表完成2");
-        }
-        
-        QIMVerboseLog(@"开始Check组织架构2");
-        CFAbsoluteTime startTime9 = [[QIMWatchDog sharedInstance] startTime];
-        [self checkRosterListWithForceUpdate:NO];
-        QIMVerboseLog(@"Check组织架构2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime9]);
-        QIMVerboseLog(@"Check组织架构结束2");
-    
-        QIMVerboseLog(@"开始请求增量群列表");
-        CFAbsoluteTime startTime10 = [[QIMWatchDog sharedInstance] startTime];
-        [self quickJoinAllGroup];
-        QIMVerboseLog(@"快速入群完成2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime10]);
-        QIMVerboseLog(@"快速入群完成2");
-            
-        QIMVerboseLog(@"开始TCP发送已送达消息状态2");
-        CFAbsoluteTime startTime11 = [[QIMWatchDog sharedInstance] startTime];
-        [self sendRecevieMessageState];
-        QIMVerboseLog(@"TCP发送已送达消息状态2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime11]);
-        QIMVerboseLog(@"TCP发送已送达消息状态结束2");
-        
-        QIMVerboseLog(@"开始同步消息推送设置2");
-        CFAbsoluteTime startTime12 = [[QIMWatchDog sharedInstance] startTime];
-        [self getMsgNotifyRemoteSettings];
-        QIMVerboseLog(@"同步消息推送设置2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime12]);
-        QIMVerboseLog(@"同步同步消息推送设置2");
-            
-        //24 小时拿一次
-        long long checkConfigVersion = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kCheckConfigVersion] longLongValue];
-//        if (checkConfigVersion != [[QIMNavConfigManager sharedInstance] checkConfigVersion]) {
-            [self checkClientConfig];
-//        }
-    
-        QIMVerboseLog(@"开始获取加密会话密码箱2");
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"kNotifyNotificationGetRemoteEncrypt" object:nil];
-        });
-        QIMVerboseLog(@"开始获取加密会话密码箱2结束");
-        
-        CFAbsoluteTime startTime13 = [[QIMWatchDog sharedInstance] startTime];
-        [self sendPushTokenWithMyToken:[[QIMAppInfo sharedInstance] pushToken] WithDeleteFlag:NO];
-        QIMVerboseLog(@"注册Token1loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime13]);
-        
-        // 更新好友列表
-        CFAbsoluteTime startTime14 = [[QIMWatchDog sharedInstance] startTime];
-        [self updateFriendList];
-    QIMVerboseLog(@"更新好友列表loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime14]);
-        
-        CFAbsoluteTime startTime15 = [[QIMWatchDog sharedInstance] startTime];
-        [self updateFriendInviteList];
-    QIMVerboseLog(@"邀请好友申请loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime15]);
-        
-        if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
-            QIMVerboseLog(@"客服获取快捷回复");
-            [self getRemoteQuickReply];
-        };
-        
-        if ([[QIMNavConfigManager sharedInstance] showOA] == YES) {
-            QIMVerboseLog(@"开始获取行程区域");
-            [self getRemoteAreaList];
-            QIMVerboseLog(@"结束获取行程区域");
-            
-            QIMVerboseLog(@"开始获取用户行程列表");
-            [self getRemoteUserTripList];
-            QIMVerboseLog(@"结束获取用户行程列表");
-        }
-        [self updateMyCard];
-
-        if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-                if ([self isMerchant]) {
-                    //客服发送上线通知
-                    QIMVerboseLog(@"客服发送上线通知");
-                    [self sendQChatOnlineNotification];
-                }
+        NSString *oldLoginUser = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"LastestLoginUser"];
+        if (oldLoginUser && ![oldLoginUser isEqualToString:[[QIMManager sharedInstance] getLastJid]]) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                QIMVerboseLog(@"抛出通知 : kNotifySwichUserSuccess");
+                [[NSNotificationCenter defaultCenter] postNotificationName:kNotifySwichUserSuccess object:@(YES)];
             });
         }
+        [[QIMUserCacheManager sharedInstance] setUserObject:[[QIMManager sharedInstance] getLastJid] forKey:@"LastestLoginUser"];
+    });
+    QIMVerboseLog(@"userDocuments : %@", UserDocumentsPath);
+    QIMVerboseLog(@"userPath : %@", UserPath);
+    //防止数据库及Beta环境本地路径出错
+    _imageCachePath = [UserCachesPath stringByAppendingPathComponent:[NSString stringWithFormat:@"/imageCache/"]];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:_imageCachePath]) {
+        [[NSFileManager defaultManager] createDirectoryAtPath:_imageCachePath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    
+    _userProfilePath = [UserDocumentsPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@%@/profile/", [self getLastJid], UserPath]];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:_userProfilePath]) {
+        [[NSFileManager defaultManager] createDirectoryAtPath:_userProfilePath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    
+    _userVcard = [UserDocumentsPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@%@/userVcard/", [self getLastJid], UserPath]];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:_userVcard]) {
         
-        if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
-            
-            QIMVerboseLog(@"登录之后请求一下驼圈入口开关");
-            [self getCricleCamelEntrance];
-            
-            QIMVerboseLog(@"登录之后请求一下驼圈未读消息");
-            [self getupdateRemoteWorkNoticeMsgs];
-            
-            QIMVerboseLog(@"登录之后请求一下骆驼帮未读数");
+        [[NSFileManager defaultManager] createDirectoryAtPath:_userVcard withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    
+    _downLoadFile = [UserCachesPath stringByAppendingPathComponent:[NSString stringWithFormat:@"/imageCache/"]];
+    
+    if (![[NSFileManager defaultManager] fileExistsAtPath:_downLoadFile]) {
+        [[NSFileManager defaultManager] createDirectoryAtPath:_downLoadFile withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    
+    _groupHeaderImageCachePath = [UserCachesPath stringByAppendingPathComponent:[NSString stringWithFormat:@"/imageCache/"]];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:_groupHeaderImageCachePath]) {
+        [[NSFileManager defaultManager] createDirectoryAtPath:_groupHeaderImageCachePath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    
+    _configPath = [UserDocumentsPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@%@/config", [self getLastJid], UserPath]];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:_configPath]) {
+        [[NSFileManager defaultManager] createDirectoryAtPath:_configPath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    QIMVerboseLog(@"开始获取单人历史记录2");
+    CFAbsoluteTime startTime1 = [[QIMWatchDog sharedInstance] startTime];
+    [self updateOfflineMessagesV2];
+    QIMVerboseLog(@"获取单人历史记录2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime1]);
+    QIMVerboseLog(@"获取单人历史记录结束2");
 
-            [[QIMManager sharedInstance] getExploreNotReaderCount];
-            
-            QIMVerboseLog(@"登录之后请求热线账户列表");
-            [self getHotlineShopList];
-        }
+    QIMVerboseLog(@"开始获取消息已读状态2");
+    CFAbsoluteTime startTime2 = [[QIMWatchDog sharedInstance] startTime];
+    [self getReadFlag];
+    QIMVerboseLog(@"获取消息已读状态2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime2]);
+    QIMVerboseLog(@"获取消息已读状态结束2");
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        QIMVerboseLog(@"强制刷一下单聊会话框界面的消息开始2");
+        [[NSNotificationCenter defaultCenter] postNotificationName:kSingleChatMsgReloadNotification object:nil];
+        QIMVerboseLog(@"强制刷一下单聊会话框界面的消息结束2");
+    });
+
+    QIMVerboseLog(@"开始获取群历史记录2");
+    CFAbsoluteTime startTime3 = [[QIMWatchDog sharedInstance] startTime];
+    [self updateOfflineGroupMessages];
+    QIMVerboseLog(@"获取群历史记录2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime3]);
+    QIMVerboseLog(@"获取群历史记录结束2");
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        QIMVerboseLog(@"强制刷新列表页");
+        [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSessionListUpdate object:@"ForceRefresh"];
+        QIMVerboseLog(@"强制刷新列表页结束");
+        
+        QIMVerboseLog(@"强制刷一下群聊会话框界面的消息开始2");
+        [[NSNotificationCenter defaultCenter] postNotificationName:kGroupChatMsgReloadNotification object:nil];
+        QIMVerboseLog(@"强制刷一下群聊会话框界面的消息结束2");
+    });
+    [self updateAppWorkState:AppWorkState_Login];
+    QIMVerboseLog(@"主页Title已经更新为登录完成");
+    
+    QIMVerboseLog(@"开始获取群阅读指针2");
+    CFAbsoluteTime startTime4 = [[QIMWatchDog sharedInstance] startTime];
+    [self updateMucReadMark];
+QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime4]);
+    QIMVerboseLog(@"获取群阅读指针结束2");
+    dispatch_async(dispatch_get_main_queue(), ^{
+        QIMVerboseLog(@"获取阅读指针之后再次强制刷新列表页");
+        [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSessionListUpdate object:@"ForceRefresh"];
+        QIMVerboseLog(@"获取阅读指针之后再次强制刷新列表页结束");
+    });
+    QIMVerboseLog(@"同步消息完成耗时 : %lf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime1]);
+    
+    QIMVerboseLog(@"开始获取系统历史记录2");
+    CFAbsoluteTime startTime5 = [[QIMWatchDog sharedInstance] startTime];
+    [self updateOfflineSystemNoticeMessages];
+    QIMVerboseLog(@"获取系统历史记录2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime5]);
+    QIMVerboseLog(@"获取系统历史记录结束2");
+    
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageFromState:QIMMessageSendState_Waiting ToState:QIMMessageSendState_Faild];
+    QIMVerboseLog(@"开始同步服务端漫游的个人配置2");
+    CFAbsoluteTime startTime6 = [[QIMWatchDog sharedInstance] startTime];
+    [self getRemoteClientConfig];
+    QIMVerboseLog(@"同步服务端漫游的个人配置2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime6]);
+    QIMVerboseLog(@"同步服务端漫游的个人配置完成2");
+    
+    if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
+        QIMVerboseLog(@"开始获取我的关联账户2");
+        CFAbsoluteTime startTime7 = [[QIMWatchDog sharedInstance] startTime];
+        [self getRemoteCollectionAccountList];
+        QIMVerboseLog(@"获取我的关联账户2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime7]);
+        
+        QIMVerboseLog(@"开始同步公众号列表2");
+        CFAbsoluteTime startTime8 = [[QIMWatchDog sharedInstance] startTime];
+        [self updatePublicNumberList];
+        QIMVerboseLog(@"同步公众号列表2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime8]);
+        QIMVerboseLog(@"同步公众号列表完成2");
+    }
+    
+    QIMVerboseLog(@"开始Check组织架构2");
+    CFAbsoluteTime startTime9 = [[QIMWatchDog sharedInstance] startTime];
+    [self checkRosterListWithForceUpdate:YES];
+    QIMVerboseLog(@"Check组织架构2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime9]);
+    QIMVerboseLog(@"Check组织架构结束2");
+
+    QIMVerboseLog(@"开始请求增量群列表");
+    CFAbsoluteTime startTime10 = [[QIMWatchDog sharedInstance] startTime];
+    [self quickJoinAllGroup];
+    QIMVerboseLog(@"快速入群完成2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime10]);
+    QIMVerboseLog(@"快速入群完成2");
+        
+    QIMVerboseLog(@"开始TCP发送已送达消息状态2");
+    CFAbsoluteTime startTime11 = [[QIMWatchDog sharedInstance] startTime];
+    [self sendRecevieMessageState];
+    QIMVerboseLog(@"TCP发送已送达消息状态2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime11]);
+    QIMVerboseLog(@"TCP发送已送达消息状态结束2");
+    
+    QIMVerboseLog(@"开始同步消息推送设置2");
+    CFAbsoluteTime startTime12 = [[QIMWatchDog sharedInstance] startTime];
+    [self getMsgNotifyRemoteSettings];
+    QIMVerboseLog(@"同步消息推送设置2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime12]);
+    QIMVerboseLog(@"同步同步消息推送设置2");
+        
+    //24 小时拿一次
+    long long checkConfigVersion = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kCheckConfigVersion] longLongValue];
+//        if (checkConfigVersion != [[QIMNavConfigManager sharedInstance] checkConfigVersion]) {
+        [self checkClientConfig];
+//        }
+
+    QIMVerboseLog(@"开始获取加密会话密码箱2");
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"kNotifyNotificationGetRemoteEncrypt" object:nil];
+    });
+    QIMVerboseLog(@"开始获取加密会话密码箱2结束");
+    
+    CFAbsoluteTime startTime13 = [[QIMWatchDog sharedInstance] startTime];
+    [self sendPushTokenWithMyToken:[[QIMAppInfo sharedInstance] pushToken] WithDeleteFlag:NO];
+    QIMVerboseLog(@"注册Token1loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime13]);
+    
+    // 更新好友列表
+    CFAbsoluteTime startTime14 = [[QIMWatchDog sharedInstance] startTime];
+    [self updateFriendList];
+QIMVerboseLog(@"更新好友列表loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime14]);
+    
+    CFAbsoluteTime startTime15 = [[QIMWatchDog sharedInstance] startTime];
+    [self updateFriendInviteList];
+QIMVerboseLog(@"邀请好友申请loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime15]);
+    
+    if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
+        QIMVerboseLog(@"客服获取快捷回复");
+        [self getRemoteQuickReply];
+    };
+    
+    if ([[QIMNavConfigManager sharedInstance] showOA] == YES) {
+        QIMVerboseLog(@"开始获取行程区域");
+        [self getRemoteAreaList];
+        QIMVerboseLog(@"结束获取行程区域");
+        
+        QIMVerboseLog(@"开始获取用户行程列表");
+        [self getRemoteUserTripList];
+        QIMVerboseLog(@"结束获取用户行程列表");
+    }
+    [self updateMyCard];
+
+    if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+            if ([self isMerchant]) {
+                //客服发送上线通知
+                QIMVerboseLog(@"客服发送上线通知");
+                [self sendQChatOnlineNotification];
+            }
+        });
+    }
+    
+    if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
+        
+        QIMVerboseLog(@"登录之后请求一下驼圈入口开关");
+        [self getCricleCamelEntrance];
+        
+        QIMVerboseLog(@"登录之后请求一下驼圈未读消息");
+        [self getupdateRemoteWorkNoticeMsgs];
+        
+        QIMVerboseLog(@"登录之后请求一下骆驼帮未读数");
+
+        [[QIMManager sharedInstance] getExploreNotReaderCount];
+        
+        QIMVerboseLog(@"登录之后请求热线账户列表");
+        [self getHotlineShopList];
+    }
 }
 
 - (void)generateClientConfigUpgradeArrayWithType:(QIMClientConfigType)type WithArray:(id)valueArr {
@@ -892,7 +893,7 @@ static QIMManager *__IMManager = nil;
                 
                 dispatch_block_t block = ^{
                     [_friendDescDic removeAllObjects];
-                    [_friendDescDic setObject:@"Qunarstaff" forKey:@"D"];
+                    [_friendDescDic setObject:@"组织架构" forKey:@"D"];
                     [_friendDescDic setObject:value forKey:@"SD"];
                 };
                 
@@ -901,7 +902,7 @@ static QIMManager *__IMManager = nil;
                 else
                     dispatch_sync(_cacheQueue, block);
                 
-                _friendInfoDic = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"Qunarstaff",@"D",value,@"SD",nil];
+                _friendInfoDic = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"组织架构",@"D",value,@"SD",nil];
             }
             return responseData;
         }
@@ -934,7 +935,7 @@ static QIMManager *__IMManager = nil;
             long long getRostListVersion = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetRostListVersion] longLongValue];
             NSTimeInterval nowTime = [[NSDate date] timeIntervalSince1970];
             QIMWarnLog(@"qchat拉取组织架构当前时间 : %f \n qchat上次拉取组织架构时间 : %lld", nowTime, getRostListVersion);
-            if (nowTime - getRostListVersion >= 24 * 60 * 60 || forceUpdate) {
+            if (forceUpdate) {
                 QIMWarnLog(@"qchat拉取组织架构 时间戳 允许重新拉取");
                 NSError *error = nil;
                 { //Roster List
@@ -1043,7 +1044,7 @@ static QIMManager *__IMManager = nil;
             long long getRostListVersion = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetRostListVersion] longLongValue];
             NSTimeInterval nowTime = [[NSDate date] timeIntervalSince1970];
             QIMWarnLog(@"qtalk拉取组织架构当前时间 : %f \n qtalk上次拉取组织架构时间 : %lld", nowTime, getRostListVersion);
-            if (nowTime - getRostListVersion >= 24 * 60 * 60 || forceUpdate) {
+            if (forceUpdate) {
                 QIMWarnLog(@"qtalk拉取组织架构 时间戳 允许重新拉取");
                 NSError *error = nil;
                 { //Roster List
@@ -1116,7 +1117,7 @@ static QIMManager *__IMManager = nil;
                             }
                             if (error == nil && value) {
                                 
-                                _friendInfoDic = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"Qunarstaff",@"D",value,@"SD",nil];
+                                _friendInfoDic = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"组织架构",@"D",value,@"SD",nil];
                                 
                             } else {
                                 isNeedUpdate = YES;
@@ -1372,7 +1373,7 @@ static QIMManager *__IMManager = nil;
 
 - (void)checkClientConfig {
     
-    NSString *title = ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) ? @"qtalk" : @"qchat";
+    NSString *title = ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) ? @"qchat" : @"qtalk";
     
     NSString *url = [NSString stringWithFormat:@"%@/config/check_config.qunar", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
     NSURL *requestUrl = [NSURL URLWithString:url];

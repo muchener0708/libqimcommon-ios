@@ -28,6 +28,7 @@
 #import "QIMManager+GroupMessage.h"
 #import "QIMManager+Helper.h"
 #import "QIMManager+UserMedal.h"
+#import "QIMManager+PublicNavUserManager.h"
 #import "QIMManager+KeyChain.h"
 #import "QIMManager+Login.h"
 #import "QIMManager+Message.h"

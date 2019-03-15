@@ -77,13 +77,13 @@ static NSString *MAPAPIKEY = nil;
         [[QIMUserCacheManager sharedInstance] setUserObject:@(YES) forKey:@"everLaunched"];
         [[QIMUserCacheManager sharedInstance] setUserObject:newAppBuildVersion forKey:@"AppBuildVersion"];
         [[QIMUserCacheManager sharedInstance] setUserObject:@(YES) forKey:@"firstLaunch"];
-        if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
+        if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
             [[QIMUserCacheManager sharedInstance] setUserObject:@(YES) forKey:@"notesFirstNotice"];
         }
         return YES;
     } else {
         QIMVerboseLog(@"用户非第一次安装");
-        if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
+        if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
             [[QIMUserCacheManager sharedInstance] setUserObject:@(NO) forKey:@"notesFirstNotice"];
         }
         [[QIMUserCacheManager sharedInstance] setUserObject:@(NO) forKey:@"firstLaunch"];

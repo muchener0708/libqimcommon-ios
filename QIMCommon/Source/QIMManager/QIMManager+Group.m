@@ -657,7 +657,7 @@
 }
 
 - (void)quickJoinAllGroup {
-    if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
+    if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
         self.lastMaxGroupVersion = [[[QIMUserCacheManager sharedInstance] userObjectForKey:@"lastJoinGroupTime"] doubleValue];
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
            [self getIncrementMucList:self.lastMaxGroupVersion];
@@ -699,7 +699,7 @@
         NSDictionary *tempDic = [[IMDataManager qimDB_SharedInstance] qimDB_selectUserByIndex:groupName];
         if (tempDic) {
             NSMutableDictionary *dic = [NSMutableDictionary dictionaryWithDictionary:tempDic];
-            if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
+            if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
                 NSString *rtxId = [dic objectForKey:@"UserId"];
                 NSString *desc = [self.friendDescDic objectForKey:rtxId];
                 if (desc) {

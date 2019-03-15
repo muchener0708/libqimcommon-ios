@@ -206,6 +206,7 @@
 }
 
 - (void)serviceEndStream{
+    _isLogin = NO;
     NSMutableArray *methods = [_eventMapping objectForKey:@(XmppEvent_StreamEnd)];
     for (NSDictionary *info in methods) {
         if (info) {

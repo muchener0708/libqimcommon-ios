@@ -72,6 +72,8 @@
         NSString *navConfigStr = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"NavConfig"];
         NSMutableDictionary *navConfig = [[QIMJSONSerializer sharedInstance] deserializeObject:navConfigStr error:nil];
         QIMVerboseLog(@"本地找到的NavConfig ： %@", navConfig);
+        NSMutableDictionary *oldNavConfigUrlDict = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"QC_CurrentNavDict"];
+        QIMVerboseLog(@"本地找到的oldNavConfigUrlDict : %@", oldNavConfigUrlDict);
         if (navConfig.count > 0) {
             [self setNavConfig:navConfig];
         } else {
@@ -129,7 +131,7 @@
             _protobufPort = @"5202";
             _adShown = NO;
             _qcHost = @"https://qcadmin.qunar.com";
-        } else if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
+        } else if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
             _xmppHost = @"qim.qunar.com";
             _httpHost = @"https://qtapi.qunar.com";
             _javaurl = @"https://im.qunar.com/pubim/s/hosts";
@@ -191,7 +193,7 @@
     if (navUrlDict) {
         appNavUrl = navUrlDict[QIMNavUrlKey];
     } else {
-        if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
+        if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
             appNavUrl = @"https://qim.qunar.com/package/static/qtalk/nav";
         } else {
             appNavUrl = @"https://qim.qunar.com/package/static/qchat/nav";
@@ -447,7 +449,6 @@
         _RNPublicNumberListView = YES;
         _RNUserCardView = YES;
     }
-    
     _RNContactView = YES;
     _RNMineView = YES;
     _RNSettingView = YES;

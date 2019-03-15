@@ -1339,8 +1339,6 @@ static NSString *XmppPbStreamVersion = @"1.0";
                                                      userInfo:@{NSLocalizedDescriptionKey:
                                                                     [NSString stringWithFormat:@"Error Service Disconnect."]}];
                     QIMVerboseLog(@"Stream End : %@", error);
-                    [self disconnectWithError:error];
-                    
                     { // Log
                         NSString *log = [message description];
                         [multicastDelegate pbXmppStream:self recordLog:log withDirection:MsgDirection_Receive];

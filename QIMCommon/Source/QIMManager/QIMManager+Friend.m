@@ -202,7 +202,7 @@
                             [userIds addObject:userId];
                             [userInviteDic setQIMSafeObject:dic forKey:userId];
                         }
-                        if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
+                        if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
                             
                             NSArray *list = [[IMDataManager qimDB_SharedInstance] qimDB_selectUserListByUserIds:userIds];
                             for (NSMutableDictionary *userInfoDic in list) {

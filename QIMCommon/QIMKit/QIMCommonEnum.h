@@ -348,7 +348,7 @@ typedef void(^QIMCloseSessionBlock)(NSString *closeMsg);
 
 typedef void(^QIMKitLikeMomentSuccessedBlock)(NSDictionary *responseDic);
 typedef void(^QIMKitWorkCommentBlock)(NSArray *comments);
-typedef void(^QIMKitWorkCommentDeleteSuccessBlock)(BOOL success);
+typedef void(^QIMKitWorkCommentDeleteSuccessBlock)(BOOL success, NSInteger superParentStatus);
 typedef void(^QIMKitLikeContentSuccessedBlock)(NSDictionary *responseDic);
 typedef void(^QIMKitGetMomentNewSuccessedBlock)(NSArray *moments);
 typedef void(^QIMKitGetMomentHistorySuccessedBlock)(NSArray *moments);

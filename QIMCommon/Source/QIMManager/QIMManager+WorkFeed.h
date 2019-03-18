@@ -79,11 +79,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSInteger)getWorkNoticeMessagesCount;
 
-- (NSInteger)getWorkNoticePOSTCount;
+- (BOOL)checkWorkMomentExistWithMomentId:(NSString *)momentId;
 
-- (void)updateWorkNoticePOSTMessageReadState;
-
-- (NSArray *)getWorkNoticeMessagesWihtLimit:(int)limit WithOffset:(int)offset;
+- (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset;
 
 - (void)updateLocalWorkNoticeMsgReadStateWithTime:(long long)time;
 

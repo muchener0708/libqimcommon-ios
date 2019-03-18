@@ -316,8 +316,6 @@
 - (NSArray *)getMsgListByXmppId:(NSString *)xmppId WithRealJid:(NSString *)realJid FromTimeStamp:(long long)timeStamp;
 - (NSArray *)getMsgListByXmppId:(NSString *)xmppId FromTimeStamp:(long long)timeStamp;
 
-- (NSDictionary *)getLastMessage;
-
 // 更新消息内容 比如下载文件后的本地文件名
 - (void)updateMsgsContent:(NSString *)content ByMsgId:(NSString *)msgId;
 
@@ -325,18 +323,16 @@
 - (NSDictionary *)getChatSessionWithUserId:(NSString *)userId;
 
 // 总的未读消息数
-- (NSInteger)getNotReaderMsgCountByDidReadState:(int)didReadState WidthReceiveDirection:(int)receiveDirection;
-- (NSInteger)getNotReaderMsgCountByJid:(NSString *)jid ByDidReadState:(int)didReadState WidthReceiveDirection:(int)receiveDirection;
-- (NSInteger)getNotReaderMsgCountByJid:(NSString *)jid ByRealJid:(NSString *)realJid ByDidReadState:(int)didReadState WidthReceiveDirection:(int)receiveDirection;
 - (void)updateMessageFromState:(int)fState ToState:(int)tState;
-- (NSArray *)getMsgIdsByMsgState:(int)notReadMsgState WithDirection:(int)receiveDirection;
 - (NSInteger)getMessageStateWithMsgId:(NSString *)msgId;
+
+- (NSInteger)getReadStateWithMsgId:(NSString *)msgId;
+
 - (NSArray *)getMsgIdsForDirection:(int)msgDirection WithMsgState:(int)msgState;
 // 搜索
 - (NSArray *)searchMsgHistoryWithKey:(NSString *)key;
 
 #pragma mark - 消息数据方法
-- (NSArray *) existsMessageUsers;
 - (long long) lastestMessageTime;
 - (long long) lastestSystemMessageTime;
 - (NSString *) getLastMsgIdByJid:(NSString *)jid;
@@ -363,8 +359,6 @@
 
 - (void)updateUserMsgWithMsgState:(int)msgState ByMsgList:(NSArray *)userMsgList;
 
-- (void)bulkUpdateChatMsgWithMsgState:(int)msgState ByMsgIdList:(NSArray *)msgIdList;
-
 - (void)clearHistoryMsg;
 
 // 系统消息专用 。。。。。
@@ -375,8 +369,6 @@
 + (void)clearDataBaseCache;
 
 - (void)qimDB_dbCheckpoint;
-
-- (void)updateAllMsgWithMsgState:(int)msgState ByMsgDirection:(int)msgDirection ByReadMarkT:(long long)readMarkT;
 
 /*************** Friend List *************/
 - (void)bulkInsertFriendList:(NSArray *)friendList;

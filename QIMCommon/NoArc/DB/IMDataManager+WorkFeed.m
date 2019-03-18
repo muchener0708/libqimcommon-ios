@@ -11,6 +11,18 @@
 
 @implementation IMDataManager (WorkFeed)
 
+- (BOOL)qimDB_checkMomentWithMomentId:(NSString *)momentId {
+    __block BOOL isExist = NO;
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = @"Select 1 From IM_Work_World Where uuid = :uuid;";
+        DataReader *reader = [database executeReader:sql withParameters:@[momentId]];
+        if ([reader read]) {
+            isExist = YES;
+        }
+    }];
+    return isExist;
+}
+
 //创建工作圈表
 /*
 result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
@@ -862,34 +874,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
     return count;
 }
 
-- (NSInteger)qimDB_getWorkNoticePOSTCount {
-    __block NSInteger count = 0;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"select count(*) from IM_Work_NoticeMessage Where readState=0 and eventType=2;"];
-        NSLog(@"sql : %@", sql);
-        DataReader *reader = [database executeReader:sql withParameters:nil];
-        if ([reader read]) {
-            count = [[reader objectForColumnIndex:0] integerValue];
-        }
-    }];
-    NSLog(@"qimDB_getWorkNoticePOSTCount : %ld", count);
-    return count;
-}
-
-- (void)qimDB_updateWorkNoticePOSTMessageReadState {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"update IM_Work_NoticeMessage set readState=1 where readState=0 and eventType=2"];
-        NSLog(@"qimDB_updateWorkNoticePOSTMessageReadState sql : %@", sql);
-        BOOL success = [database executeNonQuery:sql withParameters:nil];
-        if (success) {
-            NSLog(@"qimDB_updateWorkNoticePOSTMessageReadState success");
-        } else {
-            NSLog(@"qimDB_updateWorkNoticePOSTMessageReadState faild");
-        }
-    }];
-}
-
-- (NSArray *)qimDB_getWorkNoticeMessagesWihtLimit:(int)limit WithOffset:(int)offset {
+- (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset {
     __block NSMutableArray *result = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = [NSString stringWithFormat:@"select userFrom, readState, postUUID, fromIsAnonymous, toIsAnonymous, eventType, fromAnonymousPhoto, userTo, uuid, content, userToHost, createTime, userFromHost, fromAnonymousName, toAnonymousName, toAnonymousPhoto from IM_Work_NoticeMessage where eventType=1 and readState=0 order by createTime desc limit %d offset %d;", limit, offset];

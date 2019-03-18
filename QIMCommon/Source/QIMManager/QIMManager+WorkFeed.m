@@ -319,6 +319,13 @@
                 return;
             }
             if ([data isKindOfClass:[NSDictionary class]]) {
+                NSArray *attachCommentList = [data objectForKey:@"attachCommentList"];
+                if ([attachCommentList isKindOfClass:[NSArray class]]) {
+                    NSDictionary *postAttachCommentListData = @{@"postId":momentId, @"attachCommentList":attachCommentList};
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyReloadWorkFeedAttachCommentList object:postAttachCommentListData];
+                    });
+                }
                 [[IMDataManager qimDB_SharedInstance] qimDB_updateMomentLike:@[data]];
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (callback) {
@@ -369,7 +376,13 @@
                    [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyReloadWorkFeedCommentNum object:postCommentData];
                 });
                 [[IMDataManager qimDB_SharedInstance] qimDB_updateMomentWithLikeNum:likeNum WithCommentNum:postCommentNum withPostId:[commentDic objectForKey:@"postUUID"]];
-                
+                NSArray *attachCommentList = [data objectForKey:@"attachCommentList"];
+                if ([attachCommentList isKindOfClass:[NSArray class]]) {
+                    NSDictionary *postAttachCommentListData = @{@"postId":[commentDic objectForKey:@"postUUID"], @"attachCommentList":attachCommentList};
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyReloadWorkFeedAttachCommentList object:postAttachCommentListData];
+                    });
+                }
                 NSArray *deleteComments = [data objectForKey:@"deleteComments"];
                 if ([deleteComments isKindOfClass:[NSArray class]]) {
                     [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteComments:deleteComments];
@@ -465,6 +478,13 @@
                 return;
             }
             if ([data isKindOfClass:[NSDictionary class]]) {
+                NSArray *attachCommentList = [data objectForKey:@"attachCommentList"];
+                if ([attachCommentList isKindOfClass:[NSArray class]]) {
+                    NSDictionary *postAttachCommentListData = @{@"postId":momentId, @"attachCommentList":attachCommentList};
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyReloadWorkFeedAttachCommentList object:postAttachCommentListData];
+                    });
+                }
                 NSArray *deteleComments = [data objectForKey:@"deleteComments"];
                 if ([deteleComments isKindOfClass:[NSArray class]]) {
                     [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteComments:deteleComments];
@@ -611,7 +631,7 @@
                             [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteComments:@[deleteCommentDic]];
                             dispatch_async(dispatch_get_main_queue(), ^{
                                 if (callback) {
-                                    callback(YES);
+                                    callback(YES, superParentStatus);
                                 }
                             });
                         } else if (superParentStatus == 1) {
@@ -623,7 +643,7 @@
                             [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateComments:nil];
                             dispatch_async(dispatch_get_main_queue(), ^{
                                 if (callback) {
-                                    callback(YES);
+                                    callback(YES, superParentStatus);
                                 }
                             });
                         } else if (superParentStatus == 2) {
@@ -631,20 +651,20 @@
                             [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteCommentsAndAllChildComments:nil];
                             dispatch_async(dispatch_get_main_queue(), ^{
                                 if (callback) {
-                                    callback(YES);
+                                    callback(YES, superParentStatus);
                                 }
                             });
                         } else {
                             dispatch_async(dispatch_get_main_queue(), ^{
                                 if (callback) {
-                                    callback(NO);
+                                    callback(NO, 0);
                                 }
                             });
                         }
                     } else {
                         dispatch_async(dispatch_get_main_queue(), ^{
                             if (callback) {
-                                callback(NO);
+                                callback(NO, 0);
                             }
                         });
                     }
@@ -652,7 +672,7 @@
             } else {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (callback) {
-                        callback(NO);
+                        callback(NO, 0);
                     }
                 });
             }
@@ -660,7 +680,7 @@
     } withFailedCallBack:^(NSError *error) {
         dispatch_async(dispatch_get_main_queue(), ^{
             if (callback) {
-                callback(NO);
+                callback(NO, 0);
             }
         });
     }];
@@ -767,14 +787,14 @@
 
 - (void)getRemoteLastWorkMoment {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-        NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/post/getPostList", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+        NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/post/getPostList/v2", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
         NSMutableDictionary *bodyDic = [NSMutableDictionary dictionaryWithCapacity:1];
         [bodyDic setQIMSafeObject:@(0) forKey:@"postCreateTime"];
         [bodyDic setQIMSafeObject:nil forKey:@"owner"];
         [bodyDic setQIMSafeObject:nil forKey:@"ownerHost"];
         [bodyDic setQIMSafeObject:@(1) forKey:@"pageSize"];
         [bodyDic setQIMSafeObject:@(0) forKey:@"getTop"];
-        [bodyDic setQIMSafeObject:@(0) forKey:@"postType"];
+        [bodyDic setQIMSafeObject:@(1) forKey:@"postType"];
         
         QIMVerboseLog(@"post/getPostList : %@", bodyDic);
         NSData *momentBodyData = [[QIMJSONSerializer sharedInstance] serializeObject:bodyDic error:nil];
@@ -793,6 +813,10 @@
                     if ([newPosts isKindOfClass:[NSArray class]]) {
                         if (newPosts.count > 0) {
                             NSDictionary *lastMomentDic = [newPosts firstObject];
+                            NSString *momentUUId = [lastMomentDic objectForKey:@"uuid"];
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@(![self checkWorkMomentExistWithMomentId:momentUUId])];
+                            });
                             NSDictionary *momoentDic = [self getLastWorkMomentWithDic:lastMomentDic];
                             dispatch_async(dispatch_get_main_queue(), ^{
                                 [[NSNotificationCenter defaultCenter] postNotificationName:kNotify_RN_QTALK_SUGGEST_WorkFeed_UPDATE object:momoentDic];
@@ -800,6 +824,9 @@
                         } else {
                             NSDictionary *localLastMomentDic = [self getLastWorkMoment];
                             dispatch_async(dispatch_get_main_queue(), ^{
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@(0)];
+                                });
                                 [[NSNotificationCenter defaultCenter] postNotificationName:kNotify_RN_QTALK_SUGGEST_WorkFeed_UPDATE object:localLastMomentDic];
                             });
                         }
@@ -837,7 +864,7 @@
         if (![photoUrl qim_hasPrefixHttpHeader] && photoUrl.length > 0) {
             photoUrl = [NSString stringWithFormat:@"%@/%@", [[QIMNavConfigManager sharedInstance] innerFileHttpHost], photoUrl];
         }
-        [momentDic setQIMSafeObject:lastDp?lastDp:@"未知" forKey:@"architecture"];
+        [momentDic setQIMSafeObject:lastDp forKey:@"architecture"];
     }
     
     NSString *content = [dic objectForKey:@"content"];
@@ -1044,16 +1071,12 @@
     return [[IMDataManager qimDB_SharedInstance] qimDB_getWorkNoticeMessagesCount];
 }
 
-- (NSInteger)getWorkNoticePOSTCount {
-    return [[IMDataManager qimDB_SharedInstance] qimDB_getWorkNoticePOSTCount];
+- (BOOL)checkWorkMomentExistWithMomentId:(NSString *)momentId {
+    return [[IMDataManager qimDB_SharedInstance] qimDB_checkMomentWithMomentId:momentId];
 }
 
-- (void)updateWorkNoticePOSTMessageReadState {
-    [[IMDataManager qimDB_SharedInstance] qimDB_updateWorkNoticePOSTMessageReadState];
-}
-
-- (NSArray *)getWorkNoticeMessagesWihtLimit:(int)limit WithOffset:(int)offset {
-    return [[IMDataManager qimDB_SharedInstance] qimDB_getWorkNoticeMessagesWihtLimit:limit WithOffset:offset];
+- (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset {
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getWorkNoticeMessagesWithLimit:limit WithOffset:offset];
 }
 
 - (void)updateLocalWorkNoticeMsgReadStateWithTime:(long long)time {

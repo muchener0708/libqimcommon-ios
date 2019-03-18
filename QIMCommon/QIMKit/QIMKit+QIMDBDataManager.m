@@ -507,11 +507,6 @@
     return [[IMDataManager qimDB_SharedInstance] qimDB_getMsgListByXmppId:xmppId FromTimeStamp:timeStamp];
 }
 
-- (NSDictionary *)getLastMessage {
-    return nil;
-//    return [[IMDataManager qimDB_SharedInstance] qimDB_getLastMessage];
-}
-
 - (NSDictionary *)getMsgsByMsgId:(NSString *)msgId {
     return [[IMDataManager qimDB_SharedInstance] qimDB_getMsgsByMsgId:msgId];
 }
@@ -520,28 +515,16 @@
     return [[IMDataManager qimDB_SharedInstance] qimDB_getChatSessionWithUserId:userId];
 }
 
-- (NSInteger)getNotReaderMsgCountByDidReadState:(int)didReadState WidthReceiveDirection:(int)receiveDirection {
-    return [[IMDataManager qimDB_SharedInstance] qimDB_getNotReaderMsgCountByDidReadState:didReadState WidthReceiveDirection:receiveDirection];
-}
-
-- (NSInteger)getNotReaderMsgCountByJid:(NSString *)jid ByDidReadState:(int)didReadState WidthReceiveDirection:(int)receiveDirection {
-    return [[IMDataManager qimDB_SharedInstance] qimDB_getNotReaderMsgCountByJid:jid ByDidReadState:didReadState WidthReceiveDirection:receiveDirection];
-}
-
-- (NSInteger)getNotReaderMsgCountByJid:(NSString *)jid ByRealJid:(NSString *)realJid ByDidReadState:(int)didReadState WidthReceiveDirection:(int)receiveDirection {
-    return [[IMDataManager qimDB_SharedInstance] qimDB_getNotReaderMsgCountByJid:jid ByRealJid:realJid ByDidReadState:didReadState WidthReceiveDirection:receiveDirection];
-}
-
 - (void)updateMessageFromState:(int)fState ToState:(int)tState {
     return [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageFromState:fState ToState:tState];
 }
 
-- (NSArray *)getMsgIdsByMsgState:(int)notReadMsgState WithDirection:(int)receiveDirection {
-    return [[IMDataManager qimDB_SharedInstance] qimDB_getMsgIdsByMsgState:notReadMsgState WithDirection:receiveDirection];
-}
-
 - (NSInteger)getMessageStateWithMsgId:(NSString *)msgId {
     return [[IMDataManager qimDB_SharedInstance] qimDB_getMessageStateWithMsgId:msgId];
+}
+
+- (NSInteger)getReadStateWithMsgId:(NSString *)msgId {
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getReadStateWithMsgId:msgId];
 }
 
 - (NSArray *)getMsgIdsForDirection:(int)msgDirection WithMsgState:(int)msgState {
@@ -557,10 +540,6 @@
 }
 
 #pragma mark - 消息数据方法
-- (NSArray *) existsMessageUsers {
-    return nil;
-//    return [[IMDataManager qimDB_SharedInstance] qimDB_existsMessageUsers];
-}
 
 - (long long) lastestMessageTime {
     return [[IMDataManager qimDB_SharedInstance] qimDB_lastestMessageTime];
@@ -617,10 +596,6 @@
 //    [[IMDataManager qimDB_SharedInstance] qimDB_updateUserMsgWithMsgState:msgState ByMsgList:userMsgList];
 }
 
-- (void)bulkUpdateChatMsgWithMsgState:(int)msgState ByMsgIdList:(NSArray *)msgIdList {
-    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateChatMsgWithMsgState:msgState ByMsgIdList:msgIdList];
-}
-
 - (void)clearHistoryMsg {
     [[IMDataManager qimDB_SharedInstance] qimDB_clearHistoryMsg];
 }
@@ -639,10 +614,6 @@
 
 - (void)qimDB_dbCheckpoint {
     [[IMDataManager qimDB_SharedInstance] qimDB_dbCheckpoint];
-}
-
-- (void)updateAllMsgWithMsgState:(int)msgState ByMsgDirection:(int)msgDirection ByReadMarkT:(long long)readMarkT {
-    [[IMDataManager qimDB_SharedInstance] qimDB_updateAllMsgWithMsgState:msgState ByMsgDirection:msgDirection ByReadMarkT:readMarkT];
 }
 
 /*************** Friend List *************/

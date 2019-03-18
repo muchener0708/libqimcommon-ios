@@ -12,6 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface IMDataManager (WorkFeed)
 
+- (BOOL)qimDB_checkMomentWithMomentId:(NSString *)momentId;
+
 - (void)qimDB_bulkinsertMoments:(NSArray *)moments;
 
 - (NSDictionary *)qimDB_getWorkMomentWithMomentId:(NSString *)momentId;
@@ -56,11 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSInteger)qimDB_getWorkNoticeMessagesCount;
 
-- (NSInteger)qimDB_getWorkNoticePOSTCount;
-
-- (void)qimDB_updateWorkNoticePOSTMessageReadState;
-
-- (NSArray *)qimDB_getWorkNoticeMessagesWihtLimit:(int)limit WithOffset:(int)offset;
+- (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset;
 
 - (void)qimDB_updateWorkNoticeMessageReadStateWithTime:(long long)time;
 

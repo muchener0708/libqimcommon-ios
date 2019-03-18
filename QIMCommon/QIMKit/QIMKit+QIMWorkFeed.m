@@ -117,16 +117,12 @@
     return [[QIMManager sharedInstance] getWorkNoticeMessagesCount];
 }
 
-- (NSInteger)getWorkNoticePOSTCount {
-    return [[QIMManager sharedInstance] getWorkNoticePOSTCount];
+- (BOOL)checkWorkMomentExistWithMomentId:(NSString *)momentId {
+    return [[QIMManager sharedInstance] checkWorkMomentExistWithMomentId:momentId];
 }
 
-- (void)updateWorkNoticePOSTMessageReadState {
-    [[QIMManager sharedInstance] updateWorkNoticePOSTMessageReadState];
-}
-
-- (NSArray *)getWorkNoticeMessagesWihtLimit:(int)limit WithOffset:(int)offset {
-    return [[QIMManager sharedInstance] getWorkNoticeMessagesWihtLimit:limit WithOffset:offset];
+- (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset {
+    return [[QIMManager sharedInstance] getWorkNoticeMessagesWithLimit:limit WithOffset:offset];
 }
 
 - (void)updateLocalWorkNoticeMsgReadStateWithTime:(long long)time {

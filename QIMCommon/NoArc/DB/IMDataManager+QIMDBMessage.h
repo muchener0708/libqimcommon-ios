@@ -179,21 +179,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray *)qimDB_getMsgListByXmppId:(NSString *)xmppId FromTimeStamp:(long long)timeStamp;
 
-- (NSInteger)qimDB_getNotReaderMsgCountByDidReadState:(int)didReadState WidthReceiveDirection:(int)receiveDirection;
-
 - (NSInteger)qimDB_getNotReaderMsgCountByJid:(NSString *)jid ByRealJid:(NSString *)realJid withChatType:(ChatType)chatType;
 
-- (NSInteger)qimDB_getNotReaderMsgCountByJid:(NSString *)jid ByDidReadState:(int)didReadState WidthReceiveDirection:(int)receiveDirection;
-
-- (NSInteger)qimDB_getNotReaderMsgCountByJid:(NSString *)jid ByRealJid:(NSString *)realJid ByDidReadState:(int)didReadState WidthReceiveDirection:(int)receiveDirection;
+- (NSInteger)qimDB_getNotReaderMsgCountByJid:(NSString *)jid ByRealJid:(NSString *)realJid;
 
 - (void)qimDB_updateMessageFromState:(int)fState ToState:(int)tState;
 
 - (NSInteger)qimDB_getMessageStateWithMsgId:(NSString *)msgId;
 
-- (NSArray *)qimDB_getMsgIdsForDirection:(int)msgDirection WithMsgState:(int)msgState;
+- (NSInteger)qimDB_getReadStateWithMsgId:(NSString *)msgId;
 
-- (NSArray *)qimDB_getMsgIdsByMsgState:(int)notReadMsgState WithDirection:(int)receiveDirection;
+- (NSArray *)qimDB_getMsgIdsForDirection:(int)msgDirection WithMsgState:(int)msgState;
 
 - (NSArray *)qimDB_searchMsgHistoryWithKey:(NSString *)key;
 
@@ -213,14 +209,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (long long)qimDB_bulkUpdateGroupMessageReadFlag:(NSArray *)mucArray;
 
-- (void)qimDB_bulkUpdateChatMsgWithMsgState:(int)msgState ByMsgIdList:(NSArray *)msgIdList;
-
 - (void)qimDB_clearHistoryMsg;
 
 - (void)qimDB_updateSystemMsgState:(int)msgState WithXmppId:(NSString *)xmppId;
-
-- (void)qimDB_updateAllMsgWithMsgState:(int)msgState ByMsgDirection:(int)msgDirection ByReadMarkT:(long long)readMarkT;
-
 
 #pragma mark - 阅读状态
 

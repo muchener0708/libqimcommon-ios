@@ -305,8 +305,13 @@
 
 #define kNotifyReloadWorkComment @"kNotifyReloadWorkComment"
 
+#define kNotifyReloadWorkFeedAttachCommentList      @"kNotifyReloadWorkFeedAttachCommentList"
+
 //驼圈全局通知
 #define kPBPresenceCategoryNotifyWorkNoticeMessage  @"kPBPresenceCategoryNotifyWorkNoticeMessage"
+
+//驼圈未读通知
+#define kNotifyNotReadWorkCountChange              @"kNotifyNotReadWorkCountChange"
 
 //驼圈
 #define kPBPresenceCategoryNotifyWorkNoticeLastMessage  @"kPBPresenceCategoryNotifyWorkNoticeLastMessage"

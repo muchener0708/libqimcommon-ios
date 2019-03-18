@@ -2030,21 +2030,6 @@
     return [result autorelease];
 }
 
-- (NSInteger)qimDB_getNotReaderMsgCountByDidReadState:(int)didReadState WidthReceiveDirection:(int)receiveDirection{
-    __block NSInteger count = 0;
-    //    [[QIMWatchDog sharedInstance] start];
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"SELECT COUNT(*) FROM IM_Message Where State < :State And Direction = :Direction And Type != 101;";
-        DataReader *reader = [database executeReader:sql withParameters:@[@(didReadState),@(receiveDirection)]];
-        if ([reader read]) {
-            count = [[reader objectForColumnIndex:0] integerValue];
-        }
-    }];
-    //    QIMVerboseLog(@"获取未读数耗时 :%lf", [[QIMWatchDog sharedInstance] escapedTime]);
-    QIMVerboseLog(@"");
-    return count;
-}
-
 - (NSInteger)qimDB_getNotReaderMsgCountByJid:(NSString *)jid ByRealJid:(NSString *)realJid withChatType:(ChatType)chatType {
     __block NSInteger count = 0;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
@@ -2058,26 +2043,11 @@
     return count;
 }
 
-- (NSInteger)qimDB_getNotReaderMsgCountByJid:(NSString *)jid ByDidReadState:(int)didReadState WidthReceiveDirection:(int)receiveDirection {
-    __block NSInteger count = 0;
-    //    [[QIMWatchDog sharedInstance] start];
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"SELECT COUNT(*) FROM IM_Message Where XmppId = :XmppId And State < :State And Direction=:Direction;";
-        DataReader *reader = [database executeReader:sql withParameters:@[jid ? jid : @"",@(didReadState),@(receiveDirection)]];
-        if ([reader read]) {
-            count = [[reader objectForColumnIndex:0] integerValue];
-        }
-    }];
-    //    QIMVerboseLog(@"获取不提醒未读数耗时 :%lf", [[QIMWatchDog sharedInstance] escapedTime]);
-    QIMVerboseLog(@"");
-    return count;
-}
-
-- (NSInteger)qimDB_getNotReaderMsgCountByJid:(NSString *)jid ByRealJid:(NSString *)realJid ByDidReadState:(int)didReadState WidthReceiveDirection:(int)receiveDirection {
+- (NSInteger)qimDB_getNotReaderMsgCountByJid:(NSString *)jid ByRealJid:(NSString *)realJid {
     __block NSInteger count = 0;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"SELECT COUNT(*) FROM IM_Message Where XmppId = :XmppId And RealJid = :RealJid And State < :State And Direction=:Direction;";
-        DataReader *reader = [database executeReader:sql withParameters:@[jid ? jid : @"",realJid ? realJid : @":NULL",@(didReadState),@(receiveDirection)]];
+        NSString *sql = @"SELECT UnreadCount FROM IM_SessionList Where XmppId = :XmppId And RealJid = :RealJid;";
+        DataReader *reader = [database executeReader:sql withParameters:@[jid, realJid]];
         if ([reader read]) {
             count = [[reader objectForColumnIndex:0] integerValue];
         }
@@ -2107,6 +2077,18 @@
     return msgState;
 }
 
+- (NSInteger)qimDB_getReadStateWithMsgId:(NSString *)msgId {
+    __block NSInteger readState = 0;
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = [NSString stringWithFormat:@"select ReadState from IM_Message where MsgId='%@';", msgId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
+        if ([reader read]) {
+            readState = [[reader objectForColumnIndex:0] integerValue];
+        }
+    }];
+    return readState;
+}
+
 - (NSArray *)qimDB_getMsgIdsForDirection:(int)msgDirection WithMsgState:(int)msgState {
     __block NSMutableArray *resultList = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
@@ -2118,26 +2100,6 @@
             }
             NSString *msgId = [reader objectForColumnIndex:0];
             [resultList addObject:msgId];
-        }
-    }];
-    QIMVerboseLog(@"");
-    return [resultList autorelease];
-}
-
-- (NSArray *)qimDB_getMsgIdsByMsgState:(int)notReadMsgState WithDirection:(int)receiveDirection {
-    __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"Select XmppId,MsgId From IM_Message Where State <:State And Direction=:Direction;";
-        DataReader *reader = [database executeReader:sql withParameters:@[@(notReadMsgState),@(receiveDirection)]];
-        while ([reader read]) {
-            if (resultList == nil) {
-                resultList = [[NSMutableArray alloc] init];
-            }
-            NSString *xmppId = [reader objectForColumnIndex:0];
-            NSString *msgId = [reader objectForColumnIndex:1];
-            if ([[xmppId componentsSeparatedByString:@"@"].lastObject hasPrefix:[self getDBOwnerDomain]] && msgId) {
-                [resultList addObject:msgId];
-            }
         }
     }];
     QIMVerboseLog(@"");
@@ -2402,69 +2364,65 @@
     return maxRemarkUpdateTime;
 }
 
-- (void)qimDB_bulkUpdateChatMsgWithMsgState:(int)msgState ByMsgIdList:(NSArray *)msgIdList {
-    
-    if (!msgIdList.count) {
-        return;
-    }
-    QIMVerboseLog(@"新状态 : %ld, msgIdList : %@", msgState, msgIdList);
-    CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"Update IM_Message Set State = :State1 Where MsgId=:MsgId And State < :State2;";
-        NSMutableArray *paramList = [NSMutableArray array];
-        for (NSDictionary *msgInfo in msgIdList) {
-            [paramList addObject:@[@(msgState),[msgInfo objectForKey:@"id"], @(msgState)]];
-        }
-        
-        BOOL success = [database executeBulkInsert:sql withParameters:paramList];
-        if (success) {
-            QIMVerboseLog(@"更新消息状态的参数成功 : %@", paramList);
-        }
-    }];
-    CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
-    QIMVerboseLog(@"更新%ld条消息的MsgState状态 耗时 = %f s", msgIdList.count, end - start); //
-    QIMVerboseLog(@"");
-}
-
-- (void)qimDB_updateAllMsgWithMsgState:(int)msgState ByMsgDirection:(int)msgDirection ByReadMarkT:(long long)readMarkT {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"Update IM_Message Set State=:State Where Direction = :Direction And LastUpdateTime <= :LastUpdateTime;";
-        [database executeNonQuery:sql withParameters:@[@(msgState),@(msgDirection),@(readMarkT)]];
-    }];
-    QIMVerboseLog(@"");
-}
-
 - (void)qimDB_updateAllMsgWithMsgRemoteState:(int)msgRemoteFlag ByMsgDirection:(int)msgDirection ByReadMarkT:(long long)readMarkT {
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"Update IM_Message Set ReadState=:ReadState Where Direction = :Direction And LastUpdateTime <= :LastUpdateTime;";
-        [database executeNonQuery:sql withParameters:@[@(msgRemoteFlag),@(msgDirection),@(readMarkT)]];
+        NSString *sql = @"Update IM_Message Set ReadState=:ReadState Where Direction = :Direction;";
+        [database executeNonQuery:sql withParameters:@[@(msgRemoteFlag),@(msgDirection)]];
     }];
     QIMVerboseLog(@"");
 }
 
 - (void)qimDB_updateGroupMessageRemoteState:(NSInteger)msgRemoteFlag ByGroupReadList:(NSArray *)groupReadList {
-    /*
-    __block long long maxReadMarkTime = 0;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"Update IM_Message Set ReadState=:ReadState Where LastUpdateTime <= :LastUpdateTime And XmppId=:XmppId;";
-        NSMutableArray *paramList = [NSMutableArray array];
-        for (NSDictionary *msgInfo in groupReadList) {
-            NSString *groupName = [msgInfo objectForKey:@"id"];
-            NSString *domain = [msgInfo objectForKey:@"domain"];
-            if (domain == nil) {
-                domain = [NSString stringWithFormat:@"conference.%@", self.dbOwnerDomain];
+    QIMVerboseLog(@"在线groupReadList : %@", groupReadList);
+    if (groupReadList.count <= 0) {
+        return;
+    }
+    CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
+    __block NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+    for (NSDictionary *mucDic in groupReadList) {
+        NSString *domain = [mucDic objectForKey:@"domain"];
+        NSString *mucName = [mucDic objectForKey:@"id"];
+        NSString *groupId = [mucName stringByAppendingFormat:@"@%@", domain];
+        [[self dbInstance] syncUsingTransaction:^(Database *database) {
+            NSString *sql1 = [NSString stringWithFormat:@"select XmppId, LastUpdateTime from IM_Message where XmppId = :XmppId and ReadState & %d = %d order by LastUpdateTime desc LIMIT 1;", QIMMessageRemoteReadStateDidReaded, QIMMessageRemoteReadStateDidReaded];
+            DataReader *reader = [database executeReader:sql1 withParameters:@[groupId]];
+            QIMVerboseLog(@"在线DB获取群阅读指针参数 ：%@", @[groupId]);
+            if ([reader read]) {
+                NSString *xmppId = [reader objectForColumnIndex:0];
+                NSNumber *lastupdateTime = [reader objectForColumnIndex:1];
+                [dict setObject:lastupdateTime forKey:xmppId];
             }
-            NSString *groupId = [NSString stringWithFormat:@"%@@%@",groupName,domain];
-            long long time = [[msgInfo objectForKey:@"t"] longLongValue];
-            if (maxReadMarkTime < time) {
-                maxReadMarkTime = time;
+        }];
+    }
+    QIMVerboseLog(@"在线DB获取群阅读指针结果 ：%@", dict);
+    NSString *sql2 = [NSString stringWithFormat:@"UPDATE IM_Message SET ReadState = (ReadState|%d) WHERE XmppId = :XmppId and LastUpdateTime <= :LastUpdateTime1 and LastUpdateTime > :LastUpdateTime2;", QIMMessageRemoteReadStateDidReaded];
+    __block long long maxRemarkUpdateTime = 0;
+    [[self dbInstance] usingTransaction:^(Database *database) {
+        NSMutableArray *params = nil;
+        for (NSDictionary *mucDic in groupReadList) {
+            NSString *domain = [mucDic objectForKey:@"domain"];
+            NSString *mucName = [mucDic objectForKey:@"id"];
+            NSString *groupId = [mucName stringByAppendingFormat:@"@%@", domain];
+            long long mucLastReadFlagTime = [[mucDic objectForKey:@"t"] longLongValue];
+            long long mucMaxReadFlagTime = [[dict objectForKey:groupId] longLongValue];
+            if (maxRemarkUpdateTime < mucLastReadFlagTime) {
+                maxRemarkUpdateTime = mucLastReadFlagTime;
             }
-            [paramList addObject:@[@(msgRemoteFlag), @(time), groupId]];
+            if (params == nil) {
+                params = [NSMutableArray array];
+            }
+            NSMutableArray *param = [NSMutableArray array];
+            [param addObject:groupId?groupId:@""];
+            [param addObject:@(mucLastReadFlagTime)];
+            [param addObject:@(mucMaxReadFlagTime)];
+            [params addObject:param];
         }
-        [database executeBulkInsert:sql withParameters:paramList];
+        QIMVerboseLog(@"在线DB更新群阅读指针参数 ：%@", params);
+        [database executeBulkInsert:sql2 withParameters:params];
     }];
-    */
-//    return maxReadMarkTime;
+    CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
+    QIMVerboseLog(@"在线DB更新群阅读指针%ld条数据 耗时 = %f s", groupReadList.count, end - start); //s
+    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_updateMsgWithMsgRemoteState:(NSInteger)msgRemoteFlag ByMsgIdList:(NSArray *)msgIdList {

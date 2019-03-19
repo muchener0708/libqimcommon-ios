@@ -193,11 +193,12 @@
     return success;
 }
 
-- (BOOL)setMucVcardForGroupId:(NSString *)groupId
+- (void)setMucVcardForGroupId:(NSString *)groupId
                  WithNickName:(NSString *)nickName
                     WithTitle:(NSString *)title
                      WithDesc:(NSString *)desc
-                WithHeaderSrc:(NSString *)headerSrc {
+                WithHeaderSrc:(NSString *)headerSrc
+                 withCallBack:(QIMKitSetMucVCardBlock)callback {
     
     NSMutableDictionary *paramDic = [NSMutableDictionary dictionary];
     if (groupId.length > 0) {
@@ -215,39 +216,63 @@
     if (headerSrc.length > 0) {
         [paramDic setObject:headerSrc forKey:@"pic"];
     }
-    if (paramDic.count < 2) {
-        return NO;
-    }
-    NSString *destUrl = [NSString stringWithFormat:@"%@/setmucvcard?u=%@&k=%@&platform=iphone&version=%@", [[QIMNavConfigManager sharedInstance] httpHost], [[QIMManager getLastUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding], self.remoteKey, [[QIMAppInfo sharedInstance] AppBuildVersion]];
     
-    NSURL *requestUrl = [[NSURL alloc] initWithString:destUrl];
-    ASIHTTPRequest *request = [[ASIHTTPRequest alloc] initWithURL:requestUrl];
     NSData *data = [[QIMJSONSerializer sharedInstance] serializeObject:@[paramDic] error:nil];
-    [request addRequestHeader:@"content-type" value:@"application/json"];
-    [request appendPostData:data];
-    [request setShouldCompressRequestBody:NO];
-    [request setAllowCompressedResponse:NO];
-    [request startSynchronous];
-    NSError *error = [request error];
-    if (!error && request.responseStatusCode == 200) {
-        NSData *responseData = [request responseData];
-        NSError *errol = nil;
-        NSArray *result = [[[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:&errol] objectForKey:@"data"];
-        if (errol == nil && result.count > 0) {
-            NSDictionary *resultDic = [result firstObject];
-            NSString *groupId = [resultDic objectForKey:@"Set Muc-Vcard"];
-            NSString *version = [resultDic objectForKey:@"version"];
-            [[IMDataManager qimDB_SharedInstance] qimDB_updateGroup:groupId WithNickName:nickName WithTopic:title WithDesc:desc WithHeaderSrc:headerSrc WithVersion:version];
+    
+    NSString *destUrl = [NSString stringWithFormat:@"%@/muc/set_muc_vcard.qunar", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+    __weak __typeof(self) weakSelf = self;
+    [self sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:data withSuccessCallBack:^(NSData *responseData) {
+        NSDictionary *resultDic = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
+        BOOL ret = [[resultDic objectForKey:@"ret"] boolValue];
+        NSInteger errcode = [[resultDic objectForKey:@"errcode"] integerValue];
+        if (ret && errcode == 0) {
+            NSArray *mucList = [resultDic objectForKey:@"data"];
+            [self dealWithSetUpdateMucVcard:mucList];
+            __typeof(self) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            if (callback) {
+                callback(YES);
+            }
+        } else {
+            __typeof(self) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            if (callback) {
+                callback(NO);
+            }
+        }
+    } withFailedCallBack:^(NSError *error) {
+        __typeof(self) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        if (callback) {
+            callback(NO);
+        }
+    }];
+}
+
+- (void)dealWithSetUpdateMucVcard:(NSArray *)updateList {
+    if ([updateList isKindOfClass:[NSArray class]]) {
+        for (NSDictionary *groupInfo in updateList) {
+            NSString *groupId = [groupInfo objectForKey:@"muc_name"];
+            NSString *version = [groupInfo objectForKey:@"version"];
+            NSString *muc_desc = [groupInfo objectForKey:@"muc_desc"];
+            NSString *muc_title = [groupInfo objectForKey:@"muc_title"];
+            NSString *show_name = [groupInfo objectForKey:@"show_name"];
+            
+            [[IMDataManager qimDB_SharedInstance] qimDB_updateGroup:groupId WithNickName:show_name WithTopic:muc_title WithDesc:muc_desc WithHeaderSrc:nil WithVersion:version];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:kGroupCardChanged object:@[groupId]];
-                if (nickName.length > 0) {
+                if (show_name.length > 0) {
                     [[NSNotificationCenter defaultCenter] postNotificationName:kGroupNickNameChanged object:@[groupId] userInfo:nil];
                 }
             });
-            return YES;
         }
     }
-    return NO;
 }
 
 - (NSArray *)getGroupIdList {
@@ -280,11 +305,7 @@
         for (NSDictionary *groupDic in groupCardList) {
             NSString *groupId = [groupDic objectForKey:@"GroupId"];
             NSArray *coms = [groupId componentsSeparatedByString:@"@"];
-            NSArray *comLastObject = [[coms lastObject] componentsSeparatedByString:@"."];
-            NSString *domain = @"";
-            if ([comLastObject lastObject]) {
-                domain = [comLastObject lastObject];
-            }
+            NSString *domain = [coms lastObject];
             NSNumber *version = [groupDic objectForKey:@"LastUpdateTime"];
             if (domain && groupId) {
                 NSMutableArray *users = [groupIdDic objectForKey:domain];
@@ -305,33 +326,29 @@
                 NSArray *coms = [groupId componentsSeparatedByString:@"@"];
                 NSString *comsLastStr = [coms lastObject];
                 if (comsLastStr.length >= groupC.length) {
-                    NSString *domain = [[coms lastObject] substringFromIndex:groupC.length];
+                    NSString *domain = comsLastStr;
                     if (domain && groupId) {
-                        NSMutableArray *users = [groupIdDic objectForKey:domain];
-                        if (users == nil) {
-                            users = [NSMutableArray arrayWithCapacity:10];
-                            [groupIdDic setObject:users forKey:domain];
+                        NSMutableArray *groups = [groupIdDic objectForKey:domain];
+                        if (groups == nil) {
+                            groups = [NSMutableArray arrayWithCapacity:10];
+                            [groupIdDic setObject:groups forKey:domain];
                         }
-                        [users addObject:@{@"muc_name": groupId ? groupId : @"", @"version": @"0"}];
+                        [groups addObject:@{@"muc_name": groupId ? groupId : @"", @"version": @"0"}];
                     }
                 }
             }
         }
         NSMutableArray *params = [NSMutableArray array];
         for (NSString *domain in groupIdDic.allKeys) {
-            NSArray *users = [groupIdDic objectForKey:domain];
-            if (users.count <= 0) {
+            NSArray *groups = [groupIdDic objectForKey:domain];
+            if (groups.count <= 0) {
                 return;
             }
-            [params addObject:@{@"domain": domain ? domain : @"", @"mucs": users}];
+            [params addObject:@{@"domain": domain ? domain : @"", @"mucs": groups}];
         }
         NSData *requestData = [[QIMJSONSerializer sharedInstance] serializeObject:params error:nil];
         
-        NSString *destUrl = [NSString stringWithFormat:@"%@/domain/get_muc_vcard?u=%@&k=%@&platform=iphone&version=%@", [[QIMNavConfigManager sharedInstance] httpHost], [[QIMManager getLastUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding], self.remoteKey, [[QIMAppInfo sharedInstance] AppBuildVersion]];
-        
-        if (self.remoteKey.length <= 0) {
-            [self updateRemoteLoginKey];
-        }
+        NSString *destUrl = [NSString stringWithFormat:@"%@/muc/get_muc_vcard.qunar", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
         NSURL *requestUrl = [[NSURL alloc] initWithString:destUrl];
         NSMutableDictionary *requestHeaders = [[NSMutableDictionary alloc] initWithCapacity:2];
         [requestHeaders setObject:@"application/json;" forKey:@"Content-type"];
@@ -514,7 +531,7 @@
         }
     }
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self setMucVcardForGroupId:groupId WithNickName:nil WithTitle:nil WithDesc:nil WithHeaderSrc:nil];
+        [self setMucVcardForGroupId:groupId WithNickName:nil WithTitle:nil WithDesc:nil WithHeaderSrc:nil withCallBack:nil];
         [self addSessionByType:ChatType_GroupChat ById:groupId ByMsgId:nil WithMsgTime:[[NSDate date] qim_timeIntervalSince1970InMilliSecond] WithNeedUpdate:YES];
         [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyOpenGroupChatVc object:groupId];
         [[NSNotificationCenter defaultCenter] postNotificationName:kMyGroupListUpdate object:nil];
@@ -583,7 +600,7 @@
             [self joinGroupWithBuddies:groupId groupName:groupNickName WithInviteMember:members withCallback:nil];
         }
         dispatch_async(dispatch_get_main_queue(), ^{
-            [self setMucVcardForGroupId:groupId WithNickName:groupNickName WithTitle:nil WithDesc:desc WithHeaderSrc:nil];
+            [self setMucVcardForGroupId:groupId WithNickName:groupNickName WithTitle:nil WithDesc:desc WithHeaderSrc:nil withCallBack:nil];
             [self addSessionByType:ChatType_GroupChat ById:groupId ByMsgId:nil WithMsgTime:[[NSDate date] qim_timeIntervalSince1970InMilliSecond] WithNeedUpdate:YES];
             complate(YES,groupId);
         });

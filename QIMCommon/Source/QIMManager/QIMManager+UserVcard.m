@@ -197,62 +197,89 @@
     return nil;
 }
 
-- (void)updateUserSignatureForUser:(NSString *)userId signature:(NSString *)signature {
+- (void)updateUserSignature:(NSString *)signature withCallBack:(QIMKitUpdateSignatureBlock)callback {
     
     //{"user":"xuejie.bi","mood":"134", "domain":"ejabhost1"}
     NSMutableDictionary *usersVCardInfo = [NSMutableDictionary dictionaryWithDictionary:[[QIMUserCacheManager sharedInstance] userObjectForKey:kUsersVCardInfo]];
     
-    NSString *escapeDomainUserId = [[userId componentsSeparatedByString:@"@"] firstObject];
     NSMutableDictionary *userParam = [NSMutableDictionary dictionaryWithCapacity:1];
-    [userParam setQIMSafeObject:escapeDomainUserId forKey:@"user"];
+    [userParam setQIMSafeObject:[QIMManager getLastUserName] forKey:@"user"];
     [userParam setQIMSafeObject:(signature.length > 0) ? signature : @"" forKey:@"mood"];
     [userParam setQIMSafeObject:[[QIMManager sharedInstance] getDomain] forKey:@"domain"];
+    __weak __typeof(self) weakSelf = self;
     
-    NSData *requestData = [[QIMJSONSerializer sharedInstance] serializeObject:userParam error:nil];
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@/set_user_profile?u=%@&k=%@", [[QIMNavConfigManager sharedInstance] httpHost], [[QIMManager getLastUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding], self.remoteKey]];
-    
-    NSMutableDictionary *requestHeader = [NSMutableDictionary dictionaryWithCapacity:1];
-    [requestHeader setObject:@"application/json;" forKey:@"Content-type"];
-    
-    QIMHTTPRequest *request = [[QIMHTTPRequest alloc] initWithURL:url];
-    [request setHTTPMethod:QIMHTTPMethodPOST];
-    [request setHTTPRequestHeaders:requestHeader];
-    [request setHTTPBody:[NSMutableData dataWithData:requestData]];
-    
-    [QIMHTTPClient sendRequest:request complete:^(QIMHTTPResponse *response) {
-        if (response.code == 200) {
-            NSData *responseData = response.data;
-            NSError *errol = nil;
-            NSDictionary *resDic = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:&errol];
-            BOOL ret = [[resDic objectForKey:@"ret"] boolValue];
-            if (ret) {
-                NSDictionary *newUserInfo = [resDic objectForKey:@"data"];
-                NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:usersVCardInfo[userId]];
-                if (userInfo.count <= 0) {
-                    
-                    userInfo = [NSMutableDictionary dictionaryWithCapacity:1];
-                    [userInfo setQIMSafeObject:[userId componentsSeparatedByString:@"@"].firstObject forKey:@"U"];
-                    [userInfo setQIMSafeObject:@"0" forKey:@"V"];
-                }
-                [userInfo setQIMSafeObject:signature ? signature : @"" forKey:@"M"];
-                
-                if ([newUserInfo[@"version"] intValue] > [userInfo[@"V"] intValue]) {
-                    
-                    [userInfo setQIMSafeObject:newUserInfo[@"version"] forKey:@"V"];
-                }
-                
-                NSString *filename = [self.userProfilePath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.cfg", userId]];
-                [userInfo writeToFile:filename atomically:YES];
-                [usersVCardInfo setQIMSafeObject:userInfo forKey:userId];
-                [[QIMUserCacheManager sharedInstance] setUserObject:usersVCardInfo forKey:kUsersVCardInfo];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateMyPersonalSignature object:nil];
-                });
+    NSData *requestData = [[QIMJSONSerializer sharedInstance] serializeObject:@[userParam] error:nil];
+    NSString *destUrl = [NSString stringWithFormat:@"%@/profile/set_profile.qunar", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+    [[QIMManager sharedInstance] sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:requestData withSuccessCallBack:^(NSData *responseData) {
+        NSDictionary *resultDic = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
+        BOOL ret = [[resultDic objectForKey:@"ret"] boolValue];
+        NSInteger errcode = [[resultDic objectForKey:@"errcode"] integerValue];
+        if (ret && errcode == 0) {
+            NSArray *resultData = [resultDic objectForKey:@"data"];
+            [self dealWithUpdateUserProfile:resultData];
+            __typeof(self) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            if (callback) {
+                callback(YES);
+            }
+        } else {
+            __typeof(self) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            if (callback) {
+                callback(NO);
             }
         }
-    } failure:^(NSError *error) {
-        QIMVerboseLog(@"设置个性签名失败 : %@", error);
+    } withFailedCallBack:^(NSError *error) {
+        __typeof(self) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        if (callback) {
+            callback(NO);
+        }
     }];
+}
+
+- (void)dealWithUpdateUserProfile:(NSDictionary *)userProfileArray {
+    if ([userProfileArray isKindOfClass:[NSArray class]]) {
+        for (NSDictionary *userProfile in userProfileArray) {
+            NSString *userId = [userProfile objectForKey:@"user"];
+            NSString *domain = [userProfile objectForKey:@"domain"];
+            NSString *version = [userProfile objectForKey:@"version"];
+            NSString *mood = [userProfile objectForKey:@"mood"];
+            NSString *headerUrl = [userProfile objectForKey:@"url"];
+            
+            [self updateUserBigHeaderImageUrl:headerUrl WithVersion:version ForUserId:userId];
+            
+            NSMutableDictionary *usersVCardInfo = [NSMutableDictionary dictionaryWithDictionary:[[QIMUserCacheManager sharedInstance] userObjectForKey:kUsersVCardInfo]];
+            
+            NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:usersVCardInfo[[QIMManager getLastUserName]]];
+            if (userInfo.count <= 0) {
+                
+                userInfo = [NSMutableDictionary dictionaryWithCapacity:1];
+                [userInfo setQIMSafeObject:[QIMManager getLastUserName] forKey:@"U"];
+                [userInfo setQIMSafeObject:@"0" forKey:@"V"];
+            }
+            [userInfo setQIMSafeObject:mood ? mood : @"" forKey:@"M"];
+            
+            if (version > [userInfo[@"V"] intValue]) {
+                
+                [userInfo setQIMSafeObject:version forKey:@"V"];
+            }
+            
+            NSString *filename = [self.userProfilePath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.cfg", [QIMManager getLastUserName]]];
+            [userInfo writeToFile:filename atomically:YES];
+            [usersVCardInfo setQIMSafeObject:userInfo forKey:[QIMManager getLastUserName]];
+            [[QIMUserCacheManager sharedInstance] setUserObject:usersVCardInfo forKey:kUsersVCardInfo];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateMyPersonalSignature object:mood ? mood : @""];
+            });
+        }
+    }
 }
 
 #pragma mark - 用户名片

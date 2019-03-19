@@ -162,8 +162,7 @@
  @param userId 用户Id
  @param signature 个性签名
  */
-- (void)updateUserSignatureForUser:(NSString *)userId signature:(NSString *)signature;
-
+- (void)updateUserSignature:(NSString *)signature withCallBack:(QIMKitUpdateSignatureBlock)callback;
 
 /**
  本地获取用户Profile

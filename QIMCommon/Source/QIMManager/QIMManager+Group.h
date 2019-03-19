@@ -75,11 +75,12 @@
  @param headerSrc 群头像地址
  @return 设置群名片是否成功
  */
-- (BOOL)setMucVcardForGroupId:(NSString *)groupId
+- (void)setMucVcardForGroupId:(NSString *)groupId
                  WithNickName:(NSString *)nickName
                     WithTitle:(NSString *)title
                      WithDesc:(NSString *)desc
-                WithHeaderSrc:(NSString *)headerSrc;
+                WithHeaderSrc:(NSString *)headerSrc
+                 withCallBack:(QIMKitSetMucVCardBlock)callback;
 
 /**
  更新群公告

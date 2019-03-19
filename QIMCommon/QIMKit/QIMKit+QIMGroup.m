@@ -49,12 +49,13 @@
     [[QIMManager sharedInstance] updateGroupCard:groupIds];
 }
 
-- (BOOL)setMucVcardForGroupId:(NSString *)groupId
+- (void)setMucVcardForGroupId:(NSString *)groupId
                  WithNickName:(NSString *)nickName
                     WithTitle:(NSString *)title
                      WithDesc:(NSString *)desc
-                WithHeaderSrc:(NSString *)headerSrc {
-    return [[QIMManager sharedInstance] setMucVcardForGroupId:groupId WithNickName:nickName WithTitle:title WithDesc:desc WithHeaderSrc:headerSrc];
+                WithHeaderSrc:(NSString *)headerSrc
+                 withCallBack:(QIMKitSetMucVCardBlock)callback {
+    [[QIMManager sharedInstance] setMucVcardForGroupId:groupId WithNickName:nickName WithTitle:title WithDesc:desc WithHeaderSrc:headerSrc withCallBack:callback];
 }
 
 - (BOOL)updateGroupTopic:(NSString *)topic WithGroupId:(NSString *)groupId {

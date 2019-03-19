@@ -358,4 +358,8 @@ typedef void(^QIMKitgetMomentDetailSuccessedBlock)(NSDictionary *momentDic);
 
 typedef void(^QIMKitgetPublicCompanySuccessedBlock)(NSArray *companies);
 
+typedef void(^QIMKitSetMucVCardBlock)(BOOL successed);
+typedef void(^QIMKitSearchRobotBlock)(NSArray *robotList);
+typedef void(^QIMKitUpdateSignatureBlock)(BOOL successed);
+
 #endif /* QIMCommonEnum_h */

@@ -86,9 +86,9 @@
     return [[QIMManager sharedInstance] getUserInfoByRTX:rtxId];
 }
 
-- (void)updateUserSignatureForUser:(NSString *)userId signature:(NSString *)signature {
+- (void)updateUserSignature:(NSString *)signature withCallBack:(QIMKitUpdateSignatureBlock)callback {
     
-    [[QIMManager sharedInstance] updateUserSignatureForUser:userId signature:signature];
+    [[QIMManager sharedInstance] updateUserSignature:signature withCallBack:callback];
 }
 
 - (void)userProfilewithUserId:(NSString *)userId needupdate:(BOOL)update withBlock:(void (^)(NSDictionary *))block {

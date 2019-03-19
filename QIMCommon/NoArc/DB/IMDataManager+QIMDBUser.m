@@ -12,6 +12,59 @@
 
 @implementation IMDataManager (QIMDBUser)
 
+- (void)qimDB_bulkInsertOrgansUserInfos:(NSArray *)userInfos {
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        
+        /*
+         UserId                TEXT,\
+         XmppId                TEXT PRIMARY KEY,\
+         Name                  TEXT,\
+         DescInfo              TEXT,\
+         HeaderSrc             TEXT,\
+         SearchIndex           TEXT,\
+         UserInfo              BLOB,\
+         LastUpdateTime        INTEGER,\
+         IncrementVersion      INTEGER,\
+         ExtendedFlag          BLOB\
+         */
+        
+        NSString *sql = @"insert or Replace into IM_User(UserId, XmppId, Name, DescInfo, HeaderSrc, SearchIndex, UserInfo, LastUpdateTime, Sex, UType, Email) values(:UserID, :XmppId, :Name, :DescInfo, :HeaderSrc, :SearchIndex, :UserInfo, :LastUpdateTime, :Sex, :UType, :Email);";
+        NSMutableArray *params = [[NSMutableArray alloc] init];
+        for (NSDictionary *infoDic in userInfos) {
+            NSString *userId = [infoDic objectForKey:@"U"];
+            NSString *xmppId = [NSString stringWithFormat:@"%@@%@",userId, @"ejabhost1"];
+            NSString *Name = [infoDic objectForKey:@"N"];
+            Name = [Name stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+            NSString *DescInfo = [infoDic objectForKey:@"D"];
+            NSString *HeaderSrc = @":NULL";
+            NSString *pinyin = [infoDic objectForKey:@"pinyin"];
+            NSString *UserInfo = @":NULL";
+            NSString *LastUpdateTime = @"0";
+            NSNumber *sex = [infoDic objectForKey:@"sex"];
+            NSString *uType = [infoDic objectForKey:@"uType"];
+            NSString *email = [infoDic objectForKey:@"email"];
+            
+            NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:11];
+            [param addObject:userId];
+            [param addObject:xmppId];
+            [param addObject:(Name.length > 0) ? Name : userId];
+            [param addObject:DescInfo];
+            [param addObject:HeaderSrc];
+            [param addObject:pinyin];
+            [param addObject:UserInfo];
+            [param addObject:LastUpdateTime];
+            [param addObject:sex];
+            [param addObject:uType];
+            [param addObject:(email.length > 0) ? email : @":NULL"];
+            [params addObject:param];
+            [param release];
+            param = nil;
+        }
+        [database executeBulkInsert:sql withParameters:params];
+        [params release];
+    }];
+}
+
 - (NSString *)qimDB_getTimeSmtapMsgIdForDate:(NSDate *)date WithUserId:(NSString *)userId{
     if (self.timeSmtapFormatter) {
         NSString *dateStr = [self.timeSmtapFormatter stringFromDate:date];

@@ -12,6 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface IMDataManager (QIMDBUser)
 
+- (void)qimDB_bulkInsertOrgansUserInfos:(NSArray *)userInfos;
+
 - (NSString *)qimDB_getTimeSmtapMsgIdForDate:(NSDate *)date WithUserId:(NSString *)userId;
 
 - (void)qimDB_bulkUpdateUserSearchIndexs:(NSArray *)searchIndexs;

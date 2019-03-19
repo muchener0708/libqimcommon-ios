@@ -507,7 +507,7 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
     
     QIMVerboseLog(@"开始Check组织架构2");
     CFAbsoluteTime startTime9 = [[QIMWatchDog sharedInstance] startTime];
-    [self checkRosterListWithForceUpdate:YES];
+    [self updateOrganizationalStructure];
     QIMVerboseLog(@"Check组织架构2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime9]);
     QIMVerboseLog(@"Check组织架构结束2");
 
@@ -528,12 +528,8 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
     [self getMsgNotifyRemoteSettings];
     QIMVerboseLog(@"同步消息推送设置2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime12]);
     QIMVerboseLog(@"同步同步消息推送设置2");
-        
-    //24 小时拿一次
-    long long checkConfigVersion = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kCheckConfigVersion] longLongValue];
-//        if (checkConfigVersion != [[QIMNavConfigManager sharedInstance] checkConfigVersion]) {
-        [self checkClientConfig];
-//        }
+    
+    [self checkClientConfig];
 
     QIMVerboseLog(@"开始获取加密会话密码箱2");
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -548,11 +544,11 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
     // 更新好友列表
     CFAbsoluteTime startTime14 = [[QIMWatchDog sharedInstance] startTime];
     [self updateFriendList];
-QIMVerboseLog(@"更新好友列表loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime14]);
+    QIMVerboseLog(@"更新好友列表loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime14]);
     
     CFAbsoluteTime startTime15 = [[QIMWatchDog sharedInstance] startTime];
     [self updateFriendInviteList];
-QIMVerboseLog(@"邀请好友申请loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime15]);
+    QIMVerboseLog(@"邀请好友申请loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime15]);
     
     if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
         QIMVerboseLog(@"客服获取快捷回复");
@@ -724,416 +720,35 @@ QIMVerboseLog(@"邀请好友申请loginComplate耗时 : %llf", [[QIMWatchDog sha
     });
 }
 
-- (NSData *)updateRosterList {
-    if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
-        
-    } else {
-        
-        NSTimeInterval temp_t1 = [[NSDate date] timeIntervalSince1970];
-        NSTimeInterval temp_t2 = 0;
-        NSString *destUrl = [NSString stringWithFormat:@"%@/get_increment_users?c=qtalk&u=%@&k=%@&p=iphone&v=%@&d=%@", [[QIMNavConfigManager sharedInstance] httpHost], [[QIMManager getLastUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding], self.remoteKey, [[QIMAppInfo sharedInstance] AppBuildVersion], [XmppImManager sharedInstance].domain];
-        NSURL *requestUrl = [[NSURL alloc] initWithString:destUrl];
-        
-        NSMutableDictionary *params = [NSMutableDictionary dictionaryWithCapacity:2];
-        long long maxIncrementUpdateTime = [[[IMDataManager qimDB_SharedInstance] qimDB_getConfigInfoWithConfigKey:@"kLocalIncrementUpdateTime" WithSubKey:[[QIMManager sharedInstance] getLastJid] WithDeleteFlag:NO] longLongValue];
-        [params setQIMSafeObject:@(maxIncrementUpdateTime) forKey:@"version"];
-        [params setQIMSafeObject:[XmppImManager sharedInstance].domain forKey:@"domain"];
-        
-        NSData *postData = [[QIMJSONSerializer sharedInstance] serializeObject:params error:nil];
-        
-        ASIHTTPRequest *request = [[ASIHTTPRequest alloc] initWithURL:requestUrl];
-        [request setRequestMethod:@"POST"];
-        [request setPostBody:postData];
-        [request setAllowCompressedResponse:YES];
-        [request setShouldCompressRequestBody:YES];
-        [request startSynchronous];
-        
-        temp_t2 = [[NSDate date] timeIntervalSince1970];
-        if ([request responseStatusCode] == 200) {
-            
-            NSError *error = [request error];
-            if (!error) {
-                NSData *responseData = [request responseData];
-                NSDictionary *result = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
-                BOOL ret = [[result objectForKey:@"ret"] boolValue];
-                if (ret) {
-                    NSArray *resultArray = [result objectForKey:@"data"];
-                        [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertUserInfosNotSaveDescInfo:resultArray];
-                    dispatch_block_t block = ^{
-                        for (NSDictionary *infoDic in resultArray) {
-                            [_friendDescDic setObject:[infoDic objectForKey:@"D"] forKey:[infoDic objectForKey:@"U"]];
-                        }
-                    };
-                    
-                    if (dispatch_get_specific(_cacheTag))
-                        block();
-                    else
-                        dispatch_sync(_cacheQueue, block);
-                    return [[QIMJSONSerializer sharedInstance] serializeObject:resultArray error:nil];
-                }
-                return nil;
-            }
-        }
-    }
-    return nil;
-}
-
-
-- (void)decodeTreeWithDic:(NSDictionary *)rosterDic WithRosterList:(NSMutableArray *)rosterList WithDescInfo:(NSMutableString *)descInfo {
-    NSString *groupName = [rosterDic objectForKey:@"D"];
-    [descInfo appendFormat:@"%@/", groupName];
-    NSArray *userListArray = [rosterDic objectForKey:@"UL"];
-    for (NSDictionary *userDic in userListArray) {
-        NSString *userName = [userDic objectForKey:@"N"];
-        if ([userName isEqual:[NSNull null]] || userName.length <= 0) {
-            userName = [userDic objectForKey:@"W"];
-        }
-        [rosterList addObject:@{@"U": [userDic objectForKey:@"U"], @"N": userName, @"D": descInfo}];
-    }
-    NSArray *subSectorArray = [rosterDic objectForKey:@"SD"];
-    for (NSDictionary *subRosterDic in subSectorArray) {
-        [self decodeTreeWithDic:subRosterDic WithRosterList:rosterList WithDescInfo:descInfo];
-    }
-    
-}
-
-- (void)updateQChatUserList:(NSDictionary *)deps {
-    NSMutableArray *rosterList = [NSMutableArray array];
-    NSMutableString *descInfo = [NSMutableString string];
-    [self decodeTreeWithDic:deps WithRosterList:rosterList WithDescInfo:descInfo];
-    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertUserInfos:rosterList];
-}
-
-- (NSData *)updateOrganizationalStructure {
-    
-    /* ---------------QTalk--------------
-     参数    含义
-     UL    用户列表
-     N    用户姓名
-     U    用户rtx_id
-     S    用户在线状态，0离线，6在线（后续状态会进行扩展，1 离开；5 繁忙），改用户状态默认为5min更新一次，如需要获取即时状态请使用别的接口
-     D    用户部门列表
-     SD    子部门列表，子部门同样包含D，U, SD，该结构目前最深为5层,SD可为空。
-     Fp    Rtxid拼音 及缩写，以 | 分割
-     Sp    Rtx汉字部分拼音及缩写，以 | 分割
-     --------------------------------------
-     
-     -----------------QChat---------------
-     id
-     dep_name
-     pid
-     other_flag
-     sub
-     person
-     uin
-     nickname
-     strid
-     online_status
-     department_id
-     -------------------------------------
-     */
-    if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
-        [self updateMyCard];
-        if (self.isMerchant == NO) {
-            return nil;
-        }
-        NSError *errol = nil;
-        NSString *postDataStr = [NSString stringWithFormat:@"strid=%@&u=%@&k=%@", [[QIMManager getLastUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding], [[QIMManager getLastUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding], self.remoteKey];
-        NSMutableData *tempPostData = [NSMutableData dataWithData:[postDataStr dataUsingEncoding:NSUTF8StringEncoding]];
-        
-        NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@/get_dep_info?p=iphone&v=%@", [[QIMNavConfigManager sharedInstance] httpHost], [[QIMAppInfo sharedInstance] AppBuildVersion]]];
-        ASIHTTPRequest *request = [[ASIHTTPRequest alloc] initWithURL:url];
-        [request addRequestHeader:@"Content-type" value:@"application/x-www-form-urlencoded;"];
-        [request setRequestMethod:@"POST"];
-        [request setPostBody:tempPostData];
-        [request startSynchronous];
-        
-        NSError *error = [request error];
-        if (([request responseStatusCode] == 200) && !error) {
-            NSString *organizationStr = [request responseString];
-            NSDictionary *organizationDic = [[QIMJSONSerializer sharedInstance] deserializeObject:organizationStr error:&error];
-            [self updateQChatUserList:organizationDic];
-            
-            dispatch_block_t block = ^{
-                [_friendDescDic removeAllObjects];
-                [_friendDescDic setObject:@"QChatStaff" forKey:@"D"];
-                [_friendDescDic setQIMSafeObject:[organizationDic objectForKey:@"SD"] forKey:@"SD"];
-            };
-            
-            if (dispatch_get_specific(_cacheTag))
-                block();
-            else
-                dispatch_sync(_cacheQueue, block);
-            
-            _friendInfoDic = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"QChatStaff",@"D",[organizationDic objectForKey:@"SD"],@"SD",nil];
-            
-            return [organizationStr dataUsingEncoding:NSUTF8StringEncoding];
-        }
-        return nil;
-    } else {
-        
-        if ([[[QIMManager getLastUserName] lowercaseString] isEqualToString:@"appstore"] ||
-            [[[QIMManager getLastUserName] lowercaseString] isEqualToString:@"ctrip"]) {
-            return nil;
-        }
-        NSString *destUrl = [NSString stringWithFormat:@"%@/getdeps?u=%@&k=%@&p=iphone&v=%@&d=%@", [[QIMNavConfigManager sharedInstance] httpHost], [[QIMManager getLastUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding], self.remoteKey, [[QIMAppInfo sharedInstance] AppBuildVersion], [[XmppImManager sharedInstance] domain]];
-        QIMVerboseLog(@"拉取树形组织架构图 : %@", destUrl);
-        NSURL *requestUrl = [[NSURL alloc] initWithString:destUrl];
-        ASIHTTPRequest *request = [[ASIHTTPRequest alloc] initWithURL:requestUrl];
-        [request setShouldCompressRequestBody:YES];
-        [request setAllowCompressedResponse:YES];
-        [request startSynchronous];
-        
-        NSError *error = [request error];
-        if (!error && [request responseStatusCode] == 200) {
-            NSData *responseData = [request responseData];
-            NSError *errol = nil;
-            id value = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:&errol];
-            if (errol == nil && value) {
-                
-                dispatch_block_t block = ^{
-                    [_friendDescDic removeAllObjects];
-                    [_friendDescDic setObject:@"组织架构" forKey:@"D"];
-                    [_friendDescDic setObject:value forKey:@"SD"];
-                };
-                
-                if (dispatch_get_specific(_cacheTag))
-                    block();
-                else
-                    dispatch_sync(_cacheQueue, block);
-                
-                _friendInfoDic = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"组织架构",@"D",value,@"SD",nil];
-            }
-            return responseData;
-        }
-    }
-    return nil;
-}
-
 //获取组织架构
-- (void)checkRosterListWithForceUpdate:(BOOL)forceUpdate {
-
-    if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
-        NSString *osFile = [_configPath stringByAppendingPathComponent:@"os.bin"];
-        NSString *rsFile = [_configPath stringByAppendingPathComponent:@"rs.bin"];
-        
-        if ([[IMDataManager qimDB_SharedInstance] qimDB_checkExitsUser] == NO || forceUpdate) {
-            QIMWarnLog(@"qchat本地数据库之前没有IM_User, 重新拉取组织架构");
-            NSError *error = nil;
-            { //Roster List
-                NSData *data = [self updateRosterList];
-                data = [[QIMDESHelper sharedInstance] DESEncrypt:data WithKey:[QIMManager getLastUserName]];
-                [[ASIDataCompressor compressData:data error:&error] writeToFile:rsFile atomically:YES];
-            }
-            //获取组织架构图
-            
-            NSData *data = [self updateOrganizationalStructure];
-            data = [[QIMDESHelper sharedInstance] DESEncrypt:data WithKey:[QIMManager getLastUserName]];
-            [[ASIDataCompressor compressData:data error:&error] writeToFile:osFile atomically:YES];
-            [[QIMUserCacheManager sharedInstance] setUserObject:@([[NSDate date] timeIntervalSince1970]) forKey:kGetRostListVersion];
-        } else {
-            long long getRostListVersion = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetRostListVersion] longLongValue];
-            NSTimeInterval nowTime = [[NSDate date] timeIntervalSince1970];
-            QIMWarnLog(@"qchat拉取组织架构当前时间 : %f \n qchat上次拉取组织架构时间 : %lld", nowTime, getRostListVersion);
-            if (forceUpdate) {
-                QIMWarnLog(@"qchat拉取组织架构 时间戳 允许重新拉取");
-                NSError *error = nil;
-                { //Roster List
-                    NSData *data = [self updateRosterList];
-                    data = [[QIMDESHelper sharedInstance] DESEncrypt:data WithKey:[QIMManager getLastUserName]];
-                    [[ASIDataCompressor compressData:data error:&error] writeToFile:rsFile atomically:YES];
-                }
-                //获取组织架构图
+- (void)updateOrganizationalStructure {
+    NSString *destUrl = [NSString stringWithFormat:@"%@/update/getUpdateUsers.qunar", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+    NSInteger userMaxVersion = [[[QIMUserCacheManager sharedInstance] userObjectForKey:@"kGetUpdateUsersVersion"] integerValue];
+    NSDictionary *versionDic = @{@"version":@(userMaxVersion)};
+    NSData *versionData = [[QIMJSONSerializer sharedInstance] serializeObject:versionDic error:nil];
+    [[QIMManager sharedInstance] sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:versionData withSuccessCallBack:^(NSData *responseData) {
+        NSDictionary *responseDic = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
+        if ([responseDic isKindOfClass:[NSDictionary class]]) {
+            BOOL ret = [[responseDic objectForKey:@"ret"] boolValue];
+            NSInteger errcode = [[responseDic objectForKey:@"errcode"] integerValue];
+            if (ret && errcode == 0) {
+                NSDictionary *dataDic = [responseDic objectForKey:@"data"];
+                long long maxVersion = [[dataDic objectForKey:@"version"] longLongValue];
+                [[QIMUserCacheManager sharedInstance] setUserObject:@(maxVersion) forKey:@"kGetUpdateUsersVersion"];
+                NSArray *updateUserList = [dataDic objectForKey:@"update"];
+                NSArray *userList = [dataDic objectForKey:@"update"];
+                [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertOrgansUserInfos:userList];
                 
-                NSData *data = [self updateOrganizationalStructure];
-                data = [[QIMDESHelper sharedInstance] DESEncrypt:data WithKey:[QIMManager getLastUserName]];
-                [[ASIDataCompressor compressData:data error:&error] writeToFile:osFile atomically:YES];
-                [[QIMUserCacheManager sharedInstance] setUserObject:@([[NSDate date] timeIntervalSince1970]) forKey:kGetRostListVersion];
-            }
-            
-            if (_friendDescDic.count <= 0) { // Roster List
-                NSError *error = nil;
-                BOOL isNeedUpdate = NO;
-                NSData *data = [NSData dataWithContentsOfFile:rsFile];
-                if (data.length <= 0) {
-                    isNeedUpdate = YES;
-                } else {
-                    data = [ASIDataDecompressor uncompressData:data error:&error];
-                    if (data == nil) {
-                        isNeedUpdate = YES;
-                    } else {
-                        data = [[QIMDESHelper sharedInstance] DESDecrypt:data WithKey:[QIMManager getLastUserName]];
-                        if (data.length <= 0) {
-                            isNeedUpdate = YES;
-                        } else {
-                            NSArray *resultArray = [[QIMJSONSerializer sharedInstance] deserializeObject:data error:nil];
-                            if (resultArray == nil) {
-                                isNeedUpdate = YES;
-                            } else {
-                                for (NSDictionary *infoDic in resultArray) {
-                                    [_friendDescDic setObject:[infoDic objectForKey:@"D"] forKey:[infoDic objectForKey:@"U"]];
-                                }
-                            }
-                        }
-                    }
-                }
-                if (isNeedUpdate) {
-                    NSError *error = nil;
-                    NSData *data = [self updateRosterList];
-                    data = [[QIMDESHelper sharedInstance] DESEncrypt:data WithKey:[QIMManager getLastUserName]];
-                    [[ASIDataCompressor compressData:data error:&error] writeToFile:rsFile atomically:YES];
-                }
-            }
-            
-            if (_friendInfoDic.count <= 0) { // 组织架构
-                NSError *error = nil;
-                BOOL isNeedUpdate = NO;
-                NSData *data = [NSData dataWithContentsOfFile:osFile];
-                if (data.length <= 0) {
-                    isNeedUpdate = YES;
-                } else {
-                    data = [ASIDataDecompressor uncompressData:data error:&error];
-                    if (data.length <= 0) {
-                        isNeedUpdate = YES;
-                    } else {
-                        data = [[QIMDESHelper sharedInstance] DESDecrypt:data WithKey:[QIMManager getLastUserName]];
-                        if (data.length <= 0) {
-                            isNeedUpdate = YES;
-                        } else {
-                            NSError *error = nil;
-                            id value = [[QIMJSONSerializer sharedInstance] deserializeObject:data error:&error];
-                            if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
-                                value = [value objectForKey:@"SD"];
-                            }
-                            if (error == nil && value) {
-                                
-                                _friendInfoDic = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"QChatStaff",@"D",value,@"SD",nil];
-                            } else {
-                                isNeedUpdate = YES;
-                            }
-                        }
-                    }
-                }
-                if (isNeedUpdate) {
-                    NSError *error = nil;
-                    NSData *data = [self updateOrganizationalStructure];
-                    data = [[QIMDESHelper sharedInstance] DESEncrypt:data WithKey:[QIMManager getLastUserName]];
-                    [[ASIDataCompressor compressData:data error:&error] writeToFile:osFile atomically:YES];
-                }
+                NSArray *deleteUserList = [dataDic objectForKey:@"delete"];
+                [[IMDataManager qimDB_SharedInstance] qimDB_clearUserListForList:deleteUserList];
+            } else {
+                QIMErrorLog(@"请求新版本组织架构失败了", [responseDic objectForKey:@"errmsg"]);
             }
         }
-    } else {
-        NSString *osFile = [_configPath stringByAppendingPathComponent:@"os.bin"];
-        NSString *rsFile = [_configPath stringByAppendingPathComponent:@"rs.bin"];
+//        QIMVerboseLog(@"responseDic : %@", responseDic);
+    } withFailedCallBack:^(NSError *error) {
         
-        if ([[IMDataManager qimDB_SharedInstance] qimDB_checkExitsUser] == NO || forceUpdate) {
-            QIMWarnLog(@"qtalk本地数据库之前没有IM_User, 重新拉取组织架构");
-            NSError *error = nil;
-            { //Roster List
-                NSData *data = [self updateRosterList];
-                data = [[QIMDESHelper sharedInstance] DESEncrypt:data WithKey:[QIMManager getLastUserName]];
-                [[ASIDataCompressor compressData:data error:&error] writeToFile:rsFile atomically:YES];
-            }
-            //获取组织架构图
-            
-            NSData *data = [self updateOrganizationalStructure];
-            data = [[QIMDESHelper sharedInstance] DESEncrypt:data WithKey:[QIMManager getLastUserName]];
-            [[ASIDataCompressor compressData:data error:&error] writeToFile:osFile atomically:YES];
-            [[QIMUserCacheManager sharedInstance] setUserObject:@([[NSDate date] timeIntervalSince1970]) forKey:kGetRostListVersion];
-        } else {
-            long long getRostListVersion = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetRostListVersion] longLongValue];
-            NSTimeInterval nowTime = [[NSDate date] timeIntervalSince1970];
-            QIMWarnLog(@"qtalk拉取组织架构当前时间 : %f \n qtalk上次拉取组织架构时间 : %lld", nowTime, getRostListVersion);
-            if (forceUpdate) {
-                QIMWarnLog(@"qtalk拉取组织架构 时间戳 允许重新拉取");
-                NSError *error = nil;
-                { //Roster List
-                    NSData *data = [self updateRosterList];
-                    data = [[QIMDESHelper sharedInstance] DESEncrypt:data WithKey:[QIMManager getLastUserName]];
-                    [[ASIDataCompressor compressData:data error:&error] writeToFile:rsFile atomically:YES];
-                }
-                //获取组织架构图
-                
-                NSData *data = [self updateOrganizationalStructure];
-                data = [[QIMDESHelper sharedInstance] DESEncrypt:data WithKey:[QIMManager getLastUserName]];
-                [[ASIDataCompressor compressData:data error:&error] writeToFile:osFile atomically:YES];
-                [[QIMUserCacheManager sharedInstance] setUserObject:@([[NSDate date] timeIntervalSince1970]) forKey:kGetRostListVersion];
-            }
-            
-            if (_friendDescDic.count <= 0) { // Roster List
-                NSError *error = nil;
-                BOOL isNeedUpdate = NO;
-                NSData *data = [NSData dataWithContentsOfFile:rsFile];
-                if (data.length <= 0) {
-                    isNeedUpdate = YES;
-                } else {
-                    data = [ASIDataDecompressor uncompressData:data error:&error];
-                    if (data == nil) {
-                        isNeedUpdate = YES;
-                    } else {
-                        data = [[QIMDESHelper sharedInstance] DESDecrypt:data WithKey:[QIMManager getLastUserName]];
-                        if (data == nil) {
-                            isNeedUpdate = YES;
-                        } else {
-                            NSArray *resultArray = [[QIMJSONSerializer sharedInstance] deserializeObject:data error:nil];
-                            if (resultArray == nil) {
-                                isNeedUpdate = YES;
-                            } else {
-                                for (NSDictionary *infoDic in resultArray) {
-                                    [_friendDescDic setObject:[infoDic objectForKey:@"D"] forKey:[infoDic objectForKey:@"U"]];
-                                }
-                                
-                            }
-                        }
-                    }
-                }
-                if (isNeedUpdate) {
-                    NSError *error = nil;
-                    NSData *data = [self updateRosterList];
-                    data = [[QIMDESHelper sharedInstance] DESEncrypt:data WithKey:[QIMManager getLastUserName]];
-                    [[ASIDataCompressor compressData:data error:&error] writeToFile:rsFile atomically:YES];
-                }
-            }
-            
-            if (_friendInfoDic.count <= 0) { // 组织架构
-                NSError *error = nil;
-                BOOL isNeedUpdate = NO;
-                NSData *data = [NSData dataWithContentsOfFile:osFile];
-                if (data.length <= 0) {
-                    isNeedUpdate = YES;
-                } else {
-                    data = [ASIDataDecompressor uncompressData:data error:&error];
-                    if (data == nil) {
-                        isNeedUpdate = YES;
-                    } else {
-                        data = [[QIMDESHelper sharedInstance] DESDecrypt:data WithKey:[QIMManager getLastUserName]];
-                        if (data == nil) {
-                            isNeedUpdate = YES;
-                        } else {
-                            NSError *error = nil;
-                            id value = [[QIMJSONSerializer sharedInstance] deserializeObject:data error:&error];
-                            if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
-                                value = [value objectForKey:@"SD"];
-                            }
-                            if (error == nil && value) {
-                                
-                                _friendInfoDic = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"组织架构",@"D",value,@"SD",nil];
-                                
-                            } else {
-                                isNeedUpdate = YES;
-                            }
-                        }
-                    }
-                }
-                if (isNeedUpdate) {
-                    NSError *error = nil;
-                    NSData *data = [self updateOrganizationalStructure];
-                    data = [[QIMDESHelper sharedInstance] DESEncrypt:data WithKey:[QIMManager getLastUserName]];
-                    [[ASIDataCompressor compressData:data error:&error] writeToFile:osFile atomically:YES];
-                }
-            }
-        }
-    }
+    }];
 }
 
 @end

@@ -510,6 +510,32 @@
     return [list autorelease];
 }
 
+- (NSArray *)qimDB_getOrganUserList {
+    __block NSMutableArray *list = nil;
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = @"Select * From IM_User;";
+        DataReader *reader = [database executeReader:sql withParameters:nil];
+        while ([reader read]) {
+            if (list == nil) {
+                list = [[NSMutableArray alloc] init];
+            }
+            NSString *userId = [reader objectForColumnIndex:0];
+            NSString *xmppId = [reader objectForColumnIndex:1];
+            NSString *name = [reader objectForColumnIndex:2];
+            NSString *department = [reader objectForColumnIndex:3];
+            
+            NSMutableDictionary *userInfo = [[NSMutableDictionary alloc] initWithCapacity:1];
+            [IMDataManager safeSaveForDic:userInfo setObject:userId forKey:@"userId"];
+            [IMDataManager safeSaveForDic:userInfo setObject:xmppId forKey:@"xmppId"];
+            [IMDataManager safeSaveForDic:userInfo setObject:name forKey:@"name"];
+            [IMDataManager safeSaveForDic:userInfo setObject:department forKey:@"department"];
+            [list addObject:userInfo];
+            [userInfo release];
+        }
+    }];
+    return [list autorelease];
+}
+
 //Select a.UserId, a.XmppId, a.Name, a.DescInfo, a.HeaderSrc, a.UserInfo, a.LastUpdateTime from IM_Group_Member as b left join IM_User as a on a.Name = b.Name where GroupId = 'qtalk客户端开发群@conference.ejabhost1'
 
 - (NSArray *)qimDB_selectUserListBySearchStr:(NSString *)searchStr inGroup:(NSString *) groupId {

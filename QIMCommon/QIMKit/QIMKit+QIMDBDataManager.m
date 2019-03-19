@@ -238,6 +238,10 @@
     return [[IMDataManager qimDB_SharedInstance] qimDB_selectUserIdList];
 }
 
+- (NSArray *)getOrganUserList {
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getOrganUserList];
+}
+
 - (NSArray *)selectUserListBySearchStr:(NSString *)searchStr {
     return [[IMDataManager qimDB_SharedInstance] qimDB_selectUserListBySearchStr:searchStr];
 }

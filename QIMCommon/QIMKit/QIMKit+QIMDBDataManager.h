@@ -97,6 +97,7 @@
 - (NSArray *)selectUserIdList;
 - (NSArray *)selectUserListBySearchStr:(NSString *)searchStr;
 
+- (NSArray *)getOrganUserList;
 - (NSInteger)selectUserListTotalCountBySearchStr:(NSString *)searchStr;
 
 - (NSArray *)selectUserListBySearchStr:(NSString *)searchStr WithLimit:(NSInteger)limit WithOffset:(NSInteger)offset;

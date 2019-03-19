@@ -745,7 +745,6 @@ static IMDataManager *__global_data_manager = nil;
         result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IM_USER_MEDAL_XMPPID ON IM_User_Medal (XmppId);" withParameters:nil];
     }
     
-    
     //创建工作圈表
     result = [database executeNonQuery:@"CREATE TABLE IF NOT EXISTS IM_Work_World (\
               id                    INTEGER,\
@@ -763,10 +762,10 @@ static IMDataManager *__global_data_manager = nil;
               isLike                INTEGER DEFAULT 0,\
               likeNum               INTEGER,\
               commentsNum           INTEGER,\
-              review_status         INTEGER);" withParameters:nil];
-    
+              review_status         INTEGER,\
+              attachCommentList     TEXT);" withParameters:nil];
     //创建工作圈评论表
-    result = [database executeNonQuery:@"create table IF NOT EXISTS IM_Work_Comment (\
+    result = [database executeNonQuery:@"create table IF NOT EXISTS IM_Work_CommentV2 (\
               anonymousName         TEXT,\
               anonymousPhoto        TEXT,\
               commentUUID           TEXT PRIMARY KEY,\
@@ -780,6 +779,7 @@ static IMDataManager *__global_data_manager = nil;
               isLike                INTEGER,\
               likeNum               INTEGER,\
               parentCommentUUID     TEXT,\
+              superParentUUID       TEXT,\
               postUUID              TEXT,\
               reviewStatus          INTEGER,\
               toAnonymousName       TEXT,\
@@ -789,8 +789,8 @@ static IMDataManager *__global_data_manager = nil;
               toisAnonymous         INTEGER,\
               updateTime            INTEGER);" withParameters:nil];
     if (result) {
-        if ([database checkExistsOnTable:@"IM_Work_Comment" withColumn:@"superParentUUID"] == NO) {
-            [database executeNonQuery:@"ALTER TABLE IM_Work_Comment ADD superParentUUID TEXT;" withParameters:nil];
+        if ([database checkExistsOnTable:@"IM_Work_CommentV2" withColumn:@"superParentUUID"] == NO) {
+            [database executeNonQuery:@"ALTER TABLE IM_Work_CommentV2 ADD superParentUUID TEXT;" withParameters:nil];
         }
     }
     

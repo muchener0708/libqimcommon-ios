@@ -49,6 +49,7 @@ static QIMContactDatasourceManager *_globalDataController = nil;
 }
 
 -(void)createUnMeregeDataSource {
+    /*
     if (_unmergeBranchDict!=nil) {
         [_unmergeBranchDict removeAllObjects];
         _unmergeBranchDict = nil;
@@ -117,6 +118,7 @@ static QIMContactDatasourceManager *_globalDataController = nil;
     if (_mergeRootBranch.count != 0) {
         [self expandBranchAtIndex:0];
     }
+    */
 }
 
 -(NSArray *)QtalkDataSourceItem {
@@ -125,6 +127,7 @@ static QIMContactDatasourceManager *_globalDataController = nil;
 
 
 -(void)recursiveLoadUnMergeData:(NSDictionary *)recursiveDict byNode:(QIMDatasourceItem *)parentNode nLevel:(NSInteger)nLevel {
+    /*
     if (![recursiveDict isKindOfClass:[NSDictionary class]]) {
         return;
     }
@@ -177,6 +180,7 @@ static QIMContactDatasourceManager *_globalDataController = nil;
     
         [self recursiveLoadUnMergeData:subRosterDict byNode:leafNode nLevel:(nLevel+1)];
     }
+     */
 }
 
 //recursively add children and all its expanded children to array at position index
@@ -188,7 +192,8 @@ static QIMContactDatasourceManager *_globalDataController = nil;
 }
 
 -(int) removeChildren:(QIMDatasourceItem *)parentNode  atIndex:(NSUInteger)index removeParentNode:(BOOL)removeParentNode{
- 
+    
+    /*
     NSArray * childArray = parentNode.childNodesArray;
     for (QIMDatasourceItem *childItem in childArray) {
         if (childItem.isParentNode && childItem.isExpand) {
@@ -203,6 +208,7 @@ static QIMContactDatasourceManager *_globalDataController = nil;
         [parentNode setIsExpand:NO];
         [self.mergedRootBranch removeObjectAtIndex:index];
     }
+    */
     return 0;
 }
 @end

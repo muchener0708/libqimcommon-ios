@@ -898,7 +898,7 @@
         if (![photoUrl qim_hasPrefixHttpHeader] && photoUrl.length > 0) {
             photoUrl = [NSString stringWithFormat:@"%@/%@", [[QIMNavConfigManager sharedInstance] innerFileHttpHost], photoUrl];
         }
-        [momentDic setQIMSafeObject:lastDp?lastDp:@"未知" forKey:@"architecture"];
+        [momentDic setQIMSafeObject:lastDp forKey:@"architecture"];
     }
     
     NSString *content = [dic objectForKey:@"content"];

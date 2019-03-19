@@ -50,6 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray *)qimDB_selectUserIdList;
 
+- (NSArray *)qimDB_getOrganUserList;
+
 //Select a.UserId, a.XmppId, a.Name, a.DescInfo, a.HeaderSrc, a.UserInfo, a.LastUpdateTime from IM_Group_Member as b left join IM_User as a on a.Name = b.Name where GroupId = 'qtalk客户端开发群@conference.ejabhost1'
 
 - (NSArray *)qimDB_selectUserListBySearchStr:(NSString *)searchStr inGroup:(NSString *) groupId;

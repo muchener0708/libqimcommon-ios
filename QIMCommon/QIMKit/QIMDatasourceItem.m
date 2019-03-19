@@ -10,18 +10,22 @@
 
 @implementation QIMDatasourceItem
 
--(void)addChildNodesItem:(QIMDatasourceItem *)childNodes {
- 
-    if (self.childNodesArray == nil) {
-     
-        self.childNodesArray = [[NSMutableArray alloc] init];
+-(void)addChildNodesItem:(QIMDatasourceItem *)childNodes withChildDP:(NSString *)dp {
+    if (self.childNodesDict == nil) {
+        self.childNodesDict = [[NSMutableDictionary alloc] initWithCapacity:3];
     }
-    
-    [self.childNodesArray addObject:childNodes];
+    [self.childNodesDict setObject:childNodes forKey:dp];
 }
 
 -(NSMutableArray *)expand {
-    return self.childNodesArray;
+    return [self.childNodesDict allKeys];
+}
+
+
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"nodeName : %@, childs: %@", self.nodeName, self.childNodesDict];
+    //    NSLog(@"nodeName : %@, childs: %@", self.nodeName, self.childNodesArray);
 }
 
 @end

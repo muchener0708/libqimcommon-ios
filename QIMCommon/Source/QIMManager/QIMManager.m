@@ -723,7 +723,7 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
 //获取组织架构
 - (void)updateOrganizationalStructure {
     NSString *destUrl = [NSString stringWithFormat:@"%@/update/getUpdateUsers.qunar", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
-    NSInteger userMaxVersion = [[[QIMUserCacheManager sharedInstance] userObjectForKey:@"kGetUpdateUsersVersion"] integerValue];
+    NSInteger userMaxVersion = [[IMDataManager qimDB_SharedInstance] qimDB_getUserCacheDataWithKey:kGetUpdateUsersVersion withType:9];
     NSDictionary *versionDic = @{@"version":@(userMaxVersion)};
     NSData *versionData = [[QIMJSONSerializer sharedInstance] serializeObject:versionDic error:nil];
     [[QIMManager sharedInstance] sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:versionData withSuccessCallBack:^(NSData *responseData) {
@@ -734,7 +734,7 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
             if (ret && errcode == 0) {
                 NSDictionary *dataDic = [responseDic objectForKey:@"data"];
                 long long maxVersion = [[dataDic objectForKey:@"version"] longLongValue];
-                [[QIMUserCacheManager sharedInstance] setUserObject:@(maxVersion) forKey:@"kGetUpdateUsersVersion"];
+                [[IMDataManager qimDB_SharedInstance] qimDB_UpdateUserCacheDataWithKey:kGetUpdateUsersVersion withType:9 withValue:@"组织架构时间戳" withValueInt:maxVersion];
                 NSArray *updateUserList = [dataDic objectForKey:@"update"];
                 NSArray *userList = [dataDic objectForKey:@"update"];
                 [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertOrgansUserInfos:userList];
@@ -745,7 +745,6 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
                 QIMErrorLog(@"请求新版本组织架构失败了", [responseDic objectForKey:@"errmsg"]);
             }
         }
-//        QIMVerboseLog(@"responseDic : %@", responseDic);
     } withFailedCallBack:^(NSError *error) {
         
     }];

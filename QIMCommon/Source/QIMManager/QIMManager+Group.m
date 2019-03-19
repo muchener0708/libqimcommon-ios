@@ -658,7 +658,7 @@
 
 - (void)quickJoinAllGroup {
     if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
-        self.lastMaxGroupVersion = [[[QIMUserCacheManager sharedInstance] userObjectForKey:@"lastJoinGroupTime"] doubleValue];
+        self.lastMaxGroupVersion = [[IMDataManager qimDB_SharedInstance] qimDB_getUserCacheDataWithKey:kGetIncrementMucListVersion withType:11];
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
            [self getIncrementMucList:self.lastMaxGroupVersion];
         });
@@ -720,67 +720,60 @@
 - (void)getIncrementMucList:(NSTimeInterval)lastTime {
     
     QIMVerboseLog(@" ======= 开始通过增量群列表拉群列表数据 =========");
-    NSString *destUrl = [NSString stringWithFormat:@"%@/get_increment_mucs?u=%@&k=%@", [[QIMNavConfigManager sharedInstance] httpHost], [QIMManager getLastUserName], self.remoteKey];
-    destUrl = [destUrl stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    
+    NSString *destUrl = [NSString stringWithFormat:@"%@/muc/get_increment_mucs.qunar", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
     NSDictionary *param = @{@"u" : [QIMManager getLastUserName], @"t" : @(lastTime) ? @(lastTime) : @(0), @"d": [[XmppImManager sharedInstance] domain]};
     QIMVerboseLog(@"增量群列表拉群列表参数 : %@", [[QIMJSONSerializer sharedInstance] serializeObject:param]);
     NSData *data = [[QIMJSONSerializer sharedInstance] serializeObject:param error:nil];
     
-    NSMutableDictionary *requestHeaders = [NSMutableDictionary dictionaryWithCapacity:1];
-    [requestHeaders setObject:@"application/json;" forKey:@"content-type"];
-    
-    QIMHTTPRequest *request = [[QIMHTTPRequest alloc] initWithURL:[NSURL URLWithString:destUrl]];
-    [request setHTTPRequestHeaders:requestHeaders];
-    [request setHTTPBody:data];
-    __weak __typeof(self) weakSelf = self;
-    [QIMHTTPClient sendRequest:request complete:^(QIMHTTPResponse *response) {
-        if (response.code == 200) {
-            __typeof(self) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
+    [self sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:data withSuccessCallBack:^(NSData *responseData) {
+        NSDictionary *resultDic = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
+        BOOL ret = [[resultDic objectForKey:@"ret"] boolValue];
+        NSInteger errcode = [[resultDic objectForKey:@"errcode"] integerValue];
+        if (ret && errcode == 0) {
+            NSArray *newGroupList = [resultDic objectForKey:@"data"];
+            if ([newGroupList isKindOfClass:[NSArray class]]) {
+                [self dealWithIncrement_mucs:newGroupList];
             }
-            NSData *responseData = response.data;
-            NSDictionary *result = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
-            BOOL ret = [[result objectForKey:@"ret"] boolValue];
-            if (ret) {
-                NSArray *newGroupList = [result objectForKey:@"data"];
-                if (strongSelf.updateGroupList == nil) {
-                    strongSelf.updateGroupList = [NSMutableArray arrayWithCapacity:[newGroupList count]];
-                }
-                for (NSDictionary *group in newGroupList) {
-                    NSString *groupId = [group objectForKey:@"M"];
-                    NSString *groupDomain = [group objectForKey:@"D"];
-                    NSTimeInterval groupUpdateTime = [[group objectForKey:@"T"] doubleValue];
-                    NSInteger flag = [[group objectForKey:@"F"] integerValue];
-                    if (strongSelf.lastMaxGroupVersion < groupUpdateTime) {
-                        strongSelf.lastMaxGroupVersion = groupUpdateTime;
-                    }
-                    NSString *newGroupId = [NSString stringWithFormat:@"%@@%@", groupId, groupDomain];
-                    //flag 为 Ture 新增，NO 为销毁或退出
-                    if (flag) {
-                        [strongSelf.updateGroupList addObject:newGroupId];
-                        [[IMDataManager qimDB_SharedInstance] qimDB_insertGroup:newGroupId];
-                    } else {
-                        NSMutableArray *tempMyGroups = [NSMutableArray arrayWithArray:[strongSelf getMyGroupList]];
-                        for (NSDictionary *myGroup in tempMyGroups) {
-                            NSString *groupId = [myGroup objectForKey:@"GroupId"];
-                            if ([newGroupId isEqualToString:groupId]) {
-                                [strongSelf.groupList removeObject:myGroup];
-                                NSString *combineGroupId = [NSString stringWithFormat:@"%@<>%@", groupId, groupId];
-                                [strongSelf removeStickWithCombineJid:combineGroupId WithChatType:ChatType_GroupChat];
-                                [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroup:groupId];
-                                [strongSelf removeSessionById:groupId];
-                                [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroupMemberWithGroupId:groupId];
-                            }
-                        }
-                    }
-                }
-            }
-            [[QIMUserCacheManager sharedInstance] setUserObject:@(self.lastMaxGroupVersion) forKey:@"lastJoinGroupTime"];
+        } else {
+            QIMErrorLog(@"增量群列表失败 : %@", [resultDic objectForKey:@"errmsg"]);
         }
-    } failure:^(NSError *error) {
+    } withFailedCallBack:^(NSError *error) {
         
     }];
+}
+
+- (void)dealWithIncrement_mucs:(NSArray *)newGroupList {
+    if (self.updateGroupList == nil) {
+        self.updateGroupList = [NSMutableArray arrayWithCapacity:[newGroupList count]];
+    }
+    for (NSDictionary *group in newGroupList) {
+        NSString *groupId = [group objectForKey:@"M"];
+        NSString *groupDomain = [group objectForKey:@"D"];
+        NSTimeInterval groupUpdateTime = [[group objectForKey:@"T"] doubleValue];
+        NSInteger flag = [[group objectForKey:@"F"] integerValue];
+        if (self.lastMaxGroupVersion < groupUpdateTime) {
+            self.lastMaxGroupVersion = groupUpdateTime;
+        }
+        NSString *newGroupId = [NSString stringWithFormat:@"%@@%@", groupId, groupDomain];
+        //flag 为 Ture 新增，NO 为销毁或退出
+        if (flag) {
+            [self.updateGroupList addObject:newGroupId];
+            [[IMDataManager qimDB_SharedInstance] qimDB_insertGroup:newGroupId];
+        } else {
+            NSMutableArray *tempMyGroups = [NSMutableArray arrayWithArray:[self getMyGroupList]];
+            for (NSDictionary *myGroup in tempMyGroups) {
+                NSString *groupId = [myGroup objectForKey:@"GroupId"];
+                if ([newGroupId isEqualToString:groupId]) {
+                    [self.groupList removeObject:myGroup];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroup:groupId];
+                    [self removeSessionById:groupId];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroupMemberWithGroupId:groupId];
+                }
+            }
+        }
+    }
+    [[IMDataManager qimDB_SharedInstance] qimDB_UpdateUserCacheDataWithKey:kGetIncrementMucListVersion withType:11 withValue:@"群列表时间戳" withValueInt:self.lastMaxGroupVersion];
 }
 
 @end

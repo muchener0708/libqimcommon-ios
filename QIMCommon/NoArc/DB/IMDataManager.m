@@ -153,39 +153,49 @@ static IMDataManager *__global_data_manager = nil;
 }
 
 - (void)insertUserCacheData {
+    [self qimDB_InsertUserCacheDataWithKey:@"singlelastupdatetime" withType:10 withValue:@"单人聊天时间戳" withValueInt:0];
+    [self qimDB_InsertUserCacheDataWithKey:@"grouplastupdatetime" withType:10 withValue:@"群聊聊天时间戳" withValueInt:0];
+    [self qimDB_InsertUserCacheDataWithKey:@"systemlastupdatetime" withType:10 withValue:@"系统聊天时间戳" withValueInt:0];
+}
+
+- (void)qimDB_InsertUserCacheDataWithKey:(NSString *)key withType:(NSInteger)type withValue:(NSString *)value withValueInt:(long long)valueInt {
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = @"insert or IGNORE into IM_Cache_Data(key, type, value, valueInt) Values(:key, :type, :value, :valueInt);";
         NSMutableArray *parames = [[NSMutableArray alloc] init];
-        [parames addObject:@"singlelastupdatetime"];
-        [parames addObject:@(10)];
-        [parames addObject:@"单人聊天时间戳"];
-        [parames addObject:@(0)];
+        [parames addObject:key];
+        [parames addObject:@(type)];
+        [parames addObject:value?value:@":NULL"];
+        [parames addObject:@(valueInt)];
         [database executeNonQuery:sql withParameters:parames];
         [parames release];
         parames = nil;
     }];
+}
+
+- (void)qimDB_UpdateUserCacheDataWithKey:(NSString *)key withType:(NSInteger)type withValue:(NSString *)value withValueInt:(long long)valueInt {
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"insert or IGNORE into IM_Cache_Data(key, type, value, valueInt) Values(:key, :type, :value, :valueInt);";
+        NSString *sql = @"insert or replace into IM_Cache_Data(key, type, value, valueInt) Values(:key, :type, :value, :valueInt);";
         NSMutableArray *parames = [[NSMutableArray alloc] init];
-        [parames addObject:@"grouplastupdatetime"];
-        [parames addObject:@(10)];
-        [parames addObject:@"群聊聊天时间戳"];
-        [parames addObject:@(0)];
+        [parames addObject:key];
+        [parames addObject:@(type)];
+        [parames addObject:value?value:@":NULL"];
+        [parames addObject:@(valueInt)];
         [database executeNonQuery:sql withParameters:parames];
         [parames release];
         parames = nil;
     }];
+}
+
+- (long long)qimDB_getUserCacheDataWithKey:(NSString *)key withType:(NSInteger)type {
+    __block long long maxRemoteTime = 0;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"insert or IGNORE into IM_Cache_Data(key, type, value, valueInt) Values(:key, :type, :value, :valueInt);";
-        NSMutableArray *parames = [[NSMutableArray alloc] init];
-        [parames addObject:@"systemlastupdatetime"];
-        [parames addObject:@(10)];
-        [parames addObject:@"系统聊天时间戳"];
-        [parames addObject:@(0)];
-        [database executeNonQuery:sql withParameters:parames];
-        [parames release];
-        parames = nil;
+        NSString *newSql = [NSString stringWithFormat:@"select valueInt from IM_Cache_Data Where key == '%@' and type == %d", key, type];
+        DataReader *newReader = [database executeReader:newSql withParameters:nil];
+        if ([newReader read]) {
+            maxRemoteTime = [[newReader objectForColumnIndex:0] longLongValue];
+        }
     }];
+    return maxRemoteTime;
 }
 
 - (DatabaseOperator *) dbInstance {

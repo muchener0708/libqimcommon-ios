@@ -316,4 +316,7 @@
 //驼圈
 #define kPBPresenceCategoryNotifyWorkNoticeLastMessage  @"kPBPresenceCategoryNotifyWorkNoticeLastMessage"
 
+static const NSString *kGetIncrementMucListVersion = @"kGetIncrementMucListVersion";
+static const NSString *kGetUpdateUsersVersion = @"kGetUpdateUsersVersion";
+
 #endif /* QIMNotificationKeys_h */

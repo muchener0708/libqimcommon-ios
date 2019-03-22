@@ -139,17 +139,15 @@
 
 #define kRevokeMsg                          @"kRevokeMsg"
 
-#define kGetSingleHistoryMsgError           @"kGetSingleHistoryMsgError"
+#define kGetNewSingleHistoryMsgError           @"kGetNewSingleHistoryMsgError"
 
-#define kGetSingleReadFlagError             @"kGetSingleReadFlagError"
+#define kGetNewSingleReadFlagError             @"kGetNewSingleReadFlagError"
 
-#define kGetGroupHistoryMsgError            @"kGetGroupHistoryMsgError"
+#define kGetNewGroupHistoryMsgError            @"kGetNewGroupHistoryMsgError"
 
-#define kGetSystemHistoryMsgError           @"kGetSystemHistoryMsgError"
+#define kGetNewSystemHistoryMsgError           @"kGetNewSystemHistoryMsgError"
 
-#define kGetWorkFeedHistoryMessageListError @"kGetWorkFeedHistoryMessageListError"
-
-#define kGetGroupVersionError               @"kGetGroupVersionError"
+#define kGetNewWorkFeedHistoryMessageListError @"kGetNewWorkFeedHistoryMessageListError"
 
 #define kUsersVCardInfo                     @"kUsersVCardInfo"
 

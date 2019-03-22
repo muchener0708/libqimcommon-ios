@@ -247,7 +247,6 @@ done:
     NSLog(@"上传图片destUrl : %@", destUrl);
     NSURL *requestUrl = [[NSURL alloc] initWithString:destUrl];
     ASIFormDataRequest *formRequest = [[ASIFormDataRequest alloc] initWithURL:requestUrl];
-    [formRequest setTimeOutSeconds:10 * 60];
     [formRequest setResponseEncoding:NSISOLatin1StringEncoding];
     [formRequest setPostFormat:ASIMultipartFormDataPostFormat];
     [formRequest addData:fileData withFileName:fileName andContentType:nil forKey:@"file"];
@@ -262,16 +261,6 @@ done:
             NSString *resultUrl = [result objectForKey:@"data"];
             if ([resultUrl isEqual:[NSNull null]] == NO && resultUrl) {
                 return resultUrl;
-                /*
-                NSURL *url = [NSURL URLWithString:resultUrl];
-                resultUrl = [url path];
-                NSUInteger loc = [resultUrl rangeOfString:@"/"].location + 1;
-                if (loc < resultUrl.length) {
-                    NSString *fileName = url.pathComponents.lastObject;
-                    resultUrl = [[resultUrl substringFromIndex:1] stringByAppendingFormat:@"?file=file/%@&FileName=file/%@",fileName,fileName];
-                    return resultUrl;
-                }
-                */
             }
         }
     }

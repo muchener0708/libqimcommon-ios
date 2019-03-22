@@ -74,7 +74,11 @@
             else
                 dispatch_sync(self.cacheQueue, block);
         }
+    if (tempMarkupName.length > 0) {
         result = tempMarkupName;
+    } else {
+        result = [[userId componentsSeparatedByString:@"@"] firstObject];
+    }
     
     return result;
 }

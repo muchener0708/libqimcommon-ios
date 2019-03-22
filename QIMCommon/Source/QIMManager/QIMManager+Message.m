@@ -836,6 +836,7 @@
     if (!jid.length) {
         return 0;
     }
+    return 0;
     //Mark by DB
 //    NSInteger notReadCount = [[IMDataManager qimDB_SharedInstance] qimDB_getNotReaderMsgCountByJid:jid ByDidReadState:MessageState_didRead WidthReceiveDirection:QIMMessageDirection_Received];
 //    return notReadCount;

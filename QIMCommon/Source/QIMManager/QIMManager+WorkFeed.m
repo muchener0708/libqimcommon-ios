@@ -32,7 +32,7 @@
 - (void)updateLastWorkFeedMsgTime {
     QIMVerboseLog(@"更新本地未读的驼圈消息时间戳");
     long long defaultTime = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 3600 * 24 * 2) * 1000;
-    long long errorTime = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetWorkFeedHistoryMessageListError] longLongValue];
+    long long errorTime = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetNewWorkFeedHistoryMessageListError] longLongValue];
     if (errorTime > 0) {
         self.lastWorkFeedMsgMsgTime = errorTime;
         QIMVerboseLog(@"本地驼圈错误时间戳 : %lld", errorTime);
@@ -42,11 +42,11 @@
     if (self.lastWorkFeedMsgMsgTime == 0) {
         self.lastWorkFeedMsgMsgTime = defaultTime;
     }
-    QIMVerboseLog(@"强制塞本地驼圈消息时间戳到为 kGetSingleHistoryMsgError : %f", self.lastWorkFeedMsgMsgTime);
-    [[QIMUserCacheManager sharedInstance] setUserObject:@(self.lastWorkFeedMsgMsgTime) forKey:kGetWorkFeedHistoryMessageListError];
-    QIMVerboseLog(@"强制塞本地驼圈消息时间戳到为 kGetSingleHistoryMsgError : %f完成", self.lastWorkFeedMsgMsgTime);
+    QIMVerboseLog(@"强制塞本地驼圈消息时间戳到为 kGetNewSingleHistoryMsgError : %f", self.lastWorkFeedMsgMsgTime);
+    [[QIMUserCacheManager sharedInstance] setUserObject:@(self.lastWorkFeedMsgMsgTime) forKey:kGetNewWorkFeedHistoryMessageListError];
+    QIMVerboseLog(@"强制塞本地驼圈消息时间戳到为 kGetNewSingleHistoryMsgError : %f完成", self.lastWorkFeedMsgMsgTime);
     
-    QIMVerboseLog(@"强制塞本地驼圈消息消息时间戳完成之后再取一下本地错误时间戳 : %lld", [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetWorkFeedHistoryMessageListError] longLongValue]);
+    QIMVerboseLog(@"强制塞本地驼圈消息消息时间戳完成之后再取一下本地错误时间戳 : %lld", [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetNewWorkFeedHistoryMessageListError] longLongValue]);
     
     QIMVerboseLog(@"最终获取到的本地驼圈已读未读最后消息时间戳为 : %lf", self.lastWorkFeedMsgMsgTime);
 }
@@ -751,19 +751,19 @@
             }
             QIMVerboseLog(@"拉取离work线消息成功");
             QIMVerboseLog(@"清除本地work线消息时间戳");
-            [[QIMUserCacheManager sharedInstance] removeUserObjectForKey:kGetWorkFeedHistoryMessageListError];
-            QIMVerboseLog(@"强制塞本地驼圈消息消息时间戳完成之后再取一下本地错误时间戳 : %lld", [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetWorkFeedHistoryMessageListError] longLongValue]);
+            [[QIMUserCacheManager sharedInstance] removeUserObjectForKey:kGetNewWorkFeedHistoryMessageListError];
+            QIMVerboseLog(@"强制塞本地驼圈消息消息时间戳完成之后再取一下本地错误时间戳 : %lld", [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetNewWorkFeedHistoryMessageListError] longLongValue]);
         } else {
             QIMVerboseLog(@"拉取离work线消息失败");
             QIMVerboseLog(@"重新set本地work线消息时间戳");
-            [[QIMUserCacheManager sharedInstance] setUserObject:@(self.lastWorkFeedMsgMsgTime) forKey:kGetWorkFeedHistoryMessageListError];
-            QIMVerboseLog(@"强制塞本地驼圈消息消息时间戳完成之后再取一下本地错误时间戳 : %lld", [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetWorkFeedHistoryMessageListError] longLongValue]);
+            [[QIMUserCacheManager sharedInstance] setUserObject:@(self.lastWorkFeedMsgMsgTime) forKey:kGetNewWorkFeedHistoryMessageListError];
+            QIMVerboseLog(@"强制塞本地驼圈消息消息时间戳完成之后再取一下本地错误时间戳 : %lld", [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetNewWorkFeedHistoryMessageListError] longLongValue]);
         }
     } withFailedCallBack:^(NSError *error) {
         QIMVerboseLog(@"拉取离work线消息失败");
         QIMVerboseLog(@"重新set本地work线消息时间戳");
-        [[QIMUserCacheManager sharedInstance] setUserObject:@(self.lastWorkFeedMsgMsgTime) forKey:kGetWorkFeedHistoryMessageListError];
-        QIMVerboseLog(@"强制塞本地驼圈消息消息时间戳完成之后再取一下本地错误时间戳 : %lld", [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetWorkFeedHistoryMessageListError] longLongValue]);
+        [[QIMUserCacheManager sharedInstance] setUserObject:@(self.lastWorkFeedMsgMsgTime) forKey:kGetNewWorkFeedHistoryMessageListError];
+        QIMVerboseLog(@"强制塞本地驼圈消息消息时间戳完成之后再取一下本地错误时间戳 : %lld", [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetNewWorkFeedHistoryMessageListError] longLongValue]);
     }];
 }
 

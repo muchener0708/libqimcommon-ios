@@ -426,7 +426,7 @@
     NSString *myPhotoUrl = [QIMHttpApi updateMyPhoto:photoData];
     if (myPhotoUrl.length > 0) {
         NSDictionary *cardDic = @{@"user": [QIMManager getLastUserName], @"url": myPhotoUrl, @"domain":[[XmppImManager sharedInstance] domain]};
-        NSData *data = [[QIMJSONSerializer sharedInstance] serializeObject:cardDic error:nil];
+        NSData *data = [[QIMJSONSerializer sharedInstance] serializeObject:@[cardDic] error:nil];
         NSString *destUrl = [NSString stringWithFormat:@"%@/profile/set_profile.qunar", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
         [[QIMManager sharedInstance] sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:data withSuccessCallBack:^(NSData *responseData) {
             NSDictionary *resultDic = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
@@ -434,17 +434,27 @@
             NSInteger errcode = [[resultDic objectForKey:@"errcode"] integerValue];
             if (ret && errcode == 0) {
                 NSArray *resultData = [resultDic objectForKey:@"data"];
-                if ([resultData isKindOfClass:[NSDictionary class]]) {
+                if ([resultData isKindOfClass:[NSArray class]]) {
                     [self dealWithUpdateMyVCard:resultData];
                 } else {
-                    
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [[NSNotificationCenter defaultCenter] postNotificationName:kMyHeaderImgaeUpdateFaild object:nil];
+                    });
                 }
+            } else {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:kMyHeaderImgaeUpdateFaild object:nil];
+                });
             }
         } withFailedCallBack:^(NSError *error) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:kMyHeaderImgaeUpdateFaild object:nil];
             });
         }];
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:kMyHeaderImgaeUpdateFaild object:nil];
+        });
     }
 }
 

@@ -281,9 +281,6 @@
     } else {
         [mesg setRealJid:userId];
     }
-//    if (userType == ChatType_GroupChat) {
-//        [mesg setNickName:[[QIMManager sharedInstance] getLastJid]];
-//    }
     [mesg setMessageDate:msgDate];
     [mesg setMessageSendState:QIMMessageSendState_Waiting];
     [mesg setExtendInformation:extendInfo];
@@ -534,6 +531,8 @@
     
     QIMMessageModel *mesg = [QIMMessageModel new];
     [mesg setMessageId:[QIMUUIDTools UUID]];
+    [mesg setXmppId:groupId];
+    [mesg setRealJid:groupId];
     [mesg setMessageType:QIMMessageType_Text];
     [mesg setMessageDirection:QIMMessageDirection_Sent];
     [mesg setMessage:msg];
@@ -554,6 +553,8 @@
     
     QIMMessageModel *mesg = [QIMMessageModel new];
     [mesg setMessageId:[QIMUUIDTools UUID]];
+    [mesg setXmppId:groupId];
+    [mesg setRealJid:groupId];
     [mesg setMessageType:msgType];
     [mesg setMessageDirection:QIMMessageDirection_Sent];
     [mesg setMessage:msg];
@@ -576,6 +577,8 @@
     
     QIMMessageModel *mesg = [QIMMessageModel new];
     [mesg setMessageId:msgId];
+    [mesg setXmppId:groupId];
+    [mesg setRealJid:groupId];
     [mesg setMessageType:msgType];
     [mesg setMessageDirection:QIMMessageDirection_Sent];
     [mesg setMessage:msg];
@@ -600,12 +603,14 @@
     [self checkMsgTimeWithJid:userId WithMsgDate:msgDate WithGroup:NO];
     
     QIMMessageModel *mesg = [QIMMessageModel new];
+    [mesg setXmppId:userId];
     [mesg setMessageId:[QIMUUIDTools UUID]];
     [mesg setMessageType:msgType];
     [mesg setChatType:ChatType_SingleChat];
     [mesg setMessageDirection:QIMMessageDirection_Sent];
     [mesg setMessage:msg];
     [mesg setTo:userId];
+    [mesg setRealJid:userId];
     [mesg setMessageDate:msgDate];
     [mesg setFrom:[[QIMManager sharedInstance] getLastJid]];
     [mesg setMessageDate:msgDate];

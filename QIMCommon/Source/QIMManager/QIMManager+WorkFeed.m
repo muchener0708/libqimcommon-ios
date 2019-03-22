@@ -877,7 +877,7 @@
     NSString *content = [dic objectForKey:@"content"];
     
     [momentDic setQIMSafeObject:(content.length > 0) ? content : @"分享图片" forKey:@"content"];
-    [momentDic setQIMSafeObject:userName forKey:@"name"];
+    [momentDic setQIMSafeObject:(userName.length > 0) ? userName : @"" forKey:@"name"];
     [momentDic setQIMSafeObject:(photoUrl.length > 0) ? photoUrl : [QIMManager defaultUserHeaderImagePath] forKey:@"photo"];
     QIMVerboseLog(@"RN getLastWorkOnlineMomentWithDic : %@", momentDic);
     return momentDic;
@@ -913,7 +913,7 @@
     NSString *showContent = [contentDic objectForKey:@"content"];
     
     [momentDic setQIMSafeObject:(showContent.length > 0) ? showContent : @"分享图片" forKey:@"content"];
-    [momentDic setQIMSafeObject:userName forKey:@"name"];
+    [momentDic setQIMSafeObject:(userName.length > 0) ? userName : @"" forKey:@"name"];
     [momentDic setQIMSafeObject:(photoUrl.length > 0) ? photoUrl : [QIMManager defaultUserHeaderImagePath] forKey:@"photo"];
     QIMVerboseLog(@"RN getLastWorkMoment : %@", momentDic);
     return momentDic;

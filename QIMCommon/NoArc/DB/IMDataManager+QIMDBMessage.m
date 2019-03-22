@@ -266,7 +266,6 @@
 }
 
 - (void)qimDB_insertMessageWithMsgDic:(NSDictionary *)msgDic {
-    NSLog(@"插入消息 ： %@", msgDic);
     /*
      {
      MessageBody = "\U5b9d\U8d1d";

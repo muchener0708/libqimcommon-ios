@@ -609,6 +609,13 @@
             NSDictionary *data = [result objectForKey:@"data"];
             if ([data isKindOfClass:[NSDictionary class]]) {
             
+                NSArray *attachCommentList = [data objectForKey:@"attachCommentList"];
+                if ([attachCommentList isKindOfClass:[NSArray class]]) {
+                    NSDictionary *postAttachCommentListData = @{@"postId":postUUId, @"attachCommentList":attachCommentList};
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyReloadWorkFeedAttachCommentList object:postAttachCommentListData];
+                    });
+                }
                 NSInteger postCommentNum = [[data objectForKey:@"postCommentNum"] integerValue];
                 NSInteger likeNum = [[data objectForKey:@"postLikeNum"] integerValue];
                 [[IMDataManager qimDB_SharedInstance] qimDB_updateMomentWithLikeNum:likeNum WithCommentNum:postCommentNum withPostId:postUUId];

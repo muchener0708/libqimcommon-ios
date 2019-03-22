@@ -100,7 +100,7 @@
     
     [[XmppImManager sharedInstance] addTarget:self method:@selector(messageLogEvent:) withXmppEvent:XmppEvent_MessageLog];
     
-    [[XmppImManager sharedInstance] addTarget:self method:@selector(userResourceNotify:) withXmppEvent:XmppEvent_UserResource];
+//    [[XmppImManager sharedInstance] addTarget:self method:@selector(userResourceNotify:) withXmppEvent:XmppEvent_UserResource];
     [[XmppImManager sharedInstance] addTarget:self method:@selector(callVideoAudio:) withXmppEvent:XmppEvent_CallVideoAudio];
     [[XmppImManager sharedInstance] addTarget:self method:@selector(meetingAudioVideoConference:) withXmppEvent:XmppEvent_CallMeetingAudioVideoConference];
     
@@ -152,221 +152,222 @@
 }
 
 - (void)receiveCategoryNotifyMessage:(NSDictionary *)msgDic {
-    SInt32 categoryType = [[msgDic objectForKey:@"categoryType"] intValue];
-    /*
-     CategoryTypeCategoryOrganizational = 1,
-     CategoryTypeCategorySessionList = 2,
-     CategoryTypeCategoryNavigation = 3,
-     CategoryTypeCategoryAskLog = 10,
-     CategoryTypeCategoryTickUser = 100,
-     */
-    NSDictionary *notifyMsg = [[QIMJSONSerializer sharedInstance] deserializeObject:[msgDic objectForKey:@"bodyValue"] error:nil];
-    QIMVerboseLog(@"收到通知类Presence : %@", msgDic);
-    switch (categoryType) {
-        case QIMCategoryNotifyMsgTypeOrganizational: {
-            QIMVerboseLog(@"重新获取组织架构");
-            dispatch_async(self.cacheQueue, ^{
-                [[IMDataManager qimDB_SharedInstance] qimDB_clearUserList];
-                [[IMDataManager qimDB_SharedInstance] qimDB_deleteConfigWithConfigKey:@"kLocalIncrementUpdateTime"];
-                [self checkRosterListWithForceUpdate:YES];
-            });
-        }
-            break;
-        case QIMCategoryNotifyMsgTypeSession: {
-            QIMVerboseLog(@"打开了一个会话，本客户端暂不支持同步该类型");
-        }
-            break;
-        case QIMCategoryNotifyMsgTypeNavigation: {
-            long long navVersion = [[notifyMsg objectForKey:@"navversion"] longLongValue];
-            if (navVersion > [[QIMNavConfigManager sharedInstance] navVersion]) {
-                [[QIMUserCacheManager sharedInstance] setUserObject:[QIMManager getLastUserName] forKey:@"currentLoginUserName"];
-                [[QIMNavConfigManager sharedInstance] qimNav_updateNavigationConfigWithCheck:YES];
+    dispatch_async(self.receive_notify_queue, ^{
+        SInt32 categoryType = [[msgDic objectForKey:@"categoryType"] intValue];
+        /*
+         CategoryTypeCategoryOrganizational = 1,
+         CategoryTypeCategorySessionList = 2,
+         CategoryTypeCategoryNavigation = 3,
+         CategoryTypeCategoryAskLog = 10,
+         CategoryTypeCategoryTickUser = 100,
+         */
+        NSDictionary *notifyMsg = [[QIMJSONSerializer sharedInstance] deserializeObject:[msgDic objectForKey:@"bodyValue"] error:nil];
+        QIMVerboseLog(@"收到通知类Presence : %@", msgDic);
+        switch (categoryType) {
+            case QIMCategoryNotifyMsgTypeOrganizational: {
+                QIMVerboseLog(@"重新获取组织架构");
+                dispatch_async(self.cacheQueue, ^{
+                    [[IMDataManager qimDB_SharedInstance] qimDB_clearUserList];
+                    [self updateOrganizationalStructure];
+                });
             }
-            QIMVerboseLog(@"下发导航版本通知");
-        }
-            break;
-        case QIMCategoryNotifyMsgTypeOPSUnreadCount: {
-            QIMVerboseLog(@"收到OPS 骆驼帮未读数更新通知");
-            BOOL hasUnread = [[notifyMsg objectForKey:@"hasUnread"] boolValue];
-            [[NSNotificationCenter defaultCenter] postNotificationName:kExploreNotReadCountChange object:@(hasUnread)];
-        }
-            break;
-        case QIMCategoryNotifyMsgTypePersonalConfig: {
-            QIMVerboseLog(@"收到个人配置更新通知");
-            NSInteger version = [[notifyMsg objectForKey:@"version"] integerValue];
-            NSString *resource = [notifyMsg objectForKey:@"resource"];
-            BOOL forceUpdate = [[notifyMsg objectForKey:@"force"] boolValue];
-            BOOL forceQuickReplyUpdate = [[notifyMsg objectForKey:@"forcequickreply"] boolValue];
-            BOOL forceRNUpdate = [[notifyMsg objectForKey:@"forceRN"] boolValue];
-            if ([[IMDataManager qimDB_SharedInstance] qimDB_getConfigVersion] < version && ![resource isEqualToString:[[XmppImManager sharedInstance] resource]]) {
-                [self getRemoteClientConfig];
-            } else if (forceUpdate) {
-                QIMVerboseLog(@"强制更新个人配置信息");
-                [[IMDataManager qimDB_SharedInstance] qimDB_clearClientConfig];
-                [self getRemoteClientConfig];
-            } else if (forceQuickReplyUpdate) {
-                QIMVerboseLog(@"强制更新快捷回复");
-                [[IMDataManager qimDB_SharedInstance] qimDB_clearQuickReplyGroup];
-                [[IMDataManager qimDB_SharedInstance] qimDB_clearQuickReplyContents];
-                [self getRemoteQuickReply];
-            } else if (forceRNUpdate) {
-                QIMVerboseLog(@"收到RN包清除通知");
-                NSString *path = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES)[0];
-                //内置包版本
-                NSString *latestJSCodeURLString = [path stringByAppendingPathComponent:@"rnRes"];
-                BOOL removeSussess = [[NSFileManager defaultManager] removeItemAtPath:latestJSCodeURLString error:nil];
-                if (removeSussess) {
-                    QIMVerboseLog(@"清空RN包缓存成功 : %@", latestJSCodeURLString);
-                } else {
-                    QIMVerboseLog(@"清空RN包缓存失败 : %@", latestJSCodeURLString);
+                break;
+            case QIMCategoryNotifyMsgTypeSession: {
+                QIMVerboseLog(@"打开了一个会话，本客户端暂不支持同步该类型");
+            }
+                break;
+            case QIMCategoryNotifyMsgTypeNavigation: {
+                long long navVersion = [[notifyMsg objectForKey:@"navversion"] longLongValue];
+                if (navVersion > [[QIMNavConfigManager sharedInstance] navVersion]) {
+                    [[QIMUserCacheManager sharedInstance] setUserObject:[QIMManager getLastUserName] forKey:@"currentLoginUserName"];
+                    [[QIMNavConfigManager sharedInstance] qimNav_updateNavigationConfigWithCheck:YES];
+                }
+                QIMVerboseLog(@"下发导航版本通知");
+            }
+                break;
+            case QIMCategoryNotifyMsgTypeOPSUnreadCount: {
+                QIMVerboseLog(@"收到OPS 骆驼帮未读数更新通知");
+                BOOL hasUnread = [[notifyMsg objectForKey:@"hasUnread"] boolValue];
+                [[NSNotificationCenter defaultCenter] postNotificationName:kExploreNotReadCountChange object:@(hasUnread)];
+            }
+                break;
+            case QIMCategoryNotifyMsgTypePersonalConfig: {
+                QIMVerboseLog(@"收到个人配置更新通知");
+                NSInteger version = [[notifyMsg objectForKey:@"version"] integerValue];
+                NSString *resource = [notifyMsg objectForKey:@"resource"];
+                BOOL forceUpdate = [[notifyMsg objectForKey:@"force"] boolValue];
+                BOOL forceQuickReplyUpdate = [[notifyMsg objectForKey:@"forcequickreply"] boolValue];
+                BOOL forceRNUpdate = [[notifyMsg objectForKey:@"forceRN"] boolValue];
+                if ([[IMDataManager qimDB_SharedInstance] qimDB_getConfigVersion] < version && ![resource isEqualToString:[[XmppImManager sharedInstance] resource]]) {
+                    [self getRemoteClientConfig];
+                } else if (forceUpdate) {
+                    QIMVerboseLog(@"强制更新个人配置信息");
+                    [[IMDataManager qimDB_SharedInstance] qimDB_clearClientConfig];
+                    [self getRemoteClientConfig];
+                } else if (forceQuickReplyUpdate) {
+                    QIMVerboseLog(@"强制更新快捷回复");
+                    [[IMDataManager qimDB_SharedInstance] qimDB_clearQuickReplyGroup];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_clearQuickReplyContents];
+                    [self getRemoteQuickReply];
+                } else if (forceRNUpdate) {
+                    QIMVerboseLog(@"收到RN包清除通知");
+                    NSString *path = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES)[0];
+                    //内置包版本
+                    NSString *latestJSCodeURLString = [path stringByAppendingPathComponent:@"rnRes"];
+                    BOOL removeSussess = [[NSFileManager defaultManager] removeItemAtPath:latestJSCodeURLString error:nil];
+                    if (removeSussess) {
+                        QIMVerboseLog(@"清空RN包缓存成功 : %@", latestJSCodeURLString);
+                    } else {
+                        QIMVerboseLog(@"清空RN包缓存失败 : %@", latestJSCodeURLString);
+                    }
                 }
             }
-        }
-            break;
-        case QIMCategoryNotifyMsgTypeBigIM: {
-            QIMVerboseLog(@"大客户端通知，可忽略");
-        }
-            break;
-        case QIMCategoryNotifyMsgTypeCalendar: {
-            QIMVerboseLog(@"收到日历同步通知");
-            long long newVersion = [[notifyMsg objectForKey:@"updateTime"] longLongValue];
-            long long oldVersion = [[[IMDataManager qimDB_SharedInstance] qimDB_getConfigInfoWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalTripUpdateTime] WithSubKey:[[QIMManager sharedInstance] getLastJid] WithDeleteFlag:NO] longLongValue];
-            if (newVersion > oldVersion) {
-                QIMVerboseLog(@"本次服务器下发的版本号 大于本地版本号 %lld，更新远程数据", oldVersion);
-                [self getRemoteUserTripList];
-            } else {
-                QIMVerboseLog(@"本次服务器下发的版本号 小于本地版本号 %lld，不同步数据", oldVersion);
+                break;
+            case QIMCategoryNotifyMsgTypeBigIM: {
+                QIMVerboseLog(@"大客户端通知，可忽略");
             }
-        }
-            break;
-        case QIMCategoryNotifyMsgTypeOnline: {
-            QIMVerboseLog(@"收到其他客户端上线下线通知");
-            NSString *onlineListStr = [msgDic objectForKey:@"bodyValue"];
-            BOOL flag = NO;
-            if ([[onlineListStr lowercaseString] containsString:@"mac"] || [[onlineListStr lowercaseString] containsString:@"pc"] || [[onlineListStr lowercaseString] containsString:@"linux"]) {
-                flag = YES;
+                break;
+            case QIMCategoryNotifyMsgTypeCalendar: {
+                QIMVerboseLog(@"收到日历同步通知");
+                long long newVersion = [[notifyMsg objectForKey:@"updateTime"] longLongValue];
+                long long oldVersion = [[[IMDataManager qimDB_SharedInstance] qimDB_getConfigInfoWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalTripUpdateTime] WithSubKey:[[QIMManager sharedInstance] getLastJid] WithDeleteFlag:NO] longLongValue];
+                if (newVersion > oldVersion) {
+                    QIMVerboseLog(@"本次服务器下发的版本号 大于本地版本号 %lld，更新远程数据", oldVersion);
+                    [self getRemoteUserTripList];
+                } else {
+                    QIMVerboseLog(@"本次服务器下发的版本号 小于本地版本号 %lld，不同步数据", oldVersion);
+                }
             }
-            [[NSNotificationCenter defaultCenter] postNotificationName:kPBPresenceCategoryNotifyOnline object:@(flag)];
-        }
-            break;
-        case QIMCategoryNotifyMsgTypeAskLog: {
-            QIMVerboseLog(@"自动收集日志");
-            [[NSNotificationCenter defaultCenter] postNotificationName:kPBPresenceCategoryNotifySubmitLog object:nil];
-        }
-            break;
-        case QIMCategoryNotifyMsgTypeTickUser: {
-            NSString *reason = [notifyMsg objectForKey:@"reason"];
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"kNotificationStreamEnd" object:reason];
-            QIMVerboseLog(@"踢人");
-        }
-            break;
-        case QIMCategoryNotifyMsgTypeGlobalNotification: {
-            /*
-             
-             {
-             
-             "noticeStr":[
-             {
-             "str":"你好",
-             "type":"link",
-             "url":"www.baidu.com",
-             "strColor":"#ffffff"
-             },
-             {
-             "str":",本段是文本",
-             "type":"text",
-             "strColor":"#ffffff"
-             },
-             {
-             "str":"这一段是跳转",
-             "type":"newChat",
-             "from":"shop323",
-             "to":"hubin.hu",
-             "realFrom":"wz.wang",
-             "realTo":"hubin.hu",
-             "consult":"4",
-             "strColor":"#ffffff",
-             "isConsult":true
-             }
-             ]
-             }
-             */
-            QIMVerboseLog(@"下发全局通知");
-            [[NSNotificationCenter defaultCenter] postNotificationName:kPBPresenceCategoryNotifyGlobalChat object:nil];
-//            [[QTalkNotifyManager shareNotifyManager] showGlobalNotifyWithMessage:notifyMsg];
-        }
-            break;
-        case QIMCategoryNotifyMsgTypeDesignatedNotification:{
-            /*
-             {
-             "from":"shop323",
-             "to":"hubin.hu",
-             "isConsult":true,
-             "realFrom":"xxxx",
-             "realTo":"xxxxx",
-             "consult":"4",
-             "noticeStr":[
-             {
-             "str":"你好",
-             "type":"link",
-             "url":"www.baidu.com",
-             "strColor":"#ffffff"
-             },
-             {
-             "str":",本段是文本",
-             "type":"text",
-             "strColor":"#ffffff"
-             },
-             {
-             "str":"这一段是跳转",
-             "type":"newChat",
-             "from":"shop323",
-             "to":"hubin.hu",
-             "realFrom":"wz.wang",
-             "realTo":"hubin.hu",
-             "consult":"4",
-             "strColor":"#ffffff",
-             "isConsult":true
-             }
-             ]
-             }
-             */
-            QIMVerboseLog(@"下发指定通知,故需要相关会话信息");
-            [[NSNotificationCenter defaultCenter] postNotificationName:kPBPresenceCategoryNotifySpecifiedChat object:nil];
-//            [[QTalkNotifyManager shareNotifyManager] showChatNotifyWithMessage:notifyMsg];
-        }
-            break;
-        case QIMCategoryNotifyMsgTypeTickUserWorkWorldNotice: {
-            NSString *onlineListStr = [msgDic objectForKey:@"bodyValue"];
-            NSDictionary *onlineDict = [[QIMJSONSerializer sharedInstance] deserializeObject:onlineListStr error:nil];
-            [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertNoticeMessage:@[onlineDict]];
-            NSInteger eventType = [[onlineDict objectForKey:@"eventType"] integerValue];
-            if (eventType == QIMWorkFeedNotifyTypeComment) {
-                QIMVerboseLog(@"online Comment 通知 : %@", onlineDict);
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:kPBPresenceCategoryNotifyWorkNoticeMessage object:nil];
-                    NSInteger notReadMessageCount = [[QIMManager sharedInstance] getWorkNoticeMessagesCount];
-                    QIMVerboseLog(@"发送驼圈在线消息小红点通知数: %ld", notReadMessageCount);
-                    [[NSNotificationCenter defaultCenter] postNotificationName:kExploreNotReadCountChange object:@(notReadMessageCount)];
-                    [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:nil];
-                });
-            } else if (eventType == QIMWorkFeedNotifyTypePOST) {
-                QIMVerboseLog(@"online 新帖子 通知 : %@", onlineDict);
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:kNotify_RN_QTALK_SUGGEST_WorkFeed_UPDATE object:[self getLastWorkOnlineMomentWithDic:onlineDict]];
-                    [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@(1)];
-                });
-            } else {
-                
+                break;
+            case QIMCategoryNotifyMsgTypeOnline: {
+                QIMVerboseLog(@"收到其他客户端上线下线通知");
+                NSString *onlineListStr = [msgDic objectForKey:@"bodyValue"];
+                BOOL flag = NO;
+                if ([[onlineListStr lowercaseString] containsString:@"mac"] || [[onlineListStr lowercaseString] containsString:@"pc"] || [[onlineListStr lowercaseString] containsString:@"linux"]) {
+                    flag = YES;
+                }
+                [[NSNotificationCenter defaultCenter] postNotificationName:kPBPresenceCategoryNotifyOnline object:@(flag)];
             }
+                break;
+            case QIMCategoryNotifyMsgTypeAskLog: {
+                QIMVerboseLog(@"自动收集日志");
+                [[NSNotificationCenter defaultCenter] postNotificationName:kPBPresenceCategoryNotifySubmitLog object:nil];
+            }
+                break;
+            case QIMCategoryNotifyMsgTypeTickUser: {
+                NSString *reason = [notifyMsg objectForKey:@"reason"];
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"kNotificationStreamEnd" object:reason];
+                QIMVerboseLog(@"踢人");
+            }
+                break;
+            case QIMCategoryNotifyMsgTypeGlobalNotification: {
+                /*
+                 
+                 {
+                 
+                 "noticeStr":[
+                 {
+                 "str":"你好",
+                 "type":"link",
+                 "url":"www.baidu.com",
+                 "strColor":"#ffffff"
+                 },
+                 {
+                 "str":",本段是文本",
+                 "type":"text",
+                 "strColor":"#ffffff"
+                 },
+                 {
+                 "str":"这一段是跳转",
+                 "type":"newChat",
+                 "from":"shop323",
+                 "to":"hubin.hu",
+                 "realFrom":"wz.wang",
+                 "realTo":"hubin.hu",
+                 "consult":"4",
+                 "strColor":"#ffffff",
+                 "isConsult":true
+                 }
+                 ]
+                 }
+                 */
+                QIMVerboseLog(@"下发全局通知");
+                [[NSNotificationCenter defaultCenter] postNotificationName:kPBPresenceCategoryNotifyGlobalChat object:nil];
+                //            [[QTalkNotifyManager shareNotifyManager] showGlobalNotifyWithMessage:notifyMsg];
+            }
+                break;
+            case QIMCategoryNotifyMsgTypeDesignatedNotification:{
+                /*
+                 {
+                 "from":"shop323",
+                 "to":"hubin.hu",
+                 "isConsult":true,
+                 "realFrom":"xxxx",
+                 "realTo":"xxxxx",
+                 "consult":"4",
+                 "noticeStr":[
+                 {
+                 "str":"你好",
+                 "type":"link",
+                 "url":"www.baidu.com",
+                 "strColor":"#ffffff"
+                 },
+                 {
+                 "str":",本段是文本",
+                 "type":"text",
+                 "strColor":"#ffffff"
+                 },
+                 {
+                 "str":"这一段是跳转",
+                 "type":"newChat",
+                 "from":"shop323",
+                 "to":"hubin.hu",
+                 "realFrom":"wz.wang",
+                 "realTo":"hubin.hu",
+                 "consult":"4",
+                 "strColor":"#ffffff",
+                 "isConsult":true
+                 }
+                 ]
+                 }
+                 */
+                QIMVerboseLog(@"下发指定通知,故需要相关会话信息");
+                [[NSNotificationCenter defaultCenter] postNotificationName:kPBPresenceCategoryNotifySpecifiedChat object:nil];
+                //            [[QTalkNotifyManager shareNotifyManager] showChatNotifyWithMessage:notifyMsg];
+            }
+                break;
+            case QIMCategoryNotifyMsgTypeTickUserWorkWorldNotice: {
+                NSString *onlineListStr = [msgDic objectForKey:@"bodyValue"];
+                NSDictionary *onlineDict = [[QIMJSONSerializer sharedInstance] deserializeObject:onlineListStr error:nil];
+                [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertNoticeMessage:@[onlineDict]];
+                NSInteger eventType = [[onlineDict objectForKey:@"eventType"] integerValue];
+                if (eventType == QIMWorkFeedNotifyTypeComment) {
+                    QIMVerboseLog(@"online Comment 通知 : %@", onlineDict);
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [[NSNotificationCenter defaultCenter] postNotificationName:kPBPresenceCategoryNotifyWorkNoticeMessage object:nil];
+                        NSInteger notReadMessageCount = [[QIMManager sharedInstance] getWorkNoticeMessagesCount];
+                        QIMVerboseLog(@"发送驼圈在线消息小红点通知数: %ld", notReadMessageCount);
+                        [[NSNotificationCenter defaultCenter] postNotificationName:kExploreNotReadCountChange object:@(notReadMessageCount)];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:nil];
+                    });
+                } else if (eventType == QIMWorkFeedNotifyTypePOST) {
+                    QIMVerboseLog(@"online 新帖子 通知 : %@", onlineDict);
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [[NSNotificationCenter defaultCenter] postNotificationName:kExploreNotReadCountChange object:@(1)];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:kNotify_RN_QTALK_SUGGEST_WorkFeed_UPDATE object:[self getLastWorkOnlineMomentWithDic:onlineDict]];
+                    });
+                } else {
+                    
+                }
+            }
+                break;
+            default: {
+                QIMVerboseLog(@"遇到不认识的categoryType : %@", msgDic);
+            }
+                break;
         }
-            break;
-        default: {
-            QIMVerboseLog(@"遇到不认识的categoryType : %@", msgDic);
-        }
-            break;
-    }
-    QIMVerboseLog(@"%s", __func__);
+        QIMVerboseLog(@"%s", __func__);
+    });
 }
 
 #pragma mark - Receive Msgs接收消息
@@ -460,7 +461,6 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
             if (![sid isEqualToString:self.currentSessionUserId] && mesg.messageDirection == QIMMessageDirection_Received) {
-                [self updateNotReadCountCacheByJid:sid];
                 if (mesg.messageType == QIMMessageType_RedPack) {
                     [self playHongBaoSound];
                 } else {
@@ -826,7 +826,7 @@
         [self saveMsg:message ByJid:publicNumberId];
     } else if (msgType == QIMMessageType_ConsultResult) {
         // 保存渠道信息
-        if (message.extendInformation) {
+        if (message.extendInformation.length > 0) {
             [message setMessage:message.extendInformation];
         }
         NSDictionary *resultContent = [[QIMJSONSerializer sharedInstance] deserializeObject:extendInfo error:nil];
@@ -1042,7 +1042,7 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message":mesg}];
             
             if (![sid isEqualToString:self.currentSessionUserId] && mesg.messageDirection == QIMMessageDirection_Received) {
-                [self updateNotReadCountCacheByJid:fromJid WithRealJid:mesg.realJid];
+                [self updateNotReadCountCacheByJid:fromJid];
                 if (mesg.messageType == QIMMessageType_RedPack) {
                     [self playHongBaoSound];
                 } else {
@@ -1094,6 +1094,9 @@
             } else if (readType == QIMMessageReadFlagDidControl) {
                 //已操作
                 remoteState = QIMMessageRemoteReadStateDidOperated | QIMMessageRemoteReadStateDidReaded;
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:@"kNotificationMessageControlStateUpdate" object:@{@"State":@(QIMMessageRemoteReadStateDidOperated), @"MsgIds":readStateMsgList?readStateMsgList:@[]}];
+                });
             } else {
                 //已发送
                 remoteState = QIMMessageRemoteReadStateNotSent;
@@ -1146,19 +1149,6 @@
     [[NSNotificationCenter defaultCenter] postNotificationName:kWbeRTCCallMeetingAudioVideoConference object:infoDic];
 }
 
-- (NSString *)userResourceForJid:(NSString *)jid{
-    return [self.userResourceDic objectForKey:jid];
-}
-
-- (void)userResourceNotify:(NSDictionary *)infoDic{
-    NSString *userJid = [infoDic objectForKey:@"jid"];
-    NSString *resource = [infoDic objectForKey:@"resource"];
-    [self.userResourceDic setObject:resource forKey:userJid];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyUserResourceChange object:userJid];
-    });
-}
-
 - (void)messageLogEvent:(NSDictionary *)logDic{
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSString *log = [logDic objectForKey:@"log"];
@@ -1192,7 +1182,6 @@
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(checkNetworkStatus) object:nil];
     [self checkNetworkStatus];
     [self onDisconnect];
-//    [self.loginComplateQueue cancelAllOperations];
 }
 
 - (void)serviceStreamEnd:(NSDictionary *)infoDic{
@@ -1280,7 +1269,6 @@
         if (name.length <= 0) {
             name = [memberJid componentsSeparatedByString:@"@"].firstObject;
         }
-        //NSString *domain = [infoDic objectForKey:@"domain"];
         NSMutableDictionary *memberInfoDic = [NSMutableDictionary dictionary];
         [memberInfoDic setObject:memberJid forKey:@"jid"];
         [memberInfoDic setObject:[memberJid componentsSeparatedByString:@"@"].firstObject forKey:@"name"];
@@ -1403,92 +1391,50 @@
     NSString *from = [validationDic objectForKey:@"from"];
     NSString *body = [validationDic objectForKey:@"body"];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-        if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
-            NSDictionary *infoDic = [self getUserInfoByUserId:from];
-            NSString *userId = [infoDic objectForKey:@"UserId"];
-            NSString *xmppId = [infoDic objectForKey:@"XmppId"];
-            NSString *name = [infoDic objectForKey:@"Name"];
-            NSString *descInfo = [infoDic objectForKey:@"DescInfo"];
-            NSString *headerSrc = [infoDic objectForKey:@"HeaderSrc"];
-            NSString *searchIndex = [infoDic objectForKey:@"SearchIndex"];
-            long long lastUpdateTime = [[NSDate date] timeIntervalSince1970] - self.serverTimeDiff;
-            int state = 0;
-            [[IMDataManager qimDB_SharedInstance] qimDB_insertFriendNotifyWithUserId:userId
-                                                                          WithXmppId:xmppId
-                                                                            WithName:name
-                                                                        WithDescInfo:descInfo
-                                                                         WithHeadSrc:headerSrc
-                                                                     WithSearchIndex:searchIndex
-                                                                        WithUserInfo:body
-                                                                         WithVersion:0
-                                                                           WithState:state
-                                                                  WithLastUpdateTime:lastUpdateTime];
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                QIMVerboseLog(@"抛出通知 QIMmanger friendValidation1  kNotificationSessionListUpdate");
-                [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSessionListUpdate object:nil];
-            });
-        } else if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
-            NSDictionary *infoDic = [self getQChatUserInfoForUser:from];
-            NSString *userId = [infoDic objectForKey:@"username"];
-            NSString *xmppId = [NSString stringWithFormat:@"%@@%@", [infoDic objectForKey:@"username"], [self getDomain]];
-            NSString *name = [infoDic objectForKey:@"nickname"];
-            NSString *descInfo = @"";
-            NSString *headerSrc = [[IMDataManager qimDB_SharedInstance] qimDB_getUserHeaderSrcByUserId:from];
-            NSString *searchIndex = @"";
-            long long lastUpdateTime = [[NSDate date] timeIntervalSince1970] - self.serverTimeDiff;
-            int state = 0;
-            [[IMDataManager qimDB_SharedInstance] qimDB_insertFriendNotifyWithUserId:userId
-                                                                          WithXmppId:xmppId
-                                                                            WithName:name
-                                                                        WithDescInfo:descInfo
-                                                                         WithHeadSrc:headerSrc
-                                                                     WithSearchIndex:searchIndex
-                                                                        WithUserInfo:body
-                                                                         WithVersion:0
-                                                                           WithState:state
-                                                                  WithLastUpdateTime:lastUpdateTime];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                QIMVerboseLog(@"抛出通知 QIMmanger friendValidation2  kNotificationSessionListUpdate");
-                [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSessionListUpdate object:nil];
-            });
-        }
+        NSDictionary *infoDic = [self getUserInfoByUserId:from];
+        NSString *userId = [infoDic objectForKey:@"UserId"];
+        NSString *xmppId = [infoDic objectForKey:@"XmppId"];
+        NSString *name = [infoDic objectForKey:@"Name"];
+        NSString *descInfo = [infoDic objectForKey:@"DescInfo"];
+        NSString *headerSrc = [infoDic objectForKey:@"HeaderSrc"];
+        NSString *searchIndex = [infoDic objectForKey:@"SearchIndex"];
+        long long lastUpdateTime = [[NSDate date] timeIntervalSince1970] - self.serverTimeDiff;
+        int state = 0;
+        [[IMDataManager qimDB_SharedInstance] qimDB_insertFriendNotifyWithUserId:userId
+                                                                      WithXmppId:xmppId
+                                                                        WithName:name
+                                                                    WithDescInfo:descInfo
+                                                                     WithHeadSrc:headerSrc
+                                                                 WithSearchIndex:searchIndex
+                                                                    WithUserInfo:body
+                                                                     WithVersion:0
+                                                                       WithState:state
+                                                              WithLastUpdateTime:lastUpdateTime];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            QIMVerboseLog(@"抛出通知 QIMmanger friendValidation1  kNotificationSessionListUpdate");
+            [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSessionListUpdate object:nil];
+        });
     });
 }
 
 - (void)friendPresence:(NSDictionary *)presenceDic {
     NSString *from = [presenceDic objectForKey:@"from"];
-    //    NSString *to = [presenceDic objectForKey:@"to"];
-    //    int direction = [[presenceDic objectForKey:@"direction"] intValue];
     NSString *result = [presenceDic objectForKey:@"result"];
     //    NSString *reason = [presenceDic objectForKey:@"reason"];
     [[NSNotificationCenter defaultCenter] postNotificationName:kFriendPresence object:from userInfo:presenceDic];
-    if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
-        if ([result isEqualToString:@"success"]) {
-            NSString *destId = from;//direction==2?from:to;
-            NSDictionary *infoDic = [self getUserInfoByUserId:destId];
-            [[IMDataManager qimDB_SharedInstance]
-             qimDB_insertFriendWithUserId:[infoDic objectForKey:@"UserId"]
-             WithXmppId:[infoDic objectForKey:@"XmppId"]
-             WithName:[infoDic objectForKey:@"Name"]
-             WithSearchIndex:[infoDic objectForKey:@"SearchIndex"]
-             WithDescInfo:[infoDic objectForKey:@"DescInfo"]
-             WithHeadSrc:[infoDic objectForKey:@"HeaderSrc"]
-             WithUserInfo:[infoDic objectForKey:@"UserInfo"]
-             WithLastUpdateTime:[[NSDate date] timeIntervalSinceNow] - self.serverTimeDiff
-             WithIncrementVersion:0];
-        }
-    } else if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
-        NSDictionary *infoDic = [self getQChatUserInfoForUser:from];
-        [[IMDataManager qimDB_SharedInstance] qimDB_insertFriendWithUserId:[infoDic objectForKey:@"username"]
-                                                    WithXmppId:[NSString stringWithFormat:@"%@@%@", [infoDic objectForKey:@"username"], [self getDomain]]
-                                                      WithName:[infoDic objectForKey:@"nickname"]
-                                               WithSearchIndex:@""
-                                                  WithDescInfo:@""
-                                                   WithHeadSrc:[[IMDataManager qimDB_SharedInstance] qimDB_getUserHeaderSrcByUserId:from]
-                                                  WithUserInfo:nil
-                                            WithLastUpdateTime:[[NSDate date] timeIntervalSinceNow] - self.serverTimeDiff
-                                          WithIncrementVersion:0];
+    if ([result isEqualToString:@"success"]) {
+        NSString *destId = from;
+        NSDictionary *infoDic = [self getUserInfoByUserId:destId];
+        [[IMDataManager qimDB_SharedInstance] qimDB_insertFriendWithUserId:[infoDic objectForKey:@"UserId"]
+                                                                WithXmppId:[infoDic objectForKey:@"XmppId"]
+                                                                  WithName:[infoDic objectForKey:@"Name"]
+                                                           WithSearchIndex:[infoDic objectForKey:@"SearchIndex"]
+                                                              WithDescInfo:[infoDic objectForKey:@"DescInfo"]
+                                                               WithHeadSrc:[infoDic objectForKey:@"HeaderSrc"]
+                                                              WithUserInfo:[infoDic objectForKey:@"UserInfo"]
+                                                        WithLastUpdateTime:[[NSDate date] timeIntervalSinceNow] - self.serverTimeDiff
+                                                      WithIncrementVersion:0];
     }
 }
 
@@ -1623,10 +1569,6 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         
         [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationRegisterState object:[NSNumber numberWithBool:YES]];
-    });
-    dispatch_async(self.cacheQueue, ^{
-        
-        [self updateRosterList];
     });
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{

@@ -61,7 +61,7 @@
     if (!userIds) {
         return;
     }
-    dispatch_async(self.load_customEvent_queue, ^{
+    dispatch_async(self.update_chat_card, ^{
         NSMutableArray *params = [NSMutableArray array];
         //    [{"u":"xuejie.bi", "d":"qunar.com", "v":1}, {"u":"xuejie.bi", "d":"ejabhost1", "v":0}]
         for (NSString *userXmppId in userIds) {
@@ -182,26 +182,6 @@
     NSDictionary *infoDic = [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionMsgListForMsgId:msgId];
     if (infoDic) {
         return [self getCollectionMessageModelWithByDBMsgDic:infoDic];
-        /*
-        QIMMessageModel *msg = [QIMMessageModel new];
-        [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
-        [msg setFrom:[infoDic objectForKey:@"From"]];
-        [msg setTo:[infoDic objectForKey:@"To"]];
-        [msg setMessage:[infoDic objectForKey:@"Content"]];
-        NSString *extendInfo = [infoDic objectForKey:@"ExtendInfo"];
-        [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
-        [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
-        [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-        [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
-        [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
-        [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
-        [msg setRealJid:[infoDic objectForKey:@"RealJid"]];
-        [msg setMsgRaw:[infoDic objectForKey:@"msgRaw"]];
-        [msg setChatType:[[infoDic objectForKey:@"originType"] intValue]];
-//        [msg setNickName:[infoDic objectForKey:@"nickName"]];
-        [msg setRealJid:[infoDic objectForKey:@"realJid"]];
-        return msg;
-        */
     }
     return nil;
 }
@@ -212,24 +192,6 @@
     if (array.count > 0) {
         for (NSDictionary *infoDic in array) {
             QIMMessageModel *msg = [self getCollectionMessageModelWithByDBMsgDic:infoDic];
-            /*[QIMMessageModel new];
-            [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
-            [msg setFrom:[infoDic objectForKey:@"From"]];
-            [msg setTo:[infoDic objectForKey:@"To"]];
-            [msg setMessage:[infoDic objectForKey:@"Content"]];
-            NSString *extendInfo = [infoDic objectForKey:@"ExtendInfo"];
-            [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
-            [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
-            [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-            [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
-            [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
-            [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
-            [msg setRealJid:[infoDic objectForKey:@"RealJid"]];
-            [msg setMsgRaw:[infoDic objectForKey:@"msgRaw"]];
-            [msg setChatType:[[infoDic objectForKey:@"originType"] intValue]];
-//            [msg setNickName:[infoDic objectForKey:@"nickName"]];
-            [msg setRealJid:[infoDic objectForKey:@"realJid"]];
-             */
             [list addObject:msg];
         }
     }
@@ -378,7 +340,7 @@
     if (!groupId) {
         return;
     }
-    dispatch_async(self.load_customEvent_queue, ^{
+    dispatch_async(self.update_chat_card, ^{
 
         [self updateCollectionGroupCard:@[groupId]];
     });
@@ -389,7 +351,7 @@
     if (groupIds.count <= 0) {
         return;
     }
-    dispatch_async(self.load_customEvent_queue, ^{
+    dispatch_async(self.update_chat_card, ^{
 
         NSMutableArray *params = [NSMutableArray array];
         for (NSString *groupId in groupIds) {

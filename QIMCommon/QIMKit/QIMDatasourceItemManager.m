@@ -141,10 +141,10 @@ static QIMDatasourceItemManager *_manager = nil;
     NSMutableArray *organList = [NSMutableArray arrayWithCapacity:3];
     NSMutableArray *firstOrgan = [NSMutableArray arrayWithCapacity:3];
     for (NSDictionary *userInfo in userlistArray) {
-        NSString *userId = [userInfo objectForKey:@"userId"];
-        NSString *xmppId = [userInfo objectForKey:@"xmppId"];
-        NSString *userName = [userInfo objectForKey:@"name"];
-        NSString *department = [userInfo objectForKey:@"department"];
+        NSString *userId = [userInfo objectForKey:@"UserId"];
+        NSString *xmppId = [userInfo objectForKey:@"XmppId"];
+        NSString *userName = [userInfo objectForKey:@"Name"];
+        NSString *department = [userInfo objectForKey:@"DescInfo"];
         if (department.length <= 0) {
             continue;
         }

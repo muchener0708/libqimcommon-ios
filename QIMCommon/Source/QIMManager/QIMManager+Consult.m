@@ -342,24 +342,6 @@
             NSMutableArray *list = [NSMutableArray arrayWithCapacity:5];
             for (NSDictionary *infoDic in array) {
                 QIMMessageModel *msg = [self getMessageModelWithByDBMsgDic:infoDic];
-                /*
-                [QIMMessageModel new];
-                [msg setMessageId:[infoDic objectForKey:@"MsgId"]];
-                [msg setFrom:[infoDic objectForKey:@"From"]];
-//                [msg setNickName:[infoDic objectForKey:@"From"]];
-                [msg setTo:[infoDic objectForKey:@"To"]];
-                [msg setMessage:[infoDic objectForKey:@"Content"]];
-                NSString *extendInfo = [infoDic objectForKey:@"ExtendInfo"];
-                [msg setExtendInformation:(extendInfo.length > 0) ? extendInfo : nil];
-                [msg setPlatform:[[infoDic objectForKey:@"Platform"] intValue]];
-                [msg setMessageType:[[infoDic objectForKey:@"MsgType"] intValue]];
-                [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
-                [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
-                [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
-                //Mark by DB
-//                [msg setReadTag:[[infoDic objectForKey:@"ReadTag"] intValue]];
-                [msg setMsgRaw:[infoDic objectForKey:@"msgRaw"]];
-                */
                 [list addObject:msg];
             }
             dispatch_async(dispatch_get_main_queue(), ^{

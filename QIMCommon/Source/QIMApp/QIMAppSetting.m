@@ -58,6 +58,16 @@ static NSString *MAPAPIKEY = nil;
             QIMVerboseLog(@"清除RN包缓存失败");
         }
         */
+        
+        NSArray *oldLogPaths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+        NSString *oldLogDirectory = [[oldLogPaths objectAtIndex:0] stringByAppendingPathComponent:@"Logs"];
+        BOOL removeOldLog = [[NSFileManager defaultManager] removeItemAtPath:oldLogDirectory error:nil];
+        if (removeOldLog) {
+            QIMVerboseLog(@"清除旧日志缓存成功");
+        } else {
+            QIMVerboseLog(@"清除旧日志缓存失败");
+        }
+        
         //清空本地缓存的广告配置
         [[QIMUserCacheManager sharedInstance] removeUserObjectForKey:@"AdvertConfig"];
         [[QIMUserCacheManager sharedInstance] clearUserCache];

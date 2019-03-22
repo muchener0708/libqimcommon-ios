@@ -40,24 +40,13 @@ static IMDataManager *__global_data_manager = nil;
 
 + (IMDataManager *) qimDB_sharedInstanceWithDBPath:(NSString *)dbPath withDBFullJid:(NSString *)dbOwnerFullJid {
 
-    if (__global_data_manager) {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
         __global_data_manager = [[IMDataManager alloc] initWithDBPath:dbPath];
-    } else {
-        __global_data_manager = nil;
-        static dispatch_once_t onceToken;
-        dispatch_once(&onceToken, ^{
-            __global_data_manager = [[IMDataManager alloc] initWithDBPath:dbPath];
-            [__global_data_manager setdbPath:dbPath];
-            [__global_data_manager setDBOwnerFullJid:dbOwnerFullJid];
-            [__global_data_manager setDomain:[[dbOwnerFullJid componentsSeparatedByString:@"@"] lastObject]];
-        });
-        if (!__global_data_manager) {
-            __global_data_manager = [[IMDataManager alloc] initWithDBPath:dbPath];
-            [__global_data_manager setdbPath:dbPath];
-            [__global_data_manager setDBOwnerFullJid:dbOwnerFullJid];
-            [__global_data_manager setDomain:[[dbOwnerFullJid componentsSeparatedByString:@"@"] lastObject]];
-        }
-    }
+        [__global_data_manager setdbPath:dbPath];
+        [__global_data_manager setDBOwnerFullJid:dbOwnerFullJid];
+        [__global_data_manager setDomain:[[dbOwnerFullJid componentsSeparatedByString:@"@"] lastObject]];
+    });
     return __global_data_manager;
 }
 
@@ -212,7 +201,7 @@ static IMDataManager *__global_data_manager = nil;
     BOOL result = NO;
     
     //创建用户表
-    result = [database executeNonQuery: @"CREATE TABLE IF NOT EXISTS IM_User(\
+    result = [database executeNonQuery: @"CREATE TABLE IF NOT EXISTS IM_Users(\
               UserId                TEXT,\
               XmppId                TEXT PRIMARY KEY,\
               Name                  TEXT,\
@@ -220,18 +209,22 @@ static IMDataManager *__global_data_manager = nil;
               HeaderSrc             TEXT,\
               SearchIndex           TEXT,\
               UserInfo              BLOB,\
+              Mood                  TEXT,\
               LastUpdateTime        INTEGER,\
+              Sex                   INTEGER,\
+              UType                 INTEGER,\
+              Email                 Email,\
               IncrementVersion      INTEGER,\
               ExtendedFlag          BLOB\
               );"
                         withParameters:nil];
     if (result) {
-        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_USER_USERID ON \
-                  IM_User(UserId);" withParameters:nil];
-        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_USER_XMPPID ON \
-                  IM_User(XmppId);" withParameters:nil];
-        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_USER_NAME ON \
-                  IM_User(Name);" withParameters:nil];
+        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_Users_USERID ON \
+                  IM_Users(UserId);" withParameters:nil];
+        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_Users_XMPPID ON \
+                  IM_Users(XmppId);" withParameters:nil];
+        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IX_IM_Users_NAME ON \
+                  IM_Users(Name);" withParameters:nil];
     }
     
     //创建群组列表
@@ -653,7 +646,7 @@ static IMDataManager *__global_data_manager = nil;
     }
     
     //创建用户直属Leader表
-    result = [database executeNonQuery:@"CREATE TABLE IF NOT EXISTS IM_UserWorkInfo(\
+    result = [database executeNonQuery:@"CREATE TABLE IF NOT EXISTS IM_UsersWorkInfo(\
               XmppId                 TEXT PRIMARY KEY, \
               UserWorkInfo           TEXT,\
               LastUpdateTime         INTEGER\
@@ -744,7 +737,7 @@ static IMDataManager *__global_data_manager = nil;
     }
     
     //创建用户勋章表
-    result = [database executeNonQuery:@"CREATE TABLE IF NOT EXISTS IM_User_Medal (\
+    result = [database executeNonQuery:@"CREATE TABLE IF NOT EXISTS IM_Users_Medal (\
               XmppId                TEXT,\
               Type                  TEXT,\
               URL                   TEXT,\
@@ -752,7 +745,7 @@ static IMDataManager *__global_data_manager = nil;
               LastUpdateTime        INTEGER DEFAULT 0,\
               primary key (XmppId,Type));" withParameters:nil];
     if (result) {
-        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IM_USER_MEDAL_XMPPID ON IM_User_Medal (XmppId);" withParameters:nil];
+        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IM_Users_MEDAL_XMPPID ON IM_Users_Medal (XmppId);" withParameters:nil];
     }
     
     //创建工作圈表

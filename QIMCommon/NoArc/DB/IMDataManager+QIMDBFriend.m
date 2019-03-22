@@ -175,7 +175,7 @@
     }
     __block NSMutableArray *resultList = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"select a.UserId,a.XmppId,b.Name,b.HeaderSrc,b.SearchIndex from IM_Friend_List as a join IM_User as b where a.XmppId = b.XmppId and a.XmppId NOT IN(select MemberJid from IM_Group_Member where GroupId = '%@');", groupId];
+        NSString *sql = [NSString stringWithFormat:@"select a.UserId,a.XmppId,b.Name,b.HeaderSrc,b.SearchIndex from IM_Friend_List as a join IM_Users as b where a.XmppId = b.XmppId and a.XmppId NOT IN(select MemberJid from IM_Group_Member where GroupId = '%@');", groupId];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
             if (resultList == nil) {

@@ -169,7 +169,7 @@ typedef enum {
             //QIMSDKTODO
 //            QTEncryptChatState encryptState = [[QTEncryptChat sharedInstance] getEncryptChatStateWithUserId:self.message.to];
             if (self.message.messageType == QIMMessageType_SmallVideo || (self.message.messageType == QIMMessageType_BurnAfterRead && [[infoDic objectForKey:@"msgType"] integerValue] == QIMMessageType_SmallVideo)) {
-                if ([[infoDic objectForKey:@"msgType"] integerValue] == QIMMessageType_SmallVideo && self.message.extendInformation) {
+                if ([[infoDic objectForKey:@"msgType"] integerValue] == QIMMessageType_SmallVideo && self.message.extendInformation.length > 0) {
                     self.message.message = [[[QIMJSONSerializer sharedInstance] deserializeObject:self.message.extendInformation error:nil] objectForKey:@"message"];
                 }
                 NSDictionary *dic = [[QIMJSONSerializer sharedInstance] deserializeObject:self.message.message error:nil];
@@ -296,8 +296,8 @@ typedef enum {
             }else if (self.message.messageType == QIMMessageType_CommonTrdInfo) {
                 NSMutableDictionary * mulDic = [NSMutableDictionary dictionaryWithDictionary:infoDic];
                 NSString * jDataStr = [[[[QIMNavConfigManager sharedInstance].innerFileHttpHost stringByAppendingString:[NSString stringWithFormat:@"/%@",httpUrl]] dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
-                jDataStr = [jDataStr stringByReplacingOccurrencesOfString:@"/" withString:@"-"];
-                jDataStr = [jDataStr stringByReplacingOccurrencesOfString:@"+" withString:@"."];
+                jDataStr = [jDataStr stringByReplacingOccurrencesOfString:@"/" withString:@"_"];
+                jDataStr = [jDataStr stringByReplacingOccurrencesOfString:@"+" withString:@"-"];
                 [mulDic setQIMSafeObject:[NSString stringWithFormat:@"https://qim.qunar.com/sharemsg/index.php?jdata=%@", jDataStr] forKey:@"linkurl"];
                 NSString *msgExtendInfoStr = [[QIMJSONSerializer sharedInstance] serializeObject:mulDic];
                 //QIMSDKTODO
@@ -671,8 +671,6 @@ typedef enum {
     if ([fileExt.uppercaseString isEqualToString:@"GIF"]) {
         isGif = YES;
     }
-    //Mark by DB
-//    message.MD5 = fileKey;
     __block NSString * fileName = fileExt.length ? [fileKey stringByAppendingPathExtension:fileExt] : fileKey;
     CGSize size = [self getFitSizeForImgSize:[UIImage imageWithData:fileData].size];
     //存小图
@@ -681,10 +679,6 @@ typedef enum {
         //存原图
         [self saveFileData:fileData withFileName:fileName forCacheType:QIMFileCacheTypeColoction];
         long long fileLength = fileData.length;
-        /*
-        if (fileExt.length > 0) {
-            fileName = [fileName stringByAppendingPathExtension:fileExt];
-        } */
         NSString *method = [NSString  stringWithFormat:@"file/v2/inspection/%@",flag?@"file":@"img"];
         NSString *destUrl = [NSString stringWithFormat:@"%@/%@?key=%@&size=%lld&name=%@&p=iphone&u=%@&k=%@&version=%@",
                              [QIMNavConfigManager sharedInstance].innerFileHttpHost, method, fileKey, fileLength, fileName,

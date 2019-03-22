@@ -37,8 +37,8 @@
 
 - (void)updateLastMaxMucReadMarkTime {
     QIMVerboseLog(@"更新本地群阅读指针时间戳");
-    long long maxMucReadMarkUpdateTime = [[[IMDataManager qimDB_SharedInstance] qimDB_getConfigInfoWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalMucRemarkUpdateTime] WithSubKey:[[QIMManager sharedInstance] getLastJid] WithDeleteFlag:NO] longLongValue];
-    self.lastMaxMucReadMarkTime = maxMucReadMarkUpdateTime;
+    NSInteger userMaxVersion = [[IMDataManager qimDB_SharedInstance] qimDB_getUserCacheDataWithKey:kGetGroupReadMarkVersion withType:8];
+    self.lastMaxMucReadMarkTime = userMaxVersion;
     QIMVerboseLog(@"最终获取到的本地群阅读指针最后消息时间戳为 : %f", self.lastMaxMucReadMarkTime);
 }
 
@@ -312,10 +312,7 @@
              
                  long long maxMucReadMarkTime = [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateGroupMessageReadFlag:mucData];
                  if (maxMucReadMarkTime > self.lastMaxMucReadMarkTime) {
-                     NSString *jid = [[QIMManager sharedInstance] getLastJid];
-                     NSString *updateTime = [NSString stringWithFormat:@"%lld", maxMucReadMarkTime];
-                     NSArray *configArray = @[@{@"subkey":jid?jid:@"", @"configinfo":updateTime}];
-                     [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertConfigArrayWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalMucRemarkUpdateTime] WithConfigVersion:0 ConfigArray:configArray];
+                     [[IMDataManager qimDB_SharedInstance] qimDB_UpdateUserCacheDataWithKey:kGetGroupReadMarkVersion withType:8 withValue:@"群阅读指针时间戳" withValueInt:maxMucReadMarkTime];
                  }
                  dispatch_async(dispatch_get_main_queue(), ^{
                      QIMVerboseLog(@"获取群阅读指针之后强制刷新NavBar未读数");

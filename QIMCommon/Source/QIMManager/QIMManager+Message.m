@@ -506,7 +506,7 @@
     if (msgRaw.length > 0) {
         [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageWithMsgId:msg.messageId WithMsgRaw:msgRaw];
     } else {
-        NSDictionary *msgRawDict = @{@"content":msg.message?msg.message:@"", @"extendInfo":msg.extendInformation?msg.extendInformation:@"", @"localConvert":@(YES)};
+        NSDictionary *msgRawDict = @{@"content":msg.message?msg.message:@"", @"extendInfo":msg.extendInformation.length > 0?msg.extendInformation:@"", @"localConvert":@(YES)};
         NSString *msgRawStr = [[QIMJSONSerializer sharedInstance] serializeObject:msgRawDict];
         [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageWithMsgId:msg.messageId WithMsgRaw:msgRawStr];
     }
@@ -795,15 +795,6 @@
     return self.msgCompensateReadSet;
 }
 
-- (void)updateNotReadCountCacheByJid:(NSString *)jid WithRealJid:(NSString *)realJid{
-    return;
-//    Mark by DB
-    if (jid.length > 0) {
-        NSString *userId = [NSString stringWithFormat:@"%@-%@", jid, realJid];
-        [self updateNotReadCountCacheByJid:userId];
-    }
-}
-
 - (void)updateMessageControlStateWithNewState:(QIMMessageSendState)state ByMsgIdList:(NSArray *)MsgIdList {
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -909,13 +900,11 @@
     }];
 }
 
-- (int)getLeaveMsgNotReaderCount {//    prod:http://u.package.qunar.com/user/message/countUnreply.json
-    //    dev：http://l-djb2c8.vc.dev.cn0.qunar.com:8972/user/message/countUnreply.json
+- (int)getLeaveMsgNotReaderCount {
     NSURL *url = [NSURL URLWithString:@"http://u.package.qunar.com/user/message/countUnreply.json"];
     ASIHTTPRequest *request = [[ASIHTTPRequest alloc] initWithURL:url];
     [request addRequestHeader:@"Content-type" value:@"application/x-www-form-urlencoded;"];
     [request setRequestMethod:@"GET"];
-    //    [request setPostBody:tempPostData];
     [request setCachePolicy:ASIDoNotReadFromCacheCachePolicy];
     [request startSynchronous];
     NSError *error = [request error];
@@ -937,14 +926,11 @@
         
         return;
     }
-    //Mark by DB
-//    [[IMDataManager qimDB_SharedInstance] qimDB_updateSystemMsgState:QIMMessageSendState_Success WithXmppId:jid];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateSystemMsgState:QIMMessageSendState_Success withReadState:QIMMessageRemoteReadStateDidReaded WithXmppId:jid];
     dispatch_async(dispatch_get_main_queue(), ^{
         
         [self updateNotReadCountCacheByJid:jid];
         QIMVerboseLog(@"clearSystemMsgNotReadWithJid: 抛出通知 kMsgNotReadCountChange");
-        //Mark by DB
-//        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:jid];
     });
 }
 
@@ -994,46 +980,6 @@
     }];
 }
 
-//更新消息
-- (void)updateMsg:(QIMMessageModel *)msg ByJid:(NSString *)sid {
-    
-    //时间消息 不存
-    if ([msg isKindOfClass:[NSString class]]) {
-        
-        return;
-    }
-    
-    //存储 消息
-    if ([msg isKindOfClass:[NSString class]] == FALSE) {
-        
-        NSString *messageId = msg.messageId;
-        
-        NSString *from = msg.from;
-        
-        NSString *to = msg.to;
-        
-        NSString *content = nil;
-        content = msg.message;
-        NSString *extendInfo = msg.extendInformation;
-        int msgType = msg.messageType;
-        
-        long long msgState = msg.messageSendState;
-        
-        int msgDirection = msg.messageDirection;
-        
-        long long msgDate = msg.messageDate;
-        
-        [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageWithMsgId:messageId WithSessionId:sid WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:0 WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:0 ExtendedFlag:0 WithMsgRaw:msg.msgRaw];
-    }
-}
-
-- (void)deleteMsg:(QIMMessageModel *)msg ByJid:(NSString *)sid {
-    
-    [[IMDataManager qimDB_SharedInstance] qimDB_deleteMessageByMessageId:msg.messageId ByJid:sid];
-}
-
-#pragma mark - New
-
 #pragma mark - 阅读状态
 
 - (NSDictionary *)getLocalAllOnReadStateInfoWithReadType:(QIMMessageReadFlag)readType ByReadMarkT:(long long)readMarkT {
@@ -1063,7 +1009,7 @@
     [infoDic setQIMSafeObject:[[groupId componentsSeparatedByString:@"@"] firstObject] forKey:@"id"];
     [infoDic setQIMSafeObject:[[groupId componentsSeparatedByString:@"@"] lastObject] forKey:@"domain"];
     [infoDic setQIMSafeObject:@(readMarkTime) forKey:@"t"];
-    NSString *infoStr = [[QIMJSONSerializer sharedInstance] serializeObject:infoDic];
+    NSString *infoStr = [[QIMJSONSerializer sharedInstance] serializeObject:@[infoDic]];
     
     [readInfoDic setQIMSafeObject:infoStr forKey:@"infoStr"];
     [readInfoDic setQIMSafeObject:groupId forKey:@"jid"];
@@ -1114,7 +1060,6 @@
     }
     
     NSString *jsonString = [[QIMJSONSerializer sharedInstance] serializeObject:resultArray];
-//    sendReadStateWithMessagesIdArray:(NSString *)jsonString WithMessageReadFlag:(NSInteger)msgReadFlag WithXmppid:(NSString *)xmppId WithTo:(NSString *)to withRealTo:(NSString *)realTo
     BOOL isSuccess = [[XmppImManager sharedInstance] sendReadStateWithMessagesIdArray:jsonString WithMessageReadFlag:msgReadFlag WithXmppid:[NSString stringWithFormat:@"%@",xmppId] WithTo:xmppId withRealTo:realJid];
     if (isSuccess) {
         NSDictionary *readDic = [self getLocalOnReadStateInfoWithReadType:msgReadFlag withReadMsgList:resultArray withXmppId:xmppId];
@@ -1149,6 +1094,7 @@
     BOOL isSuccess = [[XmppImManager sharedInstance] sendReadStateWithMessageTime:lastTime groupName:groupName WithDomain:domain];
     if (isSuccess) {
         NSDictionary *groupOnReadStateDic = [self getLocalOnGroupReadStateInfoWithReadType:QIMMessageReadFlagGroupReaded withGroupId:groupId withReadMarkTime:lastTime];
+        QIMVerboseLog(@"发送本地groupOnReadStateDic : %@", groupOnReadStateDic);
         [self onReadState:groupOnReadStateDic];
     }
     return isSuccess;
@@ -1218,25 +1164,59 @@
             }
             NSDictionary *msgDic = [msg yy_modelToJSONObject];
             [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgDic:msgDic];
-//            [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgId:messageId WithXmppId:xmppId WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:msg.platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:0 WithMsgRaw:msg.msgRaw WithRealJid:msg.realJid WithChatType:ChatType_CollectionChat];
-            
         } else if (msg.chatType == ChatType_System) {
             if (msg.messageType == MessageType_C2BGrabSingle || msg.messageType == MessageType_C2BGrabSingleFeedBack || msg.messageType == MessageType_QCZhongbao) {
                 content = msg.extendInformation.length > 0 ? msg.extendInformation : msg.message;
             }
             NSDictionary *msgDic = [msg yy_modelToJSONObject];
             [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgDic:msgDic];
-//            [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgId:messageId WithXmppId:xmppId WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:0 WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:0 WithMsgRaw:msg.msgRaw WithRealJid:msg.realJid WithChatType:ChatType_System];
         } else {
             if (!msg.msgRaw) {
-                NSDictionary *msgRawDict = @{@"content":msg.message?msg.message:@"", @"extendInfo":msg.extendInformation?msg.extendInformation:@"", @"localConvert":@(YES)};
+                NSDictionary *msgRawDict = @{@"content":msg.message?msg.message:@"", @"extendInfo":msg.extendInformation.length > 0?msg.extendInformation:@"", @"localConvert":@(YES)};
                 msg.msgRaw = [[QIMJSONSerializer sharedInstance] serializeObject:msgRawDict];
             }
             NSDictionary *msgDic = [msg yy_modelToJSONObject];
             [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgDic:msgDic];
-//            [[IMDataManager qimDB_SharedInstance] qimDB_insertMessageWithMsgId:messageId WithXmppId:xmppId WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:msg.platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:msg.messageReadState WithMsgRaw:msg.msgRaw WithRealJid:msg.realJid WithChatType:msg.chatType];
         }
     }
+}
+
+//更新消息
+- (void)updateMsg:(QIMMessageModel *)msg ByJid:(NSString *)sid {
+    
+    //时间消息 不存
+    if ([msg isKindOfClass:[NSString class]]) {
+        
+        return;
+    }
+    
+    //存储 消息
+    if ([msg isKindOfClass:[NSString class]] == FALSE) {
+        
+        NSString *messageId = msg.messageId;
+        
+        NSString *from = msg.from;
+        
+        NSString *to = msg.to;
+        
+        NSString *content = nil;
+        content = msg.message;
+        NSString *extendInfo = msg.extendInformation;
+        int msgType = msg.messageType;
+        
+        long long msgState = msg.messageSendState;
+        
+        int msgDirection = msg.messageDirection;
+        
+        long long msgDate = msg.messageDate;
+        
+        [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageWithMsgId:messageId WithSessionId:sid WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:0 WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:0 ExtendedFlag:0 WithMsgRaw:msg.msgRaw];
+    }
+}
+
+- (void)deleteMsg:(QIMMessageModel *)msg ByJid:(NSString *)sid {
+    
+    [[IMDataManager qimDB_SharedInstance] qimDB_deleteMessageByMessageId:msg.messageId ByJid:sid];
 }
 
 - (void)setMsgSentFaild{
@@ -1254,6 +1234,7 @@
     return [[XmppImManager sharedInstance] parseOriginMessageByMsgRaw:msgRaw];
 }
 
+#pragma mark - 加载本地消息
 - (void)getMsgListByUserId:(NSString *)userId WithRealJid:(NSString *)realJid FromTimeStamp:(long long)timeStamp WithComplete:(void (^)(NSArray *))complete {
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -1465,13 +1446,11 @@
     });
 }
 
-#pragma mark - 历史消息监测
+#pragma mark - 本地消息搜索
 
 - (NSMutableArray *)searchLocalMessageByKeyword:(NSString *)keyWord XmppId:(NSString *)xmppid RealJid:(NSString *)realJid {
     return [[IMDataManager qimDB_SharedInstance] qimDB_searchLocalMessageByKeyword:keyWord XmppId:xmppid RealJid:realJid];
 }
-
-#pragma mark - 本地消息搜索
 
 - (NSArray *)getLocalMediasByXmppId:(NSString *)xmppId ByRealJid:(NSString *)realJid {
     NSArray *array = [[IMDataManager qimDB_SharedInstance] qimDB_getLocalMediaByXmppId:xmppId ByReadJid:realJid];

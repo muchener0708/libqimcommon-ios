@@ -74,25 +74,55 @@
     return lastMaxTime;
 }
 
+- (BOOL)qimDB_checkSession:(NSString *)sessionId withRealJid:(NSString *)realJid withChatType:(int)chatType {
+    __block BOOL flag = NO;
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = @"Select 1 From IM_SessionList Where XmppId = :XmppId and RealJid = :RealJid and ChatType = :ChatType;";
+        DataReader *reader = [database executeReader:sql withParameters:@[sessionId, realJid, @(chatType)]];
+        if ([reader read]) {
+            flag = YES;
+        }
+    }];
+    QIMVerboseLog(@"");
+    return flag;
+}
+
 - (void)qimDB_insertSessionWithSessionId:(NSString *)sessinId
                               WithUserId:(NSString *)userId
                            WithLastMsgId:(NSString *)lastMsgId
                       WithLastUpdateTime:(long long)lastUpdateTime
                                 ChatType:(int)ChatType
                              WithRealJid:(id)realJid{
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"insert or ignore into IM_SessionList(XmppId, UserId, LastMessageId,LastUpdateTime,ChatType,RealJid) Values(:XmppId, :UserId, :LastMessageId,:LastUpdateTime,:ChatType,:RealJid);";
-        NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:5];
-        [param addObject:sessinId?sessinId:@":NULL"];
-        [param addObject:userId?userId:@":NULL"];
-        [param addObject:lastMsgId?lastMsgId:@":NULL"];
-        [param addObject:[NSNumber numberWithLongLong:lastUpdateTime]];
-        [param addObject:[NSNumber numberWithInt:ChatType]];
-        [param addObject:realJid?realJid:@":NULL"];
-        [database executeNonQuery:sql withParameters:param];
-        [param release];
-        param = nil;
-    }];
+    
+    BOOL checkExist = [self qimDB_checkSession:sessinId withRealJid:realJid withChatType:ChatType];
+    if (checkExist) {
+        [[self dbInstance] syncUsingTransaction:^(Database *database) {
+            NSString *sql = @"Update IM_SessionList Set LastMessageId = :LastMessageId, LastUpdateTime = :LastUpdateTime Where XmppId = :XmppId and RealJid = :RealJid and ChatType = :ChatType";
+            NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:5];
+            [param addObject:lastMsgId?lastMsgId:@":NULL"];
+            [param addObject:[NSNumber numberWithLongLong:lastUpdateTime]];
+            [param addObject:sessinId?sessinId:@":NULL"];
+            [param addObject:realJid?realJid:@":NULL"];
+            [param addObject:[NSNumber numberWithInt:ChatType]];
+            [database executeNonQuery:sql withParameters:param];
+            [param release];
+            param = nil;
+        }];
+    } else {
+        [[self dbInstance] syncUsingTransaction:^(Database *database) {
+            NSString *sql = @"insert or ignore into IM_SessionList(XmppId, UserId, LastMessageId,LastUpdateTime,ChatType,RealJid) Values(:XmppId, :UserId, :LastMessageId,:LastUpdateTime,:ChatType,:RealJid);";
+            NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:5];
+            [param addObject:sessinId?sessinId:@":NULL"];
+            [param addObject:userId?userId:@":NULL"];
+            [param addObject:lastMsgId?lastMsgId:@":NULL"];
+            [param addObject:[NSNumber numberWithLongLong:lastUpdateTime]];
+            [param addObject:[NSNumber numberWithInt:ChatType]];
+            [param addObject:realJid?realJid:@":NULL"];
+            [database executeNonQuery:sql withParameters:param];
+            [param release];
+            param = nil;
+        }];
+    }
     QIMVerboseLog(@"");
 }
 
@@ -155,7 +185,7 @@
             [IMDataManager safeSaveForDic:dic setObject:@(ChatType_PublicNumber) forKey:@"ChatType"];
             pMaxLastTime = [pReader objectForColumnIndex:4];
         }
-        NSString *sql = [NSString stringWithFormat:@"select a.XmppId, a.UserId, case a.ChatType WHEN %d THEN (select name from IM_User where IM_User.XmppId = a.XmppId) ELSE (select name from IM_Group where IM_Group.GroupId = a.XmppId) end as Name, case a.ChatType When %d THEN (Select HeaderSrc From IM_User WHERE UserId = a.UserId) ELSE (SELECT HeaderSrc From IM_Group WHERE GroupId=a.XmppId) END as HeaderSrc, b.MsgId, b.Content, b.Type, b.State, b.Direction,CASE b.LastUpdateTime  When NULL THEN a.LastUpdateTime ELSE b.LastUpdateTime END as orderTime, a.ChatType, case a.ChatType When %d THEN '' ELSE b.[From] END as NickName, 0 as NotReadCount,a.RealJid from IM_SessionList as a left join IM_Message as b on a.XmppId = b.XmppId and b.MsgId = (SELECT MsgId FROM IM_Message WHERE XmppId = a.XmppId  AND (case When a.ChatType = %d or a.ChatType = %d THEN RealJid = a.RealJid ELSE RealJid is null END) Order by LastUpdateTime DESC LIMIT 1) order by OrderTime desc;", singleChatType, singleChatType+1,singleChatType, ChatType_Consult, ChatType_ConsultServer];
+        NSString *sql = [NSString stringWithFormat:@"select a.XmppId, a.UserId, case a.ChatType WHEN %d THEN (select name from IM_Users where IM_Users.XmppId = a.XmppId) ELSE (select name from IM_Group where IM_Group.GroupId = a.XmppId) end as Name, case a.ChatType When %d THEN (Select HeaderSrc From IM_Users WHERE UserId = a.UserId) ELSE (SELECT HeaderSrc From IM_Group WHERE GroupId=a.XmppId) END as HeaderSrc, b.MsgId, b.Content, b.Type, b.State, b.Direction,CASE b.LastUpdateTime  When NULL THEN a.LastUpdateTime ELSE b.LastUpdateTime END as orderTime, a.ChatType, case a.ChatType When %d THEN '' ELSE b.[From] END as NickName, 0 as NotReadCount,a.RealJid from IM_SessionList as a left join IM_Message as b on a.XmppId = b.XmppId and b.MsgId = (SELECT MsgId FROM IM_Message WHERE XmppId = a.XmppId  AND (case When a.ChatType = %d or a.ChatType = %d THEN RealJid = a.RealJid ELSE RealJid is null END) Order by LastUpdateTime DESC LIMIT 1) order by OrderTime desc;", singleChatType, singleChatType+1,singleChatType, ChatType_Consult, ChatType_ConsultServer];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         
         result = [[NSMutableArray alloc] initWithCapacity:100];
@@ -222,7 +252,7 @@
             pMaxLastTime = [pReader objectForColumnIndex:4];
         }
         
-        NSString *sql = [NSString stringWithFormat:@"select a.XmppId, a.UserId, case a.ChatType WHEN %d THEN (select name from IM_User where IM_User.XmppId = a.XmppId) ELSE (select name from IM_Group where IM_Group.GroupId = a.XmppId) end as Name, case a.ChatType When %d THEN (Select HeaderSrc From IM_User WHERE UserId = a.UserId) ELSE (SELECT HeaderSrc From IM_Group WHERE GroupId=a.XmppId) END as HeaderSrc, b.MsgId, b.Content, b.Type, b.State, b.Direction, a.ChatType, a.RealJid, a.LastUpdateTime, (case when (select count(*) from IM_Client_Config where DeleteFlag =0 and ConfigKey ='kStickJidDic' and ConfigSubKey=(a.XmppId ||'<>'||a.RealJid))=1 Then 1 ELSE 0 END) as StickState, (case when (select count(*) from IM_Client_Config where ConfigKey='kNoticeStickJidDic'and DeleteFlag=0 and ConfigSubKey=a.XmppId)=1 Then 1 ELSE 0 END) as Reminded, (case when (select count(*) from IM_Client_Config where ConfigKey='kMarkupNames' and DeleteFlag=0 and ConfigSubKey=a.XmppId)=1 Then (select ConfigValue from IM_Client_Config where ConfigKey='kMarkupNames' and DeleteFlag=0 and ConfigSubKey=a.XmppId) ELSE NULL END) as MarkupName, b.'From', a.UnreadCount from IM_SessionList as a left join IM_Message as b on a.LastMessageId = b.MsgId where a.UnreadCount >0 order by StickState desc, a.LastUpdateTime desc;", ChatType_SingleChat, ChatType_SingleChat];
+        NSString *sql = [NSString stringWithFormat:@"select a.XmppId, a.UserId, case a.ChatType WHEN %d THEN (select name from IM_Users where IM_Users.XmppId = a.XmppId) ELSE (select name from IM_Group where IM_Group.GroupId = a.XmppId) end as Name, case a.ChatType When %d THEN (Select HeaderSrc From IM_Users WHERE UserId = a.UserId) ELSE (SELECT HeaderSrc From IM_Group WHERE GroupId=a.XmppId) END as HeaderSrc, b.MsgId, b.Content, b.Type, b.State, b.Direction, a.ChatType, a.RealJid, a.LastUpdateTime, (case when (select count(*) from IM_Client_Config where DeleteFlag =0 and ConfigKey ='kStickJidDic' and ConfigSubKey=(a.XmppId ||'<>'||a.RealJid))=1 Then 1 ELSE 0 END) as StickState, (case when (select count(*) from IM_Client_Config where ConfigKey='kNoticeStickJidDic'and DeleteFlag=0 and ConfigSubKey=a.XmppId)=1 Then 1 ELSE 0 END) as Reminded, (case when (select count(*) from IM_Client_Config where ConfigKey='kMarkupNames' and DeleteFlag=0 and ConfigSubKey=a.XmppId)=1 Then (select ConfigValue from IM_Client_Config where ConfigKey='kMarkupNames' and DeleteFlag=0 and ConfigSubKey=a.XmppId) ELSE NULL END) as MarkupName, b.'From', a.UnreadCount from IM_SessionList as a left join IM_Message as b on a.LastMessageId = b.MsgId where a.UnreadCount >0 order by StickState desc, a.LastUpdateTime desc;", ChatType_SingleChat, ChatType_SingleChat];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         
         result = [[NSMutableArray alloc] initWithCapacity:3];
@@ -301,7 +331,7 @@
             pMaxLastTime = [pReader objectForColumnIndex:4];
         }
         
-        NSString *sql = [NSString stringWithFormat:@"select a.XmppId, a.UserId, case a.ChatType WHEN %d THEN (select name from IM_User where IM_User.XmppId = a.XmppId) ELSE (select name from IM_Group where IM_Group.GroupId = a.XmppId) end as Name, case a.ChatType When %d THEN (Select HeaderSrc From IM_User WHERE UserId = a.UserId) ELSE (SELECT HeaderSrc From IM_Group WHERE GroupId=a.XmppId) END as HeaderSrc, b.MsgId, b.Content, b.Type, b.State, b.Direction, a.ChatType, a.RealJid, a.LastUpdateTime, (case when (select count(*) from IM_Client_Config where DeleteFlag =0 and ConfigKey ='kStickJidDic' and ConfigSubKey=(a.XmppId ||'<>'||a.RealJid))=1 Then 1 ELSE 0 END) as StickState, (case when (select count(*) from IM_Client_Config where ConfigKey='kNoticeStickJidDic'and DeleteFlag=0 and ConfigSubKey=a.XmppId)=1 Then 1 ELSE 0 END) as Reminded, (case when (select count(*) from IM_Client_Config where ConfigKey='kMarkupNames' and DeleteFlag=0 and ConfigSubKey=a.XmppId)=1 Then (select ConfigValue from IM_Client_Config where ConfigKey='kMarkupNames' and DeleteFlag=0 and ConfigSubKey=a.XmppId) ELSE NULL END) as MarkupName, b.'From', a.UnreadCount from IM_SessionList as a left join IM_Message as b on a.LastMessageId = b.MsgId order by StickState desc, a.LastUpdateTime desc;", singleChatType, singleChatType];
+        NSString *sql = [NSString stringWithFormat:@"select a.XmppId, a.UserId, case a.ChatType WHEN %d THEN (select name from IM_Users where IM_Users.XmppId = a.XmppId) ELSE (select name from IM_Group where IM_Group.GroupId = a.XmppId) end as Name, case a.ChatType When %d THEN (Select HeaderSrc From IM_Users WHERE UserId = a.UserId) ELSE (SELECT HeaderSrc From IM_Group WHERE GroupId=a.XmppId) END as HeaderSrc, b.MsgId, b.Content, b.Type, b.State, b.Direction, a.ChatType, a.RealJid, a.LastUpdateTime, (case when (select count(*) from IM_Client_Config where DeleteFlag =0 and ConfigKey ='kStickJidDic' and ConfigSubKey=(a.XmppId ||'<>'||a.RealJid))=1 Then 1 ELSE 0 END) as StickState, (case when (select count(*) from IM_Client_Config where ConfigKey='kNoticeStickJidDic'and DeleteFlag=0 and ConfigSubKey=a.XmppId)=1 Then 1 ELSE 0 END) as Reminded, (case when (select count(*) from IM_Client_Config where ConfigKey='kMarkupNames' and DeleteFlag=0 and ConfigSubKey=a.XmppId)=1 Then (select ConfigValue from IM_Client_Config where ConfigKey='kMarkupNames' and DeleteFlag=0 and ConfigSubKey=a.XmppId) ELSE NULL END) as MarkupName, b.'From', a.UnreadCount from IM_SessionList as a left join IM_Message as b on a.LastMessageId = b.MsgId order by StickState desc, a.LastUpdateTime desc;", singleChatType, singleChatType];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         
         result = [[NSMutableArray alloc] initWithCapacity:100];
@@ -385,7 +415,7 @@
     __block NSMutableDictionary *chatSession = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         
-        NSString *sql = [NSString stringWithFormat:@"Select a.XmppId, a.UserId, case a.ChatType When %d THEN (Select Name From IM_User WHERE UserId = a.UserId) ELSE (SELECT Name From IM_Group WHERE GroupId = a.XmppId) END as Name, case a.ChatType When %d THEN (Select HeaderSrc From IM_User WHERE UserId = a.UserId) ELSE (SELECT HeaderSrc From IM_Group WHERE GroupId=a.XmppId) END as HeaderSrc, a.LastMessageId, b.Content, b.Type, b.State, b.Direction, b.LastUpdateTime, a.ChatType, case a.ChatType When %d THEN '' ELSE b.\"From\" END as NickName,(Select count(*) From IM_Message Where XmppId = a.XmppId And ReadedTag = 0) as NotReadCount From IM_SessionList as a left join IM_Message as b on (a.LastMessageId = b.MsgId ) Where a.XmppId=:XmppId Order by b.LastUpdateTime DESC;",chatType,chatType+1,chatType];
+        NSString *sql = [NSString stringWithFormat:@"Select a.XmppId, a.UserId, case a.ChatType When %d THEN (Select Name From IM_Users WHERE UserId = a.UserId) ELSE (SELECT Name From IM_Group WHERE GroupId = a.XmppId) END as Name, case a.ChatType When %d THEN (Select HeaderSrc From IM_Users WHERE UserId = a.UserId) ELSE (SELECT HeaderSrc From IM_Group WHERE GroupId=a.XmppId) END as HeaderSrc, a.LastMessageId, b.Content, b.Type, b.State, b.Direction, b.LastUpdateTime, a.ChatType, case a.ChatType When %d THEN '' ELSE b.\"From\" END as NickName,(Select count(*) From IM_Message Where XmppId = a.XmppId And ReadedTag = 0) as NotReadCount From IM_SessionList as a left join IM_Message as b on (a.LastMessageId = b.MsgId ) Where a.XmppId=:XmppId Order by b.LastUpdateTime DESC;",chatType,chatType+1,chatType];
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:userId];
         DataReader *reader = [database executeReader:sql withParameters:param];
@@ -463,7 +493,7 @@
     __block NSMutableDictionary *chatSession = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         
-        NSString *sql = @"Select a.XmppId, a.UserId, case a.ChatType When 0 THEN (Select Name From IM_User WHERE UserId = a.UserId) ELSE (SELECT Name From IM_Group WHERE GroupId = a.XmppId) END as Name, case a.ChatType When 0 THEN (Select HeaderSrc From IM_User WHERE UserId = a.UserId) ELSE (SELECT HeaderSrc From IM_Group WHERE GroupId=a.XmppId) END as HeaderSrc, a.LastMessageId, b.Content, b.Type, b.State, b.Direction, b.LastUpdateTime, a.ChatType,(Select count(*) From IM_Message Where XmppId = a.XmppId) as NotReadCount From IM_SessionList as a left join IM_Message as b on (a.LastMessageId = b.MsgId ) Where a.XmppId=:XmppId Order by b.LastUpdateTime DESC;";
+        NSString *sql = @"Select a.XmppId, a.UserId, case a.ChatType When 0 THEN (Select Name From IM_Users WHERE UserId = a.UserId) ELSE (SELECT Name From IM_Group WHERE GroupId = a.XmppId) END as Name, case a.ChatType When 0 THEN (Select HeaderSrc From IM_Users WHERE UserId = a.UserId) ELSE (SELECT HeaderSrc From IM_Group WHERE GroupId=a.XmppId) END as HeaderSrc, a.LastMessageId, b.Content, b.Type, b.State, b.Direction, b.LastUpdateTime, a.ChatType,(Select count(*) From IM_Message Where XmppId = a.XmppId) as NotReadCount From IM_SessionList as a left join IM_Message as b on (a.LastMessageId = b.MsgId ) Where a.XmppId=:XmppId Order by b.LastUpdateTime DESC;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:userId];
         DataReader *reader = [database executeReader:sql withParameters:param];

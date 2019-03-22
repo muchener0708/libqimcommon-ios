@@ -152,47 +152,6 @@
  */
 - (void)updateUserSignature:(NSString *)signature withCallBack:(QIMKitUpdateSignatureBlock)callback;
 
-
-/**
- 获取用户Profile
-
- @param userId 用户Id
- @param update 是否需要更新
- @param block 回调
- */
-- (void)userProfilewithUserId:(NSString *)userId needupdate:(BOOL)update withBlock:(void (^)(NSDictionary *))block;
-
-/**
- 本地获取用户Profile
- 
- @param userId 用户Id
- */
-- (NSDictionary *)getLocalProfileForUserId:(NSString *)userId;
-
-/**
- *  获取userProfile
- *
- *  @param userIds 用户ID
- *
- *  @return userProfile
- *  数据样例：
- 
- "dan.liu@ejabhost1" =     {
- M = "\U8fd9\U592aimba\U4e86!";
- U = "dan.liu";
- V = 19;
- };
- */
-- (NSDictionary *)getRemoteUserProfileForUserIds:(NSArray *)userIds;
-
-
-/**
- 根据用户Id获取QChat 用户名片信息
-
- @param user 用户Id
- */
-- (NSDictionary *)getQChatUserInfoForUser:(NSString *)user;
-
 #pragma mark - 跨域
 
 /**

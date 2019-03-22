@@ -84,8 +84,10 @@ static QIMDataController *__globalDataController = nil;
     
     NSString *newcachePath = [QIMFileManager documentsofPath:QIMFileCacheTypeColoction];
     
-    
-    return [QIMUtility sizeofPath:cachePath] + [QIMUtility sizeofPath:newcachePath];
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSString *logDirectory = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"Logs"];
+
+    return [QIMUtility sizeofPath:cachePath] + [QIMUtility sizeofPath:newcachePath] + [QIMUtility sizeofPath:logDirectory];
 }
 
 - (void) deleteAllFilesAtPath:(NSString *) cachePath {
@@ -107,6 +109,12 @@ static QIMDataController *__globalDataController = nil;
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:kQCRemoveImageCachePathSuccess object:nil];
     });
+}
+
+- (void)clearLogFiles {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSString *logDirectory = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"Logs"];
+    [[NSFileManager defaultManager] removeItemAtPath:logDirectory error:nil];
 }
 
 - (NSData *)getResourceWithFileName:(NSString *)fileName {

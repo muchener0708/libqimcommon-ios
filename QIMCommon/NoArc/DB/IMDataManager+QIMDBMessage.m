@@ -265,41 +265,6 @@
     QIMVerboseLog(@"");
 }
 
-/*
-- (void)qimDB_insertMessageWithMsgId:(NSString *)msgId
-                          WithXmppId:(NSString *)xmppId
-                            WithFrom:(NSString *)from
-                              WithTo:(NSString *)to
-                         WithContent:(NSString *)content
-                      WithExtendInfo:(NSString *)extendInfo
-                        WithPlatform:(int)platform
-                         WithMsgType:(int)msgType
-                        WithMsgState:(int)msgState
-                    WithMsgDirection:(int)msgDirection
-                         WithMsgDate:(long long)msgDate
-                       WithReadedTag:(int)readedTag
-                        WithChatType:(NSInteger)chatType {
-    [self qimDB_insertMessageWithMsgId:msgId WithXmppId:xmppId WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:readedTag WithMsgRaw:nil WithChatType:chatType];
-}
-
-- (void)qimDB_insertMessageWithMsgId:(NSString *)msgId
-                    WithXmppId:(NSString *)xmppId
-                      WithFrom:(NSString *)from
-                        WithTo:(NSString *)to
-                   WithContent:(NSString *)content
-                WithExtendInfo:(NSString *)extendInfo
-                  WithPlatform:(int)platform
-                   WithMsgType:(int)msgType
-                  WithMsgState:(int)msgState
-              WithMsgDirection:(int)msgDirection
-                   WithMsgDate:(long long)msgDate
-                 WithReadedTag:(int)readedTag
-                    WithMsgRaw:(NSString *)msgRaw
-                  WithChatType:(NSInteger)chatType{
-    [self qimDB_insertMessageWithMsgId:msgId WithXmppId:xmppId WithFrom:from WithTo:to WithContent:content WithExtendInfo:extendInfo WithPlatform:platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:readedTag WithMsgRaw:msgRaw WithRealJid:nil WithChatType:chatType];
-}
-*/
-
 - (void)qimDB_insertMessageWithMsgDic:(NSDictionary *)msgDic {
     NSLog(@"插入消息 ： %@", msgDic);
     /*
@@ -365,47 +330,6 @@
     QIMVerboseLog(@"");
 }
 
-- (void)qimDB_insertMessageWithMsgId:(NSString *)msgId
-                          WithXmppId:(NSString *)xmppId
-                            WithFrom:(NSString *)from
-                              WithTo:(NSString *)to
-                         WithContent:(NSString *)content
-                      WithExtendInfo:(NSString *)extendInfo
-                        WithPlatform:(int)platform
-                         WithMsgType:(int)msgType
-                        WithMsgState:(int)msgState
-               WithMsgDirection:(int)msgDirection
-                    WithMsgDate:(long long)msgDate
-                  WithReadedTag:(int)readedTag
-                     WithMsgRaw:(NSString *)msgRaw
-                    WithRealJid:(NSString *)realJid
-                   WithChatType:(NSInteger)chatType {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"insert or IGNORE into IM_Message(MsgId, XmppId, \"From\", \"To\", Content, ExtendInfo, Platform, Type, ChatType, State, Direction,LastUpdateTime,ReadState,ExtendedFlag,MessageRaw,RealJid) values(:MsgId, :XmppId, :From, :To, :Content, :ExtendInfo, :Platform, :Type, :ChatType, :State, :Direction, :LastUpdateTime, :ReadState,:ExtendedFlag,:MessageRaw,:RealJid);";
-        NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:11];
-        [param addObject:msgId?msgId:@":NULL"];
-        [param addObject:xmppId?xmppId:@":NULL"];
-        [param addObject:from?from:@":NULL"];
-        [param addObject:to?to:@":NULL"];
-        [param addObject:content?content:@":NULL"];
-        [param addObject:extendInfo?extendInfo:@":NULL"];
-        [param addObject:[NSNumber numberWithInt:platform]];
-        [param addObject:[NSNumber numberWithInt:msgType]];
-        [param addObject:[NSNumber numberWithInteger:chatType]];
-        [param addObject:[NSNumber numberWithInt:msgState]];
-        [param addObject:[NSNumber numberWithInt:msgDirection]];
-        [param addObject:[NSNumber numberWithLongLong:msgDate]];
-        [param addObject:[NSNumber numberWithInt:readedTag]];
-        [param addObject:[NSNumber numberWithInt:0]];
-        [param addObject:msgRaw?msgRaw:@":NULL"];
-        [param addObject:realJid?realJid:@":NULL"];
-        [database executeNonQuery:sql withParameters:param];
-        [param release];
-        param = nil;
-    }];
-    QIMVerboseLog(@"");
-}
-
 - (BOOL)qimDB_checkMsgId:(NSString *)msgId{
     __block BOOL flag = NO;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
@@ -424,7 +348,7 @@
                                               RealJid:(NSString *)realJid {
     __block NSMutableArray *resultList = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"select a.'From',a.Content,a.LastUpdateTime,b.Name,b.HeaderSrc,a.MsgId from IM_Message as a left join IM_User as b on a.'from' = b.Xmppid  where a.Content like '%%%@%%' and a.XmppId = '%@'  ORDER by a.LastUpdateTime desc limit 1000;",keyWord,xmppid];
+        NSString *sql = [NSString stringWithFormat:@"select a.'From',a.Content,a.LastUpdateTime,b.Name,b.HeaderSrc,a.MsgId from IM_Message as a left join IM_Users as b on a.'from' = b.Xmppid  where a.Content like '%%%@%%' and a.XmppId = '%@'  ORDER by a.LastUpdateTime desc limit 1000;",keyWord,xmppid];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
             
@@ -1476,13 +1400,13 @@
     QIMVerboseLog(@"");
 }
 
-- (long long)qimDB_getReadedTimeStampForUserId:(NSString *)userId WithMsgDirection:(int)msgDirection WithReadedState:(int)readedState{
+- (long long)qimDB_getReadedTimeStampForUserId:(NSString *)userId WithRealJid:(NSString *)realJid WithMsgDirection:(int)msgDirection withUnReadCount:(NSInteger)unReadCount {
     __block long long timeStamp = 0;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"Select Max(LastUpdateTime) From IM_Message Where  XmppId = :XmppId And State = :State And Direction = :MsgDirection And Type <> 101;";
+        NSString *sql = [NSString stringWithFormat:@"Select Min(LastUpdateTime) From IM_Message Where XmppId = :XmppId And RealJid = :RealJid And Direction = :MsgDirection And Type <> 101 order by LastUpdateTime desc limit %d;", unReadCount];
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:userId];
-        [param addObject:@(readedState)];
+        [param addObject:realJid];
         [param addObject:@(msgDirection)];
         DataReader *reader = [database executeReader:sql withParameters:param];
         [param release];
@@ -2158,10 +2082,10 @@
     QIMVerboseLog(@"");
 }
 
-- (void)qimDB_updateSystemMsgState:(int)msgState WithXmppId:(NSString *)xmppId {
+- (void)qimDB_updateSystemMsgState:(int)msgState withReadState:(QIMMessageRemoteReadState)readState WithXmppId:(NSString *)xmppId {
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"Update IM_Message Set State=:State Where XmppId=:XmppId;";
-        [database executeNonQuery:sql withParameters:@[@(msgState),xmppId]];
+        NSString *sql = @"Update IM_Message Set State=:State, ReadState = :ReadState Where XmppId=:XmppId;";
+        [database executeNonQuery:sql withParameters:@[@(msgState), @(readState), xmppId]];
     }];
     QIMVerboseLog(@"");
 }
@@ -2322,7 +2246,7 @@
         NSString *mucName = [mucDic objectForKey:@"muc_name"];
         NSString *groupId = [mucName stringByAppendingFormat:@"@%@", domain];
         [[self dbInstance] syncUsingTransaction:^(Database *database) {
-            NSString *sql1 = [NSString stringWithFormat:@"select XmppId, LastUpdateTime from IM_Message where XmppId = :XmppId and ReadState & %d = %d order by LastUpdateTime desc LIMIT 1;", QIMMessageRemoteReadStateDidReaded, QIMMessageRemoteReadStateDidReaded];
+            NSString *sql1 = [NSString stringWithFormat:@"select XmppId, LastUpdateTime from IM_Message where XmppId = :XmppId and ReadState & %d = %d and Direction = %d order by LastUpdateTime asc LIMIT 1;", QIMMessageRemoteReadStateDidReaded, QIMMessageRemoteReadStateDidReaded, QIMMessageDirection_Received];
             DataReader *reader = [database executeReader:sql1 withParameters:@[groupId]];
             QIMVerboseLog(@"DB获取群阅读指针参数 ：%@", @[groupId]);
             if ([reader read]) {
@@ -2373,6 +2297,7 @@
 }
 
 - (void)qimDB_updateGroupMessageRemoteState:(NSInteger)msgRemoteFlag ByGroupReadList:(NSArray *)groupReadList {
+    
     QIMVerboseLog(@"在线groupReadList : %@", groupReadList);
     if (groupReadList.count <= 0) {
         return;

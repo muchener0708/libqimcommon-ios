@@ -91,24 +91,6 @@
     [[QIMManager sharedInstance] updateUserSignature:signature withCallBack:callback];
 }
 
-- (void)userProfilewithUserId:(NSString *)userId needupdate:(BOOL)update withBlock:(void (^)(NSDictionary *))block {
-    
-    [[QIMManager sharedInstance] userProfilewithUserId:userId needupdate:update withBlock:block];
-}
-
-- (NSDictionary *)getLocalProfileForUserId:(NSString *)userId {
-    return [[QIMManager sharedInstance] getLocalProfileForUserId:userId];
-}
-
-- (NSDictionary *)getRemoteUserProfileForUserIds:(NSArray *)userIds {
-    
-    return [[QIMManager sharedInstance] getRemoteUserProfileForUserIds:userIds];
-}
-
-- (NSDictionary *)getQChatUserInfoForUser:(NSString *)user {
-    return [[QIMManager sharedInstance] getQChatUserInfoForUser:user];
-}
-
 #pragma mark - 跨域
 
 - (NSArray *)searchQunarUserBySearchStr:(NSString *)searchStr {

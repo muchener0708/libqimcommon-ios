@@ -11,13 +11,14 @@
 @implementation QIMManager (DB)
 
 - (NSString *)getDBPathWithUserXmppId:(NSString *)userJid {
-    NSString *dbPath = [UserCachesPath stringByAppendingPathComponent:[NSString stringWithFormat:@"QIMDB/%@%@/", [userJid lowercaseString], UserPath]];
+    NSString *dbPath = [UserCachesPath stringByAppendingPathComponent:[NSString stringWithFormat:@"/QIMNewDataBase/%@%@/", [userJid lowercaseString], UserPath]];
     if (![[NSFileManager defaultManager] fileExistsAtPath:dbPath]) {
         [[NSFileManager defaultManager] createDirectoryAtPath:dbPath withIntermediateDirectories:YES attributes:nil error:nil];
     }
     //UrlWithString 会报CFURLSetResourcePropertyForKey failed because it was passed an URL which has no scheme 错误，使用fileURLWithPath正常
     [self addSkipBackupAttributeToItemAtURL:[NSURL fileURLWithPath:[dbPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
     dbPath = [dbPath stringByAppendingPathComponent:@"data.dat"];
+    QIMVerboseLog(@"用户数据库路径为 %@", dbPath);
     return dbPath;
 }
 
@@ -25,9 +26,6 @@
     
     NSString *dbPath = [self getDBPathWithUserXmppId:userJid];
     [IMDataManager qimDB_sharedInstanceWithDBPath:dbPath withDBFullJid:userJid];
-//    [[IMDataManager qimDB_SharedInstance] setDbOwnerId:[QIMManager getLastUserName]];
-//    [[IMDataManager qimDB_SharedInstance] setDbOwnerDomain:[self getDomain]];
-//    [[IMDataManager qimDB_SharedInstance] setDbOwnerFullJid:[[QIMManager sharedInstance] getLastJid]];
 }
 
 - (void)removeDataBase {

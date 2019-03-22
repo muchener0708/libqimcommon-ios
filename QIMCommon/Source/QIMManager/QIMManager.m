@@ -96,8 +96,6 @@ static QIMManager *__IMManager = nil;
 
 - (void)clearQIMManager {
     _imageCachePath = nil;
-    _userProfilePath = nil;
-    _userVcard = nil;
     _downLoadFile = nil;
     _currentSessionUserId = nil;
     _friendDescDic = nil;
@@ -141,8 +139,6 @@ static QIMManager *__IMManager = nil;
     _getGroupHistoryFailed = NO;
     _getSystemHistoryFailed = NO;
     
-    _configPath = nil;
-    
     _webName = nil;
     
     _clinetConfigDic = nil;
@@ -150,10 +146,6 @@ static QIMManager *__IMManager = nil;
     _shareLocationDic = nil;
     _shareLocationFromIdDic = nil;
     _shareLocationUserDic = nil;
-    
-    
-    _userResourceDic = nil;
-
 }
 
 - (NSMutableDictionary *)timeStempDic {
@@ -180,8 +172,6 @@ static QIMManager *__IMManager = nil;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onNetworkChange:) name:kNotifyNetworkChange object:nil];
     //切换账号成功
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshSwitchAccount:) name:kNotifySwichUserSuccess object:nil];
-//    updateMaxRosterListTime
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateMaxRosterListTime:) name:@"updateMaxRosterListTime" object:nil];
 }
 
 - (dispatch_queue_t)cacheQueue {
@@ -194,14 +184,12 @@ static QIMManager *__IMManager = nil;
 
 - (void)initAppCacheConfig {
     self.update_chat_card = dispatch_queue_create("update_chat_card", DISPATCH_QUEUE_SERIAL);
-//    self.loginComplateQueue = [[NSOperationQueue alloc] init];
-//    self.loginComplateQueue.maxConcurrentOperationCount = 1;
-//    self.loginComplateQueue.name = @"loginComplateQueue";
-//    self.loginComplateQueue = dispatch_queue_create("loginComplateQueue", 0);
+    self.update_group_card = dispatch_queue_create("update_group_vcard", DISPATCH_QUEUE_SERIAL);
     self.update_group_member_queue = dispatch_queue_create("Update Group Member Info Queue", DISPATCH_QUEUE_SERIAL);
     self.load_group_offline_msg_queue = dispatch_queue_create("Load Group Offline Msg Queue", DISPATCH_QUEUE_SERIAL);
     self.load_user_state_queue = dispatch_queue_create("Load User State", DISPATCH_QUEUE_PRIORITY_DEFAULT);
     self.receive_msg_queue = dispatch_queue_create("Receive Msg", DISPATCH_QUEUE_PRIORITY_DEFAULT);
+    self.receive_notify_queue = dispatch_queue_create("Receive Presence Notify Msg", DISPATCH_QUEUE_PRIORITY_DEFAULT);
     self.load_user_header = dispatch_queue_create("Load User Header", DISPATCH_QUEUE_PRIORITY_DEFAULT);
     self.lastReceiveGroupMsgTimeDic = [[NSMutableDictionary alloc] init];
     self.load_customEvent_queue = dispatch_queue_create("Load CustomEvent Queue", DISPATCH_QUEUE_SERIAL);
@@ -405,17 +393,6 @@ static QIMManager *__IMManager = nil;
         [[NSFileManager defaultManager] createDirectoryAtPath:_imageCachePath withIntermediateDirectories:YES attributes:nil error:nil];
     }
     
-    _userProfilePath = [UserDocumentsPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@%@/profile/", [self getLastJid], UserPath]];
-    if (![[NSFileManager defaultManager] fileExistsAtPath:_userProfilePath]) {
-        [[NSFileManager defaultManager] createDirectoryAtPath:_userProfilePath withIntermediateDirectories:YES attributes:nil error:nil];
-    }
-    
-    _userVcard = [UserDocumentsPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@%@/userVcard/", [self getLastJid], UserPath]];
-    if (![[NSFileManager defaultManager] fileExistsAtPath:_userVcard]) {
-        
-        [[NSFileManager defaultManager] createDirectoryAtPath:_userVcard withIntermediateDirectories:YES attributes:nil error:nil];
-    }
-    
     _downLoadFile = [UserCachesPath stringByAppendingPathComponent:[NSString stringWithFormat:@"/imageCache/"]];
     
     if (![[NSFileManager defaultManager] fileExistsAtPath:_downLoadFile]) {
@@ -426,11 +403,7 @@ static QIMManager *__IMManager = nil;
     if (![[NSFileManager defaultManager] fileExistsAtPath:_groupHeaderImageCachePath]) {
         [[NSFileManager defaultManager] createDirectoryAtPath:_groupHeaderImageCachePath withIntermediateDirectories:YES attributes:nil error:nil];
     }
-    
-    _configPath = [UserDocumentsPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@%@/config", [self getLastJid], UserPath]];
-    if (![[NSFileManager defaultManager] fileExistsAtPath:_configPath]) {
-        [[NSFileManager defaultManager] createDirectoryAtPath:_configPath withIntermediateDirectories:YES attributes:nil error:nil];
-    }
+   
     QIMVerboseLog(@"开始获取单人历史记录2");
     CFAbsoluteTime startTime1 = [[QIMWatchDog sharedInstance] startTime];
     [self updateOfflineMessagesV2];
@@ -709,16 +682,6 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
 @end
 
 @implementation QIMManager (Common)
-
-- (void)updateMaxRosterListTime:(NSNotification *)notify {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-        long long time = [notify.object longLongValue];
-        NSString *jid = [[QIMManager sharedInstance] getLastJid];
-        NSString *updateTime = [NSString stringWithFormat:@"%lld", time];
-        NSArray *configArray = @[@{@"subkey":jid?jid:@"", @"configinfo":updateTime}];
-        [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertConfigArrayWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalIncrementUpdateTime] WithConfigVersion:0 ConfigArray:configArray];
-    });
-}
 
 //获取组织架构
 - (void)updateOrganizationalStructure {

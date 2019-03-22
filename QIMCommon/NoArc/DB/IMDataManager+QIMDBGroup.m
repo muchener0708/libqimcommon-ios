@@ -625,7 +625,7 @@
 - (NSArray *)qimDB_getQChatGroupMember:(NSString *)groupId{
     __block NSMutableArray *members = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"Select a.MemberId, b.Name, b.XmppId as Jid, a.Affiliation, a.LastUpdateTime From IM_Group_Member a left join IM_User b on a.MemberJid = b.XmppId Where GroupId = ? Order By a.Name;";
+        NSString *sql = @"Select a.MemberId, b.Name, b.XmppId as Jid, a.Affiliation, a.LastUpdateTime From IM_Group_Member a left join IM_Users b on a.MemberJid = b.XmppId Where GroupId = ? Order By a.Name;";
         DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
         while ([reader read]) {
             if (members == nil) {
@@ -654,7 +654,7 @@
 - (NSArray *)qimDB_getQChatGroupMember:(NSString *)groupId BySearchStr:(NSString *)searchStr{
     __block NSMutableArray *members = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"Select a.MemberId, b.Name, b.XmppId as Jid, a.Affiliation, a.LastUpdateTime From IM_Group_Member a left join IM_User b on a.MemberJid = b.XmppId Where GroupId = ? and (b.UserId like '%%%@%%' OR b.Name like '%%%@%%' OR b.SearchIndex like '%%%@%%' COLLATE NOCASE) Order By a.Name;",searchStr,searchStr,searchStr];
+        NSString *sql = [NSString stringWithFormat:@"Select a.MemberId, b.Name, b.XmppId as Jid, a.Affiliation, a.LastUpdateTime From IM_Group_Member a left join IM_Users b on a.MemberJid = b.XmppId Where GroupId = ? and (b.UserId like '%%%@%%' OR b.Name like '%%%@%%' OR b.SearchIndex like '%%%@%%' COLLATE NOCASE) Order By a.Name;",searchStr,searchStr,searchStr];
         DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
         while ([reader read]) {
             if (members == nil) {
@@ -683,7 +683,7 @@
 - (NSArray *)qimDB_getGroupMember:(NSString *)groupId BySearchStr:(NSString *)searchStr{
     __block NSMutableArray *members = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"Select a.MemberId, a.Name, b.XmppId as Jid, a.Affiliation, a.LastUpdateTime From IM_Group_Member a left join IM_User b on a.MemberJid = b.XmppId Where GroupId = :GroupId and (b.UserId like \"%%%@%%\" OR b.Name like \"%%%@%%\" OR b.SearchIndex like \"%%%@%%\" COLLATE NOCASE) Order By a.Name;",searchStr,searchStr,searchStr];
+        NSString *sql = [NSString stringWithFormat:@"Select a.MemberId, a.Name, b.XmppId as Jid, a.Affiliation, a.LastUpdateTime From IM_Group_Member a left join IM_Users b on a.MemberJid = b.XmppId Where GroupId = :GroupId and (b.UserId like \"%%%@%%\" OR b.Name like \"%%%@%%\" OR b.SearchIndex like \"%%%@%%\" COLLATE NOCASE) Order By a.Name;",searchStr,searchStr,searchStr];
         DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
         while ([reader read]) {
             if (members == nil) {
@@ -745,7 +745,7 @@
     }
     __block NSDictionary *user = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"SELECT b.* FROM IM_Group_Member as a LEFT JOIN IM_User as b on a.MemberJid = b.XmppId WHERE GroupId = :GroupId And Affiliation = 'owner';";
+        NSString *sql = @"SELECT b.* FROM IM_Group_Member as a LEFT JOIN IM_Users as b on a.MemberJid = b.XmppId WHERE GroupId = :GroupId And Affiliation = 'owner';";
         DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
         if ([reader read]) {
             user = [[NSMutableDictionary alloc] init];

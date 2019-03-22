@@ -35,19 +35,19 @@ static QIMKit *__global_QIMKit = nil;
     QIMInfoLog(@"QIMKit initialize");
     [QIMFilteredProtocol start];
     [QIMManager sharedInstance];
-    [AvoidCrash makeAllEffective];
-    NSArray *noneSelClassStrings = @[
-                                     @"NSNull",
-                                     @"NSNumber",
-                                     @"NSString",
-                                     @"NSMutableString",
-                                     @"NSDictionary",
-                                     @"NSMutableDictionary",
-                                     @"NSArray",
-                                     @"NSMutableArray"
-                                     ];
-    [AvoidCrash setupNoneSelClassStringsArr:noneSelClassStrings];
-    [AvoidCrash avoidCrashExchangeMethodIfDealWithNoneSel:YES];
+//    [AvoidCrash makeAllEffective];
+//    NSArray *noneSelClassStrings = @[
+//                                     @"NSNull",
+//                                     @"NSNumber",
+//                                     @"NSString",
+//                                     @"NSMutableString",
+//                                     @"NSDictionary",
+//                                     @"NSMutableDictionary",
+//                                     @"NSArray",
+//                                     @"NSMutableArray"
+//                                     ];
+//    [AvoidCrash setupNoneSelClassStringsArr:noneSelClassStrings];
+//    [AvoidCrash avoidCrashExchangeMethodIfDealWithNoneSel:YES];
 //    //监听通知:AvoidCrashNotification, 获取AvoidCrash捕获的崩溃日志的详细信息
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(dealwithCrashMessage:) name:AvoidCrashNotification object:nil];
 }
@@ -83,14 +83,6 @@ static QIMKit *__global_QIMKit = nil;
 
 - (NSData *)updateOrganizationalStructure {
     return [[QIMManager sharedInstance] updateOrganizationalStructure];
-}
-
-- (NSData *)updateRosterList {
-    return [[QIMManager sharedInstance] updateRosterList];
-}
-
-- (void)checkRosterListWithForceUpdate:(BOOL)forceUpdate {
-    [[QIMManager sharedInstance] checkRosterListWithForceUpdate:forceUpdate];
 }
 
 @end

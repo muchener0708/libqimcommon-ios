@@ -167,7 +167,7 @@
 -(NSMutableArray *)qimDB_getConfigArrayStarOrBlackContacts:(NSString *)pkey{
     __block NSMutableArray *resultList = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"select b.UserId,a.ConfigSubKey,b.Name,b.HeaderSrc from IM_Client_Config as a left JOIN IM_User as b on a.ConfigSubKey = b.XmppId where a.DeleteFlag = 0 and ConfigKey= '%@';",pkey];
+        NSString *sql = [NSString stringWithFormat:@"select b.UserId,a.ConfigSubKey,b.Name,b.HeaderSrc from IM_Client_Config as a left JOIN IM_Users as b on a.ConfigSubKey = b.XmppId where a.DeleteFlag = 0 and ConfigKey= '%@';",pkey];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
             
@@ -203,7 +203,7 @@
 -(NSMutableArray *)qimDB_getConfigArrayFriendsNotInStarContacts{
     __block NSMutableArray *resultList = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"select a.UserId,a.XmppId,b.Name,b.HeaderSrc from IM_Friend_List as a left join IM_User as b on a.XmppId = b.XmppId where a.XmppId not in (select ConfigSubKey from IM_Client_Config where ConfigKey='%@' and DeleteFlag = %d);",@"kStarContact",0];
+        NSString *sql = [NSString stringWithFormat:@"select a.UserId,a.XmppId,b.Name,b.HeaderSrc from IM_Friend_List as a left join IM_Users as b on a.XmppId = b.XmppId where a.XmppId not in (select ConfigSubKey from IM_Client_Config where ConfigKey='%@' and DeleteFlag = %d);",@"kStarContact",0];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
             
@@ -238,7 +238,7 @@
 -(NSMutableArray *)qimDB_getConfigArrayUserNotInStartContacts:(NSString *)key{
     __block NSMutableArray *resultList = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"select UserId,XmppId,Name,HeaderSrc from IM_User Where (UserId like %%%@%% or Name like  %%%@%% or SearchIndex like %%%@%%) and XmppId NOT IN(select ConfigSubKey from IM_USER_CONFIG where ConfigKey = '%@' and DeleteFlag = %d) order by UserId limit 100; ",key,key,key,@"kStarContact",0];
+        NSString *sql = [NSString stringWithFormat:@"select UserId,XmppId,Name,HeaderSrc from IM_Users Where (UserId like %%%@%% or Name like  %%%@%% or SearchIndex like %%%@%%) and XmppId NOT IN(select ConfigSubKey from IM_Users_CONFIG where ConfigKey = '%@' and DeleteFlag = %d) order by UserId limit 100; ",key,key,key,@"kStarContact",0];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
             

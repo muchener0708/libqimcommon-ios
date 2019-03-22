@@ -79,124 +79,7 @@
     return result;
 }
 
-#pragma mark - 用户Profile
-
-- (NSDictionary *)getLocalProfileForUserId:(NSString *)userId {
-    NSString *filename = [self.userProfilePath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.cfg", userId]];
-    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filename];
-    if (fileExists) {
-        
-        NSDictionary *result = [NSDictionary dictionaryWithContentsOfFile:filename];
-        return result;
-    }
-    return nil;
-}
-
-- (void)userProfilewithUserId:(NSString *)userId needupdate:(BOOL)update withBlock:(void (^)(NSDictionary *))block {
-    
-    NSString *filename = [self.userProfilePath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.cfg", userId]];
-    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filename];
-    if (fileExists) {
-        
-        if (!update) {
-            
-            NSDictionary *result = [NSDictionary dictionaryWithContentsOfFile:filename];
-            if (result) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    block(result);
-                });
-            }
-        } else {
-            
-            //强制去Remote获取下
-            NSDictionary *userInfo = [self getRemoteUserProfileForUserIds:@[userId]];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                
-                block(userInfo);
-            });
-        }
-    } else {
-        
-        //本地不存在，去Remote获取下
-        NSDictionary *userInfo = [self getRemoteUserProfileForUserIds:@[userId]];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            
-            block(userInfo);
-        });
-    }
-}
-
-- (NSDictionary *)getRemoteUserProfileForUserIds:(NSArray *)userIds {
-    
-    if (!userIds) {
-        return nil;
-    }
-    //[{"user":"huajun.liu","version":"1"}]
-    NSMutableArray *users = [NSMutableArray arrayWithCapacity:1];
-    NSMutableDictionary *usersVCardInfo = [NSMutableDictionary dictionary];
-    NSDictionary *dic = [[QIMUserCacheManager sharedInstance] userObjectForKey:kUsersVCardInfo];
-    if (dic) {
-        
-        [usersVCardInfo setDictionary:dic];
-    }
-    for (NSString *userId in userIds) {
-        
-        NSDictionary *userInfo = [usersVCardInfo objectForKey:userId];
-#pragma mark - 拷贝一次, [NSPathStore2 stringByAppendingPathComponent:]
-        NSString *userProfilePath = [self.userProfilePath copy];
-        NSString *filename = [userProfilePath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.cfg", [NSString stringWithFormat:@"%@@%@", userInfo[@"U"], [self getDomain]]]];
-        BOOL isExist = [[NSFileManager defaultManager] fileExistsAtPath:filename];
-        if (isExist) {
-            
-            NSString *user = userInfo[@"U"];
-            NSString *version = userInfo[@"V"];
-            [users addObject:@{@"user": user ? user : @"", @"version": version ? version : @"0", @"domain":[[XmppImManager sharedInstance] domain]}];
-        } else {
-            
-            NSString *user = [userId componentsSeparatedByString:@"@"].firstObject;
-            [users addObject:@{@"user": user ? user : @"", @"version": @"0", @"domain":[[XmppImManager sharedInstance] domain]}];
-        }
-        
-        NSData *requestData = [[QIMJSONSerializer sharedInstance] serializeObject:users error:nil];
-        
-        NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@/get_user_profile?u=%@&k=%@&v=%@&p=%@", [[QIMNavConfigManager sharedInstance] httpHost], [[QIMManager getLastUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding], self.remoteKey, [[QIMAppInfo sharedInstance] AppBuildVersion], @"iPhone"]];
-        ASIHTTPRequest *request = [[ASIHTTPRequest alloc] initWithURL:url];
-        [request addRequestHeader:@"Content-type" value:@"application/json;"];
-        [request setRequestMethod:@"POST"];
-        [request setPostBody:[NSMutableData dataWithData:requestData]];
-        [request setCachePolicy:ASIDoNotReadFromCacheCachePolicy];
-        [request startSynchronous];
-        NSError *error = [request error];
-        if ([request responseStatusCode] == 200 && !error) {
-            
-            NSData *responseData = [request responseData];
-            NSDictionary *resDic = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
-            NSArray *result = [resDic objectForKey:@"data"];
-            
-            if ([result isKindOfClass:[NSArray class]]) {
-                if (result.count > 0) {
-                    for (NSDictionary *userInfo in result) {
-                        
-                        [usersVCardInfo setQIMSafeObject:userInfo forKey:[NSString stringWithFormat:@"%@@%@", userInfo[@"U"], [self getDomain]]];
-                        if (userInfo) {
-                            
-                            NSString *filename = [self.userProfilePath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.cfg", [NSString stringWithFormat:@"%@@%@", userInfo[@"U"], [self getDomain]]]];
-                            [userInfo writeToFile:filename atomically:YES];
-                        }
-                    }
-                    [[QIMUserCacheManager sharedInstance] setUserObject:usersVCardInfo forKey:kUsersVCardInfo];
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        //发送更新个性签名等
-                        　[[NSNotificationCenter defaultCenter] postNotificationName:@"" object:nil];
-                    });
-                }
-            }
-            return usersVCardInfo;
-        }
-    }
-    return nil;
-}
-
+#pragma 更新用户签名
 - (void)updateUserSignature:(NSString *)signature withCallBack:(QIMKitUpdateSignatureBlock)callback {
     
     //{"user":"xuejie.bi","mood":"134", "domain":"ejabhost1"}
@@ -270,9 +153,6 @@
                 
                 [userInfo setQIMSafeObject:version forKey:@"V"];
             }
-            
-            NSString *filename = [self.userProfilePath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.cfg", [QIMManager getLastUserName]]];
-            [userInfo writeToFile:filename atomically:YES];
             [usersVCardInfo setQIMSafeObject:userInfo forKey:[QIMManager getLastUserName]];
             [[QIMUserCacheManager sharedInstance] setUserObject:usersVCardInfo forKey:kUsersVCardInfo];
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -340,7 +220,6 @@
         return nil;
     }
     __block NSDictionary *result = nil;
-    __block NSString *filename = nil;
     __block BOOL fileExists = NO;
     dispatch_block_t block = ^{
         
@@ -365,15 +244,8 @@
                         
                         [dic setObject:desc forKey:@"DescInfo"];
                     }
-                    filename = [self.userVcard stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.cfg", rtxId]];
-                    
-                    fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filename];
-                    
                 }
                 result = dic;
-                if (!fileExists) {
-                    [result writeToFile:filename atomically:YES];
-                }
             }
         }
     };
@@ -406,79 +278,6 @@
     }
 }
 
-#pragma mark - QChat用户名片
-
-- (NSDictionary *)getQChatUserInfoForUser:(NSString *)user {
-    return nil;
-    NSArray *coms = [user componentsSeparatedByString:@"@"];
-    NSString *userId = [coms firstObject];
-    NSString *domain = [coms lastObject];
-    if (coms.count == 1) {
-        domain = [self getDomain];
-    }
-    NSMutableArray *params = [NSMutableArray array];
-    [params addObject:@{@"domain": domain ? domain : @"", @"users": @[@{@"user": userId ? userId : @"", @"version": @"0"}]}];
-    NSMutableData *tempPostData = [NSMutableData dataWithData:[[QIMJSONSerializer sharedInstance] serializeObject:params error:nil]];
-    
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@/domain/get_vcard_info?u=%@&k=%@&p=iphone&v=%@", [[QIMNavConfigManager sharedInstance] httpHost], [[QIMManager getLastUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding], self.remoteKey, [[QIMAppInfo sharedInstance] AppBuildVersion]]];
-    QIMVerboseLog(@" === 准备获取QChat用户名片 ==== ");
-    ASIHTTPRequest *request = [[ASIHTTPRequest alloc] initWithURL:url];
-    [request addRequestHeader:@"Content-type" value:@"application/x-www-form-urlencoded;"];
-    [request setRequestMethod:@"POST"];
-    [request setPostBody:tempPostData];
-    QIMVerboseLog(@" === 获取QTChat用户名片请求参数 %@ === ", params);
-    [request setCachePolicy:ASIDoNotReadFromCacheCachePolicy];
-    [request startSynchronous];
-    NSError *error = [request error];
-    if ([request responseStatusCode] == 200 && !error) {
-        
-        NSData *responseData = [request responseData];
-        NSError *errol = nil;
-        NSDictionary *resDic = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:&errol];
-        NSArray *datas = [resDic objectForKey:@"data"];
-        NSArray *result = nil;
-        if (datas.count) {
-            result = [[datas firstObject] objectForKey:@"users"];
-        }
-        if (errol == nil && result.count > 0) {
-            QIMVerboseLog(@"=== 获取QChat用户名片成功, 请求结果 === %@", result);
-            
-            NSMutableArray *members = [NSMutableArray arrayWithCapacity:1];
-            for (NSDictionary *infoDic in result) {
-                
-                NSString *dStr = [[infoDic objectForKey:@"imageurl"] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-                @autoreleasepool {
-                    
-                    NSData *imageData = [NSData dataWithContentsOfURL:[NSURL URLWithString:dStr]];
-                    NSString *contentType = @"jpeg";
-                    if ([infoDic objectForKey:@"imageurl"]) {
-                        
-                        NSString *fileName = [[IMDataManager qimDB_SharedInstance] qimDB_getUserHeaderSrcByUserId:user];
-                        if (fileName.length <= 0) {
-                            
-                            fileName = [NSString stringWithFormat:@"%@.%@", [infoDic objectForKey:@"username"], contentType];
-                        }
-                        NSString *headerSrc = [self.imageCachePath stringByAppendingPathComponent:fileName];
-                        [imageData writeToFile:headerSrc atomically:YES];
-                        [members addObject:@{@"U": [user componentsSeparatedByString:@"@"].firstObject, @"N": [infoDic objectForKey:@"webname"] ? [infoDic objectForKey:@"webname"] : [infoDic objectForKey:@"nickname"], @"V": @"0", @"H": fileName, @"D": [infoDic objectForKey:@"suppliername"] ? [infoDic objectForKey:@"suppliername"] : @""}];
-                    }
-                }
-            }
-            [[IMDataManager qimDB_SharedInstance] qimDB_InsertOrUpdateUserInfos:members];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                
-                for (NSDictionary *memberDic in members) {
-                    
-                    NSString *userId = [[memberDic objectForKey:@"U"] stringByAppendingFormat:@"@%@", [self getDomain]];
-                    [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateUserCard object:userId];
-                }
-            });
-        }
-        return result.count ? result.firstObject : nil;
-    }
-    return nil;
-}
-
 - (void)updateQChatGroupMembersCardForGroupId:(NSString *)groupId {
     NSArray *members = [self getGroupMembersByGroupId:groupId];
     NSMutableArray *needUpdateUserIds = [NSMutableArray array];
@@ -498,7 +297,7 @@
     if (xmppIds.count <= 0) {
         return ;
     }
-    dispatch_async(self.load_customEvent_queue, ^{
+    dispatch_async(self.update_chat_card, ^{
         NSDictionary *usersDic = [[IMDataManager qimDB_SharedInstance] qimDB_selectUsersDicByXmppIds:xmppIds];
         NSMutableDictionary *xmppIdDic = [NSMutableDictionary dictionary];
         for (NSString *xmppId in xmppIds) {
@@ -537,13 +336,17 @@
         }
         
         NSData *requestData = [[QIMJSONSerializer sharedInstance] serializeObject:params error:nil];
-        NSString *destUrl = [NSString stringWithFormat:@"%@/domain/get_vcard_info?u=%@&k=%@&platform=iphone&version=%@", [[QIMNavConfigManager sharedInstance] httpHost], [[QIMManager getLastUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding], self.remoteKey, [[QIMAppInfo sharedInstance] AppBuildVersion]];
+        NSString *destUrl = [NSString stringWithFormat:@"%@/domain/get_vcard_info.qunar", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
         QIMVerboseLog(@"更新用户名片: %@", destUrl);
         NSURL *requestUrl = [[NSURL alloc] initWithString:destUrl];
         QIMVerboseLog(@"更新用户名片参数 : %@", [[QIMJSONSerializer sharedInstance] serializeObject:params]);
+        NSMutableDictionary *cookieProperties = [NSMutableDictionary dictionary];
+        NSString *requestHeaders = [NSString stringWithFormat:@"q_ckey=%@", [[QIMManager sharedInstance] thirdpartKeywithValue]];
+        [cookieProperties setObject:requestHeaders forKey:@"Cookie"];
+        [cookieProperties setObject:@"application/json;" forKey:@"Content-type"];
         QIMHTTPRequest *request = [[QIMHTTPRequest alloc] initWithURL:requestUrl];
         [request setHTTPMethod:QIMHTTPMethodPOST];
-        [request setHTTPRequestHeaders:@{@"Content-type":@"application/json;"}];
+        [request setHTTPRequestHeaders:cookieProperties];
         [request setHTTPBody:[NSMutableData dataWithData:requestData]];
         [QIMHTTPClient sendRequest:request complete:^(QIMHTTPResponse *response) {
             QIMVerboseLog(@"用户名片结果 : %@", response);
@@ -567,6 +370,7 @@
                             NSString *name = webName ? webName : nickName;
                             NSString *headUrl = [userDic objectForKey:@"imageurl"];
                             NSString *version = [userDic objectForKey:@"V"];
+                            NSString *mood = [userDic objectForKey:@"mood"];
                             [dataDic setQIMSafeObject:userId forKey:@"U"];
                             [dataDic setQIMSafeObject:xmppId forKey:@"X"];
                             [dataDic setQIMSafeObject:name forKey:@"N"];
@@ -575,6 +379,7 @@
                             [dataDic setQIMSafeObject:data forKey:@"I"];
                             [dataDic setQIMSafeObject:version ? version : @"0" forKey:@"V"];
                             [dataDic setQIMSafeObject:type forKey:@"type"];
+                            [dataDic setQIMSafeObject:mood forKey:@"mood"];
                             [dataList addObject:dataDic];
                         }
                     }
@@ -617,54 +422,40 @@
     NSString *myPhotoUrl = [QIMHttpApi updateMyPhoto:photoData];
     if (myPhotoUrl.length > 0) {
         NSDictionary *cardDic = @{@"user": [QIMManager getLastUserName], @"url": myPhotoUrl, @"domain":[[XmppImManager sharedInstance] domain]};
-        NSString *destUrl = [NSString stringWithFormat:@"%@/setvcardinfo?u=%@&k=%@&platform=iphone&version=%@", [[QIMNavConfigManager sharedInstance] httpHost], [[QIMManager getLastUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding], self.remoteKey, [[QIMAppInfo sharedInstance] AppBuildVersion]];
-        NSURL *requestUrl = [[NSURL alloc] initWithString:destUrl];
-        NSData *data = [[QIMJSONSerializer sharedInstance] serializeObject:@[cardDic] error:nil];
-        
-        NSMutableDictionary *requestHeader = [NSMutableDictionary dictionaryWithCapacity:1];
-        [requestHeader setObject:@"application/json" forKey:@"content-type"];
-        
-        QIMHTTPRequest *request = [[QIMHTTPRequest alloc] initWithURL:requestUrl];
-        [request setHTTPMethod:QIMHTTPMethodPOST];
-        [request setHTTPBody:data];
-        [request setHTTPRequestHeaders:requestHeader];
-        __weak __typeof(self) weakSelf = self;
-        [QIMHTTPClient sendRequest:request complete:^(QIMHTTPResponse *response) {
-            if (response.code == 200) {
-                __typeof(self) strongSelf = weakSelf;
-                if (!strongSelf) {
-                    return;
-                }
-                NSDictionary *result = [[QIMJSONSerializer sharedInstance] deserializeObject:response.data error:nil];
-                NSString *myHeaderExtension = [[QIMFileManager sharedInstance] getFileExtFromUrl:myPhotoUrl];
-                NSString *smallHeaderSrc = [strongSelf.imageCachePath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_90.%@", [[QIMManager sharedInstance] getLastJid], myHeaderExtension]];
-                [strongSelf.userNormalHeaderDic removeObjectForKey:[[QIMManager sharedInstance] getLastJid]];
-                BOOL writeToSmallLocalSuccess = [photoData writeToFile:smallHeaderSrc atomically:YES];
-                if (writeToSmallLocalSuccess) {
-                    QIMVerboseLog(@"写入我的小头像成功");
+        NSData *data = [[QIMJSONSerializer sharedInstance] serializeObject:cardDic error:nil];
+        NSString *destUrl = [NSString stringWithFormat:@"%@/profile/set_profile.qunar", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+        [[QIMManager sharedInstance] sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:data withSuccessCallBack:^(NSData *responseData) {
+            NSDictionary *resultDic = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
+            BOOL ret = [[resultDic objectForKey:@"ret"] boolValue];
+            NSInteger errcode = [[resultDic objectForKey:@"errcode"] integerValue];
+            if (ret && errcode == 0) {
+                NSArray *resultData = [resultDic objectForKey:@"data"];
+                if ([resultData isKindOfClass:[NSDictionary class]]) {
+                    [self dealWithUpdateMyVCard:resultData];
                 } else {
-                    QIMVerboseLog(@"写入我的小头像失败");
-                }
-                QIMVerboseLog(@"result : %@", result);
-                
-                NSArray *resultData = [result objectForKey:@"data"];
-                if ([resultData isKindOfClass:[NSArray class]]) {
-                    NSDictionary *resultDic = [resultData firstObject];
-                    [strongSelf updateUserBigHeaderImageUrl:myPhotoUrl WithVersion:[resultDic objectForKey:@"version"] ForUserId:[QIMManager getLastUserName]];
-                    NSString *headerUrl = myPhotoUrl;
-                    if (![myPhotoUrl qim_hasPrefixHttpHeader]) {
-                        headerUrl = [NSString stringWithFormat:@"%@/%@", [[QIMNavConfigManager sharedInstance] innerFileHttpHost], myPhotoUrl];
-                    }
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [[NSNotificationCenter defaultCenter] postNotificationName:kMyHeaderImgaeUpdateSuccess object:@{@"ok":@(YES), @"headerUrl":(headerUrl.length > 0) ? headerUrl : @""}];
-                    });
+                    
                 }
             }
-        } failure:^(NSError *error) {
+        } withFailedCallBack:^(NSError *error) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:kMyHeaderImgaeUpdateFaild object:nil];
             });
         }];
+    }
+}
+
+- (void)dealWithUpdateMyVCard:(NSDictionary *)resultDic {
+    if ([resultDic isKindOfClass:[NSDictionary class]]) {
+        [self.userNormalHeaderDic removeObjectForKey:[[QIMManager sharedInstance] getLastJid]];
+        
+        NSString *headerUrl = [resultDic objectForKey:@"url"];
+        if (![headerUrl qim_hasPrefixHttpHeader]) {
+            headerUrl = [NSString stringWithFormat:@"%@/%@", [[QIMNavConfigManager sharedInstance] innerFileHttpHost], headerUrl];
+        }
+        [self updateUserBigHeaderImageUrl:headerUrl WithVersion:[resultDic objectForKey:@"version"] ForUserId:[QIMManager getLastUserName]];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:kMyHeaderImgaeUpdateSuccess object:@{@"ok":@(YES), @"headerUrl":(headerUrl.length > 0) ? headerUrl : @""}];
+        });
     }
 }
 
@@ -721,7 +512,7 @@
             NSDictionary *data = [dic objectForKey:@"data"];
             QIMVerboseLog(@"查看用户%@直属领导结果 ： %@", userId, dic);
             if (data.count) {
-                //插入数据库IM_UserWorkInfo
+                //插入数据库IM_UsersWorkInfo
                 NSString *workInfo = [[QIMJSONSerializer sharedInstance] serializeObject:data];
                 NSDictionary *userBackInfo = @{@"UserWorkInfo":workInfo?workInfo:@""};
                 [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateUserBackInfo:userBackInfo WithXmppId:userId];

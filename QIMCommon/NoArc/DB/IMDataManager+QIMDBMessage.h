@@ -66,52 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)qimDB_updateMessageWithMsgId:(NSString *)msgId
                           WithMsgRaw:(NSString *)msgRaw;
 
-//- (void)qimDB_insertMessageWithMsgId:(NSString *)msgId
-//                          WithXmppId:(NSString *)xmppId
-//                            WithFrom:(NSString *)from
-//                              WithTo:(NSString *)to
-//                         WithContent:(NSString *)content
-//                      WithExtendInfo:(NSString *)extendInfo
-//                        WithPlatform:(int)platform
-//                         WithMsgType:(int)msgType
-//                        WithMsgState:(int)msgState
-//                    WithMsgDirection:(int)msgDirection
-//                         WithMsgDate:(long long)msgDate
-//                       WithReadedTag:(int)readedTag
-//                        WithChatType:(NSInteger)chatType;
-//
-//- (void)qimDB_insertMessageWithMsgId:(NSString *)msgId
-//                          WithXmppId:(NSString *)xmppId
-//                            WithFrom:(NSString *)from
-//                              WithTo:(NSString *)to
-//                         WithContent:(NSString *)content
-//                      WithExtendInfo:(NSString *)extendInfo
-//                        WithPlatform:(int)platform
-//                         WithMsgType:(int)msgType
-//                        WithMsgState:(int)msgState
-//                    WithMsgDirection:(int)msgDirection
-//                         WithMsgDate:(long long)msgDate
-//                       WithReadedTag:(int)readedTag
-//                          WithMsgRaw:(NSString *)msgRaw
-//                        WithChatType:(NSInteger)chatType;
-
 - (void)qimDB_insertMessageWithMsgDic:(NSDictionary *)msgDic;
-
-//- (void)qimDB_insertMessageWithMsgId:(NSString *)msgId
-//                          WithXmppId:(NSString *)xmppId
-//                            WithFrom:(NSString *)from
-//                              WithTo:(NSString *)to
-//                         WithContent:(NSString *)content
-//                      WithExtendInfo:(NSString *)extendInfo
-//                        WithPlatform:(int)platform
-//                         WithMsgType:(int)msgType
-//                        WithMsgState:(int)msgState
-//                    WithMsgDirection:(int)msgDirection
-//                         WithMsgDate:(long long)msgDate
-//                       WithReadedTag:(int)readedTag
-//                          WithMsgRaw:(NSString *)msgRaw
-//                         WithRealJid:(NSString *)realJid
-//                        WithChatType:(NSInteger)chatType;
 
 - (BOOL)qimDB_checkMsgId:(NSString *)msgId;
 
@@ -157,7 +112,7 @@ NS_ASSUME_NONNULL_BEGIN
 //批量更新消息阅读状态
 - (void)qimDB_bulkUpdateMessageReadStateWithMsg:(NSArray *)msgs;
 
-- (long long)qimDB_getReadedTimeStampForUserId:(NSString *)userId WithMsgDirection:(int)msgDirection WithReadedState:(int)readedState;
+- (long long)qimDB_getReadedTimeStampForUserId:(NSString *)userId WithRealJid:(NSString *)realJid WithMsgDirection:(int)msgDirection withUnReadCount:(NSInteger)unReadCount;
 
 - (NSArray *)qimDB_getNotReadMsgListForUserId:(NSString *)userId ForRealJid:(NSString *)realJid;
 
@@ -211,7 +166,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)qimDB_clearHistoryMsg;
 
-- (void)qimDB_updateSystemMsgState:(int)msgState WithXmppId:(NSString *)xmppId;
+- (void)qimDB_updateSystemMsgState:(int)msgState withReadState:(QIMMessageRemoteReadState)readState WithXmppId:(NSString *)xmppId;
 
 #pragma mark - 阅读状态
 

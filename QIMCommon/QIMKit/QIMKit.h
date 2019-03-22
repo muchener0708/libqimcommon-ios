@@ -36,10 +36,6 @@
 
 - (NSData *)updateOrganizationalStructure;
 
-- (NSData *)updateRosterList;
-
-- (void)checkRosterListWithForceUpdate:(BOOL)forceUpdate;
-
 @end
 
 

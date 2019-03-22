@@ -26,6 +26,7 @@
 
 #if OS_OBJECT_USE_OBJC
 @property (nonatomic, strong) dispatch_queue_t receive_msg_queue;
+@property (nonatomic, strong) dispatch_queue_t receive_notify_queue;
 @property (nonatomic, strong) dispatch_queue_t load_user_state_queue;
 //@property (nonatomic, strong) NSOperationQueue *loginComplateQueue;
 //@property (nonatomic, strong) NSInvocationOperation *loginComplateOperation;
@@ -41,11 +42,13 @@
 @property (nonatomic, strong) dispatch_queue_t update_group_member_queue;
 @property (nonatomic, strong) dispatch_queue_t load_group_offline_msg_queue;
 @property (nonatomic, strong) dispatch_queue_t update_chat_card;
+@property (nonatomic, strong) dispatch_queue_t update_group_card;
 @property (nonatomic, strong) dispatch_queue_t cacheQueue;            // cache 线程
 @property (nonatomic, strong) dispatch_queue_t atMeCacheQueue;
 
 #else
 @property (nonatomic, assign) dispatch_queue_t receive_msg_queue;
+@property (nonatomic, strong) dispatch_queue_t receive_notify_queue;    //接收Presence Queue
 @property (nonatomic, assign) dispatch_queue_t load_user_state_queue;
 //@property (nonatomic, assign) NSOperationQueue *loginComplateQueue;
 //@property (nonatomic, assign) NSInvocationOperation *loginComplateOperation;
@@ -59,6 +62,7 @@
 @property (nonatomic, assign) dispatch_queue_t update_group_member_queue;
 @property (nonatomic, assign) dispatch_queue_t load_group_offline_msg_queue;
 @property (nonatomic, assign) dispatch_queue_t update_chat_card;
+@property (nonatomic, assign) dispatch_queue_t update_group_card;
 @property (nonatomic, assign) dispatch_queue_t cacheQueue;            // cache 线程
 @property (nonatomic, strong) dispatch_queue_t atMeCacheQueue;
 
@@ -86,10 +90,7 @@
 @property (nonatomic, strong) NSHTTPCookie *kcookie;
 
 @property (nonatomic, copy) NSString *imageCachePath;                   //图片缓存地址
-@property (nonatomic, copy) NSString *userProfilePath;                  //用户Profile文件缓存路径
-@property (nonatomic, copy) NSString *userVcard;                        //用户名片缓存路径
 @property (nonatomic, copy) NSString *downLoadFile;                     //文件下载路径
-@property (nonatomic, copy) NSString *configPath;                       //组织架构文件缓存路径
 
 @property (nonatomic, strong) NSString *currentSessionUserId;
 @property (nonatomic, assign) BOOL isStartPushNotify;                    //是否开始Push通知
@@ -211,21 +212,14 @@
 
 @end
 
-@interface QIMManager (Common) <NSXMLParserDelegate>
+@interface QIMManager (Common)
 
 - (NSData *)updateOrganizationalStructure;
-
-- (NSData *)updateRosterList;
-
-- (void)checkRosterListWithForceUpdate:(BOOL)forceUpdate;
 
 @end
 
 
 @interface QIMManager (CommonConfig)
-
-//认证
-
 
 /**
  UK，登录之后服务器下发下来，用作旧接口的验证

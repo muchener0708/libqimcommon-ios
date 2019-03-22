@@ -122,52 +122,6 @@
 - (void)updateMessageWithExtendInfo:(NSString *)extendInfo ForMsgId:(NSString *)msgId;
 - (void)deleteMessageWithXmppId:(NSString *)xmppId;
 - (void)deleteMessageByMessageId:(NSString *)messageId ByJid:(NSString *)sid;
-// 插入消息
-
-- (void)insertMessageWithMsgId:(NSString *)msgId
-                    WithXmppId:(NSString *)xmppId
-                      WithFrom:(NSString *)from
-                        WithTo:(NSString *)to
-                   WithContent:(NSString *)content
-                WithExtendInfo:(NSString *)extendInfo
-                  WithPlatform:(int)platform
-                   WithMsgType:(int)msgType
-                  WithMsgState:(int)msgState
-              WithMsgDirection:(int)msgDirection
-                   WithMsgDate:(long long)msgDate
-                 WithReadedTag:(int)readedTag
-                  WithChatType:(NSInteger)chatType;
-
-- (void)insertMessageWithMsgId:(NSString *)msgId
-                    WithXmppId:(NSString *)xmppId
-                      WithFrom:(NSString *)from
-                        WithTo:(NSString *)to
-                   WithContent:(NSString *)content
-                WithExtendInfo:(NSString *)extendInfo
-                  WithPlatform:(int)platform
-                   WithMsgType:(int)msgType
-                  WithMsgState:(int)msgState
-              WithMsgDirection:(int)msgDirection
-                   WithMsgDate:(long long)msgDate
-                 WithReadedTag:(int)readedTag
-                    WithMsgRaw:(NSString *)msgRaw
-                  WithChatType:(NSInteger)chatType;
-
-- (void) insertMessageWithMsgId:(NSString *)msgId
-                     WithXmppId:(NSString *)xmppId
-                       WithFrom:(NSString *)from
-                         WithTo:(NSString *)to
-                    WithContent:(NSString *)content
-                 WithExtendInfo:(NSString *)extendInfo
-                   WithPlatform:(int)platform
-                    WithMsgType:(int)msgType
-                   WithMsgState:(int)msgState
-               WithMsgDirection:(int)msgDirection
-                    WithMsgDate:(long long)msgDate
-                  WithReadedTag:(int)readedTag
-                     WithMsgRaw:(NSString *)msgRaw
-                    WithRealJid:(NSString *)realJid
-                   WithChatType:(NSInteger)chatType;
 
 - (void)updateMessageWithMsgId:(NSString *)msgId
                     WithMsgRaw:(NSString *)msgRaw;
@@ -308,7 +262,7 @@
 - (NSArray *)getSessionListXMPPIDWithSingleChatType:(int)singleChatType;
 - (NSArray *)qimDB_getNotReadMsgListForUserId:(NSString *)userId;
 - (NSArray *)qimDB_getNotReadMsgListForUserId:(NSString *)userId ForRealJid:(NSString *)realJid;
-- (long long)getReadedTimeStampForUserId:(NSString *)userId WithMsgDirection:(int)msgDirection WithReadedState:(int)readedState;
+- (long long)getReadedTimeStampForUserId:(NSString *)userId WithRealJid:(NSString *)realJid WithMsgDirection:(int)msgDirection withUnReadCount:(NSInteger)unReadCount;
 // 获取会话消息记录
 - (NSArray *)qimDB_getMgsListBySessionId:(NSString *)sesId;
 

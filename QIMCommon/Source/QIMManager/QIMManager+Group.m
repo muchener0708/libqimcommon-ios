@@ -296,10 +296,10 @@
     if (groupIds.count <= 0) {
         return;
     }
-    if (!self.load_customEvent_queue) {
-        self.load_customEvent_queue = dispatch_queue_create("Load CustomEvent Queue", DISPATCH_QUEUE_SERIAL);
+    if (!self.update_group_card) {
+        self.update_group_card = dispatch_queue_create("update_group_card", DISPATCH_QUEUE_SERIAL);
     }
-    dispatch_async(self.load_customEvent_queue, ^{
+    dispatch_async(self.update_group_card, ^{
         NSArray *groupCardList = [[IMDataManager qimDB_SharedInstance] qimDB_getGroupVCardByGroupIds:groupIds];
         NSMutableDictionary *groupIdDic = [NSMutableDictionary dictionary];
         for (NSDictionary *groupDic in groupCardList) {
@@ -352,6 +352,8 @@
         NSURL *requestUrl = [[NSURL alloc] initWithString:destUrl];
         NSMutableDictionary *requestHeaders = [[NSMutableDictionary alloc] initWithCapacity:2];
         [requestHeaders setObject:@"application/json;" forKey:@"Content-type"];
+        [requestHeaders setObject:[NSString stringWithFormat:@"q_ckey=%@", [[QIMManager sharedInstance] thirdpartKeywithValue]] forKey:@"Cookie"];
+
         
         QIMHTTPRequest *request = [[QIMHTTPRequest alloc] initWithURL:requestUrl];
         [request setHTTPMethod:QIMHTTPMethodPOST];
@@ -735,29 +737,30 @@
 }
 
 - (void)getIncrementMucList:(NSTimeInterval)lastTime {
-    
-    QIMVerboseLog(@" ======= 开始通过增量群列表拉群列表数据 =========");
-    
-    NSString *destUrl = [NSString stringWithFormat:@"%@/muc/get_increment_mucs.qunar", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
-    NSDictionary *param = @{@"u" : [QIMManager getLastUserName], @"t" : @(lastTime) ? @(lastTime) : @(0), @"d": [[XmppImManager sharedInstance] domain]};
-    QIMVerboseLog(@"增量群列表拉群列表参数 : %@", [[QIMJSONSerializer sharedInstance] serializeObject:param]);
-    NSData *data = [[QIMJSONSerializer sharedInstance] serializeObject:param error:nil];
-    
-    [self sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:data withSuccessCallBack:^(NSData *responseData) {
-        NSDictionary *resultDic = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
-        BOOL ret = [[resultDic objectForKey:@"ret"] boolValue];
-        NSInteger errcode = [[resultDic objectForKey:@"errcode"] integerValue];
-        if (ret && errcode == 0) {
-            NSArray *newGroupList = [resultDic objectForKey:@"data"];
-            if ([newGroupList isKindOfClass:[NSArray class]]) {
-                [self dealWithIncrement_mucs:newGroupList];
-            }
-        } else {
-            QIMErrorLog(@"增量群列表失败 : %@", [resultDic objectForKey:@"errmsg"]);
-        }
-    } withFailedCallBack:^(NSError *error) {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        QIMVerboseLog(@" ======= 开始通过增量群列表拉群列表数据 =========");
         
-    }];
+        NSString *destUrl = [NSString stringWithFormat:@"%@/muc/get_increment_mucs.qunar", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+        NSDictionary *param = @{@"u" : [QIMManager getLastUserName], @"t" : @(lastTime) ? @(lastTime) : @(0), @"d": [[XmppImManager sharedInstance] domain]};
+        QIMVerboseLog(@"增量群列表拉群列表参数 : %@", [[QIMJSONSerializer sharedInstance] serializeObject:param]);
+        NSData *data = [[QIMJSONSerializer sharedInstance] serializeObject:param error:nil];
+        
+        [self sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:data withSuccessCallBack:^(NSData *responseData) {
+            NSDictionary *resultDic = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
+            BOOL ret = [[resultDic objectForKey:@"ret"] boolValue];
+            NSInteger errcode = [[resultDic objectForKey:@"errcode"] integerValue];
+            if (ret && errcode == 0) {
+                NSArray *newGroupList = [resultDic objectForKey:@"data"];
+                if ([newGroupList isKindOfClass:[NSArray class]]) {
+                    [self dealWithIncrement_mucs:newGroupList];
+                }
+            } else {
+                QIMErrorLog(@"增量群列表失败 : %@", [resultDic objectForKey:@"errmsg"]);
+            }
+        } withFailedCallBack:^(NSError *error) {
+            
+        }];
+    });
 }
 
 - (void)dealWithIncrement_mucs:(NSArray *)newGroupList {

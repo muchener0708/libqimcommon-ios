@@ -491,8 +491,8 @@
     return [[IMDataManager qimDB_SharedInstance] qimDB_getNotReadMsgListForUserId:userId ForRealJid:realJid];
 }
 
-- (long long)getReadedTimeStampForUserId:(NSString *)userId WithMsgDirection:(int)msgDirection WithReadedState:(int)readedState {
-    return [[IMDataManager qimDB_SharedInstance] qimDB_getReadedTimeStampForUserId:userId WithMsgDirection:msgDirection WithReadedState:readedState];
+- (long long)getReadedTimeStampForUserId:(NSString *)userId WithRealJid:(NSString *)realJid WithMsgDirection:(int)msgDirection withUnReadCount:(NSInteger)unReadCount {
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getReadedTimeStampForUserId:userId WithRealJid:realJid WithMsgDirection:msgDirection withUnReadCount:unReadCount];
 }
 
 - (NSArray *)qimDB_getMgsListBySessionId:(NSString *)sesId {
@@ -602,10 +602,6 @@
 
 - (void)clearHistoryMsg {
     [[IMDataManager qimDB_SharedInstance] qimDB_clearHistoryMsg];
-}
-
-- (void)updateSystemMsgState:(int)msgState WithXmppId:(NSString *)xmppId {
-    [[IMDataManager qimDB_SharedInstance] qimDB_updateSystemMsgState:msgState WithXmppId:xmppId];
 }
 
 - (void)closeDataBase {

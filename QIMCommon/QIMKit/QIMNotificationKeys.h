@@ -318,5 +318,6 @@
 
 static const NSString *kGetIncrementMucListVersion = @"kGetIncrementMucListVersion";
 static const NSString *kGetUpdateUsersVersion = @"kGetUpdateUsersVersion";
+static const NSString *kGetGroupReadMarkVersion = @"kGetGroupReadMarkVersion";
 
 #endif /* QIMNotificationKeys_h */

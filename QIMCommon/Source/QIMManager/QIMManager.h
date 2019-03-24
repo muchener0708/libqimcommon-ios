@@ -26,7 +26,9 @@
 
 #if OS_OBJECT_USE_OBJC
 @property (nonatomic, strong) dispatch_queue_t receive_msg_queue;
+@property (nonatomic, strong) dispatch_queue_t receive_msgSendState_queue;
 @property (nonatomic, strong) dispatch_queue_t receive_notify_queue;
+@property (nonatomic, strong) dispatch_queue_t receive_msgReadState_queue;    //接收消息阅读状态Queue
 @property (nonatomic, strong) dispatch_queue_t load_user_state_queue;
 //@property (nonatomic, strong) NSOperationQueue *loginComplateQueue;
 //@property (nonatomic, strong) NSInvocationOperation *loginComplateOperation;
@@ -48,7 +50,9 @@
 
 #else
 @property (nonatomic, assign) dispatch_queue_t receive_msg_queue;
-@property (nonatomic, strong) dispatch_queue_t receive_notify_queue;    //接收Presence Queue
+@property (nonatomic, assign) dispatch_queue_t receive_msgSendState_queue;  //接收消息发送状态Queue
+@property (nonatomic, assign) dispatch_queue_t receive_notify_queue;    //接收Presence Queue
+@property (nonatomic, assign) dispatch_queue_t receive_msgReadState_queue;    //接收消息阅读状态Queue
 @property (nonatomic, assign) dispatch_queue_t load_user_state_queue;
 //@property (nonatomic, assign) NSOperationQueue *loginComplateQueue;
 //@property (nonatomic, assign) NSInvocationOperation *loginComplateOperation;

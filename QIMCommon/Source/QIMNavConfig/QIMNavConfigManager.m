@@ -132,7 +132,7 @@
             _adShown = NO;
             _qcHost = @"https://qcadmin.qunar.com";
         } else if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
-            _xmppHost = @"qim.qunar.com";
+            _xmppHost = @"qt.qunar.com";
             _httpHost = @"https://qtapi.qunar.com";
             _javaurl = @"https://im.qunar.com/pubim/s/hosts";
             _newerHttpUrl = @"https://qim.qunar.com/package/newapi";
@@ -147,7 +147,7 @@
             _port = @"5223";
             _protobufPort = @"5202";
             _adShown = NO;
-            _healthcheckUrl = @"http://qim.qunar.com/healthcheck.html";
+            _healthcheckUrl = @"http://qt.qunar.com/healthcheck.html";
         }
     }
     

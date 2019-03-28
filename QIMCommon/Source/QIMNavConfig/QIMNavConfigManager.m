@@ -570,6 +570,14 @@
     return NO;
 }
 
+- (BOOL)qimNav_updateNavigationConfigWithNavUrl:(NSString *)navUrl WithUserName:(NSString *)userName {
+    if (navUrl.length > 0) {
+        NSDictionary *currentNav = @{QIMNavNameKey:navUrl, QIMNavUrlKey:navUrl};
+        return [self qimNav_updateNavigationConfigWithNavDict:currentNav WithUserName:userName Check:YES WithForcedUpdate:YES];
+    }
+    return NO;
+}
+
 - (BOOL)qimNav_updateNavigationConfigWithNavDict:(NSDictionary *)navDict WithUserName:(NSString *)userName Check:(BOOL)check WithForcedUpdate:(BOOL)forcedUpdate{
     NSString *customNavUrl = [navDict objectForKey:QIMNavUrlKey];
     NSString *realNavUrl = nil;

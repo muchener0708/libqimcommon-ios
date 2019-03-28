@@ -302,6 +302,10 @@
     return [[QIMNavConfigManager sharedInstance] qimNav_updateNavigationConfigWithDomain:domain WithUserName:userName];
 }
 
+- (BOOL)qimNav_updateNavigationConfigWithNavUrl:(NSString *)navUrl WithUserName:(NSString *)userName {
+    return [[QIMNavConfigManager sharedInstance] qimNav_updateNavigationConfigWithNavUrl:navUrl WithUserName:userName];
+}
+
 - (BOOL)qimNav_updateNavigationConfigWithNavDict:(NSDictionary *)navDict WithUserName:(NSString *)userName Check:(BOOL)check WithForcedUpdate:(BOOL)forcedUpdate {
     return [[QIMNavConfigManager sharedInstance] qimNav_updateNavigationConfigWithNavDict:navDict WithUserName:userName Check:check WithForcedUpdate:forcedUpdate];
 }

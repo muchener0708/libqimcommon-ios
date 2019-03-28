@@ -733,6 +733,7 @@
         NSDate*date = [NSDate qim_dateWithTimeIntervalInMilliSecondSince1970:msgDate];
         QIMMessageModel *msg = [QIMMessageModel new];
         [msg setFrom:jid];
+        [msg setXmppId:jid];
         [msg setMessageId:[[IMDataManager qimDB_SharedInstance] qimDB_getTimeSmtapMsgIdForDate:date WithUserId:key]];
         [msg setMessageType:QIMMessageType_Time];
         [msg setMessageDate:msgDate-1];
@@ -763,6 +764,9 @@
         QIMMessageModel *msg = [QIMMessageModel new];
         NSDate *date = [NSDate qim_dateWithTimeIntervalInMilliSecondSince1970:msgDate];
         [msg setMessageId:[[IMDataManager qimDB_SharedInstance] qimDB_getTimeSmtapMsgIdForDate:date WithUserId:jid]];
+        [msg setRealJid:jid];
+        [msg setXmppId:jid];
+        [msg setFrom:jid];
         [msg setMessageType:QIMMessageType_Time];
         [msg setMessageDate:msgDate - 1];
         [msg setMessageSendState:QIMMessageSendState_Success];

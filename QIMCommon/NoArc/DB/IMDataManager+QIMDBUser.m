@@ -473,21 +473,6 @@
     return [user autorelease];
 }
 
-- (NSArray *)qimDB_selectXmppIdFromSessionList {
-    __block NSMutableArray *list = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"Select XmppId From IM_SessionList Where XmppId not like '%conference.%'";
-        DataReader *reader = [database executeReader:sql withParameters:nil];
-        while ([reader read]) {
-            if (list == nil) {
-                list = [[NSMutableArray alloc] init];
-            }
-            [list addObject:[reader objectForColumnIndex:0]];
-        }
-    }];
-    return [list autorelease];
-}
-
 - (NSArray *)qimDB_selectXmppIdList{
     __block NSMutableArray *list = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {

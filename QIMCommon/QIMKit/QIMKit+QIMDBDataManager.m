@@ -226,10 +226,6 @@
     return [[IMDataManager qimDB_SharedInstance] qimDB_selectUserByIndex:index];
 }
 
-- (NSArray *)selectXmppIdFromSessionList {
-    return [[IMDataManager qimDB_SharedInstance] qimDB_selectXmppIdFromSessionList];
-}
-
 - (NSArray *)selectXmppIdList {
     return [[IMDataManager qimDB_SharedInstance] qimDB_selectXmppIdList];
 }

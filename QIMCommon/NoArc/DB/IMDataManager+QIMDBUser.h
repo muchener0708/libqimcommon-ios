@@ -44,8 +44,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSDictionary *)qimDB_selectUserByIndex:(NSString *)index;
 
-- (NSArray *)qimDB_selectXmppIdFromSessionList;
-
 - (NSArray *)qimDB_selectXmppIdList;
 
 - (NSArray *)qimDB_selectUserIdList;

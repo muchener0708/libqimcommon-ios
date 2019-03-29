@@ -1251,9 +1251,6 @@
         [memberInfoDic setObject:name forKey:@"name"];
         [memberInfoDic setQIMSafeObject:affiliation forKey:@"affiliation"];
         if (memberJid) {
-            dispatch_async(self.load_user_state_queue, ^{
-                [self.onlineTables setObject:@"online" forKey:memberJid];
-            });
             [[IMDataManager qimDB_SharedInstance] qimDB_insertGroupMember:memberInfoDic WithGroupId:groupId];
         }
     });
@@ -1270,12 +1267,9 @@
         }
         NSMutableDictionary *memberInfoDic = [NSMutableDictionary dictionary];
         [memberInfoDic setObject:memberJid forKey:@"jid"];
-        [memberInfoDic setObject:[memberJid componentsSeparatedByString:@"@"].firstObject forKey:@"name"];
+        [memberInfoDic setObject:name forKey:@"name"];
         [memberInfoDic setQIMSafeObject:affiliation forKey:@"affiliation"];
         if (memberJid) {
-            dispatch_async(self.load_user_state_queue, ^{
-                [self.onlineTables setObject:@"online" forKey:memberJid];
-            });
             [[IMDataManager qimDB_SharedInstance] qimDB_insertGroupMember:memberInfoDic WithGroupId:groupId];
         }
     });

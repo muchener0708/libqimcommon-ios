@@ -473,21 +473,6 @@
     return [user autorelease];
 }
 
-- (NSArray *)qimDB_selectXmppIdFromSessionList {
-    __block NSMutableArray *list = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"Select XmppId From IM_SessionList Where XmppId not like '%conference.%'";
-        DataReader *reader = [database executeReader:sql withParameters:nil];
-        while ([reader read]) {
-            if (list == nil) {
-                list = [[NSMutableArray alloc] init];
-            }
-            [list addObject:[reader objectForColumnIndex:0]];
-        }
-    }];
-    return [list autorelease];
-}
-
 - (NSArray *)qimDB_selectXmppIdList{
     __block NSMutableArray *list = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
@@ -558,8 +543,7 @@
 - (NSArray *)qimDB_selectUserListBySearchStr:(NSString *)searchStr inGroup:(NSString *) groupId {
     __block NSMutableArray *list = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"Select a.UserId, a.XmppId, a.Name, a.DescInfo, a.HeaderSrc, a.UserInfo, a.LastUpdateTime from IM_Group_Member as b left join IM_Users as a on a.Name = b.Name and (a.UserId like '%%%@%%' OR a.Name like '%%%@%%' OR a.SearchIndex like '%%%@%%') WHERE GroupId = ?;",searchStr,searchStr,searchStr];
-        
+        NSString *sql = [NSString stringWithFormat:@"Select a.UserId, a.XmppId, a.Name, a.DescInfo, a.HeaderSrc, a.UserInfo, a.LastUpdateTime from IM_Group_Member as b left join IM_Users as a on a.XmppId = b.MemberJid and (a.UserId like '%%%@%%' OR a.Name like '%%%@%%' OR a.SearchIndex like '%%%@%%') WHERE GroupId = ?;",searchStr,searchStr,searchStr];
         DataReader *reader = [database executeReader:sql withParameters:[NSArray arrayWithObject:groupId]];
         if (list == nil) {
             list = [[NSMutableArray alloc] init];

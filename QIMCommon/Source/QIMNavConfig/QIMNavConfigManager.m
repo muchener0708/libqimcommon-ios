@@ -268,7 +268,7 @@
 
 - (NSString *)healthcheckUrl {
     if (!_healthcheckUrl.length) {
-        _healthcheckUrl = @"http://qim.qunar.com/healthcheck.html";
+        _healthcheckUrl = @"http://qt.qunar.com/healthcheck.html";
     }
     return _healthcheckUrl;
 }

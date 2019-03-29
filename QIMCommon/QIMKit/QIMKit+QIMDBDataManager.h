@@ -92,7 +92,6 @@
 - (NSDictionary *)selectUserByJID:(NSString *)jid;
 //- (NSDictionary *)selectUserByName:(NSString *)name;
 - (NSDictionary *)selectUserByIndex:(NSString *)index;
-- (NSArray *)selectXmppIdFromSessionList;
 - (NSArray *)selectXmppIdList;
 - (NSArray *)selectUserIdList;
 - (NSArray *)selectUserListBySearchStr:(NSString *)searchStr;

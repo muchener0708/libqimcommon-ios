@@ -86,6 +86,8 @@
 
 @property (nonatomic, readonly, copy) NSString *healthcheckUrl;
 
+@property (nonatomic, strong) NSMutableArray *localNavConfigs;
+
 + (QIMNavConfigManager *)sharedInstance;
 
 //- (NSString *)getAdvertImageFilePath;

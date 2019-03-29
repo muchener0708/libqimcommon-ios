@@ -273,6 +273,30 @@
     return _healthcheckUrl;
 }
 
+- (NSMutableArray *)localNavConfigs {
+    if (!_localNavConfigs) {
+        NSMutableArray *clientNavServerConfigs = [NSMutableArray arrayWithArray:[[QIMUserCacheManager sharedInstance] userObjectForKey:@"QC_NavAllDicts"]];
+        if (!clientNavServerConfigs.count) {
+            
+            clientNavServerConfigs = [NSMutableArray arrayWithCapacity:5];
+            NSString *tempNavName = [NSString stringWithFormat:@"%@导航", [[QIMAppInfo sharedInstance] appName]];
+            NSDictionary *qtalkNav = @{QIMNavNameKey:tempNavName, QIMNavUrlKey:@"https://qim.qunar.com/package/static/qtalk/nav"};
+            NSDictionary *publicQTalkNav = @{QIMNavNameKey:@"Qunar公共域导航", QIMNavUrlKey:@"https://qim.qunar.com/package/static/qtalk/publicnav?c=qunar.com"};
+            NSDictionary *qchatNav = @{QIMNavNameKey:@"QChat导航", QIMNavUrlKey:@"https://qim.qunar.com/package/static/qchat/nav"};
+            if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
+                [clientNavServerConfigs addObject:qtalkNav];
+                [clientNavServerConfigs addObject:publicQTalkNav];
+            } else if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
+                [clientNavServerConfigs addObject:qchatNav];
+            } else {
+                
+            }
+        }
+        _localNavConfigs = [NSMutableArray arrayWithArray:clientNavServerConfigs];
+    }
+    return _localNavConfigs;
+}
+
 - (void)setRNMineView:(BOOL)RNMineView {
     _RNMineView = RNMineView;
 }

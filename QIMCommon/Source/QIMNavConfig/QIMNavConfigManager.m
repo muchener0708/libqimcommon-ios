@@ -184,7 +184,7 @@
 }
 
 - (NSArray *)qimNav_getLocalNavServerConfigs {
-    return [NSMutableArray arrayWithArray:[[QIMUserCacheManager sharedInstance] userObjectForKey:@"QC_NavAllDicts"]];
+    return self.localNavConfigs;
 }
 
 - (NSString *)navUrl {
@@ -295,6 +295,21 @@
         _localNavConfigs = [NSMutableArray arrayWithArray:clientNavServerConfigs];
     }
     return _localNavConfigs;
+}
+
+- (void)addLocalNavDict:(NSDictionary *)navDict {
+    NSArray *tempLocalNavConfigs = self.localNavConfigs;
+    BOOL isExist = NO;
+    for (NSDictionary *dict in tempLocalNavConfigs) {
+        NSString *navUrl = [dict objectForKey:QIMNavUrlKey];
+        NSString *newNavUrl = [navDict objectForKey:QIMNavUrlKey];
+        if ([newNavUrl isEqualToString:navUrl]) {
+            isExist = YES;
+        }
+    }
+    if (isExist == NO) {
+        [self.localNavConfigs addObject:navDict];
+    }
 }
 
 - (void)setRNMineView:(BOOL)RNMineView {
@@ -641,6 +656,8 @@
         }
         BOOL resultSuccess = [self qimNav_updateNavigationConfigWithNavDict:navDict NavStr:navConfigUrl Check:check];
         if (resultSuccess) {
+            [self addLocalNavDict:navDict];
+            [[QIMUserCacheManager sharedInstance] setUserObject:_localNavConfigs forKey:@"QC_NavAllDicts"];
             NSString *lastComponent = [[[navConfigUrl lastPathComponent] componentsSeparatedByString:@"?"] lastObject];
             if (_hashHosts.length > 0) {
                 if (![_hashHosts containsString:@"?"]) {

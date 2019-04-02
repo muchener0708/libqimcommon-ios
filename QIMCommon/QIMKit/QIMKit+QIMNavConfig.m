@@ -278,6 +278,10 @@
     return [[QIMNavConfigManager sharedInstance] healthcheckUrl];
 }
 
+- (NSMutableArray *)qimNav_localNavConfigs {
+    return [[QIMNavConfigManager sharedInstance] localNavConfigs];
+}
+
 - (BOOL)qimNav_updateNavigationConfigWithCheck:(BOOL)check {
     return [[QIMNavConfigManager sharedInstance] qimNav_updateNavigationConfigWithCheck:check];
 }

@@ -149,6 +149,8 @@
 
 - (NSString *)qimNav_HealthcheckUrl;
 
+- (NSMutableArray *)qimNav_localNavConfigs;
+
 - (BOOL)qimNav_updateNavigationConfigWithCheck:(BOOL)check;
 
 /**

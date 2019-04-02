@@ -1208,8 +1208,11 @@
             [self relogin];
         }
     } else if (errcode >= 200) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"kNotificationStreamEnd" object:@"你的账号由于某些原因被迫下线"];
+        dispatch_async(dispatch_get_main_queue(), ^{
+           [[NSNotificationCenter defaultCenter] postNotificationName:@"kNotificationStreamEnd" object:@"你的账号由于某些原因被迫下线"];
+        });
         self.willCancelLogin = YES;
+        self.notNeedCheckNetwotk = YES;
     } else {
         QIMWarnLog(@"遇到了新的StreamEnd");
         [[NSNotificationCenter defaultCenter] postNotificationName:@"kNotificationStreamEnd" object:reason];
@@ -1541,9 +1544,6 @@
             [[QIMUserCacheManager sharedInstance] removeUserObjectForKey:@"userToken"];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:@"kNotificationOutOfDate" object:nil];
-            });
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"kNotificationOutOfDateFromQTalkMainVc" object:nil];
             });
         }
         

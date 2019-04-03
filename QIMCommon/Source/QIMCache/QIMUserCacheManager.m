@@ -448,7 +448,7 @@ static NSString *const QTalkDiskCacheException = @"QTalkDiskCacheException";
 
 - (NSArray *)needSaveUserDefaultKeys {
     if (!_needSaveUserDefaultKeys) {
-        _needSaveUserDefaultKeys = @[@"kLastUserId", @"kFullUserJid", @"userToken", @"LoginType", @"kLastPassword", @"IM_LastLoginTime",@"ClientProtocol",@"firstLaunch", @"QC_CurrentNavDict", @"QC_NavAllDicts", @"newData", @"Users", @"NavConfigUpdateTime", @"kTempPassword", @"kTempUserToken", @"QCNavFailed", /*@"NavConfig",*/ @"QChatCookie", @"AdvertConfig", @"AdvertConfigUpdateTime", @"lastAdShowTime", @"recordLogType", @"isInstruments", @"LastestLoginUser", @"NewClientConfigUpgrade", @"kRightCardRemindNotification"];
+        _needSaveUserDefaultKeys = @[@"kLastUserId", @"kFullUserJid", @"userToken", @"LoginType", @"kLastPassword", @"IM_LastLoginTime",@"ClientProtocol",@"firstLaunch", @"QC_CurrentNavDict", @"QC_NavAllDicts", @"newData", @"Users", @"NavConfigUpdateTime", @"kTempPassword", @"kTempUserToken", @"QCNavFailed", /*@"NavConfig",*/ @"QChatCookie", @"AdvertConfig", @"AdvertConfigUpdateTime", @"lastAdShowTime", @"recordLogType", @"isInstruments", @"LastestLoginUser", @"NewClientConfigUpgrade", @"kRightCardRemindNotification", @"isLocalLogging"];
     }
     return _needSaveUserDefaultKeys;
 }

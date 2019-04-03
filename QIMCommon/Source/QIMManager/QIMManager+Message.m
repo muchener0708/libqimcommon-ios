@@ -1090,6 +1090,10 @@
     return [self sendReadStateWithMessagesIdArray:messages WithMessageReadFlag:msgReadFlag WithXmppId:xmppId WithRealJid:nil];
 }
 
+- (long long)getGroupLastMsgTimeWithGroupId:(NSString *)groupId {
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getLastMsgTimeIdByJid:groupId];
+}
+
 /**
  发送群阅读状态
  

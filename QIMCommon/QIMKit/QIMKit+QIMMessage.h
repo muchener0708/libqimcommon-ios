@@ -103,6 +103,8 @@
 
 - (BOOL)sendReadstateWithGroupLastMessageTime:(long long) lastTime withGroupId:(NSString *) groupId;
 
+- (long long)getGroupLastMsgTimeWithGroupId:(NSString *)groupId;
+
 
 #pragma mark - 单人消息
 

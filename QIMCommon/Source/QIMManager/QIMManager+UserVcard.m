@@ -458,8 +458,9 @@
     }
 }
 
-- (void)dealWithUpdateMyVCard:(NSDictionary *)resultDic {
-    if ([resultDic isKindOfClass:[NSDictionary class]]) {
+- (void)dealWithUpdateMyVCard:(NSArray *)resultData {
+    if ([resultData isKindOfClass:[NSArray class]]) {
+        NSDictionary *resultDic = [resultData firstObject];
         [self.userNormalHeaderDic removeObjectForKey:[[QIMManager sharedInstance] getLastJid]];
         
         NSString *headerUrl = [resultDic objectForKey:@"url"];

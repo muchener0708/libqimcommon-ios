@@ -199,7 +199,7 @@
 // 发送音视频消息
 - (void)sendAudioVideoWithType:(int)msgType WithBody:(NSString *)body WithExtentInfo:(NSString *)extentInfo WithMsgId:(NSString *)msgId ToJid:(NSString *)jid;
 
-- (void)sendWlanMessage:(NSString *)content to:(NSString *)targetID extendInfo:(NSString *)extendInfo msgType:(int)msgType completionHandler:(void (^)(NSData *, NSURLResponse *, NSError *))completionHandler;
+- (void)sendWlanMessage:(NSString *)content to:(NSString *)targetID realJid:(NSString *)realJid withChatType:(NSInteger)chatType withChatId:(NSString *)chatId extendInfo:(NSString *)extendInfo msgType:(int)msgType completionHandler:(void (^)(NSData *, NSURLResponse *, NSError *))completionHandler;
 
 /**
  创建消息

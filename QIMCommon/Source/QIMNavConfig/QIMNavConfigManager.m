@@ -298,6 +298,9 @@
 }
 
 - (void)addLocalNavDict:(NSDictionary *)navDict {
+    if (!navDict) {
+        return;
+    }
     NSArray *tempLocalNavConfigs = self.localNavConfigs;
     BOOL isExist = NO;
     for (NSDictionary *dict in tempLocalNavConfigs) {

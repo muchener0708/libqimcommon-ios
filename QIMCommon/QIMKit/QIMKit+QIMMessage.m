@@ -132,8 +132,8 @@
     [[QIMManager sharedInstance] sendAudioVideoWithType:msgType WithBody:body WithExtentInfo:extentInfo WithMsgId:msgId ToJid:jid];
 }
 
-- (void)sendWlanMessage:(NSString *)content to:(NSString *)targetID extendInfo:(NSString *)extendInfo msgType:(int)msgType completionHandler:(void (^)(NSData *, NSURLResponse *, NSError *))completionHandler {
-    [[QIMManager sharedInstance] sendWlanMessage:content to:targetID extendInfo:extendInfo msgType:msgType completionHandler:completionHandler];
+- (void)sendWlanMessage:(NSString *)content to:(NSString *)targetID realJid:(NSString *)realJid withChatType:(NSInteger)chatType withChatId:(NSString *)chatId extendInfo:(NSString *)extendInfo msgType:(int)msgType completionHandler:(void (^)(NSData *, NSURLResponse *, NSError *))completionHandler {
+    [[QIMManager sharedInstance] sendWlanMessage:content to:targetID realJid:realJid withChatType:chatType withChatId:chatId extendInfo:extendInfo msgType:msgType completionHandler:completionHandler];
 }
 
 - (QIMMessageModel *)createMessageWithMsg:(NSString *)msg extenddInfo:(NSString *)extendInfo userId:(NSString *)userId userType:(ChatType)userType msgType:(QIMMessageType)msgType forMsgId:(NSString *)mId willSave:(BOOL)willSave {

@@ -460,8 +460,8 @@
 
 - (NSInteger)getCollectionMsgNotReadCountgetCollectionMsgNotReadCountByDidReadState:(NSInteger)readState ForBindId:(NSString *)bindId originUserId:(NSString *)originUserId;
 
-- (void)updateCollectionMsgNotReadStateByJid:(NSString *)jid WithMsgState:(NSInteger)msgState;
-- (void)updateCollectionMsgNotReadStateForBindId:(NSString *)bindId originUserId:(NSString *)originUserId WithMsgState:(NSInteger)msgState;
+- (void)updateCollectionMsgNotReadStateByJid:(NSString *)jid WithReadtate:(NSInteger)readState;
+- (void)updateCollectionMsgNotReadStateForBindId:(NSString *)bindId originUserId:(NSString *)originUserId WithReadState:(NSInteger)readState;
 - (NSDictionary *)getCollectionMsgListForMsgId:(NSString *)msgId;
 - (NSArray *)getCollectionMsgListWithUserId:(NSString *)userId originUserId:(NSString *)originUserId;
 

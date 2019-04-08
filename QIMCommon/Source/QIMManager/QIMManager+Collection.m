@@ -270,13 +270,12 @@
  @param jid Jid
  */
 - (void)clearNotReadCollectionMsgByJid:(NSString *)jid {
-    //Mark by DB
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateCollectionMsgNotReadStateByJid:jid WithReadtate:QIMMessageRemoteReadStateDidReaded];
 //    [[IMDataManager qimDB_SharedInstance] qimDB_updateCollectionMsgNotReadStateByJid:jid WithMsgState:MessageState_didRead];
     dispatch_async(dispatch_get_main_queue(), ^{
         NSString *xmppId = [NSString stringWithFormat:@"collection_rbt@%@", [self getDomain]];
         [self.notReadMsgDic removeObjectForKey:xmppId];
-        //Mark by DB
-//        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:xmppId];
+        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@{@"XmppId":xmppId}];
     });
 }
 
@@ -287,13 +286,11 @@
  @param userId 用户Id
  */
 - (void)clearNotReadCollectionMsgByBindId:(NSString *)bindId WithUserId:(NSString *)userId {
-    //Mark by DB
-//    [[IMDataManager qimDB_SharedInstance] qimDB_updateCollectionMsgNotReadStateForBindId:bindId originUserId:userId WithMsgState:MessageState_didRead];
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateCollectionMsgNotReadStateForBindId:bindId originUserId:userId WithReadState:QIMMessageRemoteReadStateDidReaded];
     dispatch_async(dispatch_get_main_queue(), ^{
         NSString *xmppId = [NSString stringWithFormat:@"collection_rbt@%@", [self getDomain]];
         [self.notReadMsgDic removeObjectForKey:xmppId];
-        //Mark by DB
-//        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:xmppId];
+        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@{@"XmppId":xmppId}];
     });
 }
 
@@ -301,9 +298,7 @@
  获取代收总未读消息数
  */
 - (NSInteger)getNotReadCollectionMsgCount {
-    return 0;
-    //Mark by DB
-//    return [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionMsgNotReadCountByDidReadState:MessageState_didRead];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionMsgNotReadCountByDidReadState:QIMMessageRemoteReadStateDidReaded];
 }
 
 /**
@@ -312,9 +307,7 @@
  @param bindId 绑定账号Id
  */
 - (NSInteger)getNotReadCollectionMsgCountByBindId:(NSString *)bindId {
-    return 0;
-    //Mark by DB
-//    return [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionMsgNotReadCountByDidReadState:MessageState_didRead ForBindId:bindId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionMsgNotReadCountByDidReadState:QIMMessageRemoteReadStateDidReaded ForBindId:bindId];
 }
 
 /**
@@ -324,9 +317,7 @@
  @param userId 用户Id
  */
 - (NSInteger)getNotReadCollectionMsgCountByBindId:(NSString *)bindId WithUserId:(NSString *)userId {
-    return 0;
-    //Mark by DB
-//    return [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionMsgNotReadCountgetCollectionMsgNotReadCountByDidReadState:MessageState_didRead ForBindId:bindId originUserId:userId];
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getCollectionMsgNotReadCountgetCollectionMsgNotReadCountByDidReadState:QIMMessageRemoteReadStateDidReaded ForBindId:bindId originUserId:userId];
 }
 
 #pragma mark - 代收Group

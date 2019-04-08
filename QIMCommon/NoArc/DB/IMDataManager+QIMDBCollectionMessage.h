@@ -40,9 +40,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(NSInteger)qimDB_getCollectionMsgNotReadCountgetCollectionMsgNotReadCountByDidReadState:(NSInteger)readState ForBindId:(NSString *)bindId originUserId:(NSString *)originUserId;
 
-- (void)qimDB_updateCollectionMsgNotReadStateByJid:(NSString *)jid WithMsgState:(NSInteger)msgState;
+- (void)qimDB_updateCollectionMsgNotReadStateByJid:(NSString *)jid WithReadtate:(NSInteger)readState;
 
-- (void)qimDB_updateCollectionMsgNotReadStateForBindId:(NSString *)bindId originUserId:(NSString *)originUserId WithMsgState:(NSInteger)msgState;
+- (void)qimDB_updateCollectionMsgNotReadStateForBindId:(NSString *)bindId originUserId:(NSString *)originUserId WithReadState:(NSInteger)readState;
 
 - (NSDictionary *)qimDB_getCollectionMsgListForMsgId:(NSString *)msgId;
 

@@ -911,14 +911,16 @@
         [[QIMManager sharedInstance] checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
         
         QIMMessageModel *mesg = [QIMMessageModel new];
+        [mesg setXmppId:sid];
         [mesg setFrom:realfrom];
+        [mesg setRealJid:sid];
         [mesg setChatType:ChatType_CollectionChat];
         [mesg setMessageId:msgId];
         [mesg setMessageType:msgType];
         [mesg setMessageDirection:direction == 2 ? QIMMessageDirection_Sent : QIMMessageDirection_Received];
         [mesg setMessage:msg];
         [mesg setMessageDate:msgDate];
-        
+        [mesg setMessageReadState:QIMMessageRemoteReadStateDidSent];
         [mesg setExtendInformation:extendInfo];
         [mesg setTo:[[QIMManager sharedInstance] getLastJid]];
         [mesg setMsgRaw:msgRaw];

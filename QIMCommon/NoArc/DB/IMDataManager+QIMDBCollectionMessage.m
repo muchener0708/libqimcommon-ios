@@ -256,8 +256,8 @@
             [IMDataManager safeSaveForDic:sessionDic setObject:msgId forKey:@"LastMsgId"];
             [IMDataManager safeSaveForDic:sessionDic setObject:content forKey:@"Content"];
             [IMDataManager safeSaveForDic:sessionDic setObject:msgType forKey:@"MsgType"];
-            [IMDataManager safeSaveForDic:sessionDic setObject:msgState forKey:@"MsgState"];
-            [IMDataManager safeSaveForDic:sessionDic setObject:@(2) forKey:@"MsgDirection"];
+            [IMDataManager safeSaveForDic:sessionDic setObject:@(QIMMessageSendState_Success) forKey:@"MsgState"];
+            [IMDataManager safeSaveForDic:sessionDic setObject:@(QIMMessageDirection_Received) forKey:@"MsgDirection"];
             [IMDataManager safeSaveForDic:sessionDic setObject:LastUpdateTime forKey:@"MsgDateTime"];
             [IMDataManager safeSaveForDic:sessionDic setObject:chatType forKey:@"ChatType"];
             [IMDataManager safeSaveForDic:sessionDic setObject:nickName forKey:@"NickName"];
@@ -354,7 +354,7 @@
 - (NSInteger)qimDB_getCollectionMsgNotReadCountByDidReadState:(NSInteger)readState {
     __block int count = 0;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"SELECT Count(*) from IM_Message_Collection as a left join IM_Message as b on a.MsgId = b.MsgId where State < :State ORDER by LastUpdateTime;"];
+        NSString *sql = [NSString stringWithFormat:@"SELECT Count(*) from IM_Message_Collection as a left join IM_Message as b on a.MsgId = b.MsgId where ReadState & 0x02 != 0x02 ORDER by LastUpdateTime;"];
         DataReader *reader = [database executeReader:sql withParameters:@[@(readState)]];
         if ([reader read]) {
             count = [[reader objectForColumnIndex:0] integerValue];
@@ -367,7 +367,7 @@
 - (NSInteger)qimDB_getCollectionMsgNotReadCountByDidReadState:(NSInteger)readState ForBindId:(NSString *)bindId {
     __block int count = 0;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"SELECT Count(*) from IM_Message_Collection as a left join IM_Message as b on a.MsgId = b.MsgId where (Originto = '%@' and State < :State) ORDER by LastUpdateTime;", bindId];
+        NSString *sql = [NSString stringWithFormat:@"SELECT Count(*) from IM_Message_Collection as a left join IM_Message as b on a.MsgId = b.MsgId where (Originto = '%@' and ReadState & 0x02 != 0x02) ORDER by LastUpdateTime;", bindId];
         DataReader *reader = [database executeReader:sql withParameters:@[@(readState)]];
         if ([reader read]) {
             count = [[reader objectForColumnIndex:0] integerValue];
@@ -380,8 +380,8 @@
 -(NSInteger)qimDB_getCollectionMsgNotReadCountgetCollectionMsgNotReadCountByDidReadState:(NSInteger)readState ForBindId:(NSString *)bindId originUserId:(NSString *)originUserId {
     __block int count = 0;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"SELECT Count(*) from IM_Message_Collection as a left join IM_Message as b on a.MsgId = b.MsgId where (Originto = '%@' and State < :State and Originfrom Like '%%%@%%') ORDER by LastUpdateTime;", bindId, originUserId];
-        DataReader *reader = [database executeReader:sql withParameters:@[@(readState)]];
+        NSString *sql = [NSString stringWithFormat:@"SELECT Count(*) from IM_Message_Collection as a left join IM_Message as b on a.MsgId = b.MsgId where (Originto = '%@' and ReadState & 0x02 != 0x02 and Originfrom Like '%%%@%%') ORDER by LastUpdateTime;", bindId, originUserId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             count = [[reader objectForColumnIndex:0] integerValue];
         }
@@ -390,19 +390,19 @@
     return count;
 }
 
-- (void)qimDB_updateCollectionMsgNotReadStateByJid:(NSString *)jid WithMsgState:(NSInteger)msgState {
+- (void)qimDB_updateCollectionMsgNotReadStateByJid:(NSString *)jid WithReadtate:(NSInteger)readState {
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         
-        NSString *sql = @"Update IM_Message Set ReadedTag = 1, State = :State Where XmppId=:XmppId;";
-        [database executeNonQuery:sql withParameters:@[@(msgState), jid]];
+        NSString *sql = @"Update IM_Message Set ReadState = :readState Where XmppId=:XmppId;";
+        [database executeNonQuery:sql withParameters:@[@(readState), jid]];
     }];
     QIMVerboseLog(@"");
 }
 
-- (void)qimDB_updateCollectionMsgNotReadStateForBindId:(NSString *)bindId originUserId:(NSString *)originUserId WithMsgState:(NSInteger)msgState{
+- (void)qimDB_updateCollectionMsgNotReadStateForBindId:(NSString *)bindId originUserId:(NSString *)originUserId WithReadState:(NSInteger)readState{
     NSArray *msgList = [self qimDB_getCollectionMsgListWithUserId:bindId originUserId:originUserId];
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSMutableString *sql = [NSMutableString stringWithString:@"Update IM_Message Set ReadedTag = 1, State = :State Where MsgId = :MsgId;"];
+        NSMutableString *sql = [NSMutableString stringWithString:@"Update IM_Message Set ReadState = :readState Where MsgId = :MsgId;"];
         NSMutableArray *params = nil;
         for (NSDictionary *msgDic in msgList) {
             NSString *msgId = [msgDic objectForKey:@"MsgId"];
@@ -410,7 +410,7 @@
                 params = [NSMutableArray array];
             }
             NSMutableArray *param = [NSMutableArray array];
-            [param addObject:@(msgState)];
+            [param addObject:@(readState)];
             [param addObject:msgId];
             [params addObject:param];
         }

@@ -1415,7 +1415,7 @@
 - (long long)qimDB_getReadedTimeStampForUserId:(NSString *)userId WithRealJid:(NSString *)realJid WithMsgDirection:(int)msgDirection withUnReadCount:(NSInteger)unReadCount {
     __block long long timeStamp = 0;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"Select Min(LastUpdateTime) From IM_Message Where XmppId = :XmppId And RealJid = :RealJid And Direction = :MsgDirection And Type <> 101 order by LastUpdateTime desc limit %d;", unReadCount];
+        NSString *sql = [NSString stringWithFormat:@"Select LastUpdateTime From IM_Message Where XmppId = :XmppId And RealJid = :RealJid And Direction = :MsgDirection And Type <> 101 order by LastUpdateTime desc limit 1 offset %d;", unReadCount];
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:userId];
         [param addObject:realJid];

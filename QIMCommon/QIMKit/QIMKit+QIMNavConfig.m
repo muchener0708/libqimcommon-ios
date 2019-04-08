@@ -278,6 +278,10 @@
     return [[QIMNavConfigManager sharedInstance] healthcheckUrl];
 }
 
+- (NSMutableArray *)qimNav_localNavConfigs {
+    return [[QIMNavConfigManager sharedInstance] localNavConfigs];
+}
+
 - (BOOL)qimNav_updateNavigationConfigWithCheck:(BOOL)check {
     return [[QIMNavConfigManager sharedInstance] qimNav_updateNavigationConfigWithCheck:check];
 }
@@ -300,6 +304,10 @@
 
 - (BOOL)qimNav_updateNavigationConfigWithDomain:(NSString *)domain WithUserName:(NSString *)userName {
     return [[QIMNavConfigManager sharedInstance] qimNav_updateNavigationConfigWithDomain:domain WithUserName:userName];
+}
+
+- (BOOL)qimNav_updateNavigationConfigWithNavUrl:(NSString *)navUrl WithUserName:(NSString *)userName {
+    return [[QIMNavConfigManager sharedInstance] qimNav_updateNavigationConfigWithNavUrl:navUrl WithUserName:userName];
 }
 
 - (BOOL)qimNav_updateNavigationConfigWithNavDict:(NSDictionary *)navDict WithUserName:(NSString *)userName Check:(BOOL)check WithForcedUpdate:(BOOL)forcedUpdate {

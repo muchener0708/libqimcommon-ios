@@ -87,10 +87,6 @@
     return [[QIMManager sharedInstance] sendReadstateWithGroupLastMessageTime:lastTime withGroupId:groupId];
 }
 
-- (long long)getGroupLastMsgTimeWithGroupId:(NSString *)groupId {
-    return [[QIMManager sharedInstance] getGroupLastMsgTimeWithGroupId:groupId];
-}
-
 - (QIMMessageModel *)sendShockToUserId:(NSString *)userId {
     return [[QIMManager sharedInstance] sendShockToUserId:userId];
 }
@@ -234,10 +230,6 @@
 
 - (void)clearNotReadMsgByGroupId:(NSString *)groupId {
     [[QIMManager sharedInstance] clearNotReadMsgByGroupId:groupId];
-}
-
-- (NSInteger)getNotReadMsgCountByJid:(NSString *)jid {
-    return [[QIMManager sharedInstance] getNotReadMsgCountByJid:jid];
 }
 
 - (NSInteger)getNotReadMsgCountByJid:(NSString *)jid WithRealJid:(NSString *)realJid {

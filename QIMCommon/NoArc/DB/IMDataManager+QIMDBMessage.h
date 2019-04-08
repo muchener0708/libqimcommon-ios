@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (long long)qimDB_lastestGroupMessageTime;
 
 - (long long)qimDB_getMaxMsgTimeStampByXmppId:(NSString *)xmppId;
+- (long long)qimDB_getMaxMsgTimeStampByXmppId:(NSString *)xmppId ByRealJid:(NSString *)realJid;
 
 - (void)qimDB_updateMessageWithMsgId:(NSString *)msgId
                        WithSessionId:(NSString *)sessionId

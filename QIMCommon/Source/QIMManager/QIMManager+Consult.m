@@ -356,7 +356,6 @@
                     
                     NSArray *result = [self getConsultServerlogWithFrom:userId virtualId:virtualId to:[self getLastJid] version:version count:(int)(limit - list.count) direction:QIMMessageDirection_Received];
                     if (result.count > 0) {
-                        NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
                         [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:result];
                     }
                 });
@@ -370,7 +369,6 @@
                 NSArray *resultList = [self getConsultServerlogWithFrom:userId virtualId:virtualId to:[self getLastJid] version:version count:limit direction:QIMMessageDirection_Received];
                 
                 if (resultList.count > 0) {
-                    NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
                     [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:resultList];
                     NSArray *datas = [[IMDataManager qimDB_SharedInstance] qimDB_getMgsListBySessionId:virtualId WithRealJid:userId WithLimit:limit WithOffset:offset];
                     NSMutableArray *list = [NSMutableArray array];

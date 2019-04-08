@@ -87,7 +87,6 @@
 - (BOOL)sendControlStateWithMessagesIdArray:(NSArray *)messages WithXmppId:(NSString *)xmppId;
 - (BOOL)sendReadStateWithMessagesIdArray:(NSArray *)messages WithMessageReadFlag:(QIMMessageReadFlag)msgReadFlag WithXmppId:(NSString *)xmppId;
 
-- (long long)getGroupLastMsgTimeWithGroupId:(NSString *)groupId;
 - (BOOL)sendReadStateWithMessagesIdArray:(NSArray *)messages WithMessageReadFlag:(QIMMessageReadFlag)msgReadFlag WithXmppId:(NSString *)xmppId WithRealJid:(NSString *)realJid;
 - (BOOL)sendReadstateWithGroupLastMessageTime:(long long) lastTime withGroupId:(NSString *) groupId;
 
@@ -252,13 +251,6 @@
  @param groupId 群id
  */
 - (void)clearNotReadMsgByGroupId:(NSString *)groupId;
-
-/**
- 获取Jid下的未读消息数
- 
- @param jid Jid
- */
-- (NSInteger)getNotReadMsgCountByJid:(NSString *)jid;
 
 /**
  获取Jid & 真实Id下的未读消息数

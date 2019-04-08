@@ -184,7 +184,6 @@
 - (void)dealWithGroupMsg:(NSArray * _Nonnull)data {
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     if (data.count > 0) {
-        NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
         NSMutableArray <NSDictionary *>*atAllMsgList = [[NSMutableArray alloc] initWithCapacity:3];
         NSMutableArray <NSDictionary *>*normalMsgList = [[NSMutableArray alloc] initWithCapacity:3];
         long long lastTime = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertIphoneHistoryGroupJSONMsg:data WithAtAllMsgList:&atAllMsgList WithNormaleAtMsgList:&normalMsgList];

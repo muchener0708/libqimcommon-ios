@@ -74,7 +74,6 @@
                     
                     NSArray *result = [self getSystemMsgListWithDirection:0 WithUserId:userId WithFromHost:fromHost WithLimit:limit - list.count withTimeVersion:version toId:[QIMManager getLastUserName] toHost:fromHost];
                     if (result.count > 0) {
-                        NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
                         [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:result];
                     }
                 });
@@ -87,7 +86,6 @@
                 long long version = [[IMDataManager qimDB_SharedInstance] qimDB_getMinMsgTimeStampByXmppId:userId] - timeChange;
                 NSArray *resultList = [self getSystemMsgListWithDirection:0 WithUserId:userId WithFromHost:fromHost WithLimit:limit withTimeVersion:version toId:[QIMManager getLastUserName] toHost:fromHost];
                 if (resultList.count > 0) {
-                    NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
                     [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:resultList];
                     NSArray *datas = [[IMDataManager qimDB_SharedInstance] qimDB_getMgsListBySessionId:userId WithRealJid:nil WithLimit:(int)(resultList.count) WithOffset:offset];
                     NSMutableArray *list = [NSMutableArray array];

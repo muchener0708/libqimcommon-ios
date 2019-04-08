@@ -103,9 +103,6 @@
 
 - (BOOL)sendReadstateWithGroupLastMessageTime:(long long) lastTime withGroupId:(NSString *) groupId;
 
-- (long long)getGroupLastMsgTimeWithGroupId:(NSString *)groupId;
-
-
 #pragma mark - 单人消息
 
 /**
@@ -350,13 +347,6 @@
  @param groupId 群id
  */
 - (void)clearNotReadMsgByGroupId:(NSString *)groupId;
-
-/**
- 获取Jid下的未读消息数
- 
- @param jid Jid
- */
-- (NSInteger)getNotReadMsgCountByJid:(NSString *)jid;
 
 /**
  获取Jid & 真实Id下的未读消息数

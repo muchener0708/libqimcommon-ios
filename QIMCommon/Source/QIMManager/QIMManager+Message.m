@@ -841,16 +841,6 @@
     return 0;
 }
 
-- (NSInteger)getNotReadMsgCountByJid:(NSString *)jid {
-    if (!jid.length) {
-        return 0;
-    }
-    return 0;
-    //Mark by DB
-//    NSInteger notReadCount = [[IMDataManager qimDB_SharedInstance] qimDB_getNotReaderMsgCountByJid:jid ByDidReadState:MessageState_didRead WidthReceiveDirection:QIMMessageDirection_Received];
-//    return notReadCount;
-}
-
 - (void)updateAppNotReadCount {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSInteger notReadCount = [[IMDataManager qimDB_SharedInstance] qimDB_getAppNotReadCount];
@@ -980,6 +970,9 @@
 - (void)clearNotReadMsgByGroupId:(NSString *)groupId {
     
     [self removeAtMeByJid:groupId];
+    long long groupLastTime = [[IMDataManager qimDB_SharedInstance] qimDB_getMaxMsgTimeStampByXmppId:groupId ByRealJid:groupId];
+    [self sendReadstateWithGroupLastMessageTime:groupLastTime withGroupId:groupId];
+    /*
     [self getMsgListByUserId:groupId WithRealJid:nil WithLimit:1 WithOffset:0 WithComplete:^(NSArray *list) {
         
         if (list.count) {
@@ -988,6 +981,7 @@
             [self sendReadstateWithGroupLastMessageTime:[message messageDate] + 1 withGroupId:groupId];
         }
     }];
+    */
 }
 
 #pragma mark - 阅读状态
@@ -1088,10 +1082,6 @@
 - (BOOL)sendReadStateWithMessagesIdArray:(NSArray *)messages WithMessageReadFlag:(QIMMessageReadFlag)msgReadFlag WithXmppId:(NSString *)xmppId {
     
     return [self sendReadStateWithMessagesIdArray:messages WithMessageReadFlag:msgReadFlag WithXmppId:xmppId WithRealJid:nil];
-}
-
-- (long long)getGroupLastMsgTimeWithGroupId:(NSString *)groupId {
-    return [[IMDataManager qimDB_SharedInstance] qimDB_getLastMsgTimeIdByJid:groupId];
 }
 
 /**
@@ -1359,8 +1349,6 @@
                             if (resultList.count > 0) {
                                 
                                 [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertIphoneMucPageJSONMsg:resultList];
-//                                NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
-//                                [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertIphoneMucJSONMsg:resultList WithMyNickName:[self getMyNickName] WithReadMarkT:[readMarkT longLongValue] WithDidReadState:QIMMessageSendState_Success WithMyRtxId:[self getLastJid]];
                             }
                         } else {
 #pragma mark - 这里开始拉取单人翻页消息
@@ -1406,7 +1394,6 @@
                         NSDate *date1 = [dateFormatter dateFromString:date1Str];
                         readMarkT = [NSNumber numberWithLong:[date1 timeIntervalSince1970]];
                     if (resultList.count > 0) {
-//                        NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
                         NSArray *datas = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertIphoneMucPageJSONMsg:resultList];
                         NSMutableArray *list = [NSMutableArray array];
                         for (NSDictionary *infoDic in datas) {
@@ -1424,7 +1411,6 @@
                 } else {
                     NSArray *result = [self getUserChatlogWithFrom:userId to:[self getLastJid] version:[[IMDataManager qimDB_SharedInstance] qimDB_getMinMsgTimeStampByXmppId:userId] count:limit direction:0];
                     if (result.count > 0) {
-                        NSArray *msgTypeList = [[QIMMessageManager sharedInstance] getSupportMsgTypeList];
                         NSArray *datas = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertPageHistoryChatJSONMsg:result WithXmppId:userId];
                         NSMutableArray *list = [NSMutableArray array];
                         NSString *channelInfo = nil;

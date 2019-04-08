@@ -135,6 +135,19 @@
     return timeStamp;
 }
 
+- (long long)qimDB_getMaxMsgTimeStampByXmppId:(NSString *)xmppId ByRealJid:(NSString *)realJid {
+    __block long long timeStamp = 0;
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = @"Select max(LastUpdateTime) From IM_Message Where XmppId = :XmppId and RealJid = :RealJid;";
+        DataReader *reader = [database executeReader:sql withParameters:@[xmppId, realJid]];
+        if ([reader read]) {
+            timeStamp = ceil([[reader objectForColumnIndex:0] doubleValue]);
+        }
+    }];
+    QIMVerboseLog(@"");
+    return timeStamp;
+}
+
 - (void)qimDB_updateMessageWithMsgId:(NSString *)msgId
                        WithSessionId:(NSString *)sessionId
                             WithFrom:(NSString *)from
@@ -2052,19 +2065,6 @@
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = @"select LastUpdateTime from IM_Message Where MsgId=:MsgId";
         DataReader *reader = [database executeReader:sql withParameters:@[msgId]];
-        if ([reader read]) {
-            maxRemoteTime = [[reader objectForColumnIndex:0] longLongValue];
-        }
-    }];
-    QIMVerboseLog(@"");
-    return maxRemoteTime;
-}
-
-- (long long)qimDB_getLastMsgTimeIdByJid:(NSString *)jid {
-    __block long long maxRemoteTime = 0;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"select LastUpdateTime from IM_Message Where XmppId=:XmppId order by LastUpdateTime desc limit 1";
-        DataReader *reader = [database executeReader:sql withParameters:@[jid]];
         if ([reader read]) {
             maxRemoteTime = [[reader objectForColumnIndex:0] longLongValue];
         }

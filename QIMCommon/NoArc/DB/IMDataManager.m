@@ -38,10 +38,10 @@ static IMDataManager *__global_data_manager = nil;
     _dbOwnerFullJid = [dbFullJid retain];
 }
 
+static dispatch_once_t _onceDBToken;
 + (IMDataManager *) qimDB_sharedInstanceWithDBPath:(NSString *)dbPath withDBFullJid:(NSString *)dbOwnerFullJid {
 
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
+    dispatch_once(&_onceDBToken, ^{
         __global_data_manager = [[IMDataManager alloc] initWithDBPath:dbPath];
         [__global_data_manager setdbPath:dbPath];
         [__global_data_manager setDBOwnerFullJid:dbOwnerFullJid];
@@ -832,6 +832,7 @@ static IMDataManager *__global_data_manager = nil;
     BOOL result = [DatabaseManager CloseByFullPath:_dbPath];
     if (result) {
         __global_data_manager = nil;
+        _onceDBToken = 0;
     }
 }
 

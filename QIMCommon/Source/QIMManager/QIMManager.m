@@ -838,16 +838,16 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
 }
 
 - (NSString *)getWlanRequestURL {
-    return @"https://qt.qunar.com/package/newapi";
+    
     NSData *requestURLData = [QIMUUIDTools getRequestUrl];
     NSString *requestURL = [[NSString alloc] initWithData:requestURLData encoding:NSUTF8StringEncoding];
     if (requestURL.length > 0) {
         return requestURL;
     } else {
         if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
-            return @"https://qcweb.qunar.com/api/package/newapi";
+            return @"https://qcweb.qunar.com/api";
         } else{
-            return @"https://qt.qunar.com/package/newapi";
+            return @"https://qtapi.qunar.com";
         }
     }
 }
@@ -873,9 +873,9 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
      NSString *key = [NSString stringWithFormat:@"%@%d", [QIMUUIDTools deviceUUID], time];
      QIMVerboseLog(@"快捷回复使用的key : %@", key);
      NSString *str = [NSString stringWithFormat:@"u=%@@%@&k=%@", [[QIMUUIDTools loginUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding], [self getWlanRequestDomain], [[key qim_getMD5] lowercaseString]];
-//     if ([[self getWlanRequestDomain] isEqualToString:@"ejabhost1"] || [[self getWlanRequestDomain] isEqualToString:@"ejabhost2"]) {
-//     str = [NSString stringWithFormat:@"u=%@&k=%@", [[QIMUUIDTools loginUserName] ? [QIMUUIDTools loginUserName] : [QIMManager getLastUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding], [[key qim_getMD5] lowercaseString]];
-//     }
+     if ([[self getWlanRequestDomain] isEqualToString:@"ejabhost1"] || [[self getWlanRequestDomain] isEqualToString:@"ejabhost2"]) {
+     str = [NSString stringWithFormat:@"u=%@&k=%@", [[QIMUUIDTools loginUserName] ? [QIMUUIDTools loginUserName] : [QIMManager getLastUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding], [[key qim_getMD5] lowercaseString]];
+     }
      QIMVerboseLog(@"快捷回复Base64之前 : %@", str);
      return [[str dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
 }

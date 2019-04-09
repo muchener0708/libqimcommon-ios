@@ -1233,7 +1233,7 @@ enum PlaType {
             NSString *nickName = [keyValues objectForKey:@"name"];
             if (nickName.length <= 0) {
                 
-                /* Mark 改DB
+                /* Mark by DB
                 NSDictionary *infoDic = [[IMDataManager qimDB_SharedInstance] qimDB_selectUserByJID:memberJid];
                 if ((self.productType == 0 && [memberJid rangeOfString:self.domain].location != NSNotFound) || (self.productType == 1 && [memberJid rangeOfString:self.domain].location == NSNotFound)) {
                     nickName = [infoDic objectForKey:@"Name"];

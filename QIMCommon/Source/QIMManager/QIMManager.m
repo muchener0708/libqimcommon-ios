@@ -952,7 +952,14 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
 
 - (void)checkClientConfig {
     
-    NSString *title = ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) ? @"qchat" : @"qtalk";
+    NSString *title = @"";
+    if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
+        title = @"qchat";
+    } else if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQTalk) {
+        title = @"qtalk";
+    } else {
+        title = @"startalk";
+    }
     
     NSString *url = [NSString stringWithFormat:@"%@/config/check_config.qunar", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
     NSURL *requestUrl = [NSURL URLWithString:url];

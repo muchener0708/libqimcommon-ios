@@ -27,6 +27,14 @@
     [[QIMManager sharedInstance] tripMemberCheck:params callback:callback];
 }
 
+- (void)getAllCityList:(QIMKitGetTripAllCitysBlock)callback {
+    [[QIMManager sharedInstance] getAllCityList:callback];
+}
+
+- (void)getAreaByCityId:(NSDictionary *)params :(QIMKitGetTripAreaAvailableRoomByCityIdBlock)callback {
+    [[QIMManager sharedInstance] getAreaByCityId:params :callback];
+}
+
 - (NSArray *)getLocalAreaList {
     return [[QIMManager sharedInstance] getLocalAreaList];
 }

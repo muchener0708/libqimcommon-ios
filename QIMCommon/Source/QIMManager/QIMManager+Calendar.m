@@ -196,6 +196,88 @@
     }];
 }
 
+- (void)getAllCityList:(QIMKitGetTripAllCitysBlock)callback {
+    NSString *destUrl = [NSString stringWithFormat:@"%@/scheduling/allCitys.qunar", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+    
+    NSMutableDictionary *cookieProperties = [NSMutableDictionary dictionary];
+    NSString *requestHeaders = [NSString stringWithFormat:@"q_ckey=%@", [[QIMManager sharedInstance] thirdpartKeywithValue]];
+    [cookieProperties setObject:requestHeaders forKey:@"Cookie"];
+    [cookieProperties setObject:@"application/json;" forKey:@"Content-type"];
+    QIMVerboseLog(@"获取所有城市q_ckey : %@", requestHeaders);
+    
+    QIMHTTPRequest *request = [[QIMHTTPRequest alloc] initWithURL:[NSURL URLWithString:destUrl]];
+    [request setHTTPMethod:QIMHTTPMethodGET];
+    request.HTTPRequestHeaders = cookieProperties;
+    
+    __weak __typeof(self) weakSelf = self;
+    [QIMHTTPClient sendRequest:request complete:^(QIMHTTPResponse *response) {
+        if (response.code == 200) {
+            __typeof(self) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            NSData *responseData = [response data];
+            NSDictionary *result = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
+            if ([[result objectForKey:@"ret"] boolValue]) {
+                NSArray *resultData = [result objectForKey:@"data"];
+                if ([resultData isKindOfClass:[NSArray class]]) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        if (callback) {
+                            callback(resultData);
+                        }
+                    });
+                }
+            }
+        }
+    } failure:^(NSError *error) {
+        QIMErrorLog(@"检查用户该时间段是否有冲突行程失败 : Error : %@", error);
+    }];
+}
+
+- (void)getAreaByCityId:(NSDictionary *)params :(QIMKitGetTripAreaAvailableRoomByCityIdBlock)callback {
+    NSString *destUrl = [NSString stringWithFormat:@"%@/scheduling/getAreaByCityId.qunar", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+    
+    NSMutableDictionary *cookieProperties = [NSMutableDictionary dictionary];
+    NSString *requestHeaders = [NSString stringWithFormat:@"q_ckey=%@", [[QIMManager sharedInstance] thirdpartKeywithValue]];
+    [cookieProperties setObject:requestHeaders forKey:@"Cookie"];
+    [cookieProperties setObject:@"application/json;" forKey:@"Content-type"];
+    QIMVerboseLog(@"根据城市Id获取可用画区域参数q_ckey : %@", requestHeaders);
+    
+    QIMHTTPRequest *request = [[QIMHTTPRequest alloc] initWithURL:[NSURL URLWithString:destUrl]];
+    [request setHTTPMethod:QIMHTTPMethodPOST];
+    [request setHTTPBody:[[QIMJSONSerializer sharedInstance] serializeObject:params error:nil]];
+    request.HTTPRequestHeaders = cookieProperties;
+
+    QIMVerboseLog(@"根据城市Id获取可用画区域参数 : %@", [[QIMJSONSerializer sharedInstance] serializeObject:params]);
+
+    __weak __typeof(self) weakSelf = self;
+    [QIMHTTPClient sendRequest:request complete:^(QIMHTTPResponse *response) {
+        if (response.code == 200) {
+            __typeof(self) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            NSData *responseData = [response data];
+            NSDictionary *result = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
+            if ([[result objectForKey:@"ret"] boolValue]) {
+                NSDictionary *resultData = [result objectForKey:@"data"];
+                if ([resultData isKindOfClass:[NSDictionary class]]) {
+                    NSArray *areaList = [resultData objectForKey:@"list"];
+                    if ([areaList isKindOfClass:[NSArray class]]) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            if (callback) {
+                                callback(areaList);
+                            }
+                        });
+                    }
+                }
+            }
+        }
+    } failure:^(NSError *error) {
+        QIMErrorLog(@"检查用户该时间段是否有冲突行程失败 : Error : %@", error);
+    }];
+}
+
 - (NSArray *)getLocalAreaList {
     return [[IMDataManager qimDB_SharedInstance] qimDB_getLocalArea];
 }

@@ -509,7 +509,11 @@
     [param setQIMSafeObject:@"ios" forKey:@"platform"];
     QIMVerboseLog(@"查看用户%@直属领导参数 : %@", userId, [[QIMJSONSerializer sharedInstance] serializeObject:param]);
     NSData *requestData = [[QIMJSONSerializer sharedInstance] serializeObject:param error:nil];
-    NSString *destUrl = [NSString stringWithFormat:@"%@/ops/opsapp/api/info", [[QIMNavConfigManager sharedInstance] opsHost]];
+    NSString *destUrl = [[QIMNavConfigManager sharedInstance] leaderurl];
+    if (destUrl.length <= 0) {
+        return nil;
+    }
+//    NSString *destUrl = [NSString stringWithFormat:@"%@/ops/opsapp/api/info", [[QIMNavConfigManager sharedInstance] opsHost]];
     QIMVerboseLog(@"查看用户%@直属领导url ： %@", userId, destUrl);
     ASIHTTPRequest *request = [[ASIHTTPRequest alloc] initWithURL:[NSURL URLWithString:destUrl]];
     [request addRequestHeader:@"Content-type" value:@"application/json;"];
@@ -554,7 +558,11 @@
     [param setQIMSafeObject:@"ios" forKey:@"platform"];
     QIMVerboseLog(@"查看用户%@手机号参数 : %@", qtalkId, [[QIMJSONSerializer sharedInstance] serializeObject:param]);
     NSData *requestData = [[QIMJSONSerializer sharedInstance] serializeObject:param error:nil];
-    NSString *destUrl = [NSString stringWithFormat:@"%@/ops/opsapp/api/mobile-phone", [[QIMNavConfigManager sharedInstance] opsHost]];
+//    NSString *destUrl = [NSString stringWithFormat:@"%@/ops/opsapp/api/mobile-phone", [[QIMNavConfigManager sharedInstance] opsHost]];
+    NSString *destUrl = [[QIMNavConfigManager sharedInstance] mobileurl];
+    if (destUrl.length <= 0) {
+        return nil;
+    }
     QIMVerboseLog(@"查看用户%@手机号Url : %@", qtalkId, destUrl);
     ASIHTTPRequest *request = [[ASIHTTPRequest alloc] initWithURL:[NSURL URLWithString:destUrl]];
     [request addRequestHeader:@"Content-type" value:@"application/json;"];

@@ -21,6 +21,10 @@
 
 - (void)tripMemberCheck:(NSDictionary *)params callback:(QIMKitGetTripMemberCheckBlock)callback;
 
+- (void)getAllCityList:(QIMKitGetTripAllCitysBlock)callback;
+
+- (void)getAreaByCityId:(NSDictionary *)params :(QIMKitGetTripAreaAvailableRoomByCityIdBlock)callback;
+
 - (NSArray *)getLocalAreaList;
 
 - (void)getRemoteAreaList;

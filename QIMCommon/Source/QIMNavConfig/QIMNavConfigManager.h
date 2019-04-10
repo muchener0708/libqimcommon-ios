@@ -25,7 +25,8 @@
 @property (nonatomic, readonly, copy) NSString *port;  //xmpp端口
 @property (nonatomic, readonly, copy) NSString *protobufPort;   //Pb端口
 @property (nonatomic, readonly, copy) NSString *checkConfig;
-
+@property (nonatomic, readonly, copy) NSString *leaderurl;  //直属领导
+@property (nonatomic, readonly, copy) NSString *mobileurl;  //手机号领导
 
 //hosts
 @property (nonatomic, readonly, copy) NSString *hashHosts;

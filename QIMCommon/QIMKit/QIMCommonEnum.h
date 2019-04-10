@@ -342,6 +342,8 @@ static const NSString *QIMNavUrlKey = @"NavUrl";
 typedef void(^QIMKitSendTPRequesSuccessedBlock)(NSData *responseData);
 typedef void(^QIMKitSendTPRequesFailedBlock)(NSError *error);
 typedef void(^QIMKitGetTripAreaAvailableRoomBlock)(NSArray *availableRooms);
+typedef void(^QIMKitGetTripAreaAvailableRoomByCityIdBlock)(NSArray *availableRooms);    //根据城市Id获取可用区域
+typedef void(^QIMKitGetTripAllCitysBlock)(NSArray *allCitys);   //获取所有城市
 typedef void(^QIMKitGetTripMemberCheckBlock)(BOOL isConform);   //isConform 冲突
 typedef void(^QIMKitCreateTripBlock)(BOOL success);
 typedef void(^QIMCloseSessionBlock)(NSString *closeMsg);

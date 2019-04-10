@@ -512,6 +512,8 @@
         _checkSmsUrl = [baseAddess objectForKey:@"sms_verify"];
         _takeSmsUrl = [baseAddess objectForKey:@"sms_verify"];
         _checkConfig = [baseAddess objectForKey:@"checkconfig"];
+        _leaderurl = [baseAddess objectForKey:@"leaderurl"];
+        _mobileurl = [baseAddess objectForKey:@"mobileurl"];
     }
     NSDictionary *qcadminDic = [navConfig objectForKey:@"qcadmin"];
     if (qcadminDic.count) {

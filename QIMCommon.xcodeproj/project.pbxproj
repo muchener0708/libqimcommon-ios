@@ -128,7 +128,7 @@
 		2C67A8DB2188976A007C6E4C /* QIMManager+MiddleVirtualAccountManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C67A8D92188976A007C6E4C /* QIMManager+MiddleVirtualAccountManager.m */; };
 		2C67A8DE21889841007C6E4C /* QIMKit+QIMMiddleVirtualAccountManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C67A8DC21889841007C6E4C /* QIMKit+QIMMiddleVirtualAccountManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2C67A8DF21889841007C6E4C /* QIMKit+QIMMiddleVirtualAccountManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C67A8DD21889841007C6E4C /* QIMKit+QIMMiddleVirtualAccountManager.m */; };
-		2C8C4290223FDAD600F34F6B /* QIMDatasourceItemManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C8C428E223FDAD600F34F6B /* QIMDatasourceItemManager.h */; };
+		2C8C4290223FDAD600F34F6B /* QIMDatasourceItemManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C8C428E223FDAD600F34F6B /* QIMDatasourceItemManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2C8C4291223FDAD600F34F6B /* QIMDatasourceItemManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C8C428F223FDAD600F34F6B /* QIMDatasourceItemManager.m */; };
 		2C8DF1D921D50DE0001A3B0E /* QIMRSACoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C8DF1CD21D50DDE001A3B0E /* QIMRSACoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2C8DF1DA21D50DE0001A3B0E /* QIMDataController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C8DF1CE21D50DDF001A3B0E /* QIMDataController.m */; };
@@ -917,6 +917,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2C8C4290223FDAD600F34F6B /* QIMDatasourceItemManager.h in Headers */,
 				2C8DF1DE21D50DE0001A3B0E /* QIMVoiceNoReadStateManager.h in Headers */,
 				2C06A00922042C75000CAF37 /* QIMKit+QIMWorkFeed.h in Headers */,
 				2C8DF1D921D50DE0001A3B0E /* QIMRSACoder.h in Headers */,
@@ -1013,7 +1014,6 @@
 				2C1D0F21215E4F5E00275225 /* QIMManager+SingleMessage.h in Headers */,
 				2C09E4F121902B500083154F /* QIMManager+Request.h in Headers */,
 				2CB8D9E721494B1D00B57B8D /* QIMCommon.h in Headers */,
-				2C8C4290223FDAD600F34F6B /* QIMDatasourceItemManager.h in Headers */,
 				2CB8DB4021494C2000B57B8D /* ProtobufReconnector.h in Headers */,
 				2C1D0F2B215E4F5E00275225 /* QIMManager+Calendar.h in Headers */,
 				2CB8DB6221494C4E00B57B8D /* IMDataManager+QIMDBQuickReply.h in Headers */,

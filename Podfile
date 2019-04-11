@@ -10,16 +10,10 @@ target 'QIMCommon' do
 
   # Pods for QIMCommon
   
-#    pod 'QIMKitVendor', '~> 1.1.4-beta'
-#    pod 'QIMCommonCategories', '~> 1.0.0-beta'
-#    pod 'QIMDataBase', '~> 1.0.0-beta'
-#    pod 'QIMPublicRedefineHeader', '~> 0.0.2-beta'
-#    pod 'QIMOpenSSL', '~> 1.0.1-beta'
+    pod 'QIMKitVendor', '~> 3.0'
 
-
- pod 'QIMKitVendor'
-    pod 'QIMCommonCategories'
-    pod 'QIMDataBase'
+    pod 'QIMCommonCategories', '~> 3.0'
+    pod 'QIMDataBase', '~> 3.0'
     pod 'QIMOpenSSL'
 
     pod 'ASIHTTPRequest'

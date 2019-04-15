@@ -42,9 +42,9 @@
     if (self.lastWorkFeedMsgMsgTime == 0) {
         self.lastWorkFeedMsgMsgTime = defaultTime;
     }
-    QIMVerboseLog(@"强制塞本地驼圈消息时间戳到为 kGetNewSingleHistoryMsgError : %f", self.lastWorkFeedMsgMsgTime);
+    QIMVerboseLog(@"强制塞本地驼圈消息时间戳到为 kGetNewWorkFeedHistoryMessageListError : %f", self.lastWorkFeedMsgMsgTime);
     [[QIMUserCacheManager sharedInstance] setUserObject:@(self.lastWorkFeedMsgMsgTime) forKey:kGetNewWorkFeedHistoryMessageListError];
-    QIMVerboseLog(@"强制塞本地驼圈消息时间戳到为 kGetNewSingleHistoryMsgError : %f完成", self.lastWorkFeedMsgMsgTime);
+    QIMVerboseLog(@"强制塞本地驼圈消息时间戳到为 kGetNewWorkFeedHistoryMessageListError : %f完成", self.lastWorkFeedMsgMsgTime);
     
     QIMVerboseLog(@"强制塞本地驼圈消息消息时间戳完成之后再取一下本地错误时间戳 : %lld", [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetNewWorkFeedHistoryMessageListError] longLongValue]);
     

@@ -71,9 +71,15 @@
         } while (!getMucHistotySuccess && retryCount < 3);
     } while (self.latestGroupMessageFlag);
     if (!getMucHistotySuccess) {
+        QIMVerboseLog(@"获取群历史记录失败了");
+        QIMWarnLog(@"拉历史失败之后set本地群最后消息时间戳为 : %lf", self.lastGroupMsgTime);
+        [[QIMUserCacheManager sharedInstance] setUserObject:@(self.lastGroupMsgTime) forKey:kGetNewGroupHistoryMsgError];
         return;
+    } else {
+        QIMVerboseLog(@"获取群历史记录成功了");
+        QIMVerboseLog(@"remove本地群最后消息时间戳");
+        [[QIMUserCacheManager sharedInstance] removeUserObjectForKey:kGetNewGroupHistoryMsgError];
     }
-    QIMVerboseLog(@"获取群历史记录完成");
 }
 
 //拉取离线群历史记录
@@ -154,7 +160,7 @@
             getMucHistorySuccess == NO;
             QIMErrorLog(@"获取群历史记录失败了了了, 没有result");
         }
-
+        /*
         if (getMucHistorySuccess == NO) {
             QIMWarnLog(@"拉历史失败之后set本地群最后消息时间戳为 : %lf", self.lastGroupMsgTime);
             [[QIMUserCacheManager sharedInstance] setUserObject:@(self.lastGroupMsgTime) forKey:kGetNewGroupHistoryMsgError];
@@ -162,23 +168,9 @@
             QIMVerboseLog(@"remove本地群最后消息时间戳");
             [[QIMUserCacheManager sharedInstance] removeUserObjectForKey:kGetNewGroupHistoryMsgError];
         }
+        */
     }
     return getMucHistorySuccess;
-}
-
-- (void)backupErrorGroupMsgWithFlag:(BOOL)flag {
-    if (flag == NO) {
-        if (self.lastGroupMsgTime) {
-            QIMVerboseLog(@"set本地群最后消息时间戳为 : %lf", self.lastGroupMsgTime);
-            [[QIMUserCacheManager sharedInstance] setUserObject:@(self.lastGroupMsgTime) forKey:kGetNewGroupHistoryMsgError];
-        } else {
-            QIMVerboseLog(@"remove本地群最后消息时间戳");
-            [[QIMUserCacheManager sharedInstance] removeUserObjectForKey:kGetNewGroupHistoryMsgError];
-        }
-    } else {
-        QIMVerboseLog(@"remove本地群最后消息时间戳");
-        [[QIMUserCacheManager sharedInstance] removeUserObjectForKey:kGetNewGroupHistoryMsgError];
-    }
 }
 
 - (void)dealWithGroupMsg:(NSArray * _Nonnull)data {

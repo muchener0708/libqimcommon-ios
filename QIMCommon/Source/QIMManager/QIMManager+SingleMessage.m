@@ -174,8 +174,14 @@
         } while (!isSuccess && retryCount < 3);
     } while (self.latestSingleMessageFlag);
     if (!isSuccess) {
+        QIMVerboseLog(@"拉取单人历史失败");
+        QIMVerboseLog(@"本地set单人错误时间戳为: %f", self.lastSingleMsgTime);
+        [[QIMUserCacheManager sharedInstance] setUserObject:@(self.lastSingleMsgTime) forKey:kGetNewSingleHistoryMsgError];
         return NO;
-        QIMVerboseLog(@"插入单人历史失败");
+    } else {
+        QIMVerboseLog(@"拉取单人历史成功");
+        QIMVerboseLog(@"本地remove单人错误时间戳");
+        [[QIMUserCacheManager sharedInstance] removeUserObjectForKey:kGetNewSingleHistoryMsgError];
     }
     return YES;
 }
@@ -261,7 +267,7 @@
                 QIMErrorLog(@"获取单人历史JSON记录失败");
             }
         }
-        
+        /*
         if (*flag == NO) {
             if (self.lastSingleMsgTime) {
                 QIMVerboseLog(@"本地set单人错误时间戳为: %f", self.lastSingleMsgTime);
@@ -274,6 +280,7 @@
             QIMVerboseLog(@"本地remove单人错误时间戳");
             [[QIMUserCacheManager sharedInstance] removeUserObjectForKey:kGetNewSingleHistoryMsgError];
         }
+        */
     }
     return msgList;
 }

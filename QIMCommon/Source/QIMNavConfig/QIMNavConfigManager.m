@@ -69,6 +69,7 @@
     self = [super init];
     QIMVerboseLog(@" QIMNavConfigManager sharedInstance");
     if (self) {
+        CFAbsoluteTime startTime1 = [[QIMWatchDog sharedInstance] startTime];
         NSString *navConfigStr = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"NavConfig"];
         NSMutableDictionary *navConfig = [[QIMJSONSerializer sharedInstance] deserializeObject:navConfigStr error:nil];
         QIMVerboseLog(@"本地找到的NavConfig ： %@", navConfig);
@@ -111,6 +112,7 @@
             _adCarouselDelay = [[advertConfig objectForKey:@"carouseldelay"] intValue];
         }
         [self initialNavConfig];
+        QIMVerboseLog(@"[QIMNavConfigManager sharedInstance]耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime1]);
     }
     return self;
 }

@@ -50,13 +50,13 @@
     return [[QIMManager sharedInstance] getUserWorkInfoByUserId:userId];
 }
 
-- (NSDictionary *)getRemoteUserWorkInfoWithUserId:(NSString *)userId {
-    
-    return [[QIMManager sharedInstance] getRemoteUserWorkInfoWithUserId:userId];
+- (void)getRemoteUserWorkInfoWithUserId:(NSString *)userId withCallBack:(QIMKitGetUserWorkInfoBlock)callback {
+
+    [[QIMManager sharedInstance] getRemoteUserWorkInfoWithUserId:userId withCallBack:callback];
 }
 
-- (NSString *)getPhoneNumberWithUserId:(NSString *)qtalkId {
-    return [[QIMManager sharedInstance] getPhoneNumberWithUserId:qtalkId];
+- (void)getPhoneNumberWithUserId:(NSString *)qtalkId withCallBack:(QIMKitGetPhoneNumberBlock)callback{
+    [[QIMManager sharedInstance] getPhoneNumberWithUserId:qtalkId withCallBack:callback];
 }
 
 - (NSDictionary *)getUserInfoByName:(NSString *)nickName {

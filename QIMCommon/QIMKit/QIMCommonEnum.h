@@ -339,6 +339,9 @@ typedef enum : NSUInteger {
 static const NSString *QIMNavNameKey = @"title";
 static const NSString *QIMNavUrlKey = @"NavUrl";
 
+typedef void(^QIMKitGetPhoneNumberBlock)(NSString *phoneNumber);
+typedef void(^QIMKitGetUserWorkInfoBlock)(NSDictionary *userWorkInfo);
+
 typedef void(^QIMKitSendTPRequesSuccessedBlock)(NSData *responseData);
 typedef void(^QIMKitSendTPRequesFailedBlock)(NSError *error);
 typedef void(^QIMKitGetTripAreaAvailableRoomBlock)(NSArray *availableRooms);
@@ -356,6 +359,7 @@ typedef void(^QIMKitGetMomentNewSuccessedBlock)(NSArray *moments);
 typedef void(^QIMKitGetMomentHistorySuccessedBlock)(NSArray *moments);
 typedef void(^QIMKitgetAnonymouseSuccessedBlock)(NSDictionary *anonymousDic);
 typedef void(^QIMKitgetMomentDetailSuccessedBlock)(NSDictionary *momentDic);
+typedef void(^QIMKitPushMomentSuccessedBlock)(BOOL successed);
 
 
 typedef void(^QIMKitgetPublicCompanySuccessedBlock)(NSArray *companies);

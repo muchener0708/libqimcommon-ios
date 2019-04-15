@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)getAnonyMouseDicWithMomentId:(NSString *)momentId WithCallBack:(QIMKitgetAnonymouseSuccessedBlock)callback;
 
-- (void)pushNewMomentWithMomentDic:(NSDictionary *)momentDic;
+- (void)pushNewMomentWithMomentDic:(NSDictionary *)momentDic withCallBack:(QIMKitPushMomentSuccessedBlock)callback;
 
 - (void)getMomentHistoryWithLastMomentId:(NSString *)momentId;
 

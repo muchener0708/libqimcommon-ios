@@ -298,7 +298,8 @@ typedef enum {
                 NSString * jDataStr = [[[[QIMNavConfigManager sharedInstance].innerFileHttpHost stringByAppendingString:[NSString stringWithFormat:@"/%@",httpUrl]] dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
                 jDataStr = [jDataStr stringByReplacingOccurrencesOfString:@"/" withString:@"_"];
                 jDataStr = [jDataStr stringByReplacingOccurrencesOfString:@"+" withString:@"-"];
-                [mulDic setQIMSafeObject:[NSString stringWithFormat:@"https://qim.qunar.com/sharemsg/index.php?jdata=%@", jDataStr] forKey:@"linkurl"];
+                NSString *shareurl = [NSString stringWithFormat:@"%@?jdata=%@", [[QIMNavConfigManager sharedInstance] shareUrl], jDataStr];
+                [mulDic setQIMSafeObject:shareurl forKey:@"linkurl"];
                 NSString *msgExtendInfoStr = [[QIMJSONSerializer sharedInstance] serializeObject:mulDic];
                 //QIMSDKTODO
 //                if (encryptState == QTEncryptChatStateEncrypting) {

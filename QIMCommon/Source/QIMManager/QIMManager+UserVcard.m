@@ -487,7 +487,9 @@
             NSString *userWorkInfoStr = [tempDic objectForKey:@"UserWorkInfo"];
             result = [[QIMJSONSerializer sharedInstance] deserializeObject:userWorkInfoStr error:nil];
         } else {
-            result = [[QIMManager sharedInstance] getRemoteUserWorkInfoWithUserId:userId];
+            [[QIMManager sharedInstance] getRemoteUserWorkInfoWithUserId:userId withCallBack:^(NSDictionary *userWorkInfo) {
+                result = userWorkInfo;
+            }];
         }
     };
     if (dispatch_get_specific(self.cacheTag)) {
@@ -498,8 +500,7 @@
     return result;
 }
 
-- (NSDictionary *)getRemoteUserWorkInfoWithUserId:(NSString *)userId {
-    NSDictionary *userWorkInfo = nil;
+- (void)getRemoteUserWorkInfoWithUserId:(NSString *)userId withCallBack:(QIMKitGetUserWorkInfoBlock)callback {
     
     NSString *qtalkId = [[userId componentsSeparatedByString:@"@"] firstObject];
     NSMutableDictionary *param = [NSMutableDictionary dictionaryWithCapacity:4];
@@ -510,11 +511,67 @@
     QIMVerboseLog(@"查看用户%@直属领导参数 : %@", userId, [[QIMJSONSerializer sharedInstance] serializeObject:param]);
     NSData *requestData = [[QIMJSONSerializer sharedInstance] serializeObject:param error:nil];
     NSString *destUrl = [[QIMNavConfigManager sharedInstance] leaderurl];
-    if (destUrl.length <= 0) {
-        return nil;
-    }
-//    NSString *destUrl = [NSString stringWithFormat:@"%@/ops/opsapp/api/info", [[QIMNavConfigManager sharedInstance] opsHost]];
+    __weak __typeof(self) weakSelf = self;
     QIMVerboseLog(@"查看用户%@直属领导url ： %@", userId, destUrl);
+    [self sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:requestData withSuccessCallBack:^(NSData *responseData) {
+        NSDictionary *resultDic = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
+        NSInteger errcode = [[resultDic objectForKey:@"errcode"] integerValue];
+        if (errcode == 0) {
+            NSDictionary *resultData = [resultDic objectForKey:@"data"];
+            if ([resultData isKindOfClass:[NSDictionary class]]) {
+                //插入数据库IM_UsersWorkInfo
+                __typeof(self) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (callback) {
+                        callback(resultData);
+                    }
+                });
+                NSString *workInfo = [[QIMJSONSerializer sharedInstance] serializeObject:resultData];
+                NSDictionary *userBackInfo = @{@"UserWorkInfo":workInfo?workInfo:@""};
+                [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateUserBackInfo:userBackInfo WithXmppId:userId];
+                
+                NSString *userWorkInfo = [NSDictionary dictionaryWithDictionary:resultData];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateUserLeaderCard object:@{@"UserId":userId, @"LeaderInfo":workInfo}];
+                });
+            } else {
+                __typeof(self) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (callback) {
+                        callback(nil);
+                    }
+                });
+            }
+        } else {
+            __typeof(self) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (callback) {
+                    callback(nil);
+                }
+            });
+        }
+    } withFailedCallBack:^(NSError *error) {
+        __typeof(self) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (callback) {
+                callback(nil);
+            }
+        });
+    }];
+    
+    /*
     ASIHTTPRequest *request = [[ASIHTTPRequest alloc] initWithURL:[NSURL URLWithString:destUrl]];
     [request addRequestHeader:@"Content-type" value:@"application/json;"];
     [request setRequestMethod:@"POST"];
@@ -546,10 +603,10 @@
         QIMVerboseLog(@"查看用户%@直属领导 失败 ： %ld, Error : %@", userId, [request responseStatusCode], error);
     }
     return userWorkInfo;
+    */
 }
 
-- (NSString *)getPhoneNumberWithUserId:(NSString *)qtalkId {
-    __block NSString *phoneNumber = nil;
+- (void)getPhoneNumberWithUserId:(NSString *)qtalkId withCallBack:(QIMKitGetPhoneNumberBlock)callback{
     
     NSMutableDictionary *param = [NSMutableDictionary dictionaryWithCapacity:4];
     [param setQIMSafeObject:qtalkId forKey:@"qtalk_id"];
@@ -558,12 +615,51 @@
     [param setQIMSafeObject:@"ios" forKey:@"platform"];
     QIMVerboseLog(@"查看用户%@手机号参数 : %@", qtalkId, [[QIMJSONSerializer sharedInstance] serializeObject:param]);
     NSData *requestData = [[QIMJSONSerializer sharedInstance] serializeObject:param error:nil];
-//    NSString *destUrl = [NSString stringWithFormat:@"%@/ops/opsapp/api/mobile-phone", [[QIMNavConfigManager sharedInstance] opsHost]];
     NSString *destUrl = [[QIMNavConfigManager sharedInstance] mobileurl];
-    if (destUrl.length <= 0) {
-        return nil;
-    }
     QIMVerboseLog(@"查看用户%@手机号Url : %@", qtalkId, destUrl);
+    __weak __typeof(self) weakSelf = self;
+    [self sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:requestData withSuccessCallBack:^(NSData *responseData) {
+        NSDictionary *resultDic = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
+        NSInteger errcode = [[resultDic objectForKey:@"errcode"] integerValue];
+        if (errcode == 0) {
+            NSDictionary *resultData = [resultDic objectForKey:@"data"];
+            if ([resultData isKindOfClass:[NSDictionary class]]) {
+                NSString *phoneNumber = [resultData objectForKey:@"phone"];
+                __typeof(self) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                if (callback) {
+                    callback(phoneNumber);
+                }
+            } else {
+                __typeof(self) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                if (callback) {
+                    callback(nil);
+                }
+            }
+        } else {
+            __typeof(self) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            if (callback) {
+                callback(nil);
+            }
+        }
+    } withFailedCallBack:^(NSError *error) {
+        __typeof(self) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        if (callback) {
+            callback(nil);
+        }
+    }];
+    /*
     ASIHTTPRequest *request = [[ASIHTTPRequest alloc] initWithURL:[NSURL URLWithString:destUrl]];
     [request addRequestHeader:@"Content-type" value:@"application/json;"];
     [request setRequestMethod:@"POST"];
@@ -585,6 +681,7 @@
         QIMVerboseLog(@"查看用户%@手机号失败 ： %ld, Error : %@", qtalkId, [request responseStatusCode], error);
     }
     return phoneNumber;
+    */
 }
 
 #pragma mark - 跨域搜索

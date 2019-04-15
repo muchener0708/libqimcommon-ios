@@ -39,8 +39,8 @@
     [[QIMManager sharedInstance] getAnonyMouseDicWithMomentId:momentId WithCallBack:callback];
 }
 
-- (void)pushNewMomentWithMomentDic:(NSDictionary *)momentDic {
-    [[QIMManager sharedInstance] pushNewMomentWithMomentDic:momentDic];
+- (void)pushNewMomentWithMomentDic:(NSDictionary *)momentDic withCallBack:(QIMKitPushMomentSuccessedBlock)callback {
+    [[QIMManager sharedInstance] pushNewMomentWithMomentDic:momentDic withCallBack:callback];
 }
 
 - (void)getMomentHistoryWithLastMomentId:(NSString *)momentId {

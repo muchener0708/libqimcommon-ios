@@ -993,10 +993,12 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
                         self->_clinetConfigDic = [NSMutableDictionary dictionaryWithCapacity:5];
                     }
                     NSDictionary *dataDic = [resDic objectForKey:@"data"];
-                    [self->_clinetConfigDic setDictionary:dataDic];
-                    [[QIMUserCacheManager sharedInstance] setUserObject:self->_clinetConfigDic forKey:kNewClinetConfigDic];
-                    NSInteger cvVersion = [dataDic objectForKey:@"version"];
-                    [[QIMUserCacheManager sharedInstance] setUserObject:@(cvVersion) forKey:kCheckConfigVersion];
+                    if (dataDic.count) {
+                        [self->_clinetConfigDic setDictionary:dataDic];
+                        [[QIMUserCacheManager sharedInstance] setUserObject:self->_clinetConfigDic forKey:kNewClinetConfigDic];
+                        NSInteger cvVersion = [dataDic objectForKey:@"version"];
+                        [[QIMUserCacheManager sharedInstance] setUserObject:@(cvVersion) forKey:kCheckConfigVersion];
+                    }
                 }
             }
         }

@@ -320,17 +320,19 @@ static dispatch_once_t _onceDBToken;
                   IM_Message('From');" withParameters:nil];
         
         //创建消息列表插入未读数触发器
+//        INSERT INTO logs(context, level, message, timestamp) VALUES (new.ReadState, '创建消息列表插入未读数触发器', new.XmppId||'--'||new.MsgId, datetime('now')) ;\
+        
         result = [database executeNonQuery:@"CREATE TRIGGER IF NOT EXISTS sessionlist_unread_insert after insert on IM_Message\
                   for each row begin\
-                  INSERT INTO logs(context, level, message, timestamp) VALUES (new.ReadState, '创建消息列表插入未读数触发器', new.XmppId||'--'||new.MsgId, datetime('now')) ;\
                   update IM_SessionList set UnreadCount = case when ((new.ReadState&2)<>2) then UnreadCount+1 else UnreadCount end where XmppId = new.XmppId and RealJid = new.RealJid and new.Direction=1 ;\
                   update IM_SessionList set LastMessageId = new.MsgId, LastUpdateTime = new.LastUpdateTime where XmppId = new.XmppId and RealJid = new.RealJid and LastUpdateTime <= new.LastUpdateTime;\
                   end" withParameters:nil];
         
         //创建消息列表未读数更新触发器
+//        INSERT INTO logs(context, level, message, timestamp) VALUES (new.ReadState, '创建消息列表未读数更新触发器', new.XmppId||'--'||new.MsgId, datetime('now')) ;\
+
         result = [database executeNonQuery:@"CREATE TRIGGER IF NOT EXISTS sessionlist_unread_update after update of ReadState on IM_Message\
                   for each row begin\
-                  INSERT INTO logs(context, level, message, timestamp) VALUES (new.ReadState, '创建消息列表未读数更新触发器', new.XmppId||'--'||new.MsgId, datetime('now')) ;\
                   update IM_SessionList set UnreadCount = case when (new.ReadState& 2) =2 and old.ReadState & 2 <>2 then (case when\ UnreadCount >0 then (unreadcount -1) else 0 end ) when (new.ReadState & 2) <>2 and old.ReadState & 2 =2 then\ UnreadCount + 1 else UnreadCount end where XmppId = new.XmppId and RealJid = new.RealJid and new.Direction = 1;\
                   end" withParameters:nil];
         

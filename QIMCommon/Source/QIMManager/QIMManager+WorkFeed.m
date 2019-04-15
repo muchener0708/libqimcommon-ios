@@ -126,7 +126,7 @@
     }];
 }
 
-- (void)pushNewMomentWithMomentDic:(NSDictionary *)momentDic {
+- (void)pushNewMomentWithMomentDic:(NSDictionary *)momentDic withCallBack:(QIMKitPushMomentSuccessedBlock)callback {
     NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/post/V2", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
     NSData *momentBodyData = [[QIMJSONSerializer sharedInstance] serializeObject:momentDic error:nil];
     NSString *momentBodyStr = [[QIMJSONSerializer sharedInstance] serializeObject:momentDic];
@@ -149,10 +149,31 @@
                         [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyReloadWorkFeed object:newPosts];
                     });
                 }
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (callback) {
+                        callback(YES);
+                    }
+                });
+            } else {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (callback) {
+                        callback(NO);
+                    }
+                });
             }
+        } else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (callback) {
+                    callback(NO);
+                }
+            });
         }
     } withFailedCallBack:^(NSError *error) {
-        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (callback) {
+                callback(NO);
+            }
+        });
     }];
 }
 

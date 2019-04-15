@@ -2303,12 +2303,28 @@
     }
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     __block NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+    /*
     for (NSDictionary *mucDic in groupReadList) {
         NSString *domain = [mucDic objectForKey:@"domain"];
         NSString *mucName = [mucDic objectForKey:@"id"];
         NSString *groupId = [mucName stringByAppendingFormat:@"@%@", domain];
         [[self dbInstance] syncUsingTransaction:^(Database *database) {
             NSString *sql1 = [NSString stringWithFormat:@"select XmppId, LastUpdateTime from IM_Message where XmppId = :XmppId and ReadState & %d = %d order by LastUpdateTime desc LIMIT 1;", QIMMessageRemoteReadStateDidReaded, QIMMessageRemoteReadStateDidReaded];
+            DataReader *reader = [database executeReader:sql1 withParameters:@[groupId]];
+            QIMVerboseLog(@"在线DB获取群阅读指针参数 ：%@", @[groupId]);
+            if ([reader read]) {
+                NSString *xmppId = [reader objectForColumnIndex:0];
+                NSNumber *lastupdateTime = [reader objectForColumnIndex:1];
+                [dict setObject:lastupdateTime forKey:xmppId];
+            }
+        }];
+    } */
+    for (NSDictionary *mucDic in groupReadList) {
+        NSString *domain = [mucDic objectForKey:@"domain"];
+        NSString *mucName = [mucDic objectForKey:@"id"];
+        NSString *groupId = [mucName stringByAppendingFormat:@"@%@", domain];
+        [[self dbInstance] syncUsingTransaction:^(Database *database) {
+            NSString *sql1 = [NSString stringWithFormat:@"select XmppId, Min(LastUpdateTime) from IM_Message where XmppId = :XmppId and ReadState & %d != %d;", QIMMessageRemoteReadStateDidReaded, QIMMessageRemoteReadStateDidReaded, QIMMessageDirection_Received];
             DataReader *reader = [database executeReader:sql1 withParameters:@[groupId]];
             QIMVerboseLog(@"在线DB获取群阅读指针参数 ：%@", @[groupId]);
             if ([reader read]) {

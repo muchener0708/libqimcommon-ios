@@ -77,15 +77,14 @@
 
  @param userId 用户Id
  */
-- (NSDictionary *)getRemoteUserWorkInfoWithUserId:(NSString *)userId;
-
+- (void)getRemoteUserWorkInfoWithUserId:(NSString *)userId withCallBack:(QIMKitGetUserWorkInfoBlock)callback;
 
 /**
  获取用户手机号
 
  @param qtalkId qtalkId
  */
-- (NSString *)getPhoneNumberWithUserId:(NSString *)qtalkId;
+- (void)getPhoneNumberWithUserId:(NSString *)qtalkId withCallBack:(QIMKitGetPhoneNumberBlock)callback;
 
 /**
  *  通过nickName获取用户信息

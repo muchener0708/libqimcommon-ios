@@ -41,6 +41,7 @@
 #import "QIMManager+SingleMessage.h"
 #import "QIMManager+SystemMessage.h"
 #import "QIMManager+UserVcard.h"
+#import "QIMManager+Found.h"
 #import "QIMManager+XmppImManagerEvent.h"
 
 #import "QIMMessageModel.h"

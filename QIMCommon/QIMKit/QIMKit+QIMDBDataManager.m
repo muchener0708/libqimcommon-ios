@@ -266,8 +266,8 @@
     [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateUserSearchIndexs:searchIndexs];
 }
 
-- (void)updateUser:(NSString *)userId WithHeaderSrc:(NSString *)headerSrc WithVersion:(NSString *)version {
-    [[IMDataManager qimDB_SharedInstance] qimDB_updateUser:userId WithHeaderSrc:headerSrc WithVersion:version];
+- (void)updateUser:(NSString *)userId WithMood:(NSString *)mood WithHeaderSrc:(NSString *)headerSrc WithVersion:(NSString *)version{
+    [[IMDataManager qimDB_SharedInstance] qimDB_updateUser:userId WithMood:mood WithHeaderSrc:headerSrc WithVersion:version];
 }
 
 - (void)bulkUpdateUserCardsV2:(NSArray *)cards {

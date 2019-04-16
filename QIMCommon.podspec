@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   s.source       = { :git => "http://gitlab.corp.qunar.com/qchat/libQIMCommon-iOS.git", :tag=> s.version.to_s}
 
   s.ios.deployment_target   = '9.0'
-  s.resource_bundles = {'QIMCommonResource' => ['QIMCommon/QIMKitCommonResource/*.{png,aac,caf,pem}']}
+  s.resource_bundles = {'QIMCommonResource' => ['QIMCommon/QIMKitCommonResource/*.{png,aac,caf,pem,wav}']}
 
   s.platform     = :ios, "9.0"
 

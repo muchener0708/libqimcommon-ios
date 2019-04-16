@@ -348,7 +348,7 @@ typedef void(^QIMKitGetTripAreaAvailableRoomBlock)(NSArray *availableRooms);
 typedef void(^QIMKitGetTripAreaAvailableRoomByCityIdBlock)(NSArray *availableRooms);    //根据城市Id获取可用区域
 typedef void(^QIMKitGetTripAllCitysBlock)(NSArray *allCitys);   //获取所有城市
 typedef void(^QIMKitGetTripMemberCheckBlock)(BOOL isConform);   //isConform 冲突
-typedef void(^QIMKitCreateTripBlock)(BOOL success);
+typedef void(^QIMKitCreateTripBlock)(BOOL success, NSString *errMsg);
 typedef void(^QIMCloseSessionBlock)(NSString *closeMsg);
 
 typedef void(^QIMKitLikeMomentSuccessedBlock)(NSDictionary *responseDic);

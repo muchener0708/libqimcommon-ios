@@ -285,10 +285,27 @@
     }];
 }
 
+- (void)qimDB_updateUser:(NSString *)userId WithMood:(NSString *)mood WithHeaderSrc:(NSString *)headerSrc WithVersion:(NSString *)version{
+    CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
+    [[self dbInstance] usingTransaction:^(Database *database) {
+        NSString *sql = @"Update IM_Users Set HeaderSrc = :HeaderSrc, Mood = :Mood, LastUpdateTime = :LastUpdateTime Where UserId=:UserId;";
+        NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:3];
+        [param addObject:headerSrc?headerSrc:@":NULL"];
+        [param addObject:mood?mood:@":NULL"];
+        [param addObject:version];
+        [param addObject:userId];
+        [database executeNonQuery:sql withParameters:param];
+        [param release];
+        param = nil;
+    }];
+    CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
+    QIMVerboseLog(@"更新用户信息 耗时 = %f s userId : %@, headerSrc: %@, version: %@", end - start, userId, headerSrc, version); //s
+}
+
 - (void)qimDB_updateUser:(NSString *)userId WithHeaderSrc:(NSString *)headerSrc WithVersion:(NSString *)version{
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     [[self dbInstance] usingTransaction:^(Database *database) {
-        NSString *sql = @"Update IM_Users Set HeaderSrc = :HeaderSrc,LastUpdateTime = :LastUpdateTime Where UserId=:UserId;";
+        NSString *sql = @"Update IM_Users Set HeaderSrc = :HeaderSrc, LastUpdateTime = :LastUpdateTime Where UserId=:UserId;";
         NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:3];
         [param addObject:headerSrc?headerSrc:@":NULL"];
         [param addObject:version];

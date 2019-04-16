@@ -140,8 +140,8 @@
             NSString *mood = [userProfile objectForKey:@"mood"];
             NSString *headerUrl = [userProfile objectForKey:@"url"];
             
-            [self updateUserBigHeaderImageUrl:headerUrl WithVersion:version ForUserId:userId];
-            
+            [self updateUserBigHeaderImageUrl:headerUrl WithUserMood:mood WithVersion:version ForUserId:userId];
+            [self.userVCardDict removeObjectForKey:userId];
             NSMutableDictionary *usersVCardInfo = [NSMutableDictionary dictionaryWithDictionary:[[QIMUserCacheManager sharedInstance] userObjectForKey:kUsersVCardInfo]];
             
             NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:usersVCardInfo[[QIMManager getLastUserName]]];
@@ -274,6 +274,12 @@
         return fileUrl;
     }
     return @"";
+}
+
+- (void)updateUserBigHeaderImageUrl:(NSString *)url WithUserMood:(NSString *)mood WithVersion:(NSString *)version ForUserId:(NSString *)userId {
+    if (url.length > 0) {
+        [[IMDataManager qimDB_SharedInstance] qimDB_updateUser:userId WithMood:mood WithHeaderSrc:url WithVersion:version];
+    }
 }
 
 - (void)updateUserBigHeaderImageUrl:(NSString *)url WithVersion:(NSString *)version ForUserId:(NSString *)userId {
@@ -462,7 +468,7 @@
     if ([resultData isKindOfClass:[NSArray class]]) {
         NSDictionary *resultDic = [resultData firstObject];
         [self.userNormalHeaderDic removeObjectForKey:[[QIMManager sharedInstance] getLastJid]];
-        
+        [self.userVCardDict removeObjectForKey:[[QIMManager sharedInstance] getLastJid]];
         NSString *headerUrl = [resultDic objectForKey:@"url"];
         if (![headerUrl qim_hasPrefixHttpHeader]) {
             headerUrl = [NSString stringWithFormat:@"%@/%@", [[QIMNavConfigManager sharedInstance] innerFileHttpHost], headerUrl];

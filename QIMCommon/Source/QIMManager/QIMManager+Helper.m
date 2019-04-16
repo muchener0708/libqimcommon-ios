@@ -52,7 +52,7 @@
                 // 非租车业务才播放声音
                 SystemSoundID soundID;
                 // 读文件获取SoundID
-                NSString *filePath = [NSBundle qim_myLibraryResourcePathWithClassName:@"QIMCommonResource" BundleName:@"QIMCommonResource" pathForResource:@"in" ofType:@"caf"];
+                NSString *filePath = [NSBundle qim_myLibraryResourcePathWithClassName:@"QIMCommonResource" BundleName:@"QIMCommonResource" pathForResource:@"msg" ofType:@"wav"];
                 if (filePath != nil) {
                     //声音
                     AudioServicesCreateSystemSoundID((__bridge CFURLRef) [NSURL fileURLWithPath:filePath], &soundID);

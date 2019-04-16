@@ -94,20 +94,21 @@
                 [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertConfigArrayWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalTripUpdateTime] WithConfigVersion:0 ConfigArray:configArray];
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (callback) {
-                        callback(YES);
+                        callback(YES, nil);
                     }
                 });
             } else {
+                NSString *errmsg = [result objectForKey:@"errmsg"];
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (callback) {
-                        callback(YES);
+                        callback(NO, errmsg);
                     }
                 });
             }
         } else {
             dispatch_async(dispatch_get_main_queue(), ^{
                 if (callback) {
-                    callback(YES);
+                    callback(NO, @"预定会议室失败");
                 }
             });
         }
@@ -115,7 +116,7 @@
         QIMErrorLog(@"新建行程或更新已有行程失败 : Error : %@", error);
         dispatch_async(dispatch_get_main_queue(), ^{
             if (callback) {
-                callback(YES);
+                callback(NO, @"预定会议室失败");
             }
         });
     }];

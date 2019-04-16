@@ -464,7 +464,7 @@
                 [msgDic setObject:@(QIMMessageDirection_Sent) forKey:@"MsgDirection"];
                 [msgDic setObject:@(msec_times-1) forKey:@"MsgDateTime"];
                 [msgDic setObject:@(QIMMessageSendState_Success) forKey:@"MsgState"];
-                [msgDic setObject:@(QIMMessageRemoteReadStateDidSent) forKey:@"ReadState"];
+                [msgDic setObject:@(QIMMessageRemoteReadStateGroupReaded|QIMMessageRemoteReadStateDidReaded) forKey:@"ReadState"];
                 [msgDic setObject:@(ChatType_GroupChat) forKey:@"ChatType"];
                 [msgList addObject:msgDic];
             }
@@ -594,7 +594,7 @@
                 [msgDic setObject:@(QIMMessageDirection_Sent) forKey:@"MsgDirection"];
                 [msgDic setObject:@(msec_times-1) forKey:@"MsgDateTime"];
                 [msgDic setObject:@(QIMMessageSendState_Success) forKey:@"MsgState"];
-                [msgDic setObject:@(QIMMessageRemoteReadStateGroupReaded) forKey:@"ReadState"];
+                [msgDic setObject:@(QIMMessageRemoteReadStateGroupReaded|QIMMessageRemoteReadStateDidReaded) forKey:@"ReadState"];
                 [msgDic setObject:@(ChatType_GroupChat) forKey:@"ChatType"];
                 [msgList addObject:msgDic];
             }
@@ -842,6 +842,7 @@
                 [msgDic setObject:@(QIMMessageSendState_Success) forKey:@"MsgState"];
                 [msgDic setObject:@(1) forKey:@"ReadedTag"];
                 [msgDic setObject:@(chatType) forKey:@"ChatType"];
+                [msgDic setObject:@(QIMMessageRemoteReadStateDidReaded) forKey:@"ReadState"];
                 if (isConsult) {
                     if (direction == 0) {
                         if (chatId.intValue == 5) {
@@ -1181,6 +1182,7 @@
                 [msgDic setObject:@(QIMMessageDirection_Sent) forKey:@"MsgDirection"];
                 [msgDic setObject:@(date.timeIntervalSince1970*1000-1) forKey:@"MsgDateTime"];
                 [msgDic setObject:@(QIMMessageSendState_Success) forKey:@"MsgState"];
+                [msgDic setObject:@(QIMMessageRemoteReadStateDidReaded) forKey:@"ReadState"];
                 [msgDic setObject:@(chatType) forKey:@"ChatType"];
                 [msgDic setObject:@(1) forKey:@"ReadedTag"];
                 [msgDic setObject:@(chatType) forKey:@"ChatType"];
@@ -2256,7 +2258,7 @@
         }];
     }
     QIMVerboseLog(@"DB获取群阅读指针结果 ：%@", dict);
-    NSString *sql2 = [NSString stringWithFormat:@"UPDATE IM_Message SET ReadState = (ReadState|%d) WHERE XmppId = :XmppId and LastUpdateTime <= :LastUpdateTime1 and LastUpdateTime > :LastUpdateTime2;", QIMMessageRemoteReadStateDidReaded];
+    NSString *sql2 = [NSString stringWithFormat:@"UPDATE IM_Message SET ReadState = (ReadState|%d) WHERE XmppId = :XmppId and LastUpdateTime <= :LastUpdateTime1 and LastUpdateTime >= :LastUpdateTime2;", QIMMessageRemoteReadStateDidReaded];
     __block long long maxRemarkUpdateTime = 0;
     [[self dbInstance] usingTransaction:^(Database *database) {
         NSMutableArray *params = nil;
@@ -2335,7 +2337,7 @@
         }];
     }
     QIMVerboseLog(@"在线DB获取群阅读指针结果 ：%@", dict);
-    NSString *sql2 = [NSString stringWithFormat:@"UPDATE IM_Message SET ReadState = (ReadState|%d) WHERE XmppId = :XmppId and LastUpdateTime <= :LastUpdateTime1 and LastUpdateTime > :LastUpdateTime2;", QIMMessageRemoteReadStateDidReaded];
+    NSString *sql2 = [NSString stringWithFormat:@"UPDATE IM_Message SET ReadState = (ReadState|%d) WHERE XmppId = :XmppId and LastUpdateTime <= :LastUpdateTime1 and LastUpdateTime >= :LastUpdateTime2;", QIMMessageRemoteReadStateDidReaded];
     __block long long maxRemarkUpdateTime = 0;
     [[self dbInstance] usingTransaction:^(Database *database) {
         NSMutableArray *params = nil;

@@ -739,6 +739,7 @@
         [msg setMessageDate:msgDate-1];
         [msg setRealJid:realJid];
         [msg setMessageSendState:QIMMessageSendState_Success];
+        [msg setMessageReadState:QIMMessageRemoteReadStateGroupReaded|QIMMessageRemoteReadStateDidReaded];
         if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msg.messageId]) {
             return;
         }
@@ -770,6 +771,7 @@
         [msg setMessageType:QIMMessageType_Time];
         [msg setMessageDate:msgDate - 1];
         [msg setMessageSendState:QIMMessageSendState_Success];
+        [msg setMessageReadState:QIMMessageRemoteReadStateGroupReaded|QIMMessageRemoteReadStateDidReaded];
         if ([[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msg.messageId]) {
             
             return;

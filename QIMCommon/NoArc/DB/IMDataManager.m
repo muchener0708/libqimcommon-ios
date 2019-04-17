@@ -56,7 +56,9 @@ static dispatch_once_t _onceDBToken;
 }
 
 - (void)setDomain:(NSString*)domain{
-    _dbOwnerDomain = domain;
+    [_dbOwnerDomain release];
+
+    _dbOwnerDomain = [domain retain];
 }
 
 - (NSString *)getDBOwnerDomain {

@@ -10,8 +10,13 @@
 
 @implementation QIMManager (Found)
 
-- (void)ddd {
-    
+- (void)getRemoteFoundNavigation {
+    NSString *destUrl = [NSString stringWithFormat:@"%@/"];
+    [[QIMManager sharedInstance] sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:nil withSuccessCallBack:^(NSData *responseData) {
+        
+    } withFailedCallBack:^(NSError *error) {
+        
+    }];
 }
 
 @end

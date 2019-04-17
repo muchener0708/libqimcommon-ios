@@ -39,9 +39,6 @@
  */
 - (NSString *)getUserBigHeaderImageUrlWithUserId:(NSString *)userId;
 
-- (void)updateUserBigHeaderImageUrl:(NSString *)url WithVersion:(NSString *)version ForUserId:(NSString *)userId ;
-
-
 /**
  更新我的名片信息
  */

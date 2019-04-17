@@ -26,10 +26,6 @@
     return [[QIMManager sharedInstance] getUserBigHeaderImageUrlWithUserId:userId];
 }
 
-- (void)updateUserBigHeaderImageUrl:(NSString *)url WithVersion:(NSString *)version ForUserId:(NSString *)userId {
-    [[QIMManager sharedInstance] updateUserBigHeaderImageUrl:url WithVersion:version ForUserId:userId];
-}
-
 - (void)updateMyCard {
     [[QIMManager sharedInstance] updateMyCard];
 }

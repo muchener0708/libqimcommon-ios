@@ -34,8 +34,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)qimDB_updateUser:(NSString *)userId WithMood:(NSString *)mood WithHeaderSrc:(NSString *)headerSrc WithVersion:(NSString *)version;
 
-- (void)qimDB_updateUser:(NSString *)userId WithHeaderSrc:(NSString *)headerSrc WithVersion:(NSString *)version;
-
 - (void)qimDB_bulkUpdateUserCards:(NSArray *)cards;
 
 - (NSString *)qimDB_getUserHeaderSrcByUserId:(NSString *)userId;

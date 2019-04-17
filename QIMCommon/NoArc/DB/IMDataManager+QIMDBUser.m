@@ -302,22 +302,6 @@
     QIMVerboseLog(@"更新用户信息 耗时 = %f s userId : %@, headerSrc: %@, version: %@", end - start, userId, headerSrc, version); //s
 }
 
-- (void)qimDB_updateUser:(NSString *)userId WithHeaderSrc:(NSString *)headerSrc WithVersion:(NSString *)version{
-    CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
-    [[self dbInstance] usingTransaction:^(Database *database) {
-        NSString *sql = @"Update IM_Users Set HeaderSrc = :HeaderSrc, LastUpdateTime = :LastUpdateTime Where UserId=:UserId;";
-        NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:3];
-        [param addObject:headerSrc?headerSrc:@":NULL"];
-        [param addObject:version];
-        [param addObject:userId];
-        [database executeNonQuery:sql withParameters:param];
-        [param release];
-        param = nil;
-    }];
-    CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
-    QIMVerboseLog(@"更新用户信息 耗时 = %f s userId : %@, headerSrc: %@, version: %@", end - start, userId, headerSrc, version); //s
-}
-
 - (void)qimDB_bulkUpdateUserCards:(NSArray *)cards{
     [[self dbInstance] usingTransaction:^(Database *database) {
         NSString *insertSql = @"insert or IGNORE into IM_Users(UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime, Mood) values(:UserID, :XmppId, :Name, :DescInfo, :HeaderSrc, :UserInfo, :LastUpdateTime, :Mood);";

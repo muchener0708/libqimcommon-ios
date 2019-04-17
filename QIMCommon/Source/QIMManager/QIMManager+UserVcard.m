@@ -282,12 +282,6 @@
     }
 }
 
-- (void)updateUserBigHeaderImageUrl:(NSString *)url WithVersion:(NSString *)version ForUserId:(NSString *)userId {
-    if (url.length > 0) {
-        [[IMDataManager qimDB_SharedInstance] qimDB_updateUser:userId WithHeaderSrc:url WithVersion:version];
-    }
-}
-
 - (void)updateQChatGroupMembersCardForGroupId:(NSString *)groupId {
     NSArray *members = [self getGroupMembersByGroupId:groupId];
     NSMutableArray *needUpdateUserIds = [NSMutableArray array];
@@ -470,10 +464,11 @@
         [self.userNormalHeaderDic removeObjectForKey:[[QIMManager sharedInstance] getLastJid]];
         [self.userVCardDict removeObjectForKey:[[QIMManager sharedInstance] getLastJid]];
         NSString *headerUrl = [resultDic objectForKey:@"url"];
+        NSString *mood = [resultDic objectForKey:@"mood"];
         if (![headerUrl qim_hasPrefixHttpHeader]) {
             headerUrl = [NSString stringWithFormat:@"%@/%@", [[QIMNavConfigManager sharedInstance] innerFileHttpHost], headerUrl];
         }
-        [self updateUserBigHeaderImageUrl:headerUrl WithVersion:[resultDic objectForKey:@"version"] ForUserId:[QIMManager getLastUserName]];
+        [self updateUserBigHeaderImageUrl:headerUrl WithUserMood:mood WithVersion:[resultDic objectForKey:@"version"] ForUserId:[QIMManager getLastUserName]];
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:kMyHeaderImgaeUpdateSuccess object:@{@"ok":@(YES), @"headerUrl":(headerUrl.length > 0) ? headerUrl : @""}];
         });

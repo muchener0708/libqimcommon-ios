@@ -40,7 +40,7 @@
         NSMutableArray *params = [[NSMutableArray alloc] init];
         for (NSDictionary *infoDic in userInfos) {
             NSString *userId = [infoDic objectForKey:@"U"];
-            NSString *xmppId = [NSString stringWithFormat:@"%@@%@",userId, @"ejabhost1"];
+            NSString *xmppId = [NSString stringWithFormat:@"%@@%@",userId, [[IMDataManager qimDB_SharedInstance] getDBOwnerDomain]];
             NSString *Name = [infoDic objectForKey:@"N"];
             Name = [Name stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
             NSString *DescInfo = [infoDic objectForKey:@"D"];

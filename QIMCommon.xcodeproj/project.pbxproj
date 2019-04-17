@@ -122,6 +122,8 @@
 		2C2839BF2265C6F5007C9DFE /* QIMManager+Found.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C2839BD2265C6F5007C9DFE /* QIMManager+Found.m */; };
 		2C2839C22265C750007C9DFE /* QIMKit+QIMAPPFound.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C2839C02265C750007C9DFE /* QIMKit+QIMAPPFound.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2C2839C32265C750007C9DFE /* QIMKit+QIMAPPFound.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C2839C12265C750007C9DFE /* QIMKit+QIMAPPFound.m */; };
+		2C2839E122672502007C9DFE /* IMDataManager+QIMFoundList.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C2839DF22672502007C9DFE /* IMDataManager+QIMFoundList.h */; };
+		2C2839E222672502007C9DFE /* IMDataManager+QIMFoundList.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C2839E022672502007C9DFE /* IMDataManager+QIMFoundList.m */; };
 		2C2A798F221578D300AF2153 /* QIMManager+PublicNavUserManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C2A798D221578D300AF2153 /* QIMManager+PublicNavUserManager.h */; };
 		2C2A7990221578D300AF2153 /* QIMManager+PublicNavUserManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C2A798E221578D300AF2153 /* QIMManager+PublicNavUserManager.m */; };
 		2C2A79932215791100AF2153 /* QIMKit+QIMPublicNavUserManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C2A79912215791100AF2153 /* QIMKit+QIMPublicNavUserManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -367,6 +369,8 @@
 		2C2839BD2265C6F5007C9DFE /* QIMManager+Found.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "QIMManager+Found.m"; sourceTree = "<group>"; };
 		2C2839C02265C750007C9DFE /* QIMKit+QIMAPPFound.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "QIMKit+QIMAPPFound.h"; sourceTree = "<group>"; };
 		2C2839C12265C750007C9DFE /* QIMKit+QIMAPPFound.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "QIMKit+QIMAPPFound.m"; sourceTree = "<group>"; };
+		2C2839DF22672502007C9DFE /* IMDataManager+QIMFoundList.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "IMDataManager+QIMFoundList.h"; sourceTree = "<group>"; };
+		2C2839E022672502007C9DFE /* IMDataManager+QIMFoundList.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IMDataManager+QIMFoundList.m"; sourceTree = "<group>"; };
 		2C2A798D221578D300AF2153 /* QIMManager+PublicNavUserManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "QIMManager+PublicNavUserManager.h"; sourceTree = "<group>"; };
 		2C2A798E221578D300AF2153 /* QIMManager+PublicNavUserManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "QIMManager+PublicNavUserManager.m"; sourceTree = "<group>"; };
 		2C2A79912215791100AF2153 /* QIMKit+QIMPublicNavUserManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "QIMKit+QIMPublicNavUserManager.h"; sourceTree = "<group>"; };
@@ -871,6 +875,8 @@
 				2CB8DB5D21494C4E00B57B8D /* IMDataManager+QIMCalendar.m */,
 				2CB8DB5A21494C4E00B57B8D /* IMDataManager+QIMDBClientConfig.h */,
 				2CB8DB5F21494C4E00B57B8D /* IMDataManager+QIMDBClientConfig.m */,
+				2C2839DF22672502007C9DFE /* IMDataManager+QIMFoundList.h */,
+				2C2839E022672502007C9DFE /* IMDataManager+QIMFoundList.m */,
 				2CB8DB5821494C4E00B57B8D /* IMDataManager+QIMDBQuickReply.h */,
 				2C069FFE22042C57000CAF37 /* IMDataManager+WorkFeed.h */,
 				2C069FFF22042C57000CAF37 /* IMDataManager+WorkFeed.m */,
@@ -954,6 +960,7 @@
 				2CB8DA8C21494C1800B57B8D /* QIMCommonEnum.h in Headers */,
 				2C1D0F62215E504A00275225 /* QIMFilteredProtocol.h in Headers */,
 				2CB8DA8E21494C1800B57B8D /* QIMKit+QIMDB.h in Headers */,
+				2C2839E122672502007C9DFE /* IMDataManager+QIMFoundList.h in Headers */,
 				2C1D0F5A215E504000275225 /* QIMMessageManager.h in Headers */,
 				2CB8DA8721494C1800B57B8D /* QIMKit+QIMUserVcard.h in Headers */,
 				2C1D0F67215E51B800275225 /* XmppImManager.h in Headers */,
@@ -1196,6 +1203,7 @@
 				2C22663B221FF80D00EED2B8 /* IMDataManager+QIMDBMessage.m in Sources */,
 				2C8DF1DB21D50DE0001A3B0E /* QIMAdvertItem.m in Sources */,
 				2C09E4F221902B500083154F /* QIMManager+Request.m in Sources */,
+				2C2839E222672502007C9DFE /* IMDataManager+QIMFoundList.m in Sources */,
 				2CB8DA5B21494C1800B57B8D /* QIMKit+QIMUserVcard.m in Sources */,
 				2CB8DA7621494C1800B57B8D /* QIMKit+QIMHelper.m in Sources */,
 				2C1D0F11215E4F5E00275225 /* QIMManager+Helper.m in Sources */,

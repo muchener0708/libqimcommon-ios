@@ -1,0 +1,27 @@
+
+//
+//  IMDataManager+QIMFoundList.m
+//  QIMCommon
+//
+//  Created by lilu on 2019/4/17.
+//  Copyright © 2019 QIM. All rights reserved.
+//
+
+#import "IMDataManager+QIMFoundList.h"
+#import "Database.h"
+
+@implementation IMDataManager (QIMFoundList)
+
+- (void)qimDB_insertFoundListWithAppVersion:(NSString *)version withFoundList:(NSString *)foundListStr {
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = @"insert or replace into IM_Found_List(version, foundList) Values(:version, :foundList)";
+        NSMutableArray *parames = [[NSMutableArray alloc] init];
+        [parames addObject:version];
+        [parames addObject:foundListStr?foundListStr:@":NULL"];
+        [database executeNonQuery:sql withParameters:parames];
+        [parames release];
+        parames = nil;
+    }];
+}
+
+@end

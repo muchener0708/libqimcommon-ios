@@ -28,6 +28,8 @@
 
 - (NSString *)getDbOwnerFullJid;
 
+- (NSString *)getDBOwnerDomain;
+
 + (void)safeSaveForDic:(NSMutableDictionary *)dic setObject:(id)value forKey:(id)key;
 
 - (NSString *) OriginalUUID;

@@ -77,6 +77,7 @@
 #import "IMDataManager+QIMDBPublicNumber.h"
 #import "IMDataManager+QIMDBUser.h"
 #import "IMDataManager+QIMUserMedal.h"
+#import "IMDataManager+QIMFoundList.h"
 
 #import "XmppImManager.h"
 

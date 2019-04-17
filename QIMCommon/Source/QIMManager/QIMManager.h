@@ -9,6 +9,7 @@
 #import "IMDataManager+QIMDBGroup.h"
 #import "IMDataManager+QIMDBFriend.h"
 #import "IMDataManager+QIMDBMessage.h"
+#import "IMDataManager+QIMFoundList.h"
 #import "IMDataManager+QIMDBCollectionMessage.h"
 #import "IMDataManager+QIMDBPublicNumber.h"
 #import "IMDataManager+QIMDBUser.h"

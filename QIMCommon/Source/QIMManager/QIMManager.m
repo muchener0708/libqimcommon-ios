@@ -566,6 +566,9 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
         
         QIMVerboseLog(@"登录之后请求热线账户列表");
         [self getHotlineShopList];
+        
+        QIMVerboseLog(@"登录之后获取发现页应用列表");
+        [self getRemoteFoundNavigation];
     }
 }
 
@@ -690,7 +693,7 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
 - (void)updateOrganizationalStructure {
     NSString *destUrl = [NSString stringWithFormat:@"%@/update/getUpdateUsers.qunar", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
     NSInteger userMaxVersion = [[IMDataManager qimDB_SharedInstance] qimDB_getUserCacheDataWithKey:kGetUpdateUsersVersion withType:9];
-    NSDictionary *versionDic = @{@"version":@(userMaxVersion)};
+    NSDictionary *versionDic = @{@"version":@(0)};
     NSData *versionData = [[QIMJSONSerializer sharedInstance] serializeObject:versionDic error:nil];
     [[QIMManager sharedInstance] sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:versionData withSuccessCallBack:^(NSData *responseData) {
         NSDictionary *responseDic = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];

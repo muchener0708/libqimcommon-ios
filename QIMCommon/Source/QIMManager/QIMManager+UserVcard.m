@@ -34,14 +34,23 @@
     static NSData *__defaultUserHeaderImage = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        NSString *singleHeaderPath = [NSBundle qim_myLibraryResourcePathWithClassName:@"QIMCommonResource" BundleName:@"QIMCommonResource" pathForResource:@"QIMManDefaultHeader" ofType:@"png"];
-        __defaultUserHeaderImage = [NSData dataWithContentsOfFile:singleHeaderPath];
+        if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeStartalk) {
+            NSString *singleHeaderPath = [NSBundle qim_myLibraryResourcePathWithClassName:@"QIMCommonResource" BundleName:@"QIMCommonResource" pathForResource:@"QIMSTManDefaultHeader" ofType:@"png"];
+            __defaultUserHeaderImage = [NSData dataWithContentsOfFile:singleHeaderPath];
+        } else {
+            NSString *singleHeaderPath = [NSBundle qim_myLibraryResourcePathWithClassName:@"QIMCommonResource" BundleName:@"QIMCommonResource" pathForResource:@"QIMManDefaultHeader" ofType:@"png"];
+            __defaultUserHeaderImage = [NSData dataWithContentsOfFile:singleHeaderPath];
+        }
     });
     return __defaultUserHeaderImage;
 }
 
 + (NSString *)defaultUserHeaderImagePath {
-    return [NSBundle qim_myLibraryResourcePathWithClassName:@"QIMCommonResource" BundleName:@"QIMCommonResource" pathForResource:@"QIMManDefaultHeader" ofType:@"png"];
+    if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeStartalk) {
+        return [NSBundle qim_myLibraryResourcePathWithClassName:@"QIMCommonResource" BundleName:@"QIMCommonResource" pathForResource:@"QIMSTManDefaultHeader" ofType:@"png"];
+    } else {
+        return [NSBundle qim_myLibraryResourcePathWithClassName:@"QIMCommonResource" BundleName:@"QIMCommonResource" pathForResource:@"QIMManDefaultHeader" ofType:@"png"];
+    }
 }
 
 #pragma mark - 用户备注

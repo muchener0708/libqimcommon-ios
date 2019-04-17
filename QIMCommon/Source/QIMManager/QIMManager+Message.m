@@ -1246,17 +1246,15 @@
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
         NSArray *array = [[IMDataManager qimDB_SharedInstance] qimDB_getMsgListByXmppId:userId WithRealJid:realJid FromTimeStamp:timeStamp];
-        if (array.count > 0) {
-            
-            NSMutableArray *list = [NSMutableArray array];
-            for (NSDictionary *infoDic in array) {
-                QIMMessageModel *msg = [self getMessageModelWithByDBMsgDic:infoDic];
-                [list addObject:msg];
-            }
-            dispatch_async(dispatch_get_main_queue(), ^{
-                complete(list);
-            });
+        
+        NSMutableArray *list = [NSMutableArray array];
+        for (NSDictionary *infoDic in array) {
+            QIMMessageModel *msg = [self getMessageModelWithByDBMsgDic:infoDic];
+            [list addObject:msg];
         }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            complete((list.count > 0) ? list : @[]);
+        });
     });
 }
 

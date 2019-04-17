@@ -834,6 +834,7 @@
                 [result setObject:@(lastDate) forKey:@"lastDate"];
                 NSMutableDictionary *msgDic = [NSMutableDictionary dictionary];
                 [msgDic setObject:[self qimDB_getTimeSmtapMsgIdForDate:date WithUserId:key] forKey:@"MsgId"];
+                [result setObject:[self qimDB_getTimeSmtapMsgIdForDate:date WithUserId:key] forKey:@"MsgId"];
                 [msgDic setObject:isConsult?userId:key forKey:@"SessionId"];
                 [msgDic setObject:@(101) forKey:@"MsgType"];
                 [msgDic setObject:@(platForm) forKey:@"Platform"];
@@ -880,6 +881,7 @@
             }
             NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
             [msgDic setObject:msgId forKey:@"MsgId"];
+            [result setObject:msgId forKey:@"MsgId"];
             [msgDic setObject:isConsult?userId:key forKey:@"SessionId"];
             NSString *realXmppId = realJid?realJid:from;
             if ([type isEqualToString:@"collection"]) {

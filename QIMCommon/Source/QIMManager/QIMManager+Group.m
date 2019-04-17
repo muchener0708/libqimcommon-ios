@@ -127,8 +127,13 @@
     static UIImage *__defaultGroupHeaderImage = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        NSString *groupHeaderPath = [NSBundle qim_myLibraryResourcePathWithClassName:@"QIMCommonResource" BundleName:@"QIMCommonResource" pathForResource:@"QIMGroupDefaultHeader" ofType:@"png"];
-        __defaultGroupHeaderImage = [UIImage imageWithContentsOfFile:groupHeaderPath];
+        if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeStartalk) {
+            NSString *groupHeaderPath = [NSBundle qim_myLibraryResourcePathWithClassName:@"QIMCommonResource" BundleName:@"QIMCommonResource" pathForResource:@"QIMSTGroupDefaultHeader" ofType:@"png"];
+            __defaultGroupHeaderImage = [UIImage imageWithContentsOfFile:groupHeaderPath];
+        } else {
+            NSString *groupHeaderPath = [NSBundle qim_myLibraryResourcePathWithClassName:@"QIMCommonResource" BundleName:@"QIMCommonResource" pathForResource:@"QIMGroupDefaultHeader" ofType:@"png"];
+            __defaultGroupHeaderImage = [UIImage imageWithContentsOfFile:groupHeaderPath];
+        }
     });
     return __defaultGroupHeaderImage;
 }
@@ -412,8 +417,13 @@
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
             [self getGroupHeaderImageFromRemoteWithGroupId:groupId];
         });
-        NSString *groupHeaderPath = [NSBundle qim_myLibraryResourcePathWithClassName:@"QIMCommonResource" BundleName:@"QIMCommonResource" pathForResource:@"QIMGroupDefaultHeader" ofType:@"png"];
-        return groupHeaderPath;
+        if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeStartalk) {
+            NSString *groupHeaderPath = [NSBundle qim_myLibraryResourcePathWithClassName:@"QIMCommonResource" BundleName:@"QIMCommonResource" pathForResource:@"QIMSTGroupDefaultHeader" ofType:@"png"];
+            return groupHeaderPath;
+        } else {
+            NSString *groupHeaderPath = [NSBundle qim_myLibraryResourcePathWithClassName:@"QIMCommonResource" BundleName:@"QIMCommonResource" pathForResource:@"QIMGroupDefaultHeader" ofType:@"png"];
+            return groupHeaderPath;
+        }
     }
 }
 

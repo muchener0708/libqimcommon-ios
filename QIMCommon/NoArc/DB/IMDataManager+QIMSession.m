@@ -31,6 +31,7 @@
         ChatType chatType = [[value objectForKey:@"ChatType"] intValue];
         NSArray *msgs = [value objectForKey:@"msgList"];
         long long msgTime = [[value objectForKey:@"lastDate"] longLongValue];
+        NSString *msgId = [value objectForKey:@"MsgId"];
         if (lastMaxMsgTime <= msgTime) {
             lastMaxMsgTime = msgTime;
         }
@@ -39,9 +40,9 @@
             [[IMDataManager qimDB_SharedInstance] qimDB_insertSessionWithSessionId:userId WithUserId:userId WithLastMsgId:userId WithLastUpdateTime:msgTime ChatType:chatType WithRealJid:realJid];
         } else {
             if ([key containsString:@"collection_rbt"]) {
-                [[IMDataManager qimDB_SharedInstance] qimDB_insertSessionWithSessionId:key WithUserId:[[key componentsSeparatedByString:@"@"] objectAtIndex:0] WithLastMsgId:nil WithLastUpdateTime:msgTime ChatType:ChatType_CollectionChat WithRealJid:key];
+                [[IMDataManager qimDB_SharedInstance] qimDB_insertSessionWithSessionId:key WithUserId:[[key componentsSeparatedByString:@"@"] objectAtIndex:0] WithLastMsgId:msgId WithLastUpdateTime:msgTime ChatType:ChatType_CollectionChat WithRealJid:key];
             } else {
-                [[IMDataManager qimDB_SharedInstance] qimDB_insertSessionWithSessionId:key WithUserId:[[key componentsSeparatedByString:@"@"] objectAtIndex:0] WithLastMsgId:nil WithLastUpdateTime:msgTime ChatType:chatType WithRealJid:key];
+                [[IMDataManager qimDB_SharedInstance] qimDB_insertSessionWithSessionId:key WithUserId:[[key componentsSeparatedByString:@"@"] objectAtIndex:0] WithLastMsgId:msgId WithLastUpdateTime:msgTime ChatType:chatType WithRealJid:key];
             }
         }
         dispatch_async(dispatch_get_main_queue(), ^{

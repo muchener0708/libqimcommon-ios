@@ -12,6 +12,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface QIMKit (QIMAPPFound)
 
+- (void)getRemoteFoundNavigation;
+
+- (NSString *)getLocalFoundNavigation;
+
 @end
 
 NS_ASSUME_NONNULL_END

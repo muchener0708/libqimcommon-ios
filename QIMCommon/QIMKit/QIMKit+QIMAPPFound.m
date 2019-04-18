@@ -11,4 +11,12 @@
 
 @implementation QIMKit (QIMAPPFound)
 
+- (void)getRemoteFoundNavigation {
+    return [[QIMManager sharedInstance] getRemoteFoundNavigation];
+}
+
+- (NSString *)getLocalFoundNavigation {
+    return [[QIMManager sharedInstance] getLocalFoundNavigation];
+}
+
 @end

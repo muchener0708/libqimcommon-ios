@@ -22,22 +22,27 @@
     NSMutableDictionary *bodyProperties = [NSMutableDictionary dictionary];
     long long version = [[[IMDataManager qimDB_SharedInstance] qimDB_getConfigInfoWithConfigKey:[self transformClientConfigKeyWithType:QIMClientConfigTypeKLocalTripUpdateTime] WithSubKey:[[QIMManager sharedInstance] getLastJid] WithDeleteFlag:NO] longLongValue];
     
-    [bodyProperties setQIMSafeObject:@(222) forKey:@"version"];
-    [bodyProperties setQIMSafeObject:@"Android" forKey:@"platform"];
+    [bodyProperties setQIMSafeObject:@([[[QIMAppInfo sharedInstance] AppBuildVersion] integerValue]) forKey:@"version"];
+    [bodyProperties setQIMSafeObject:@"IOS" forKey:@"platform"];
     
     [[QIMManager sharedInstance] sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:[[QIMJSONSerializer sharedInstance] serializeObject:bodyProperties error:nil] withSuccessCallBack:^(NSData *responseData) {
         NSDictionary *responseDic = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
         BOOL ret = [[responseDic objectForKey:@"ret"] boolValue];
         NSInteger errcode = [[responseDic objectForKey:@"errcode"] integerValue];
         if (ret && errcode==0) {
-            NSString *data = [responseDic objectForKey:@"data"];
-            if ([data isKindOfClass:[NSString class]]) {
-                
+            NSArray *data = [responseDic objectForKey:@"data"];
+            if ([data isKindOfClass:[NSArray class]]) {
+                NSString *rndataStr = [[QIMJSONSerializer sharedInstance] serializeObject:data];
+                [[IMDataManager qimDB_SharedInstance] qimDB_insertFoundListWithAppVersion:[[QIMAppInfo sharedInstance] AppBuildVersion] withFoundList:rndataStr];
             }
         }
     } withFailedCallBack:^(NSError *error) {
         
     }];
+}
+
+- (NSString *)getLocalFoundNavigation {
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getFoundListWithAppVersion:[[QIMAppInfo sharedInstance] AppBuildVersion]];
 }
 
 @end

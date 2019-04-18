@@ -15,6 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)qimDB_insertFoundListWithAppVersion:(NSString *)version withFoundList:(NSString *)foundListStr;
 
+- (NSString *)qimDB_getFoundListWithAppVersion:(NSString *)version;
+
 @end
 
 NS_ASSUME_NONNULL_END

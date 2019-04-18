@@ -829,8 +829,7 @@ static dispatch_once_t _onceDBToken;
     
     result = [database executeNonQuery:@"create table IF NOT EXISTS IM_Found_List(\
               version                  TEXT PRIMARY KEY,\
-              foundList     TEXT,\
-              ));" withParameters:nil];
+              foundList     TEXT);" withParameters:nil];
     
     return result;
 }

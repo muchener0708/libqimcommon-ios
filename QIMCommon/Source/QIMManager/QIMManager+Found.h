@@ -15,6 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)getRemoteFoundNavigation;
 
+- (NSString *)getLocalFoundNavigation;
+
 @end
 
 NS_ASSUME_NONNULL_END

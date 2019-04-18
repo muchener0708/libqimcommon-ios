@@ -77,6 +77,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray *)qimDB_getGroupMember:(NSString *)groupId BySearchStr:(NSString *)searchStr;
 
+- (NSArray *)qimDB_getGroupMember:(NSString *)groupId WithGroupIdentity:(NSInteger)identity;
+
 - (NSArray *)qimDB_getGroupMember:(NSString *)groupId;
 
 - (NSDictionary *)qimDB_getGroupOwnerInfoForGroupId:(NSString *)groupId;

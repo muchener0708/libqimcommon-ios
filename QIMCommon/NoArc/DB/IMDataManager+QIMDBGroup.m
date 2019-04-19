@@ -722,13 +722,18 @@
     }
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSMutableString *sql = [NSMutableString stringWithFormat:@"Select a.MemberId, a.Name, b.XmppId as Jid, a.Affiliation, a.LastUpdateTime From IM_Group_Member a left join IM_Users b on a.MemberJid = b.XmppId Where GroupId = :GroupId and a.Affiliation in (", identityArray];
-        for (NSString *affiliation in identityArray) {
-            if ([affiliation isEqual:identityArray.lastObject]) {
-                [sql appendFormat:@"'%@') Order By a.Name;",affiliation];
-            } else {
-                [sql appendFormat:@"'%@',",affiliation];
+        if (identityArray.count) {
+            for (NSString *affiliation in identityArray) {
+                if ([affiliation isEqual:identityArray.lastObject]) {
+                    [sql appendFormat:@"'%@') Order By a.Name;",affiliation];
+                } else {
+                    [sql appendFormat:@"'%@',",affiliation];
+                }
             }
+        } else {
+            [sql appendFormat:@"'%@') Order By a.Name;"];
         }
+
         DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
         while ([reader read]) {
             if (members == nil) {

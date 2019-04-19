@@ -7,9 +7,11 @@
 
 #import "QIMManager+Helper.h"
 #import <AVFoundation/AVFoundation.h>
+#import <AudioToolbox/AudioToolbox.h>
 #import "QIMPrivateHeader.h"
 
 @implementation QIMManager (Helper)
+static SystemSoundID _ringSystemSoundID;
 
 - (void)playHongBaoSound {
     if (![self isNewMsgNotify] && ![self isNewMsgVibrate]) {
@@ -35,11 +37,28 @@
     }
 }
 
+void ringStopRing()
+{
+    if (_ringSystemSoundID != 0) {
+        //移除系统播放完成后的回调函数
+        AudioServicesRemoveSystemSoundCompletion(_ringSystemSoundID);
+        //销毁创建的SoundID
+        AudioServicesDisposeSystemSoundID(_ringSystemSoundID);
+        _ringSystemSoundID = 0;
+    }
+}
+
+static void ringAudioServicesSystemSoundCompletionProc(SystemSoundID ssID, void *clientData)
+{
+    ringStopRing();
+}
+
 - (void)playSound {
     
     if (![self isNewMsgNotify] && ![self isNewMsgVibrate]) {
         return;
     }
+    
     if ([self isNewMsgVibrate]) {
         AudioServicesPlayAlertSound(kSystemSoundID_Vibrate);
     }
@@ -55,8 +74,12 @@
                 NSString *filePath = [NSBundle qim_myLibraryResourcePathWithClassName:@"QIMCommonResource" BundleName:@"QIMCommonResource" pathForResource:@"msg" ofType:@"wav"];
                 if (filePath != nil) {
                     //声音
-                    AudioServicesCreateSystemSoundID((__bridge CFURLRef) [NSURL fileURLWithPath:filePath], &soundID);
-                    AudioServicesPlaySystemSound(soundID);
+                    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategorySoloAmbient
+                                                           error:nil];
+                    AudioServicesCreateSystemSoundID((__bridge CFURLRef) [NSURL fileURLWithPath:filePath], &_ringSystemSoundID);
+                    AudioServicesAddSystemSoundCompletion(_ringSystemSoundID, NULL, NULL, ringAudioServicesSystemSoundCompletionProc, NULL);
+                    //通过创建的soundID打开对应的音频文件
+                    AudioServicesPlayAlertSound(_ringSystemSoundID);
                 }
             }
             lastPlay = [[NSDate date] timeIntervalSince1970];

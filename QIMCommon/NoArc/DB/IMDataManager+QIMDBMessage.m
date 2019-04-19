@@ -2334,7 +2334,9 @@
             if ([reader read]) {
                 NSString *xmppId = [reader objectForColumnIndex:0];
                 NSNumber *lastupdateTime = [reader objectForColumnIndex:1];
-                [dict setObject:lastupdateTime forKey:xmppId];
+                if (xmppId.length > 0) {
+                    [dict setObject:lastupdateTime?lastupdateTime:@(0) forKey:xmppId];
+                }
             }
         }];
     }

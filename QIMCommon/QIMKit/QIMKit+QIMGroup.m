@@ -80,6 +80,10 @@
     return [[QIMManager sharedInstance] isGroupMemberByGroupId:groupId];
 }
 
+- (BOOL)isGroupMemberByUserId:(NSString *)userId ByGroupId:(NSString *)groupId {
+    return [[QIMManager sharedInstance] isGroupMemberByUserId:userId ByGroupId:groupId];
+}
+
 - (BOOL)isGroupOwner:(NSString *)groupId {
     return [[QIMManager sharedInstance] isGroupOwner:groupId];
 }

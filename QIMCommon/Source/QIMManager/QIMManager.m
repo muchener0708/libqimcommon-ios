@@ -31,6 +31,7 @@
 #import "QIMManager+SingleMessage.h"
 #import "QIMManager+SystemMessage.h"
 #import "QIMManager+UserVcard.h"
+#import "QIMManager+Found.h"
 #import "QIMManager+XmppImManagerEvent.h"
 
 #import "XmppImManager.h"
@@ -565,6 +566,9 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
         
         QIMVerboseLog(@"登录之后请求热线账户列表");
         [self getHotlineShopList];
+        
+        QIMVerboseLog(@"登录之后获取发现页应用列表");
+        [self getRemoteFoundNavigation];
     }
 }
 

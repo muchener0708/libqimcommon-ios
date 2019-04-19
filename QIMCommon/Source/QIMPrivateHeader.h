@@ -41,6 +41,7 @@
 #import "QIMManager+SingleMessage.h"
 #import "QIMManager+SystemMessage.h"
 #import "QIMManager+UserVcard.h"
+#import "QIMManager+Found.h"
 #import "QIMManager+XmppImManagerEvent.h"
 
 #import "QIMMessageModel.h"
@@ -76,6 +77,7 @@
 #import "IMDataManager+QIMDBPublicNumber.h"
 #import "IMDataManager+QIMDBUser.h"
 #import "IMDataManager+QIMUserMedal.h"
+#import "IMDataManager+QIMFoundList.h"
 
 #import "XmppImManager.h"
 

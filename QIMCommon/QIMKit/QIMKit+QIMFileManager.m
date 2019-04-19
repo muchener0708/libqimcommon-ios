@@ -147,4 +147,8 @@
     return [[QIMFileManager sharedInstance] getFitSizeForImgSize:imgSize];
 }
 
+- (NSString *)qim_cachedFileNameForKey:(NSString *)key {
+    return [[QIMFileManager sharedInstance] qim_cachedFileNameForKey:key];
+}
+
 @end

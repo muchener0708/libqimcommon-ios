@@ -126,6 +126,8 @@
  */
 - (BOOL)isGroupMemberByGroupId:(NSString *)groupId;
 
+- (BOOL)isGroupMemberByUserId:(NSString *)userId ByGroupId:(NSString *)groupId;
+
 
 /**
  判断本人是否为群主

@@ -341,15 +341,13 @@
     [mesg setMessageDirection:QIMMessageDirection_Sent];
     [mesg setMessage:msg];
     [mesg setTo:userId];
+    [mesg setXmppId:userId];
     [mesg setFrom:[[QIMManager sharedInstance] getLastJid]];
     if (userType == ChatType_Consult) {
         [mesg setRealJid:userId];
     } else {
         [mesg setRealJid:realJid?realJid:userId];
     }
-//    if (userType == ChatType_GroupChat) {
-//        [mesg setNickName:[[QIMManager sharedInstance] getLastJid]];
-//    }
     [mesg setMessageDate:msgDate];
     [mesg setMessageSendState:QIMMessageSendState_Waiting];
     [mesg setExtendInformation:extendInfo];
@@ -1156,6 +1154,9 @@
         int msgDirection = msg.messageDirection;
         
         long long msgDate = msg.messageDate;
+        if (!msg.xmppId.length) {
+            msg.xmppId = xmppId;
+        }
         
         if (msg.chatType == ChatType_PublicNumber) {
             if (msg.messageType == QIMMessageType_Consult || msg.messageType == QIMMessageType_ConsultResult || msg.messageType == QIMMessageType_MicroTourGuide) {

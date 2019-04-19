@@ -121,6 +121,11 @@
     return memberInfo ? YES : NO;
 }
 
+- (BOOL)isGroupMemberByUserId:(NSString *)userId ByGroupId:(NSString *)groupId {
+    NSDictionary *memberInfo = [[IMDataManager qimDB_SharedInstance] qimDB_getGroupMemberInfoByJid:userId WithGroupId:groupId];
+    return memberInfo ? YES : NO;
+}
+
 #pragma mark - 群头像
 
 + (UIImage *)defaultGroupHeaderImage {

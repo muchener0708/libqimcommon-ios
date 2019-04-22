@@ -234,6 +234,37 @@ done:
     return result;
 }
 
++ (NSString *)updateLoadMomentImage:(NSData *)fileData WithMsgId:(NSString *)key WithMsgType:(int)type WithPathExtension:(NSString *)extension{
+    NSString *method = @"file/v2/upload/img";
+    NSString *fileName =  [NSString stringWithFormat:@"%@.%@",key,extension];
+    long long size = ceil(fileData.length / 1024.0 / 1024.0);
+    
+    NSString *destUrl = [NSString stringWithFormat:@"%@/%@?name=%@&p=ios&u=%@&k=%@&v=%@&key=%@&size=%lld",
+                         [QIMNavConfigManager sharedInstance].innerFileHttpHost, method, fileName,
+                         [[QIMManager getLastUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
+                         [[QIMManager sharedInstance] myRemotelogginKey],
+                         [[QIMAppInfo sharedInstance] AppBuildVersion],key,size];
+    NSLog(@"上传图片destUrl : %@", destUrl);
+    NSURL *requestUrl = [[NSURL alloc] initWithString:destUrl];
+    ASIFormDataRequest *formRequest = [[ASIFormDataRequest alloc] initWithURL:requestUrl];
+    [formRequest setResponseEncoding:NSISOLatin1StringEncoding];
+    [formRequest setPostFormat:ASIMultipartFormDataPostFormat];
+    [formRequest addData:fileData withFileName:fileName andContentType:nil forKey:@"file"];
+    [formRequest startSynchronous];
+    if ([formRequest responseStatusCode] == 200) {
+        NSDictionary *result = [[QIMJSONSerializer sharedInstance] deserializeObject:formRequest.responseData error:nil];
+        NSLog(@"上传图片返回结果 : %@", result);
+        BOOL ret = [[result objectForKey:@"ret"] boolValue];
+        if (ret) {
+            NSString *resultUrl = [result objectForKey:@"data"];
+            if ([resultUrl isEqual:[NSNull null]] == NO && resultUrl) {
+                return resultUrl;
+            }
+        }
+    }
+    return nil;
+}
+
 + (NSString *)updateLoadImage:(NSData *)fileData WithMsgId:(NSString *)key WithMsgType:(int)type WithPathExtension:(NSString *)extension{
     NSString *method = @"file/v2/upload/img";
     NSString *fileName =  [NSString stringWithFormat:@"%@.%@",key,extension];
@@ -265,6 +296,19 @@ done:
         }
     }
     return nil;
+}
+
++ (NSString *) updateLoadMomentFile:(NSData *)fileData WithMsgId:(NSString *)key WithMsgType:(int)type WithPathExtension:(NSString *)extension{
+    NSString *fileKey = [self getFileDataMD5WithPath:fileData];
+    NSString *fileExt = [self getFileExt:fileData];
+    if (fileExt.length > 0) {
+        extension = fileExt;
+    }
+    NSString *httpUrl = [self checkFileKey:fileKey WithFileLength:fileData.length WithPathExtension:extension];
+    if (httpUrl == nil) {
+        return [QIMHttpApi updateLoadMomentImage:fileData WithMsgId:fileKey WithMsgType:type WithPathExtension:extension];
+    }
+    return httpUrl;
 }
 
 + (NSString *) updateLoadFile:(NSData *)fileData WithMsgId:(NSString *)key WithMsgType:(int)type WithPathExtension:(NSString *)extension{

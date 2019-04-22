@@ -567,8 +567,8 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
         QIMVerboseLog(@"登录之后请求热线账户列表");
         [self getHotlineShopList];
         
-        QIMVerboseLog(@"登录之后获取发现页应用列表");
-        [self getRemoteFoundNavigation];
+//        QIMVerboseLog(@"登录之后获取发现页应用列表");
+//        [self getRemoteFoundNavigation];
     }
 }
 

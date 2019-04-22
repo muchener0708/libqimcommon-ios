@@ -25,6 +25,8 @@ CFStringRef QIMFileMD5HashCreateWithData(const void *data,long long dataLenght);
 
 + (NSDictionary *)getVerifyCodeWithUserName:(NSString *)userName;
 
++ (NSString *) updateLoadMomentFile:(NSData *)fileData WithMsgId:(NSString *)key WithMsgType:(int)type WithPathExtension:(NSString *)extension;
+
 + (NSString *) updateLoadFile:(NSData *)fileData WithMsgId:(NSString *)key WithMsgType:(int)type WithPathExtension:(NSString *)extension;
 
 + (NSDictionary *)getUserList;

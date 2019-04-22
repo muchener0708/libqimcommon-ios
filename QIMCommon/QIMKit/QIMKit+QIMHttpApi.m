@@ -28,6 +28,10 @@
     return [QIMHttpApi getUserList];
 }
 
++ (NSString *) updateLoadMomentFile:(NSData *)fileData WithMsgId:(NSString *)key WithMsgType:(int)type WithPathExtension:(NSString *)extension {
+    return [QIMHttpApi updateLoadMomentFile:fileData WithMsgId:key WithMsgType:type WithPathExtension:extension];
+}
+
 + (NSString *)updateLoadFile:(NSData *)fileData WithMsgId:(NSString *)key WithMsgType:(int)type WithPathExtension:(NSString *)extension {
     return [QIMHttpApi updateLoadFile:fileData WithMsgId:key WithMsgType:type WithPathExtension:extension];
 }

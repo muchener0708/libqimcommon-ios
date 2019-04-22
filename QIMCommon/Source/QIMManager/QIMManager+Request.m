@@ -29,18 +29,18 @@
                 return;
             }
             NSData *responseData = [response data];
-            dispatch_async(dispatch_get_main_queue(), ^{
+//            dispatch_async(dispatch_get_main_queue(), ^{
                 if (sCallback) {
                     sCallback(responseData);
                 }
-            });
+//            });
         }
     } failure:^(NSError *error) {
-        dispatch_async(dispatch_get_main_queue(), ^{
+//        dispatch_async(dispatch_get_main_queue(), ^{
             if (fCallback) {
                 fCallback(error);
             }
-        });
+//        });
     }];
 }
 
@@ -65,18 +65,18 @@
                 return;
             }
             NSData *responseData = [response data];
-            dispatch_async(dispatch_get_main_queue(), ^{
+//            dispatch_async(dispatch_get_main_queue(), ^{
                 if (sCallback) {
                     sCallback(responseData);
                 }
-            });
+//            });
         }
     } failure:^(NSError *error) {
-        dispatch_async(dispatch_get_main_queue(), ^{
+//        dispatch_async(dispatch_get_main_queue(), ^{
             if (fCallback) {
                 fCallback(error);
             }
-        });
+//        });
     }];
 }
 
@@ -155,18 +155,18 @@
                 return;
             }
             NSData *responseData = [response data];
-            dispatch_async(dispatch_get_main_queue(), ^{
+//            dispatch_async(dispatch_get_main_queue(), ^{
                 if (sCallback) {
                     sCallback(responseData);
                 }
-            });
+//            });
         }
     } failure:^(NSError *error) {
-        dispatch_async(dispatch_get_main_queue(), ^{
+//        dispatch_async(dispatch_get_main_queue(), ^{
             if (fCallback) {
                 fCallback(error);
             }
-        });
+//        });
     }];
 }
 

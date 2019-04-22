@@ -135,6 +135,7 @@
             _qcHost = @"https://qcadmin.qunar.com";
             _domainHost = @"qunar.com";
             _shareUrl = @"https://qim.qunar.com/sharemsg/index.php";
+            _uploadLog = @"https://im.qunar.com/pubapi/qtalk/log/upload.qunar";
         } else if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
             _xmppHost = @"qt.qunar.com";
             _httpHost = @"https://qtapi.qunar.com";
@@ -154,6 +155,7 @@
             _healthcheckUrl = @"http://qt.qunar.com/healthcheck.html";
             _domainHost = @"qunar.com";
             _shareUrl = @"https://qim.qunar.com/sharemsg/index.php";
+            _uploadLog = @"https://im.qunar.com/pubapi/qtalk/log/upload.qunar";
         }
     }
     
@@ -409,6 +411,7 @@
             _showOrganizational = NO;
         }
         
+        _uploadLog = [imConfigDic objectForKey:@"uploadLog"];
     } else {
         _showOA = NO;
         _showOrganizational = NO;

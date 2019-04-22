@@ -46,6 +46,7 @@
 //imConfig
 @property (nonatomic, readonly, assign) BOOL showOA;                //展示OA
 @property (nonatomic, readonly, assign) BOOL showOrganizational;    //展示组织架构
+@property (nonatomic, readonly, copy) NSString *uploadLog;          //数据上报
 
 //ability
 @property (nonatomic, readonly, copy)  NSString *getPushState;

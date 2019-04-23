@@ -155,6 +155,7 @@
             _healthcheckUrl = @"http://qt.qunar.com/healthcheck.html";
             _domainHost = @"qunar.com";
             _shareUrl = @"https://qim.qunar.com/sharemsg/index.php";
+            _email = @"qunar.com";
             _uploadLog = @"https://im.qunar.com/pubapi/qtalk/log/upload.qunar";
         }
     }
@@ -410,7 +411,7 @@
         } else {
             _showOrganizational = NO;
         }
-        
+        _email = [imConfigDic objectForKey:@"mail"];
         _uploadLog = [imConfigDic objectForKey:@"uploadLog"];
     } else {
         _showOA = NO;

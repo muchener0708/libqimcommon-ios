@@ -95,6 +95,8 @@
 //imConfig
 - (BOOL)qimNav_ShowOA;                //展示OA
 - (BOOL)qimNav_ShowOrganizational;    //展示组织架构
+- (NSString *)qimNav_Email;
+- (NSString *)qimNav_UploadLog;     //上报日志
 
 //ability
 - (NSString *)qimNav_GetPushState;

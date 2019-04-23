@@ -129,6 +129,14 @@
     return [[QIMNavConfigManager sharedInstance] showOrganizational];
 }
 
+- (NSString *)qimNav_Email {
+    return [[QIMNavConfigManager sharedInstance] email];
+}
+
+- (NSString *)qimNav_UploadLog {
+    return [[QIMNavConfigManager sharedInstance] uploadLog];
+}
+
 //ability
 - (NSString *)qimNav_GetPushState {
     return [[QIMNavConfigManager sharedInstance] getPushState];

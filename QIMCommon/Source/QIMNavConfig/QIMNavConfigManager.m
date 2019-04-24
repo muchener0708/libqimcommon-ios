@@ -133,7 +133,7 @@
             _protobufPort = @"5202";
             _adShown = NO;
             _qcHost = @"https://qcadmin.qunar.com";
-            _domainHost = @"qunar.com";
+            _domainHost = @".qunar.com";
             _shareUrl = @"https://qim.qunar.com/sharemsg/index.php";
             _uploadLog = @"https://im.qunar.com/pubapi/qtalk/log/upload.qunar";
         } else if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
@@ -153,7 +153,7 @@
             _protobufPort = @"5202";
             _adShown = NO;
             _healthcheckUrl = @"http://qt.qunar.com/healthcheck.html";
-            _domainHost = @"qunar.com";
+            _domainHost = @".qunar.com";
             _shareUrl = @"https://qim.qunar.com/sharemsg/index.php";
             _email = @"qunar.com";
             _uploadLog = @"https://im.qunar.com/pubapi/qtalk/log/upload.qunar";

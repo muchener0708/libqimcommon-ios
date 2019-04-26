@@ -413,6 +413,7 @@
         }
         _email = [imConfigDic objectForKey:@"mail"];
         _uploadLog = [imConfigDic objectForKey:@"uploadLog"];
+        _foundConfigUrl = [imConfigDic objectForKey:@"foundConfigUrl"];
     } else {
         _showOA = NO;
         _showOrganizational = NO;

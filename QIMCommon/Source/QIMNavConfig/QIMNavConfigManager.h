@@ -48,6 +48,7 @@
 @property (nonatomic, readonly, assign) BOOL showOrganizational;    //展示组织架构
 @property (nonatomic, readonly, copy) NSString *email;              //邮箱号
 @property (nonatomic, readonly, copy) NSString *uploadLog;          //数据上报
+@property (nonatomic, readonly, copy) NSString *foundConfigUrl;     //发现页配置url
 
 //ability
 @property (nonatomic, readonly, copy)  NSString *getPushState;

@@ -11,7 +11,7 @@
 @implementation QIMManager (Found)
 
 - (void)getRemoteFoundNavigation {
-    NSString *destUrl = [NSString stringWithFormat:@"http://188.131.198.34:8090/startalk/management/find/get/navigation"];
+    NSString *destUrl = [[QIMNavConfigManager sharedInstance] foundConfigUrl];
     
     NSMutableDictionary *cookieProperties = [NSMutableDictionary dictionary];
     NSString *requestHeaders = [NSString stringWithFormat:@"q_ckey=%@", [[QIMManager sharedInstance] thirdpartKeywithValue]];

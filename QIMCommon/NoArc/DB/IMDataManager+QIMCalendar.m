@@ -38,6 +38,11 @@
             NSString *tripLocaleNumber = [reader objectForColumnIndex:11];
             
             NSString *tripRoom = [reader objectForColumnIndex:12];
+            
+            if (!appointment.length) {
+                appointment = [NSString stringWithFormat:@"%@-%@", tripLocale, tripRoom];
+            }
+            
             NSString *tripRoomNumber = [reader objectForColumnIndex:13];
             NSString *memberListJSON = [reader objectForColumnIndex:14];
             
@@ -93,12 +98,17 @@
             NSString *endTime = [tripItem objectForKey:@"endTime"];
             NSString *scheduleTime = [tripItem objectForKey:@"scheduleTime"];
             
-            NSString *appointment = [tripItem objectForKey:@"appointment"];
             NSString *tripLocale = [tripItem objectForKey:@"tripLocale"];
             NSString *tripLocaleNumber = [tripItem objectForKey:@"tripLocaleNumber"];
             
             NSString *tripRoom = [tripItem objectForKey:@"tripRoom"];
             NSString *tripRoomNumber = [tripItem objectForKey:@"tripRoomNumber"];
+            NSString *appointment = [tripItem objectForKey:@"appointment"];
+            
+            if (!appointment.length) {
+                appointment = [NSString stringWithFormat:@"%@-%@", tripLocale, tripRoom];
+            }
+            
             NSArray *memberList = [tripItem objectForKey:@"memberList"];
             NSData *data = [NSJSONSerialization dataWithJSONObject:memberList options:NSJSONWritingPrettyPrinted error:nil];
             NSString *memberListJSON = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];

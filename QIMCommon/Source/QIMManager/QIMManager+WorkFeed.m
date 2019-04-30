@@ -766,7 +766,7 @@
                         //发送驼圈离线消息小红点通知
                         NSInteger notReadMessageCount = [[QIMManager sharedInstance] getWorkNoticeMessagesCount];
                         QIMVerboseLog(@"发送驼圈离线消息小红点通知数: %ld", notReadMessageCount);
-                        [[NSNotificationCenter defaultCenter] postNotificationName:kExploreNotReadCountChange object:@(notReadMessageCount)];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@(notReadMessageCount)];
                     });
                 }
             }

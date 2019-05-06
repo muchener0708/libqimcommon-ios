@@ -616,6 +616,7 @@
         [self checkMsgTimeWithJid:sid WithMsgDate:msgDate WithGroup:NO];
         
         QIMMessageModel *mesg = [QIMMessageModel new];
+        [mesg setXmppId:sid];
         [mesg setMessageId:msgId];
         [mesg setFrom:sid];
         [mesg setChatType:ChatType_System];

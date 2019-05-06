@@ -199,7 +199,7 @@
     __block NSMutableDictionary *user = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         
-        NSString *sql = @"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime, SearchIndex, Mood from IM_Users Where XmppId = :XmppId;";
+        NSString *sql = @"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime, SearchIndex, Mood, Sex from IM_Users Where XmppId = :XmppId;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:jid];
         DataReader *reader = [database executeReader:sql withParameters:param];
@@ -215,6 +215,7 @@
             NSNumber *dateTime = [reader objectForColumnIndex:6];
             NSString *searchIndex = [reader objectForColumnIndex:7];
             NSString *mood = [reader objectForColumnIndex:8];
+            NSNumber *sex = [reader objectForColumnIndex:9];
             
             [IMDataManager safeSaveForDic:user setObject:userId forKey:@"UserId"];
             [IMDataManager safeSaveForDic:user setObject:XmppId forKey:@"XmppId"];
@@ -225,6 +226,7 @@
             [IMDataManager safeSaveForDic:user setObject:dateTime forKey:@"LastUpdateTime"];
             [IMDataManager safeSaveForDic:user setObject:searchIndex forKey:@"SearchIndex"];
             [IMDataManager safeSaveForDic:user setObject:mood forKey:@"Mood"];
+            [IMDataManager safeSaveForDic:user setObject:sex forKey:@"Sex"];
         }
     }];
     return [user autorelease];
@@ -385,7 +387,7 @@
     __block NSMutableDictionary *user = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         
-        NSString *sql = @"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime, Mood from IM_Users Where UserId = :UserId;";
+        NSString *sql = @"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime, Mood, Sex from IM_Users Where UserId = :UserId;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:userId];
         DataReader *reader = [database executeReader:sql withParameters:param];
@@ -400,6 +402,7 @@
             NSData *data = [reader objectForColumnIndex:5];
             NSNumber *dateTime = [reader objectForColumnIndex:6];
             NSString *mood = [reader objectForColumnIndex:7];
+            NSNumber *sex = [reader objectForColumnIndex:8];
             
             [IMDataManager safeSaveForDic:user setObject:userId forKey:@"UserId"];
             [IMDataManager safeSaveForDic:user setObject:XmppId forKey:@"XmppId"];
@@ -409,6 +412,7 @@
             [IMDataManager safeSaveForDic:user setObject:data forKey:@"UserInfo"];
             [IMDataManager safeSaveForDic:user setObject:dateTime forKey:@"LastUpdateTime"];
             [IMDataManager safeSaveForDic:user setObject:mood forKey:@"Mood"];
+            [IMDataManager safeSaveForDic:user setObject:sex forKey:@"Sex"];
         }
     }];
     return [user autorelease];
@@ -443,7 +447,7 @@
     __block NSMutableDictionary *user = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         
-        NSString *sql = @"Select UserId, XmppId, Name, DescInfo, HeaderSrc, SearchIndex, LastUpdateTime, Mood from IM_Users Where Name = :Name OR UserId = :UserId OR XmppId = :XmppId;";
+        NSString *sql = @"Select UserId, XmppId, Name, DescInfo, HeaderSrc, SearchIndex, LastUpdateTime, Mood, Sex from IM_Users Where Name = :Name OR UserId = :UserId OR XmppId = :XmppId;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:index];
         [param addObject:index];
@@ -460,6 +464,7 @@
             NSString *searchIndex = [reader objectForColumnIndex:5];
             NSNumber *dateTime = [reader objectForColumnIndex:6];
             NSString *mood = [reader objectForColumnIndex:7];
+            NSNumber *sex = [reader objectForColumnIndex:8];
             
             [IMDataManager safeSaveForDic:user setObject:userId forKey:@"UserId"];
             [IMDataManager safeSaveForDic:user setObject:XmppId forKey:@"XmppId"];
@@ -469,6 +474,7 @@
             [IMDataManager safeSaveForDic:user setObject:searchIndex forKey:@"SearchIndex"];
             [IMDataManager safeSaveForDic:user setObject:dateTime forKey:@"LastUpdateTime"];
             [IMDataManager safeSaveForDic:user setObject:mood forKey:@"Mood"];
+            [IMDataManager safeSaveForDic:user setObject:sex forKey:@"Sex"];
         }
     }];
     return [user autorelease];
@@ -656,7 +662,7 @@
 - (NSDictionary *)qimDB_selectUsersDicByXmppIds:(NSArray *)xmppIds{
     __block NSMutableDictionary *usersDic = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSMutableString *sql = [NSMutableString stringWithFormat:@"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime,SearchIndex from IM_Users Where XmppId in ("];
+        NSMutableString *sql = [NSMutableString stringWithFormat:@"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime,SearchIndex, Sex from IM_Users Where XmppId in ("];
         NSString *lastXmppId = [xmppIds lastObject];
         for (NSString *xmppId in xmppIds) {
             if ([lastXmppId isEqualToString:xmppId]) {
@@ -680,6 +686,8 @@
             NSString *userInfo = [reader objectForColumnIndex:5];
             NSNumber *lastUpdateTime = [reader objectForColumnIndex:6];
             NSString *searchIndex = [reader objectForColumnIndex:7];
+            NSNumber *sex = [reader objectForColumnIndex:8];
+            
             NSMutableDictionary *dic = [NSMutableDictionary dictionary];
             [IMDataManager safeSaveForDic:dic setObject:userId forKey:@"UserId"];
             [IMDataManager safeSaveForDic:dic setObject:xmppId forKey:@"XmppId"];
@@ -689,6 +697,7 @@
             [IMDataManager safeSaveForDic:dic setObject:userInfo forKey:@"UserInfo"];
             [IMDataManager safeSaveForDic:dic setObject:lastUpdateTime forKey:@"LastUpdateTime"];
             [IMDataManager safeSaveForDic:dic setObject:searchIndex forKey:@"SearchIndex"];
+            [IMDataManager safeSaveForDic:dic setObject:sex forKey:@"Sex"];
             [usersDic setObject:dic forKey:xmppId];
         }
     }];
@@ -701,7 +710,7 @@
         return nil;
     }
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSMutableString *sql = [NSMutableString stringWithFormat:@"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime,SearchIndex from IM_Users Where UserId in ("];
+        NSMutableString *sql = [NSMutableString stringWithFormat:@"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime,SearchIndex, Sex from IM_Users Where UserId in ("];
         NSString *lastUserId = [userIds lastObject];
         for (NSString *userId in userIds) {
             if ([lastUserId isEqualToString:userId]) {
@@ -725,6 +734,8 @@
             NSString *userInfo = [reader objectForColumnIndex:5];
             NSNumber *lastUpdateTime = [reader objectForColumnIndex:6];
             NSString *searchIndex = [reader objectForColumnIndex:7];
+            NSNumber *sex = [reader objectForColumnIndex:8];
+            
             NSMutableDictionary *dic = [NSMutableDictionary dictionary];
             [IMDataManager safeSaveForDic:dic setObject:userId forKey:@"UserId"];
             [IMDataManager safeSaveForDic:dic setObject:xmppId forKey:@"XmppId"];
@@ -734,6 +745,7 @@
             [IMDataManager safeSaveForDic:dic setObject:userInfo forKey:@"UserInfo"];
             [IMDataManager safeSaveForDic:dic setObject:lastUpdateTime forKey:@"LastUpdateTime"];
             [IMDataManager safeSaveForDic:dic setObject:searchIndex forKey:@"SearchIndex"];
+            [IMDataManager safeSaveForDic:dic setObject:sex forKey:@"Sex"];
             [list addObject:dic];
         }
     }];

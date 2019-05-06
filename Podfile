@@ -19,7 +19,7 @@ target 'QIMCommon' do
     pod 'ASIHTTPRequest'
     pod 'YYCache'
     pod 'YYModel'
-
+ 
     pod 'ProtocolBuffers'
     pod 'CocoaLumberjack'
     pod 'UICKeyChainStore'

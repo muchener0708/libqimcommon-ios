@@ -1332,7 +1332,7 @@
             [param addObject:lastUpdateTime];
             [param addObject:readState?readState:@(0)];
             [param addObject:msgRaw?msgRaw:@":NULL"];
-            [param addObject:realJid?realJid:@":NULL"];
+            [param addObject:realJid?realJid:(from?from:@":NULL")];
             [param addObject:extendInfo?extendInfo:@":NULL"];
             [params addObject:param];
             [param release];

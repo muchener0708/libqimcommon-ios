@@ -123,7 +123,7 @@
 		2C2839C22265C750007C9DFE /* QIMKit+QIMAPPFound.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C2839C02265C750007C9DFE /* QIMKit+QIMAPPFound.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2C2839C32265C750007C9DFE /* QIMKit+QIMAPPFound.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C2839C12265C750007C9DFE /* QIMKit+QIMAPPFound.m */; };
 		2C2839E122672502007C9DFE /* IMDataManager+QIMFoundList.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C2839DF22672502007C9DFE /* IMDataManager+QIMFoundList.h */; };
-		2C2839E222672502007C9DFE /* IMDataManager+QIMFoundList.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C2839E022672502007C9DFE /* IMDataManager+QIMFoundList.m */; };
+		2C2839E222672502007C9DFE /* IMDataManager+QIMFoundList.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C2839E022672502007C9DFE /* IMDataManager+QIMFoundList.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		2C2A798F221578D300AF2153 /* QIMManager+PublicNavUserManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C2A798D221578D300AF2153 /* QIMManager+PublicNavUserManager.h */; };
 		2C2A7990221578D300AF2153 /* QIMManager+PublicNavUserManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C2A798E221578D300AF2153 /* QIMManager+PublicNavUserManager.m */; };
 		2C2A79932215791100AF2153 /* QIMKit+QIMPublicNavUserManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C2A79912215791100AF2153 /* QIMKit+QIMPublicNavUserManager.h */; settings = {ATTRIBUTES = (Public, ); }; };

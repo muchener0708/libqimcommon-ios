@@ -388,6 +388,7 @@
         _newPush = NO;
         _showmsgstat = NO;
     }
+    _searchUrl = @"https://qim.qunar.com/py/search";
     _navVersion = [[navConfig objectForKey:@"version"] longLongValue];
     NSDictionary *Versions = [navConfig objectForKey:@"versions"];
     if (Versions.count) {

@@ -828,6 +828,15 @@ static dispatch_once_t _onceDBToken;
               valueInt      INTEGER DEFAULT 0,\
               primary key(key , type));" withParameters:nil];
     
+    //创建一个At消息表
+    result = [database executeNonQuery:@"create table IF NOT EXISTS IM_At_Message(\
+              GroupId           TEXT,\
+              MsgId             TEXT,\
+              Type              INTEGER DEFAULT 0,\
+              MsgTime           INTEGER);" withParameters:nil];
+    if (result) {
+        result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IM_AT_MESSAGE_GROUPID ON IM_At_Message (GroupId);" withParameters:nil];
+    }
     
     result = [database executeNonQuery:@"create table IF NOT EXISTS IM_Found_List(\
               version                  TEXT PRIMARY KEY,\

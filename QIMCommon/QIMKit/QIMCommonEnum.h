@@ -222,6 +222,11 @@ typedef enum {
     ChatType_CollectionChat    = 6,
 } ChatType;
 
+typedef enum : NSUInteger {
+    QIMAtTypeSP = 0,        //艾特指定人
+    QIMAtTypeALL,           //艾特所有
+} QIMAtType;
+
 typedef enum {
     MessageReadFlagDidSend = 3,
     MessageReadFlagDidRead = 4,

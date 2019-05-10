@@ -339,6 +339,11 @@
 
 - (void)setMoodshow:(BOOL)flag;
 
+//是否展示水印
+- (BOOL)waterMarkState;
+
+- (void)setWaterMarkState:(BOOL)flag;
+
 //At消息
 - (NSArray *)getHasAtMeByJid:(NSString *)jid ;
 
@@ -351,6 +356,8 @@
 - (void)removeAtAllByJid:(NSString *)jid;
 
 - (NSDictionary *)getAtAllInfoByJid:(NSString *)jid;
+
+- (NSArray *)getAtMeMsgByJid:(NSString *)jid;
 
 - (NSDictionary *)getNotSendTextByJid:(NSString *)jid ;
 

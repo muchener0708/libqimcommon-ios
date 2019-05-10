@@ -196,6 +196,17 @@
  */
 - (void)setMoodshow:(BOOL)flag;
 
+//是否展示水印
+- (BOOL)waterMarkState;
+
+
+/**
+ 设置展示水印
+
+ @param flag 展示水印bool值
+ */
+- (void)setWaterMarkState:(BOOL)flag;
+
 /**
  获取At me的
  
@@ -224,6 +235,8 @@
  @return 返回atall信息
  */
 - (NSDictionary *)getAtAllInfoByJid:(NSString *)jid;
+
+- (NSArray *)getAtMeMsgByJid:(NSString *)jid;
 
 - (NSDictionary *)getNotSendTextByJid:(NSString *)jid ;
 

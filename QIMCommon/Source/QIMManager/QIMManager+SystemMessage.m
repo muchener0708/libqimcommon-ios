@@ -24,7 +24,7 @@
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 
         QIMVerboseLog(@"更新本地HeadLine消息时间戳");
-        long long defaultTime = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 3600 * 24 * 2) * 1000;
+        long long defaultTime = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 3600 * 24 * 3) * 1000;
         long long errorTime = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetNewSystemHistoryMsgError] longLongValue];
         if (errorTime > 0) {
             self.lastSystemMsgTime = errorTime;

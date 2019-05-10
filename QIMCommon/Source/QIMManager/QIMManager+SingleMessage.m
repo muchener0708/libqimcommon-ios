@@ -21,7 +21,7 @@
 - (void)updateLastMsgTime {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         QIMVerboseLog(@"更新本地单人消息时间戳");
-        long long defaultTime = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 3600 * 24 * 2) * 1000;
+        long long defaultTime = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 3600 * 24 * 3) * 1000;
         long long errorTime = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetNewSingleHistoryMsgError] longLongValue];
         if (errorTime > 0) {
             self.lastSingleMsgTime = errorTime;
@@ -38,7 +38,7 @@
         
         QIMVerboseLog(@"强制塞本地单人消息消息时间戳完成之后再取一下本地错误时间戳 : %lld", [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetNewSingleHistoryMsgError] longLongValue]);
         
-        long long defaultTime2 = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 3600 * 24 * 2) * 1000;
+        long long defaultTime2 = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 3600 * 24 * 3) * 1000;
         long long errorTime2 = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetNewSingleReadFlagError] longLongValue];
         if (errorTime2 > 0) {
             self.lastSingleReadFlagMsgTime = errorTime2;
@@ -61,7 +61,7 @@
                          [[QIMAppInfo sharedInstance] AppBuildVersion]];
     
     if (self.lastSingleMsgTime <= 0) {
-        self.lastSingleMsgTime = [[NSDate date] timeIntervalSince1970] - 3600 * 24 * 4;
+        self.lastSingleMsgTime = [[NSDate date] timeIntervalSince1970] - 3600 * 24 * 3;
     }
     NSDictionary *jsonDic = @{
                               @"domain": [self getDomain],
@@ -148,7 +148,7 @@
                 [self updateRemoteLoginKey];
             }
             if (self.lastSingleMsgTime <= 0) {
-                self.lastSingleMsgTime = [[NSDate date] timeIntervalSince1970] - 3600 * 24 * 30;
+                self.lastSingleMsgTime = [[NSDate date] timeIntervalSince1970] - 3600 * 24 * 3;
             }
             QIMVerboseLog(@"self.lastSingleMsgTime : %f", self.lastSingleMsgTime);
             retryCount ++;
@@ -201,7 +201,7 @@
         
         long long time = lastChatTime;
         if (time <= 0) {
-            time = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 3600 * 24 * 2) * 1000;
+            time = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 3600 * 24 * 3) * 1000;
         }
         NSDictionary *jsonDic = @{@"user": [QIMManager getLastUserName],
                                   @"domain": [self getDomain],

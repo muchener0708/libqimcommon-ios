@@ -1091,6 +1091,20 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
     [[QIMUserCacheManager sharedInstance] setUserObject:@(flag) forKey:@"moodshow"];
 }
 
+//是否展示水印
+- (BOOL)waterMarkState {
+    NSNumber *flagNum = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"waterMarkState"];
+    if (flagNum == nil) {
+        flagNum = @(YES);
+        [self setWaterMarkState:YES];
+    }
+    return [flagNum boolValue];
+}
+
+- (void)setWaterMarkState:(BOOL)flag {
+    [[QIMUserCacheManager sharedInstance] setUserObject:@(flag) forKey:@"waterMarkState"];
+}
+
 - (NSArray *)getHasAtMeByJid:(NSString *)jid {
     
     __block NSArray *array = nil;
@@ -1294,6 +1308,14 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
 
 - (NSDictionary *)getAtAllInfoByJid:(NSString *)jid {
     return [_hasAtAllDic objectForKey:jid];
+}
+
+- (NSArray *)getAtMeMsgByJid:(NSString *)jid {
+    if (!_hasAtMeDic.count) {
+        NSArray *atMessageArray = [[IMDataManager qimDB_SharedInstance] qimDB_getAtMessageWithGroupId:jid];
+        [_hasAtMeDic setQIMSafeObject:atMessageArray forKey:jid];
+    }
+    return [_hasAtMeDic objectForKey:jid];
 }
 
 - (BOOL)setMsgNotifySettingWithIndex:(QIMMSGSETTING)setting WithSwitchOn:(BOOL)switchOn {

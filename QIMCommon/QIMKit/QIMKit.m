@@ -202,6 +202,15 @@ static QIMKit *__global_QIMKit = nil;
     [[QIMManager sharedInstance] setMoodshow:flag];
 }
 
+//是否展示水印
+- (BOOL)waterMarkState {
+    return [[QIMManager sharedInstance] waterMarkState];
+}
+
+- (void)setWaterMarkState:(BOOL)flag {
+    [[QIMManager sharedInstance] setWaterMarkState:flag];
+}
+
 - (NSArray *)getHasAtMeByJid:(NSString *)jid  {
     return [[QIMManager sharedInstance] getHasAtMeByJid:jid];
 }
@@ -224,6 +233,10 @@ static QIMKit *__global_QIMKit = nil;
 
 - (NSDictionary *)getAtAllInfoByJid:(NSString *)jid {
     return [[QIMManager sharedInstance] getAtAllInfoByJid:jid];
+}
+
+- (NSArray *)getAtMeMsgByJid:(NSString *)jid {
+    return [[QIMManager sharedInstance] getAtMeMsgByJid:jid];
 }
 
 - (NSDictionary *)getNotSendTextByJid:(NSString *)jid {

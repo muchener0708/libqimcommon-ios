@@ -31,7 +31,7 @@
 
 - (void)updateLastWorkFeedMsgTime {
     QIMVerboseLog(@"更新本地未读的驼圈消息时间戳");
-    long long defaultTime = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 3600 * 24 * 2) * 1000;
+    long long defaultTime = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff - 3600 * 24 * 3) * 1000;
     long long errorTime = [[[QIMUserCacheManager sharedInstance] userObjectForKey:kGetNewWorkFeedHistoryMessageListError] longLongValue];
     if (errorTime > 0) {
         self.lastWorkFeedMsgMsgTime = errorTime;

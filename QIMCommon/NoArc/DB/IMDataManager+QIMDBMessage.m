@@ -2533,4 +2533,85 @@
     return msgs;
 }
 
+#pragma mark - At消息
+
+- (void)qimDB_insertAtMessageWithGroupId:(NSString *)groupId withType:(QIMAtType)atType withMsgId:(NSString *)msgId withMsgTime:(long long)msgTime {
+    if (groupId.length > 0 && msgId.length > 0) {
+        [[self dbInstance] syncUsingTransaction:^(Database *database) {
+            
+            NSString *sql = [NSString stringWithFormat:@"insert or replace into IM_AT_Message(GroupId, MsgId, Type, MsgTime) Values(:GroupId, :MsgId, :Type, :MsgTime)"];
+            NSMutableArray *parames = [[NSMutableArray alloc] init];
+            [parames addObject:groupId];
+            [parames addObject:@(atType)];
+            [parames addObject:msgId];
+            [parames addObject:@(msgTime)];
+            [database executeNonQuery:sql withParameters:parames];
+            [parames release];
+            parames = nil;
+        }];
+    }
+}
+
+- (NSArray *)qimDB_getAtMessageWithGroupId:(NSString *)groupId {
+    if (groupId.length > 0) {
+        __block NSMutableArray *atMessageArray = nil;
+        [[self dbInstance] syncUsingTransaction:^(Database *database) {
+            NSString *sql = [NSString stringWithFormat:@"SELECT GroupId, MsgId, Type, MsgTime FROM IM_AT_Message WHERE GroupId=:GroupId"];
+            NSMutableArray *parames = [[NSMutableArray alloc] init];
+            [parames addObject:groupId];
+            if (atMessageArray == nil) {
+                atMessageArray = [[NSMutableArray alloc] initWithCapacity:3];
+            }
+            DataReader *reader = [database executeReader:sql withParameters:parames];
+            while ([reader read]) {
+                NSString *groupId = [reader objectForColumnIndex:0];
+                NSString *msgId = [reader objectForColumnIndex:1];
+                NSNumber *Type = [reader objectForColumnIndex:2];
+                NSNumber *msgDate = [reader objectForColumnIndex:3];
+                
+                NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
+                [IMDataManager safeSaveForDic:msgDic setObject:groupId forKey:@"GroupId"];
+                [IMDataManager safeSaveForDic:msgDic setObject:msgId forKey:@"MsgId"];
+                [IMDataManager safeSaveForDic:msgDic setObject:Type forKey:@"Type"];
+                [IMDataManager safeSaveForDic:msgDic setObject:msgDate forKey:@"MsgDate"];
+                [atMessageArray addObject:msgDic];
+                [msgDic release];
+            }
+            [parames release];
+            parames = nil;
+        }];
+        return atMessageArray;
+    }
+    return nil;
+}
+
+- (BOOL)qimDB_clearAtMessageWithGroupId:(NSString *)groupId withMsgId:(NSString *)msgId {
+    __block BOOL clearATSuccess = NO;
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = [NSString stringWithFormat:@"delete from IM_AT_Message where GroupId=:GroupId And MsgId = :MsgId"];
+        NSMutableArray *parames = [[NSMutableArray alloc] init];
+        [parames addObject:groupId];
+        [parames addObject:msgId];
+        BOOL clearATSuccess = [database executeNonQuery:sql withParameters:parames];
+        
+        [parames release];
+        parames = nil;
+    }];
+    return clearATSuccess;
+}
+
+- (BOOL)qimDB_clearAtMessageWithGroupId:(NSString *)groupId {
+    __block BOOL clearATSuccess = NO;
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = [NSString stringWithFormat:@"delete from IM_AT_Message where GroupId=:GroupId"];
+        NSMutableArray *parames = [[NSMutableArray alloc] init];
+        [parames addObject:groupId];
+        BOOL clearATSuccess = [database executeNonQuery:sql withParameters:parames];
+        
+        [parames release];
+        parames = nil;
+    }];
+    return clearATSuccess;
+}
+
 @end

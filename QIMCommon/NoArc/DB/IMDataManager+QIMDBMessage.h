@@ -185,6 +185,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray *)qimDB_getMsgsByKeyWord:(NSString *)keywords ByXmppId:(NSString *)xmppId ByReadJid:(NSString *)realJid;
 
+#pragma mark - AT消息
+- (void)qimDB_insertAtMessageWithGroupId:(NSString *)groupId withType:(QIMAtType)atType withMsgId:(NSString *)msgId withMsgTime:(long long)msgTime;
+
+- (NSArray *)qimDB_getAtMessageWithGroupId:(NSString *)groupId;
+
+- (BOOL)qimDB_clearAtMessageWithGroupId:(NSString *)groupId withMsgId:(NSString *)msgId;
+
+- (BOOL)qimDB_clearAtMessageWithGroupId:(NSString *)groupId;
+
+
 @end
 
 NS_ASSUME_NONNULL_END

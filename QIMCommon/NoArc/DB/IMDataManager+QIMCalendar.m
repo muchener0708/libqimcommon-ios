@@ -105,6 +105,7 @@
             NSString *tripRoomNumber = [tripItem objectForKey:@"tripRoomNumber"];
             NSString *appointment = [tripItem objectForKey:@"appointment"];
             
+            //这里特别注意下，会议室预定没有appointment，需要客户端拼
             if (!appointment.length) {
                 appointment = [NSString stringWithFormat:@"%@-%@", tripLocale, tripRoom];
             }

@@ -619,6 +619,7 @@
         [mesg setXmppId:sid];
         [mesg setMessageId:msgId];
         [mesg setFrom:sid];
+        [mesg setRealJid:sid];
         [mesg setChatType:ChatType_System];
         [mesg setMessageType:QIMMessageType_Text];
         [mesg setMessageDirection:QIMMessageDirection_Received];

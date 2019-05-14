@@ -316,7 +316,7 @@
             isExist = YES;
         }
     }
-    if (isExist == NO) {
+    if (isExist == NO && navDict) {
         [self.localNavConfigs addObject:navDict];
     }
 }

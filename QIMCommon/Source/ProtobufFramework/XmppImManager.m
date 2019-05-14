@@ -1240,7 +1240,7 @@ static XmppImManager *_xmppImManager = nil;
     [self updateOfflineTime];
     QIMVerboseLog(@"XMPPIMManager Login updateOfflineTime Done");
 
-    QIMVerboseLog(@"XMPPIMManager Login : <HostName : %@, Domain : %@, Port : %d, appVersion : %@, systemVersion : %@, deviceUUID : %@, loginType : %d, UserId : %@, pwd : %@>", [self hostName], [self domain], [self port], [self appVersion], [self systemVersion], [self deviceUUID], [self loginType], userName, pwd);
+    QIMVerboseLog(@"XMPPIMManager Login : <HostName : %@, Domain : %@, Port : %d, appVersion : %@, systemVersion : %@, deviceUUID : %@, loginType : %d, UserId : %@>", [self hostName], [self domain], [self port], [self appVersion], [self systemVersion], [self deviceUUID], [self loginType], userName);
     [_pbXmppStack setHostName:[self hostName]];
     [_pbXmppStack setDomain:[self domain]];
     [_pbXmppStack setPort:[self port]];

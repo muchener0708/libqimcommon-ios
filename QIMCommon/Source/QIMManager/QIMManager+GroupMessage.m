@@ -196,8 +196,7 @@
             [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
             [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
             [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
-            [self addAtALLByJid:groupId WithMsgId:msg.messageId WithMsg:msg WithNickName:msg.from];
-            [[IMDataManager qimDB_SharedInstance] qimDB_insertAtMessageWithGroupId:groupId withType:QIMAtTypeALL withMsgId:[infoDic objectForKey:@"MsgId"] withMsgTime:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
+            [self addAtMeMessageByJid:groupId withType:QIMAtTypeALL withMsgId:[infoDic objectForKey:@"MsgId"] withMsgTime:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
         }
         for (NSDictionary *infoDic in normalMsgList) {
             NSString *groupId = [infoDic objectForKey:@"SessionId"];
@@ -213,8 +212,7 @@
             [msg setMessageSendState:[[infoDic objectForKey:@"MsgState"] intValue]];
             [msg setMessageDirection:[[infoDic objectForKey:@"MsgDirection"] intValue]];
             [msg setMessageDate:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
-            [self addAtMeByJid:groupId WithNickName:msg.from];
-            [[IMDataManager qimDB_SharedInstance] qimDB_insertAtMessageWithGroupId:groupId withType:QIMAtTypeSP withMsgId:[infoDic objectForKey:@"MsgId"] withMsgTime:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
+            [self addAtMeMessageByJid:groupId withType:QIMAtTypeSP withMsgId:[infoDic objectForKey:@"MsgId"] withMsgTime:[[infoDic objectForKey:@"MsgDateTime"] longLongValue]];
         }
     }
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();

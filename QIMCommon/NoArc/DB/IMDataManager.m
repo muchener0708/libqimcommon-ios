@@ -833,7 +833,9 @@ static dispatch_once_t _onceDBToken;
               GroupId           TEXT,\
               MsgId             TEXT,\
               Type              INTEGER DEFAULT 0,\
-              MsgTime           INTEGER);" withParameters:nil];
+              MsgTime           INTEGER,\
+              ReadState         INTEGER DEFAULT 0,\
+              primary key (GroupId,MsgId));" withParameters:nil];
     if (result) {
         result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IM_AT_MESSAGE_GROUPID ON IM_At_Message (GroupId);" withParameters:nil];
     }

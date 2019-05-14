@@ -8,6 +8,7 @@
 
 #import "IMDataManager+QIMDBMessage.h"
 #import "Database.h"
+#import "QIMJSONSerializer.h"
 
 @implementation IMDataManager (QIMDBMessage)
 
@@ -430,6 +431,7 @@
             }
             NSString *msgId = [msgBody objectForKey:@"id"];
             NSString *msg = [msgBody objectForKey:@"content"];
+            NSString *backupinfo = [msgBody objectForKey:@"backupinfo"];
             if (msgType == -1) {
                 //撤销消息
                 [updateMsgList addObject:@{@"messageId":msgId?msgId:@"", @"message":msg?msg:@"该消息被撤回"}];
@@ -493,30 +495,49 @@
             [msgList addObject:msgDic];
             [resultDic setObject:msgDic forKey:xmppId];
             
-            if (direction == 1) {
-                if ([msg rangeOfString:@"@"].location != NSNotFound) {
-                    NSArray *array = [msg componentsSeparatedByString:@"@"];
-                    BOOL hasAt = NO;
-                    BOOL hasAtAll = NO;
-                    for (NSString *str in array) {
-                        if ([[str lowercaseString] hasPrefix:@"all"] || [str hasPrefix:@"全体成员"]) {
-                            hasAtAll = YES;
-                            break;
-                        }
-                        NSString *prefix = [self getDbOwnerFullJid];
-                        if (prefix && [str hasPrefix:prefix]) {
-                            hasAt = YES;
-                            break;
+            if (direction == QIMMessageDirection_Received) {
+                if (msgType == QIMMessageType_NewAt) {
+                    NSArray *backupInfoArray = [[QIMJSONSerializer sharedInstance] deserializeObject:backupinfo error:nil];
+                    BOOL atMe = NO;
+                    if ([backupInfoArray isKindOfClass:[NSArray class]]) {
+                        NSDictionary *groupAtDic = [backupInfoArray firstObject];
+                        for (NSDictionary *someOneAtDic in [groupAtDic objectForKey:@"data"]) {
+                            NSString *someOneJid = [someOneAtDic objectForKey:@"jid"];
+                            if ([someOneJid isEqualToString:[self getDbOwnerFullJid]]) {
+                                atMe = YES;
+                            }
                         }
                     }
-                    if (hasAtAll) {
-                        [*atAllMsgList addObject:msgDic];
-                    }
-                    if (hasAt) {
+                    if (atMe == YES) {
                         [*normalMsgList addObject:msgDic];
                     }
                     [msgDic release];
                     msgDic = nil;
+                } else {
+                    if ([msg rangeOfString:@"@"].location != NSNotFound) {
+                        NSArray *array = [msg componentsSeparatedByString:@"@"];
+                        BOOL hasAt = NO;
+                        BOOL hasAtAll = NO;
+                        for (NSString *str in array) {
+                            if ([[str lowercaseString] hasPrefix:@"all"] || [str hasPrefix:@"全体成员"]) {
+                                hasAtAll = YES;
+                                break;
+                            }
+                            NSString *prefix = [self getDbOwnerFullJid];
+                            if (prefix && [str hasPrefix:prefix]) {
+                                hasAt = YES;
+                                break;
+                            }
+                        }
+                        if (hasAtAll) {
+                            [*atAllMsgList addObject:msgDic];
+                        }
+                        if (hasAt) {
+                            [*normalMsgList addObject:msgDic];
+                        }
+                        [msgDic release];
+                        msgDic = nil;
+                    }
                 }
             }
         }
@@ -2542,9 +2563,38 @@
             NSString *sql = [NSString stringWithFormat:@"insert or replace into IM_AT_Message(GroupId, MsgId, Type, MsgTime) Values(:GroupId, :MsgId, :Type, :MsgTime)"];
             NSMutableArray *parames = [[NSMutableArray alloc] init];
             [parames addObject:groupId];
-            [parames addObject:@(atType)];
             [parames addObject:msgId];
+            [parames addObject:@(atType)];
             [parames addObject:@(msgTime)];
+            [database executeNonQuery:sql withParameters:parames];
+            [parames release];
+            parames = nil;
+        }];
+    }
+}
+
+- (void)qimDB_UpdateAtMessageReadStateWithGroupId:(NSString *)groupId withReadState:(QIMAtMsgReadState)readState {
+    if (groupId.length > 0) {
+        [[self dbInstance] syncUsingTransaction:^(Database *database) {
+            NSString *sql = [NSString stringWithFormat:@"Update IM_AT_Message Set ReadState=:ReadState Where GroupId = :GroupId"];
+            NSMutableArray *parames = [[NSMutableArray alloc] init];
+            [parames addObject:@(readState)];
+            [parames addObject:groupId];
+            [database executeNonQuery:sql withParameters:parames];
+            [parames release];
+            parames = nil;
+        }];
+    }
+}
+
+- (void)qimDB_UpdateAtMessageReadStateWithGroupId:(NSString *)groupId withMsgId:(NSString *)msgId withReadState:(QIMAtMsgReadState)readState {
+    if (groupId.length > 0 && msgId.length > 0) {
+        [[self dbInstance] syncUsingTransaction:^(Database *database) {
+            NSString *sql = [NSString stringWithFormat:@"Update IM_AT_Message Set ReadState=:ReadState Where GroupId = :GroupId And MsgId = :MsgId"];
+            NSMutableArray *parames = [[NSMutableArray alloc] init];
+            [parames addObject:@(readState)];
+            [parames addObject:groupId];
+            [parames addObject:msgId];
             [database executeNonQuery:sql withParameters:parames];
             [parames release];
             parames = nil;
@@ -2556,7 +2606,7 @@
     if (groupId.length > 0) {
         __block NSMutableArray *atMessageArray = nil;
         [[self dbInstance] syncUsingTransaction:^(Database *database) {
-            NSString *sql = [NSString stringWithFormat:@"SELECT GroupId, MsgId, Type, MsgTime FROM IM_AT_Message WHERE GroupId=:GroupId"];
+            NSString *sql = [NSString stringWithFormat:@"SELECT GroupId, MsgId, Type, MsgTime, ReadState FROM IM_AT_Message WHERE GroupId=:GroupId"];
             NSMutableArray *parames = [[NSMutableArray alloc] init];
             [parames addObject:groupId];
             if (atMessageArray == nil) {
@@ -2568,14 +2618,19 @@
                 NSString *msgId = [reader objectForColumnIndex:1];
                 NSNumber *Type = [reader objectForColumnIndex:2];
                 NSNumber *msgDate = [reader objectForColumnIndex:3];
-                
-                NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
-                [IMDataManager safeSaveForDic:msgDic setObject:groupId forKey:@"GroupId"];
-                [IMDataManager safeSaveForDic:msgDic setObject:msgId forKey:@"MsgId"];
-                [IMDataManager safeSaveForDic:msgDic setObject:Type forKey:@"Type"];
-                [IMDataManager safeSaveForDic:msgDic setObject:msgDate forKey:@"MsgDate"];
-                [atMessageArray addObject:msgDic];
-                [msgDic release];
+                NSNumber *readState = [reader objectForColumnIndex:4];
+                if ([readState boolValue] == NO) {
+                    NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
+                    [IMDataManager safeSaveForDic:msgDic setObject:groupId forKey:@"GroupId"];
+                    [IMDataManager safeSaveForDic:msgDic setObject:msgId forKey:@"MsgId"];
+                    [IMDataManager safeSaveForDic:msgDic setObject:Type forKey:@"Type"];
+                    [IMDataManager safeSaveForDic:msgDic setObject:msgDate forKey:@"MsgDate"];
+                    [IMDataManager safeSaveForDic:msgDic setObject:readState forKey:@"ReadState"];
+                    [atMessageArray addObject:msgDic];
+                    [msgDic release];
+                } else {
+                    
+                }
             }
             [parames release];
             parames = nil;

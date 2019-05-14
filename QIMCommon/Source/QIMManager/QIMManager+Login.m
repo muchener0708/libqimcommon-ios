@@ -198,6 +198,8 @@
     
     self.needTryRelogin = NO;
     [self clearQIMManager];
+    //广播退出登录通知
+    [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationLogout object:nil];
     [[QIMUserCacheManager sharedInstance] setCacheName:@""];
     dispatch_async(dispatch_get_main_queue(), ^{
         [[UIApplication sharedApplication] setApplicationIconBadgeNumber:0];

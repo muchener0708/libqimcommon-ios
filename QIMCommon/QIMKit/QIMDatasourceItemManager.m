@@ -20,12 +20,25 @@
 @implementation QIMDatasourceItemManager
 
 static QIMDatasourceItemManager *_manager = nil;
+static dispatch_once_t _onceQIMDatasourceItemManager;
 + (instancetype)sharedInstance {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
+    dispatch_once(&_onceQIMDatasourceItemManager, ^{
         _manager = [[QIMDatasourceItemManager alloc] init];
+        [_manager listenLogoutNotify];
     });
     return _manager;
+}
+
+//监听退出登录通知
+- (void)listenLogoutNotify {
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(logoutNotify:) name:kNotificationLogout object:nil];
+}
+
+- (void)logoutNotify:(NSNotification *)notify {
+    //收到退出登录通知
+    _manager = nil;
+    _onceQIMDatasourceItemManager = 0;
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (NSMutableDictionary *)childItems {

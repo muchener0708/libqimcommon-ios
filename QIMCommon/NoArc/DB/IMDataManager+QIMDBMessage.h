@@ -188,6 +188,10 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - AT消息
 - (void)qimDB_insertAtMessageWithGroupId:(NSString *)groupId withType:(QIMAtType)atType withMsgId:(NSString *)msgId withMsgTime:(long long)msgTime;
 
+- (void)qimDB_UpdateAtMessageReadStateWithGroupId:(NSString *)groupId withReadState:(QIMAtMsgReadState)readState;
+
+- (void)qimDB_UpdateAtMessageReadStateWithGroupId:(NSString *)groupId withMsgId:(NSString *)msgId withReadState:(QIMAtMsgReadState)readState;
+
 - (NSArray *)qimDB_getAtMessageWithGroupId:(NSString *)groupId;
 
 - (BOOL)qimDB_clearAtMessageWithGroupId:(NSString *)groupId withMsgId:(NSString *)msgId;

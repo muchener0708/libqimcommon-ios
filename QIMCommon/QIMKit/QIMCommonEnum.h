@@ -227,6 +227,11 @@ typedef enum : NSUInteger {
     QIMAtTypeALL,           //艾特所有
 } QIMAtType;
 
+typedef enum : NSUInteger {
+    QIMAtMsgNotReadState = 0,  //艾特消息未读
+    QIMAtMsgHasReadState,      //艾特消息已读
+} QIMAtMsgReadState;
+
 typedef enum {
     MessageReadFlagDidSend = 3,
     MessageReadFlagDidRead = 4,

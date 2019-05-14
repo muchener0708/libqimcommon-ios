@@ -35,19 +35,19 @@ static QIMKit *__global_QIMKit = nil;
     QIMInfoLog(@"QIMKit initialize");
     [QIMFilteredProtocol start];
     [QIMManager sharedInstance];
-    [AvoidCrash makeAllEffective];
-    NSArray *noneSelClassStrings = @[
-                                     @"NSNull",
-                                     @"NSNumber",
-                                     @"NSString",
-                                     @"NSMutableString",
-                                     @"NSDictionary",
-                                     @"NSMutableDictionary",
-                                     @"NSArray",
-                                     @"NSMutableArray"
-                                     ];
-    [AvoidCrash setupNoneSelClassStringsArr:noneSelClassStrings];
-    [AvoidCrash avoidCrashExchangeMethodIfDealWithNoneSel:YES];
+//    [AvoidCrash makeAllEffective];
+//    NSArray *noneSelClassStrings = @[
+//                                     @"NSNull",
+//                                     @"NSNumber",
+//                                     @"NSString",
+//                                     @"NSMutableString",
+//                                     @"NSDictionary",
+//                                     @"NSMutableDictionary",
+//                                     @"NSArray",
+//                                     @"NSMutableArray"
+//                                     ];
+//    [AvoidCrash setupNoneSelClassStringsArr:noneSelClassStrings];
+//    [AvoidCrash avoidCrashExchangeMethodIfDealWithNoneSel:YES];
 //    //监听通知:AvoidCrashNotification, 获取AvoidCrash捕获的崩溃日志的详细信息
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(dealwithCrashMessage:) name:AvoidCrashNotification object:nil];
 }
@@ -211,34 +211,24 @@ static QIMKit *__global_QIMKit = nil;
     [[QIMManager sharedInstance] setWaterMarkState:flag];
 }
 
+//艾特消息
 - (NSArray *)getHasAtMeByJid:(NSString *)jid  {
     return [[QIMManager sharedInstance] getHasAtMeByJid:jid];
 }
 
-- (void)addAtMeByJid:(NSString *)jid WithNickName:(NSString *)nickName {
-    [[QIMManager sharedInstance] addAtMeByJid:jid WithNickName:nickName];
+- (void)updateAtMeMessageWithJid:(NSString *)groupId withMsgId:(NSString *)msgId withReadState:(QIMAtMsgReadState)readState {
+    [[QIMManager sharedInstance] updateAtMeMessageWithJid:groupId withMsgId:msgId withReadState:readState];
 }
 
-- (void)removeAtMeByJid:(NSString *)jid {
-    [[QIMManager sharedInstance] removeAtMeByJid:jid];
+- (void)clearAtMeMessageWithJid:(NSString *)groupId {
+    [[QIMManager sharedInstance] clearAtMeMessageWithJid:groupId];
 }
 
-- (void)addAtALLByJid:(NSString *)jid WithMsgId:(NSString *)msgId WithMsg:(QIMMessageModel *)message WithNickName:(NSString *)nickName {
-    [[QIMManager sharedInstance] addAtALLByJid:jid WithMsgId:msgId WithMsg:message WithNickName:nickName];
+- (void)addAtMeMessageByJid:(NSString *)groupId withType:(QIMAtType)atType withMsgId:(NSString *)msgId withMsgTime:(long long)msgTime {
+    [[QIMManager sharedInstance] addAtMeMessageByJid:groupId withType:atType withMsgId:msgId withMsgTime:msgTime];
 }
 
-- (void)removeAtAllByJid:(NSString *)jid {
-    [[QIMManager sharedInstance] removeAtAllByJid:jid];
-}
-
-- (NSDictionary *)getAtAllInfoByJid:(NSString *)jid {
-    return [[QIMManager sharedInstance] getAtAllInfoByJid:jid];
-}
-
-- (NSArray *)getAtMeMsgByJid:(NSString *)jid {
-    return [[QIMManager sharedInstance] getAtMeMsgByJid:jid];
-}
-
+//输入框草稿
 - (NSDictionary *)getNotSendTextByJid:(NSString *)jid {
     return [[QIMManager sharedInstance] getNotSendTextByJid:jid];
 }

@@ -1105,12 +1105,17 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
     [[QIMUserCacheManager sharedInstance] setUserObject:@(flag) forKey:@"waterMarkState"];
 }
 
+//艾特消息
 - (NSArray *)getHasAtMeByJid:(NSString *)jid {
     
     __block NSArray *array = nil;
     dispatch_block_t block = ^{
         
         array = [_hasAtMeDic objectForKey:jid];
+        if (!array.count) {
+            array = [[IMDataManager qimDB_SharedInstance] qimDB_getAtMessageWithGroupId:jid];
+            [_hasAtMeDic setQIMSafeObject:array forKey:jid];
+        }
     };
     
     if (dispatch_get_specific(_atMeCacheTag))
@@ -1120,46 +1125,80 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
     return array;
 }
 
-- (void)addAtMeByJid:(NSString *)jid WithNickName:(NSString *)nickName {
+- (void)updateAtMeMessageWithJid:(NSString *)groupId withMsgId:(NSString *)msgId withReadState:(QIMAtMsgReadState)readState {
+    dispatch_block_t block = ^{
+        [_hasAtMeDic removeObjectForKey:groupId];
+        [[IMDataManager qimDB_SharedInstance] qimDB_UpdateAtMessageReadStateWithGroupId:groupId withMsgId:msgId withReadState:readState];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            
+            [[NSNotificationCenter defaultCenter] postNotificationName:kAtMeChange object:groupId];
+        });
+    };
     
+    if (dispatch_get_specific(_atMeCacheTag)) {
+        block();
+    } else {
+        dispatch_sync(_atMeCacheQueue, block);
+    }
+}
+
+- (void)clearAtMeMessageWithJid:(NSString *)groupId {
+    dispatch_block_t block = ^{
+        [_hasAtMeDic removeObjectForKey:groupId];
+        [[IMDataManager qimDB_SharedInstance] qimDB_UpdateAtMessageReadStateWithGroupId:groupId withReadState:QIMAtMsgHasReadState];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            
+            [[NSNotificationCenter defaultCenter] postNotificationName:kAtMeChange object:groupId];
+        });
+    };
+    
+    if (dispatch_get_specific(_atMeCacheTag)) {
+        block();
+    } else {
+        dispatch_sync(_atMeCacheQueue, block);
+    }
+}
+
+- (void)addAtMeMessageByJid:(NSString *)groupId withType:(QIMAtType)atType withMsgId:(NSString *)msgId withMsgTime:(long long)msgTime {
     dispatch_block_t block = ^{
         
-        NSMutableArray *arr = [_hasAtMeDic objectForKey:jid];
+        NSMutableArray *arr = [_hasAtMeDic objectForKey:groupId];
         if (arr == nil) {
             
-            arr = [[NSMutableArray alloc] init];
-            [_hasAtMeDic setObject:arr forKey:jid];
+            arr = [NSMutableArray arrayWithArray:[[IMDataManager qimDB_SharedInstance] qimDB_getAtMessageWithGroupId:groupId]];
+            NSMutableDictionary *atMessageDic = [NSMutableDictionary dictionaryWithCapacity:3];
+            [atMessageDic setQIMSafeObject:groupId forKey:@"GroupId"];
+            [atMessageDic setQIMSafeObject:msgId forKey:@"MsgId"];
+            [atMessageDic setQIMSafeObject:@(atType) forKey:@"Type"];
+            [atMessageDic setQIMSafeObject:@(msgTime) forKey:@"MsgDate"];
+            [atMessageDic setQIMSafeObject:@(QIMAtMsgNotReadState) forKey:@"ReadState"];
+            [arr addObject:atMessageDic];
+            [_hasAtMeDic setObject:arr forKey:groupId];
+        } else {
+            NSMutableDictionary *atMessageDic = [NSMutableDictionary dictionaryWithCapacity:3];
+            [atMessageDic setQIMSafeObject:groupId forKey:@"GroupId"];
+            [atMessageDic setQIMSafeObject:msgId forKey:@"MsgId"];
+            [atMessageDic setQIMSafeObject:@(atType) forKey:@"Type"];
+            [atMessageDic setQIMSafeObject:@(msgTime) forKey:@"MsgDate"];
+            [atMessageDic setQIMSafeObject:@(QIMAtMsgNotReadState) forKey:@"ReadState"];
+            [arr addObject:atMessageDic];
+            [_hasAtMeDic setObject:arr forKey:groupId];
         }
-        [arr addObject:nickName];
+        [[IMDataManager qimDB_SharedInstance] qimDB_insertAtMessageWithGroupId:groupId withType:atType withMsgId:msgId withMsgTime:msgTime];
         dispatch_async(dispatch_get_main_queue(), ^{
             
-            [[NSNotificationCenter defaultCenter] postNotificationName:kAtMeChange object:jid];
+            [[NSNotificationCenter defaultCenter] postNotificationName:kAtMeChange object:groupId];
         });
     };
     
-    if (dispatch_get_specific(_atMeCacheTag))
+    if (dispatch_get_specific(_atMeCacheTag)) {
         block();
-    else
+    } else {
         dispatch_sync(_atMeCacheQueue, block);
+    }
 }
 
-- (void)removeAtMeByJid:(NSString *)jid {
-    
-    dispatch_block_t block = ^{
-        
-        [_hasAtMeDic removeObjectForKey:jid];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:kAtMeChange object:jid];
-        });
-    };
-    
-    if (dispatch_get_specific(_atMeCacheTag))
-        block();
-    else
-        dispatch_sync(_atMeCacheQueue, block);
-}
-
+#pragma mark - 输入框草稿
 - (NSDictionary *)getNotSendTextByJid:(NSString *)jid {
     
     return [_notSendTextDic objectForKey:jid];
@@ -1282,42 +1321,6 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
     return [[QIMManager sharedInstance] getClientConfigDicWithType:QIMClientConfigTypeKStickJidDic];
 }
 
-- (void)addAtALLByJid:(NSString *)jid WithMsgId:(NSString *)msgId WithMsg:(QIMMessageModel *)message WithNickName:(NSString *)nickName {
-    if (msgId.length > 0 && message.message.length > 0 && nickName.length > 0) {
-        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-        [dic setQIMSafeObject:msgId forKey:@"MsgId"];
-        [dic setQIMSafeObject:nickName forKey:@"NickName"];
-        [dic setQIMSafeObject:message.message forKey:@"Content"];
-        [dic setQIMSafeObject:message forKey:@"Msg"];
-        [_hasAtAllDic setObject:dic forKey:jid];
-        //Comment by lilulucas.li 6.7
-//        QIMVerboseLog(@"抛出通知 addAtALLByJid:WithMsgId:WithMsg:WithNickName: kAtALLChange");
-//        [[NSNotificationCenter defaultCenter] postNotificationName:kAtALLChange object:jid];
-    }
-}
-
-- (void)removeAtAllByJid:(NSString *)jid {
-    [_hasAtAllDic removeObjectForKey:jid];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        QIMVerboseLog(@"抛出通知 removeAtAllByJid: kAtALLChange");
-        [[NSNotificationCenter defaultCenter] postNotificationName:kAtALLChange object:jid];
-        QIMVerboseLog(@"抛出通知 removeAtAllByJid:  kNotificationSessionListUpdate");
-        [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSessionListUpdate object:jid];
-    });
-}
-
-- (NSDictionary *)getAtAllInfoByJid:(NSString *)jid {
-    return [_hasAtAllDic objectForKey:jid];
-}
-
-- (NSArray *)getAtMeMsgByJid:(NSString *)jid {
-    if (!_hasAtMeDic.count) {
-        NSArray *atMessageArray = [[IMDataManager qimDB_SharedInstance] qimDB_getAtMessageWithGroupId:jid];
-        [_hasAtMeDic setQIMSafeObject:atMessageArray forKey:jid];
-    }
-    return [_hasAtMeDic objectForKey:jid];
-}
-
 - (BOOL)setMsgNotifySettingWithIndex:(QIMMSGSETTING)setting WithSwitchOn:(BOOL)switchOn {
     /*
 http://url/push/qtapi/token/setmsgsettings.qunar?username=hubo.hu&domain=ejabhost1&os=android&version=205&index=1&status=0‘
@@ -1344,7 +1347,8 @@ http://url/push/qtapi/token/setmsgsettings.qunar?username=hubo.hu&domain=ejabhos
         NSData *responseData = [request responseData];
         NSDictionary *result = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
         BOOL ret = [[result objectForKey:@"ret"] boolValue];
-        if (ret) {
+        NSInteger errcode = [[result objectForKey:@"errcode"] integerValue];
+        if (ret && errcode == 0) {
             NSInteger localPushFlag = [[[QIMUserCacheManager sharedInstance] userObjectForKey:@"MsgSettings"] integerValue];
             localPushFlag = localPushFlag ^ setting;
             [[QIMUserCacheManager sharedInstance] setUserObject:@(localPushFlag) forKey:@"MsgSettings"];

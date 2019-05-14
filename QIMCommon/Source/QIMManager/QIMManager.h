@@ -347,18 +347,13 @@
 //At消息
 - (NSArray *)getHasAtMeByJid:(NSString *)jid ;
 
-- (void)addAtMeByJid:(NSString *)jid WithNickName:(NSString *)nickName;
+- (void)updateAtMeMessageWithJid:(NSString *)groupId withMsgId:(NSString *)msgId withReadState:(QIMAtMsgReadState)readState;
 
-- (void)removeAtMeByJid:(NSString *)jid;
+- (void)clearAtMeMessageWithJid:(NSString *)groupId;
 
-- (void)addAtALLByJid:(NSString *)jid WithMsgId:(NSString *)msgId WithMsg:(QIMMessageModel *)message WithNickName:(NSString *)nickName;
+- (void)addAtMeMessageByJid:(NSString *)groupId withType:(QIMAtType)atType withMsgId:(NSString *)msgId withMsgTime:(long long)msgTime;
 
-- (void)removeAtAllByJid:(NSString *)jid;
-
-- (NSDictionary *)getAtAllInfoByJid:(NSString *)jid;
-
-- (NSArray *)getAtMeMsgByJid:(NSString *)jid;
-
+//输入框草稿
 - (NSDictionary *)getNotSendTextByJid:(NSString *)jid ;
 
 - (void)setNotSendText:(NSString *)text inputItems:(NSArray *)inputItems ForJid:(NSString *)jid;

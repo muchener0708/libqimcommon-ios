@@ -476,24 +476,6 @@
     QIMVerboseLog(@"在线接收群消息 : %@", msgDic);
     dispatch_async(self.receive_msg_queue, ^{
             
-            //如果为空，则是message文件
-        /*
-        
-         [self safeSaveDic:message setObject:destId ForKey:@"fromId"];
-         [self safeSaveDic:message setObject:domain ForKey:@"domain"];
-         [self safeSaveDic:message setObject:sendJid ForKey:@"sendJid"];
-         [self safeSaveDic:message setObject:message ForKey:@"msg"];
-         [self safeSaveDic:message setObject:date ForKey:@"stamp"];
-         [self safeSaveDic:message setObject:msgId ForKey:@"msgId"];
-         [self safeSaveDic:message setObject:@(payformType) ForKey:@"payformType"];
-         [self safeSaveDic:message setObject:@(msgType) ForKey:@"msgType"];
-         [self safeSaveDic:message setObject:extendInfo ForKey:@"extendInfo"];
-         [self safeSaveDic:message setObject:backupInfo ForKey:@"backupInfo"];
-         [self safeSaveDic:message setObject:@(carbonMessage) ForKey:@"carbonMessage"];
-         [self safeSaveDic:message setObject:@(autoReply) ForKey:@"autoReply"];
-         [self safeSaveDic:message setObject:msgRaw ForKey:@"msgRaw"];
-        */
-            
         NSString *sid = [NSString stringWithFormat:@"%@@%@", [msgDic objectForKey:@"fromId"], [msgDic objectForKey:@"domain"]];
         NSString *sendJid = [msgDic objectForKey:@"sendJid"];
         NSString *msg = [msgDic objectForKey:@"msg"];
@@ -560,26 +542,44 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageUpdate object:sid userInfo:@{@"message": mesg}];
             BOOL isRemind = [self groupPushState:sid];
             if (mesg.messageDirection == QIMMessageDirection_Received && (![self.currentSessionUserId isEqualToString:sid])) {
-                if ([msg rangeOfString:@"@"].location != NSNotFound) {
-                    NSArray *array = [msg componentsSeparatedByString:@"@"];
-                    BOOL hasAt = NO;
-                    BOOL hasAtAll = NO;
-                    for (NSString *str in array) {
-                        if ([[str lowercaseString] hasPrefix:@"all"] || [str hasPrefix:@"全体成员"]) {
-                            hasAtAll = YES;
-                            break;
-                        }
-                        NSString *prefix = [self getMyNickName];
-                        if (prefix && [str hasPrefix:prefix]) {
-                            hasAt = YES;
-                            break;
+                if (mesg.messageType == QIMMessageType_NewAt) {
+                    //新版艾特消息
+                    NSArray *array = [[QIMJSONSerializer sharedInstance] deserializeObject:backupInfo error:nil];
+                    BOOL atMe = NO;
+                    if ([array isKindOfClass:[NSArray class]]) {
+                        NSDictionary *groupAtDic = [array firstObject];
+                        for (NSDictionary *someOneAtDic in [groupAtDic objectForKey:@"data"]) {
+                            NSString *someOneJid = [someOneAtDic objectForKey:@"jid"];
+                            if ([someOneJid isEqualToString:[[QIMManager sharedInstance] getLastJid]]) {
+                                atMe = YES;
+                            }
                         }
                     }
-                    if (hasAtAll) {
-                        [self addAtALLByJid:sid WithMsgId:mesg.messageId WithMsg:mesg WithNickName:sendJid];
+                    if (atMe == YES) {
+                        [self addAtMeMessageByJid:sid withType:QIMAtTypeSP withMsgId:mesg.messageId withMsgTime:[mesg messageDate]];
                     }
-                    if (hasAt) {
-                        [self addAtMeByJid:sid WithNickName:sendJid];
+                } else {
+                    if ([msg rangeOfString:@"@"].location != NSNotFound) {
+                        NSArray *array = [msg componentsSeparatedByString:@"@"];
+                        BOOL hasAt = NO;
+                        BOOL hasAtAll = NO;
+                        for (NSString *str in array) {
+                            if ([[str lowercaseString] hasPrefix:@"all"] || [str hasPrefix:@"全体成员"]) {
+                                hasAtAll = YES;
+                                break;
+                            }
+                            NSString *prefix = [self getMyNickName];
+                            if (prefix && [str hasPrefix:prefix]) {
+                                hasAt = YES;
+                                break;
+                            }
+                        }
+                        if (hasAtAll) {
+                            [self addAtMeMessageByJid:sid withType:QIMAtTypeALL withMsgId:mesg.messageId withMsgTime:[mesg messageDate]];
+                        }
+                        if (hasAt) {
+                            [self addAtMeMessageByJid:sid withType:QIMAtTypeSP withMsgId:mesg.messageId withMsgTime:[mesg messageDate]];
+                        }
                     }
                 }
                 if (![sid isEqualToString:self.currentSessionUserId]) {

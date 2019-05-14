@@ -10,7 +10,7 @@
 
 #define kNotificationLoginState             @"kNotificationLoginState"
 
-#define kNotificationLogout                 @"kNotificationLogout"
+#define kNotificationLogout                 @"kNotificationLogout"          //退出登录通知
 
 #define kNotificationMessageUpdate          @"kNotificationMessageUpdate"
 

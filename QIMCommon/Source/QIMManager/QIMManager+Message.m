@@ -969,19 +969,8 @@
 
 - (void)clearNotReadMsgByGroupId:(NSString *)groupId {
     
-    [self removeAtMeByJid:groupId];
     long long groupLastTime = [[IMDataManager qimDB_SharedInstance] qimDB_getMaxMsgTimeStampByXmppId:groupId ByRealJid:groupId];
     [self sendReadstateWithGroupLastMessageTime:groupLastTime withGroupId:groupId];
-    /*
-    [self getMsgListByUserId:groupId WithRealJid:nil WithLimit:1 WithOffset:0 WithComplete:^(NSArray *list) {
-        
-        if (list.count) {
-            
-           QIMMessageModel *message = list.lastObject;
-            [self sendReadstateWithGroupLastMessageTime:[message messageDate] + 1 withGroupId:groupId];
-        }
-    }];
-    */
 }
 
 #pragma mark - 阅读状态

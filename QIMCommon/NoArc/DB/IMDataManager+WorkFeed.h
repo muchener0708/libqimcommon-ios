@@ -60,6 +60,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset;
 
+- (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventType1:(int)eventType1 eventType2:(int)eventType2 readState:(int)readState;
+
+//驼圈数据库取数据库带参数方法
+- (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventType:(int)eventType readState:(int)readState;
+
+//我的驼圈儿根据uuid 数组删除deleteListArr
+- (void)qimDB_deleteWorkNoticeMessageWithUUid:(NSArray *)deleteListArr;
+
 - (void)qimDB_updateWorkNoticeMessageReadStateWithTime:(long long)time;
 
 - (NSDictionary *)qimDB_getLastWorkMomentMessageDic;

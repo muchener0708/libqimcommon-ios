@@ -51,6 +51,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)deleteRemoteCommentWithComment:(NSString *)commentId withPostUUId:(NSString *)postUUId withSuperParentUUId:(NSString *)superParentUUID withCallback:(QIMKitWorkCommentDeleteSuccessBlock)callback;
 
+//我的驼圈儿获取我的回复数据源
+- (void)getRemoteOwnerCamelGetMyReplyWithCreateTime:(long long)createTime pageSize:(NSInteger)pageSize complete:(void (^)(NSArray *))complete;
+
+//我的驼圈儿获取我@我的数据源
+- (void)getRemoteOwnerCamelGetAtListWithCreateTime:(long long)createTime pageSize:(NSInteger)pageSize complete:(void (^)(NSArray *))complete;
 #pragma mark - 用户入口
 
 - (void)getCricleCamelEntrance;

@@ -150,7 +150,7 @@
         [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyReceiveEncryptMessage object:infoDic];
     });
 }
-
+//TCP通知类型消息
 - (void)receiveCategoryNotifyMessage:(NSDictionary *)msgDic {
     dispatch_async(self.receive_notify_queue, ^{
         SInt32 categoryType = [[msgDic objectForKey:@"categoryType"] intValue];

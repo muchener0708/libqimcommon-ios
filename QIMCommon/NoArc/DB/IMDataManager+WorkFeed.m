@@ -828,7 +828,15 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
         NSMutableArray *paramList = [[NSMutableArray alloc] init];
         for (NSDictionary *noticeMsgDic in notices) {
             
-            NSString *userFrom = [noticeMsgDic objectForKey:@"userFrom"];
+            //如果接口未下发userFrom 则下发fromUser
+            //todo 预计未来会修改
+            NSString *userFrom= @"";
+            if ([noticeMsgDic objectForKey:@"fromUser"]) {
+                userFrom = [noticeMsgDic objectForKey:@"fromUser"];
+            }
+            else{
+                userFrom = [noticeMsgDic objectForKey:@"userFrom"];
+            }
             NSNumber *readState = [noticeMsgDic objectForKey:@"readState"];
             NSString *postUUID = [noticeMsgDic objectForKey:@"postUUID"];
             NSNumber *fromIsAnonymous = [noticeMsgDic objectForKey:@"fromIsAnonymous"];
@@ -870,7 +878,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
         paramList = nil;
     }];
 }
-
+//获取服务器事件差，来获取剩余未读消息
 - (long long)qimDB_getWorkNoticeMessagesMaxTime {
     __block long long time = 0;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
@@ -897,10 +905,19 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
     return count;
 }
 
-- (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset {
+- (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventType1:(int)eventType1 eventType2:(int)eventType2 readState:(int)readState{
     __block NSMutableArray *result = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"select userFrom, readState, postUUID, fromIsAnonymous, toIsAnonymous, eventType, fromAnonymousPhoto, userTo, uuid, content, userToHost, createTime, userFromHost, fromAnonymousName, toAnonymousName, toAnonymousPhoto from IM_Work_NoticeMessage where eventType=1 and readState=0 order by createTime desc limit %d offset %d;", limit, offset];
+        NSString *sql  = @"";
+        if (eventType2 && readState == 3) {
+            sql = [NSString stringWithFormat:@"select userFrom, readState, postUUID, fromIsAnonymous, toIsAnonymous, eventType, fromAnonymousPhoto, userTo, uuid, content, userToHost, createTime, userFromHost, fromAnonymousName, toAnonymousName, toAnonymousPhoto from IM_Work_NoticeMessage where eventType=%d or eventType=%d order by createTime desc limit %d offset %d;", eventType1, eventType2 , limit, offset];
+        }
+        else if (readState == 3) {
+            sql = [NSString stringWithFormat:@"select userFrom, readState, postUUID, fromIsAnonymous, toIsAnonymous, eventType, fromAnonymousPhoto, userTo, uuid, content, userToHost, createTime, userFromHost, fromAnonymousName, toAnonymousName, toAnonymousPhoto from IM_Work_NoticeMessage where eventType=%d order by createTime desc limit %d offset %d;", eventType1, limit, offset];
+        }
+        else{
+            sql = [NSString stringWithFormat:@"select userFrom, readState, postUUID, fromIsAnonymous, toIsAnonymous, eventType, fromAnonymousPhoto, userTo, uuid, content, userToHost, createTime, userFromHost, fromAnonymousName, toAnonymousName, toAnonymousPhoto from IM_Work_NoticeMessage where eventType=%d and readState=%d order by createTime desc limit %d offset %d;",eventType1 ,readState , limit, offset];
+        }
         NSLog(@"sql : %@", sql);
         DataReader *reader = [database executeReader:sql withParameters:nil];
         NSMutableArray *tempList = nil;
@@ -908,7 +925,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             result = [[NSMutableArray alloc] init];
         }
         while ([reader read]) {
-        
+            
             NSString *userFrom = [reader objectForColumnIndex:0];
             NSNumber *readState = [reader objectForColumnIndex:1];
             NSString *postUUID = [reader objectForColumnIndex:2];
@@ -952,6 +969,38 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
     }];
     //    QIMVerboseLog(@"sql取消息耗时。: %llf", [[QIMWatchDog sharedInstance] escapedTime]);
     return [result autorelease];
+}
+
+//驼圈数据库取数据库带参数方法
+- (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventType:(int)eventType readState:(int)readState{
+    return [self qimDB_getWorkNoticeMessagesWithLimit:limit WithOffset:offset eventType1:eventType eventType2:nil readState:readState];
+}
+
+//我的驼圈儿读数据库操作
+- (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset {
+    return [self qimDB_getWorkNoticeMessagesWithLimit:limit WithOffset:offset eventType:1 readState:0];
+}
+//我的驼圈儿根据uuid 数组删除deleteListArr
+- (void)qimDB_deleteWorkNoticeMessageWithUUid:(NSArray *)deleteListArr{
+    if (deleteListArr.count <= 0) {
+        return ;
+    }
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *deleteSql = @"delete from IM_Work_NoticeMessage where uuid=:uuid";
+        NSMutableArray *paramList = [[NSMutableArray alloc] init];
+        for (NSDictionary *momentDic in deleteListArr) {
+            NSString *rId = [momentDic objectForKey:@"id"];
+            NSString *uuid = [momentDic objectForKey:@"uuid"];
+            NSNumber *isDelete = [momentDic objectForKey:@"isDelete"];
+            
+            NSMutableArray *param = [[NSMutableArray alloc] init];
+            [param addObject:uuid];
+            [paramList addObject:param];
+        }
+        BOOL result = [database executeBulkInsert:deleteSql withParameters:paramList];
+        [paramList release];
+        paramList = nil;
+    }];
 }
 
 - (void)qimDB_updateWorkNoticeMessageReadStateWithTime:(long long)time {

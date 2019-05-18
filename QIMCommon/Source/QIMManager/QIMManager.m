@@ -572,6 +572,7 @@ static QIMManager *__IMManager = nil;
         
         QIMVerboseLog(@"登录之后获取发现页应用列表");
         [self getRemoteFoundNavigation];
+        
     }
 }
 

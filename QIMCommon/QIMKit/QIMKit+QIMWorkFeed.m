@@ -87,6 +87,15 @@
     [[QIMManager sharedInstance] deleteRemoteCommentWithComment:commentId withPostUUId:postUUId withSuperParentUUId:superParentUUID withCallback:callback];
 }
 
+//我的驼圈儿获取我的回复数据源
+- (void)getRemoteOwnerCamelGetMyReplyWithCreateTime:(long long)createTime pageSize:(NSInteger)pageSize complete:(void (^)(NSArray *))complete{
+    [[QIMManager sharedInstance] getRemoteOwnerCamelGetMyReplyWithCreateTime:createTime pageSize:pageSize complete:complete];
+}
+
+//我的驼圈儿获取我@我的数据源
+- (void)getRemoteOwnerCamelGetAtListWithCreateTime:(long long)createTime pageSize:(NSInteger)pageSize complete:(void (^)(NSArray *))complete{
+    [[QIMManager sharedInstance] getRemoteOwnerCamelGetAtListWithCreateTime:createTime pageSize:20 complete:complete];
+}
 #pragma mark - Remote Notice
 
 - (void)updateRemoteWorkNoticeMsgReadStateWithTime:(long long)time {

@@ -714,6 +714,115 @@
     }];
 }
 
+
+//获取我的回复列表
+- (void)getRemoteOwnerCamelGetMyReplyWithCreateTime:(long long)createTime pageSize:(NSInteger)pageSize complete:(nonnull void (^)(NSArray * _Nonnull))complete{
+    NSString * urlStr = [NSString stringWithFormat:@"%@/cricle_camel/ownerCamel/getMyReply", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+    
+    NSMutableDictionary *bodyDic = [[NSMutableDictionary alloc] init];
+    [bodyDic setObject:@(createTime) forKey:@"createTime"];
+    [bodyDic setObject:[QIMManager getLastUserName] forKey:@"owner"];
+    [bodyDic setObject:[[QIMManager sharedInstance]getDomain] forKey:@"ownerHost"];
+    [bodyDic setObject:@(20) forKey:@"pgSize"];
+    
+    QIMVerboseLog(@"ownerCamel/getMyReply : %@", bodyDic);
+    NSData *hotCommentBodyData = [[QIMJSONSerializer sharedInstance] serializeObject:bodyDic error:nil];
+    __weak __typeof(self) weakSelf = self;
+    
+    [self sendTPPOSTRequestWithUrl:urlStr withRequestBodyData:[[QIMJSONSerializer sharedInstance] serializeObject:bodyDic error:nil] withSuccessCallBack:^(NSData *responseData) {
+        NSDictionary * result = [[QIMJSONSerializer sharedInstance]deserializeObject:responseData error:nil];
+        BOOL ret = [[result objectForKey:@"ret"] boolValue];
+        NSInteger errorCode = [[result objectForKey:@"errcode"] integerValue];
+        if (ret && errorCode == 0) {
+            NSDictionary *data = [result objectForKey:@"data"];
+            if ([data isKindOfClass:[NSDictionary class]]) {
+                NSArray * deleteAtList = [data objectForKey:@"deleteComments"];
+                if (deleteAtList.count>0) {
+                    [[IMDataManager qimDB_SharedInstance] qimDB_deleteWorkNoticeMessageWithUUid:deleteAtList];
+                }
+                NSArray * newAtList = [data objectForKey:@"newComment"];
+                if (newAtList>0) {
+                    [[IMDataManager qimDB_SharedInstance]qimDB_bulkinsertNoticeMessage:newAtList];
+                }
+                if (complete) {
+                        complete([newAtList copy]);
+                }
+            }
+            else{
+                if (complete) {
+                    complete(nil);
+                }
+            }
+        }
+        else{
+            if (complete) {
+                complete(nil);
+            }
+        }
+    } withFailedCallBack:^(NSError *error) {
+        if (complete) {
+            complete(nil);
+        }
+    }];
+}
+
+
+//获取@我的数据列表
+
+- (void)getRemoteOwnerCamelGetAtListWithCreateTime:(long long)createTime pageSize:(NSInteger)pageSize complete:(nonnull void (^)(NSArray * _Nonnull))complete{
+    
+    NSString * urlStr = [NSString stringWithFormat:@"%@/cricle_camel/ownerCamel/getAtList", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+    
+    NSMutableDictionary *bodyDic = [[NSMutableDictionary alloc] init];
+    [bodyDic setObject:@(createTime) forKey:@"createTime"];;
+    [bodyDic setObject:[QIMManager getLastUserName] forKey:@"owner"];
+    [bodyDic setObject:[[QIMManager sharedInstance]getDomain] forKey:@"ownerHost"];
+    [bodyDic setObject:@(20) forKey:@"pgSize"];
+    
+    QIMVerboseLog(@"ownerCamel/getMyReply : %@", bodyDic);
+    NSData *hotCommentBodyData = [[QIMJSONSerializer sharedInstance] serializeObject:bodyDic error:nil];
+    __weak __typeof(self) weakSelf = self;
+    [self sendTPPOSTRequestWithUrl:urlStr withRequestBodyData:[[QIMJSONSerializer sharedInstance] serializeObject:bodyDic error:nil] withSuccessCallBack:^(NSData *responseData) {
+        NSDictionary * result = [[QIMJSONSerializer sharedInstance]deserializeObject:responseData error:nil];
+        BOOL ret = [[result objectForKey:@"ret"] boolValue];
+        NSInteger errorCode = [[result objectForKey:@"errcode"] integerValue];
+        if (ret && errorCode == 0) {
+            NSDictionary *data = [result objectForKey:@"data"];
+            if ([data isKindOfClass:[NSDictionary class]]) {
+                // undo
+                NSArray * deleteAtList = [data objectForKey:@"deleteAtList"];
+                if (deleteAtList.count > 0) {
+                    [[IMDataManager qimDB_SharedInstance] qimDB_deleteWorkNoticeMessageWithUUid:deleteAtList];
+                }
+                NSArray * newAtList = [data objectForKey:@"newAtList"];
+                if (newAtList.count > 0) {
+                    [[IMDataManager qimDB_SharedInstance]qimDB_bulkinsertNoticeMessage:newAtList];
+                }
+                
+                
+                if (complete) {
+                    complete([newAtList copy]);
+                }
+            }
+            else{
+                if (complete) {
+                    complete(nil);
+                }
+            }
+        }
+        else{
+            if (complete) {
+                complete(nil);
+            }
+        }
+    } withFailedCallBack:^(NSError *error) {
+        if (complete) {
+            complete(nil);
+        }
+    }];
+}
+
+
 #pragma mark - 用户入口
 
 - (void)getCricleCamelEntrance {

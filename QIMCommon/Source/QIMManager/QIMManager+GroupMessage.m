@@ -305,6 +305,7 @@
                  if (maxMucReadMarkTime > self.lastMaxMucReadMarkTime) {
                      [[IMDataManager qimDB_SharedInstance] qimDB_UpdateUserCacheDataWithKey:kGetGroupReadMarkVersion withType:8 withValue:@"群阅读指针时间戳" withValueInt:maxMucReadMarkTime];
                  }
+                 self.hasAtMeDic = nil;
                  dispatch_async(dispatch_get_main_queue(), ^{
                      QIMVerboseLog(@"获取群阅读指针之后强制刷新NavBar未读数");
                      [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@{@"ForceRefresh":@(YES)}];

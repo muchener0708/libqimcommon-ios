@@ -167,6 +167,7 @@ typedef enum {
     QIMMessageType_BurnAfterRead = 1 << 7,
     QIMMessageType_CardShare = 1 << 8,
     QIMMessageTypeMeetingRemind = 257,
+    QIMMessageTypeWorkMomentRemind = 258,
     QIMMessageType_RedPack = 1 << 9,
     QIMMessageType_AA = (1 << 9) + 1,
     QIMMessageType_RedPackInfo = 1 << 10,
@@ -344,6 +345,9 @@ typedef enum : NSUInteger {
     QIMWorkFeedNotifyTypePOST = 0,
     QIMWorkFeedNotifyTypeComment = 1,
     QIMWorkFeedNotifyTypeLike = 2,
+    QIMWorkFeedNotifyTypePOSTAt = 3,
+    QIMWorkFeedNotifyTypeCommentAt = 4,
+    QIMWorkFeedNotifyTypeMyComment = 5,
 } QIMWorkFeedNotifyType;
 
 static const NSString *QIMNavNameKey = @"title";
@@ -370,7 +374,7 @@ typedef void(^QIMKitGetMomentHistorySuccessedBlock)(NSArray *moments);
 typedef void(^QIMKitgetAnonymouseSuccessedBlock)(NSDictionary *anonymousDic);
 typedef void(^QIMKitgetMomentDetailSuccessedBlock)(NSDictionary *momentDic);
 typedef void(^QIMKitPushMomentSuccessedBlock)(BOOL successed);
-
+typedef void(^QIMKitUpdateMomentNotifyConfigSuccessedBlock)(BOOL successed);
 
 typedef void(^QIMKitgetPublicCompanySuccessedBlock)(NSArray *companies);
 

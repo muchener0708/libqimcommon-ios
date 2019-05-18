@@ -103,6 +103,19 @@
     return [[QIMManager sharedInstance] getWorkChildCommentsWithParentCommentUUID:parentCommentUUID];
 }
 
+#pragma mark - 驼圈提醒
+- (BOOL)getLocalWorkMomentNotifyConfig {
+    return [[QIMManager sharedInstance] getLocalWorkMomentNotifyConfig];
+}
+
+- (void)getRemoteWorkMomentSwitch {
+    [[QIMManager sharedInstance] getRemoteWorkMomentSwitch];
+}
+
+- (void)updateRemoteWorkMomentNotifyConfig:(BOOL)flag withCallBack:(QIMKitUpdateMomentNotifyConfigSuccessedBlock)callback {
+    [[QIMManager sharedInstance] updateRemoteWorkMomentNotifyConfig:flag withCallBack:callback];
+}
+
 #pragma mark - Local NoticeMsg
 
 - (void)getRemoteLastWorkMoment {

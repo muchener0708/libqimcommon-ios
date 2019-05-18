@@ -290,7 +290,7 @@
 - (void)qimDB_updateUser:(NSString *)userId WithMood:(NSString *)mood WithHeaderSrc:(NSString *)headerSrc WithVersion:(NSString *)version{
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     [[self dbInstance] usingTransaction:^(Database *database) {
-        NSString *sql = @"Update IM_Users Set HeaderSrc = :HeaderSrc, Mood = :Mood, LastUpdateTime = :LastUpdateTime Where UserId=:UserId;";
+        NSString *sql = @"Update IM_Users Set HeaderSrc = :HeaderSrc, Mood = :Mood, LastUpdateTime = :LastUpdateTime Where XmppId=:XmppId;";
         NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:3];
         [param addObject:headerSrc?headerSrc:@":NULL"];
         [param addObject:mood?mood:@":NULL"];

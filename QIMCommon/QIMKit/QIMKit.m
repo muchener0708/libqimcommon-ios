@@ -35,19 +35,19 @@ static QIMKit *__global_QIMKit = nil;
     QIMInfoLog(@"QIMKit initialize");
     [QIMFilteredProtocol start];
     [QIMManager sharedInstance];
-//    [AvoidCrash makeAllEffective];
-//    NSArray *noneSelClassStrings = @[
-//                                     @"NSNull",
-//                                     @"NSNumber",
-//                                     @"NSString",
-//                                     @"NSMutableString",
-//                                     @"NSDictionary",
-//                                     @"NSMutableDictionary",
-//                                     @"NSArray",
-//                                     @"NSMutableArray"
-//                                     ];
-//    [AvoidCrash setupNoneSelClassStringsArr:noneSelClassStrings];
-//    [AvoidCrash avoidCrashExchangeMethodIfDealWithNoneSel:YES];
+    [AvoidCrash makeAllEffective];
+    NSArray *noneSelClassStrings = @[
+                                     @"NSNull",
+                                     @"NSNumber",
+                                     @"NSString",
+                                     @"NSMutableString",
+                                     @"NSDictionary",
+                                     @"NSMutableDictionary",
+                                     @"NSArray",
+                                     @"NSMutableArray"
+                                     ];
+    [AvoidCrash setupNoneSelClassStringsArr:noneSelClassStrings];
+    [AvoidCrash avoidCrashExchangeMethodIfDealWithNoneSel:YES];
 //    //监听通知:AvoidCrashNotification, 获取AvoidCrash捕获的崩溃日志的详细信息
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(dealwithCrashMessage:) name:AvoidCrashNotification object:nil];
 }
@@ -216,8 +216,8 @@ static QIMKit *__global_QIMKit = nil;
     return [[QIMManager sharedInstance] getHasAtMeByJid:jid];
 }
 
-- (void)updateAtMeMessageWithJid:(NSString *)groupId withMsgId:(NSString *)msgId withReadState:(QIMAtMsgReadState)readState {
-    [[QIMManager sharedInstance] updateAtMeMessageWithJid:groupId withMsgId:msgId withReadState:readState];
+- (void)updateAtMeMessageWithJid:(NSString *)groupId withMsgIds:(NSArray *)msgIds withReadState:(QIMAtMsgReadState)readState {
+    [[QIMManager sharedInstance] updateAtMeMessageWithJid:groupId withMsgIds:msgIds withReadState:readState];
 }
 
 - (void)clearAtMeMessageWithJid:(NSString *)groupId {

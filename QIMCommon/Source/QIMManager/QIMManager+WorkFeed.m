@@ -717,7 +717,7 @@
 #pragma mark - 用户入口
 
 - (void)getCricleCamelEntrance {
-    NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/entrance", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+    NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/entranceV2", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
 
     [self sendTPGetRequestWithUrl:destUrl withSuccessCallBack:^(NSData *responseData) {
         NSDictionary *result = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
@@ -725,13 +725,23 @@
             BOOL ret = [[result objectForKey:@"ret"] boolValue];
             NSInteger errcode = [[result objectForKey:@"errcode"] integerValue];
             if (ret && errcode == 0) {
-                [[QIMUserCacheManager sharedInstance] setUserObject:@(YES) forKey:@"kUserWorkFeedEntrance"];
+                NSDictionary *data = [result objectForKey:@"data"];
+                if ([data isKindOfClass:[NSDictionary class]]) {
+                    BOOL authSign = [[data objectForKey:@"authSign"] boolValue];
+                    BOOL oldAuthSign = [[[QIMUserCacheManager sharedInstance] userObjectForKey:@"kUserWorkFeedEntrance"] boolValue];
+                    [[QIMUserCacheManager sharedInstance] setUserObject:@(authSign) forKey:@"kUserWorkFeedEntrance"];
+                    if (authSign != oldAuthSign) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyReloadWorkFeedEntrance object:nil];
+                        });
+                    }
+                }
             } else {
-                [[QIMUserCacheManager sharedInstance] setUserObject:@(NO) forKey:@"kUserWorkFeedEntrance"];
+                
             }
         }
     } withFailedCallBack:^(NSError *error) {
-        [[QIMUserCacheManager sharedInstance] setUserObject:@(NO) forKey:@"kUserWorkFeedEntrance"];
+        
     }];
 }
 
@@ -766,7 +776,7 @@
                         //发送驼圈离线消息小红点通知
                         NSInteger notReadMessageCount = [[QIMManager sharedInstance] getWorkNoticeMessagesCount];
                         QIMVerboseLog(@"发送驼圈离线消息小红点通知数: %ld", notReadMessageCount);
-                        [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@(notReadMessageCount)];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@{@"newWorkNoticeCount":@(notReadMessageCount)}];
                     });
                 }
             }
@@ -811,6 +821,85 @@
     }];
 }
 
+#pragma mark - 驼圈提醒开关
+
+- (BOOL)getLocalWorkMomentNotifyConfig {
+    BOOL exist = [[IMDataManager qimDB_SharedInstance] qimDB_checkExistUserCacheDataWithKey:kWorkMomentNotifySwitchConfig withType:12];
+    if (exist) {
+        return [[IMDataManager qimDB_SharedInstance] qimDB_getUserCacheDataWithKey:kWorkMomentNotifySwitchConfig withType:12];
+    } else {
+        return YES;
+    }
+}
+
+- (void)getRemoteWorkMomentSwitch {
+    NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/notify_config/getNotifyConfig", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+    NSMutableDictionary *bodyDic = [[NSMutableDictionary alloc] init];
+    [bodyDic setQIMSafeObject:[QIMManager getLastUserName] forKey:@"notifyUser"];
+    [bodyDic setQIMSafeObject:[[QIMManager sharedInstance] getDomain] forKey:@"host"];
+    NSData *bodyData = [[QIMJSONSerializer sharedInstance] serializeObject:bodyDic error:nil];
+    [self sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:bodyData withSuccessCallBack:^(NSData *responseData) {
+        NSDictionary *result = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
+        BOOL ret = [[result objectForKey:@"ret"] boolValue];
+        NSInteger errcode = [[result objectForKey:@"errcode"] integerValue];
+        if (ret && errcode == 0) {
+            NSDictionary *data = [result objectForKey:@"data"];
+            if ([data isKindOfClass:[NSDictionary class]]) {
+                BOOL flag = [[data objectForKey:@"flag"] boolValue];
+                NSString *notifyKey = [data objectForKey:@"notifyKey"];
+                [[IMDataManager qimDB_SharedInstance] qimDB_UpdateUserCacheDataWithKey:kWorkMomentNotifySwitchConfig withType:12 withValue:@"驼圈开关" withValueInt:flag];
+            }
+        }
+    } withFailedCallBack:^(NSError *error) {
+        
+    }];
+}
+
+- (void)updateRemoteWorkMomentNotifyConfig:(BOOL)flag withCallBack:(QIMKitUpdateMomentNotifyConfigSuccessedBlock)callback {
+    NSString *destUrl = [NSString stringWithFormat:@"%@/cricle_camel/notify_config/updateNotifyConfig", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
+    NSMutableDictionary *bodyDic = [[NSMutableDictionary alloc] init];
+    [bodyDic setQIMSafeObject:[QIMManager getLastUserName] forKey:@"notifyUser"];
+    [bodyDic setQIMSafeObject:[[QIMManager sharedInstance] getDomain] forKey:@"host"];
+    [bodyDic setQIMSafeObject:@(flag) forKey:@"flag"];
+    NSData *bodyData = [[QIMJSONSerializer sharedInstance] serializeObject:bodyDic error:nil];
+    [self sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:bodyData withSuccessCallBack:^(NSData *responseData) {
+        NSDictionary *result = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
+        BOOL ret = [[result objectForKey:@"ret"] boolValue];
+        NSInteger errcode = [[result objectForKey:@"errcode"] integerValue];
+        if (ret && errcode == 0) {
+            NSDictionary *data = [result objectForKey:@"data"];
+            if ([data isKindOfClass:[NSDictionary class]]) {
+                BOOL flag = [[data objectForKey:@"flag"] boolValue];
+                NSString *notifyKey = [data objectForKey:@"notifyKey"];
+                [[IMDataManager qimDB_SharedInstance] qimDB_UpdateUserCacheDataWithKey:kWorkMomentNotifySwitchConfig withType:12 withValue:@"驼圈开关" withValueInt:flag];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (callback) {
+                        callback(YES);
+                    }
+                });
+            } else {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (callback) {
+                        callback(NO);
+                    }
+                });
+            }
+        } else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (callback) {
+                    callback(NO);
+                }
+            });
+        }
+    } withFailedCallBack:^(NSError *error) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (callback) {
+                callback(NO);
+            }
+        });
+    }];
+}
+
 #pragma mark - Local Moments
 
 - (void)getRemoteLastWorkMoment {
@@ -843,7 +932,7 @@
                             NSDictionary *lastMomentDic = [newPosts firstObject];
                             NSString *momentUUId = [lastMomentDic objectForKey:@"uuid"];
                             dispatch_async(dispatch_get_main_queue(), ^{
-                                [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@(![self checkWorkMomentExistWithMomentId:momentUUId])];
+                                [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@{@"newWorkMoment":@(![self checkWorkMomentExistWithMomentId:momentUUId])}];
                             });
                             NSDictionary *momoentDic = [self getLastWorkMomentWithDic:lastMomentDic];
                             dispatch_async(dispatch_get_main_queue(), ^{
@@ -853,7 +942,8 @@
                             NSDictionary *localLastMomentDic = [self getLastWorkMoment];
                             dispatch_async(dispatch_get_main_queue(), ^{
                                 dispatch_async(dispatch_get_main_queue(), ^{
-                                    [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@(0)];
+                                    //发送新帖子通知
+                                    [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@{@"newWorkMoment":@(YES)}];
                                 });
                                 [[NSNotificationCenter defaultCenter] postNotificationName:kNotify_RN_QTALK_SUGGEST_WorkFeed_UPDATE object:localLastMomentDic];
                             });

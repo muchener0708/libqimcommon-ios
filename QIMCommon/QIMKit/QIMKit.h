@@ -223,7 +223,7 @@
  @param msgId 艾特消息MsgId
  @param readState 操作状态
  */
-- (void)updateAtMeMessageWithJid:(NSString *)groupId withMsgId:(NSString *)msgId withReadState:(QIMAtMsgReadState)readState;
+- (void)updateAtMeMessageWithJid:(NSString *)groupId withMsgIds:(NSArray *)msgIds withReadState:(QIMAtMsgReadState)readState;
 
 /**
  清空艾特消息

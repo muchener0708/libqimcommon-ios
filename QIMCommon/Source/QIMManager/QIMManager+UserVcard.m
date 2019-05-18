@@ -149,8 +149,9 @@
             NSString *mood = [userProfile objectForKey:@"mood"];
             NSString *headerUrl = [userProfile objectForKey:@"url"];
             
-            [self updateUserBigHeaderImageUrl:headerUrl WithUserMood:mood WithVersion:version ForUserId:userId];
-            [self.userVCardDict removeObjectForKey:userId];
+            NSString *userXmppId = [NSString stringWithFormat:@"%@@%@", userId, domain];
+            [self updateUserBigHeaderImageUrl:headerUrl WithUserMood:mood WithVersion:version ForUserId:userXmppId];
+            [self.userVCardDict removeObjectForKey:userXmppId];
             NSMutableDictionary *usersVCardInfo = [NSMutableDictionary dictionaryWithDictionary:[[QIMUserCacheManager sharedInstance] userObjectForKey:kUsersVCardInfo]];
             
             NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:usersVCardInfo[[QIMManager getLastUserName]]];
@@ -166,7 +167,7 @@
                 
                 [userInfo setQIMSafeObject:version forKey:@"V"];
             }
-            [usersVCardInfo setQIMSafeObject:userInfo forKey:[QIMManager getLastUserName]];
+            [usersVCardInfo setQIMSafeObject:userInfo forKey:[[QIMManager sharedInstance] getLastJid]];
             [[QIMUserCacheManager sharedInstance] setUserObject:usersVCardInfo forKey:kUsersVCardInfo];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateMyPersonalSignature object:mood ? mood : @""];
@@ -286,7 +287,7 @@
 }
 
 - (void)updateUserBigHeaderImageUrl:(NSString *)url WithUserMood:(NSString *)mood WithVersion:(NSString *)version ForUserId:(NSString *)userId {
-    if (url.length > 0) {
+    if (userId.length > 0 && url.length > 0) {
         [[IMDataManager qimDB_SharedInstance] qimDB_updateUser:userId WithMood:mood WithHeaderSrc:url WithVersion:version];
     }
 }
@@ -477,7 +478,7 @@
         if (![headerUrl qim_hasPrefixHttpHeader]) {
             headerUrl = [NSString stringWithFormat:@"%@/%@", [[QIMNavConfigManager sharedInstance] innerFileHttpHost], headerUrl];
         }
-        [self updateUserBigHeaderImageUrl:headerUrl WithUserMood:mood WithVersion:[resultDic objectForKey:@"version"] ForUserId:[QIMManager getLastUserName]];
+        [self updateUserBigHeaderImageUrl:headerUrl WithUserMood:mood WithVersion:[resultDic objectForKey:@"version"] ForUserId:[[QIMManager sharedInstance] getLastJid]];
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:kMyHeaderImgaeUpdateSuccess object:@{@"ok":@(YES), @"headerUrl":(headerUrl.length > 0) ? headerUrl : @""}];
         });

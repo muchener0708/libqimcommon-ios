@@ -347,7 +347,7 @@
 //At消息
 - (NSArray *)getHasAtMeByJid:(NSString *)jid ;
 
-- (void)updateAtMeMessageWithJid:(NSString *)groupId withMsgId:(NSString *)msgId withReadState:(QIMAtMsgReadState)readState;
+- (void)updateAtMeMessageWithJid:(NSString *)groupId withMsgIds:(NSArray *)msgIds withReadState:(QIMAtMsgReadState)readState;
 
 - (void)clearAtMeMessageWithJid:(NSString *)groupId;
 

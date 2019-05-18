@@ -857,8 +857,9 @@
 
 - (NSInteger)getNotRemindNotReaderCount {
     NSInteger count = 0;
+    CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     //防止有些cell没有刷新到，字典中未包含GroupId，将未读数计算进去
-
+    
     NSArray *array = [[QIMManager sharedInstance] getClientConfigInfoArrayWithType:QIMClientConfigTypeKNoticeStickJidDic];
     for (NSDictionary *groupInfoDic in array) {
         NSString *groupId = [groupInfoDic objectForKey:@"ConfigSubKey"];
@@ -869,6 +870,8 @@
             }
         }
     }
+    CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
+    QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start); //
     return count;
 }
 

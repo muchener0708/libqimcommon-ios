@@ -53,4 +53,6 @@
 
 - (long long)qimDB_getUserCacheDataWithKey:(NSString *)key withType:(NSInteger)type;
 
+- (BOOL)qimDB_checkExistUserCacheDataWithKey:(NSString *)key withType:(NSInteger)type;
+
 @end

@@ -305,6 +305,9 @@
 
 #define kNotifyReloadWorkFeedAttachCommentList      @"kNotifyReloadWorkFeedAttachCommentList"
 
+//驼圈入口权限变更
+#define kNotifyReloadWorkFeedEntrance               @"kNotifyReloadWorkFeedEntrance"
+
 //驼圈全局通知
 #define kPBPresenceCategoryNotifyWorkNoticeMessage  @"kPBPresenceCategoryNotifyWorkNoticeMessage"
 
@@ -317,5 +320,6 @@
 static const NSString *kGetIncrementMucListVersion = @"kGetIncrementMucListVersion";
 static const NSString *kGetUpdateUsersVersion = @"kGetUpdateUsersVersion";
 static const NSString *kGetGroupReadMarkVersion = @"kGetGroupReadMarkVersion";
+static const NSString *kWorkMomentNotifySwitchConfig = @"kWorkMomentNotifySwitchConfig";
 
 #endif /* QIMNotificationKeys_h */

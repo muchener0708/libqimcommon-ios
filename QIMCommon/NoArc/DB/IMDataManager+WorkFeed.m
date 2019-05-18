@@ -425,7 +425,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *deleteSql = @"delete from IM_Work_CommentV2 where commentUUID=:commentUUID or parentCommentUUID=:parentCommentUUID or superParentUUID=:superParentUUID;";
         
-        NSString *sql = @"insert or Replace into IM_Work_CommentV2(anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, superParentUUID, parentCommentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime) values(:anonymousName, :anonymousPhoto, :commentUUID, :content, :createTime, :fromHost, :fromUser, :id, :isAnonymous, :isDelete, :isLike, :likeNum, :superParentUUID, :parentCommentUUID, :postUUID, :reviewStatus, :toAnonymousName, :toAnonymousPhoto, :toHost, :toUser, :toisAnonymous, :updateTime);";
+        NSString *sql = @"insert or Replace into IM_Work_CommentV2(anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, superParentUUID, parentCommentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime, atList) values(:anonymousName, :anonymousPhoto, :commentUUID, :content, :createTime, :fromHost, :fromUser, :id, :isAnonymous, :isDelete, :isLike, :likeNum, :superParentUUID, :parentCommentUUID, :postUUID, :reviewStatus, :toAnonymousName, :toAnonymousPhoto, :toHost, :toUser, :toisAnonymous, :updateTime, :atList);";
         NSMutableArray *deleteParamList = [[NSMutableArray alloc] init];
         NSMutableArray *paramList = [[NSMutableArray alloc] init];
         for (NSDictionary *commentDic in comments) {
@@ -453,6 +453,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             NSNumber *toisAnonymous = [commentDic objectForKey:@"toisAnonymous"];
             NSNumber *updateTime = [commentDic objectForKey:@"updateTime"];
             NSArray *newChild = [commentDic objectForKey:@"newChild"];
+            NSString *atList = [commentDic objectForKey:@"atList"];
             
             NSMutableArray *deleteParam = [[NSMutableArray alloc] init];
             NSMutableArray *param = [[NSMutableArray alloc] init];
@@ -478,6 +479,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             [param addObject:toUser?toUser:@":NULL"];
             [param addObject:toisAnonymous?toisAnonymous:@(0)];
             [param addObject:updateTime?updateTime:@(0)];
+            [param addObject:atList?atList:@":NULL"];
             
             [deleteParam addObject:commentUUID];
             [deleteParam addObject:commentUUID];
@@ -505,7 +507,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *deleteSql = @"delete from IM_Work_CommentV2 where parentCommentUUID=:parentCommentUUID or superParentUUID=:superParentUUID;";
         
-        NSString *sql = @"insert or Replace into IM_Work_CommentV2(anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, superParentUUID, parentCommentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime) values(:anonymousName, :anonymousPhoto, :commentUUID, :content, :createTime, :fromHost, :fromUser, :id, :isAnonymous, :isDelete, :isLike, :likeNum, :superParentUUID, :parentCommentUUID, :postUUID, :reviewStatus, :toAnonymousName, :toAnonymousPhoto, :toHost, :toUser, :toisAnonymous, :updateTime);";
+        NSString *sql = @"insert or Replace into IM_Work_CommentV2(anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, superParentUUID, parentCommentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime, atList) values(:anonymousName, :anonymousPhoto, :commentUUID, :content, :createTime, :fromHost, :fromUser, :id, :isAnonymous, :isDelete, :isLike, :likeNum, :superParentUUID, :parentCommentUUID, :postUUID, :reviewStatus, :toAnonymousName, :toAnonymousPhoto, :toHost, :toUser, :toisAnonymous, :updateTimem, :atList);";
         NSMutableArray *deleteParamList = [[NSMutableArray alloc] init];
         NSMutableArray *paramList = [[NSMutableArray alloc] init];
         NSMutableArray *newChilds = [[NSMutableArray alloc] init];
@@ -536,6 +538,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
                 NSString *toUser = [commentDic objectForKey:@"toUser"];
                 NSNumber *toisAnonymous = [commentDic objectForKey:@"toisAnonymous"];
                 NSNumber *updateTime = [commentDic objectForKey:@"updateTime"];
+                NSString *atList = [commentDic objectForKey:@"atList"];
                 
                 NSMutableArray *deleteParam = [[NSMutableArray alloc] init];
                 NSMutableArray *param = [[NSMutableArray alloc] init];
@@ -561,6 +564,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
                 [param addObject:toUser?toUser:@":NULL"];
                 [param addObject:toisAnonymous?toisAnonymous:@(0)];
                 [param addObject:updateTime?updateTime:@(0)];
+                [param addObject:atList?atList:@":NULL"];
                 
                 [deleteParam addObject:ChildParCommentUUID];
                 [deleteParam addObject:ChildParCommentUUID];
@@ -581,7 +585,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
 - (NSArray *)qimDB_getWorkCommentsWithMomentId:(NSString *)momentId WithLimit:(int)limit WithOffset:(int)offset {
     __block NSMutableArray *result = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"select anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, parentCommentUUID, superParentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime from IM_Work_CommentV2 where postUUID='%@' and isDelete=0 and parentCommentUUID='' and superParentUUID='' order by createTime desc limit %d offset %d;", momentId, limit, offset];
+        NSString *sql = [NSString stringWithFormat:@"select anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, parentCommentUUID, superParentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime, atList from IM_Work_CommentV2 where postUUID='%@' and isDelete=0 and parentCommentUUID='' and superParentUUID='' order by createTime desc limit %d offset %d;", momentId, limit, offset];
         NSLog(@"sql : %@", sql);
         DataReader *reader = [database executeReader:sql withParameters:nil];
         NSMutableArray *tempList = nil;
@@ -612,6 +616,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             NSString *toUser = [reader objectForColumnIndex:19];
             NSNumber *toisAnonymous = [reader objectForColumnIndex:20];
             NSNumber *updateTime = [reader objectForColumnIndex:21];
+            NSString *atList = [reader objectForColumnIndex:22];
             
             NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
             [IMDataManager safeSaveForDic:msgDic setObject:anonymousName forKey:@"anonymousName"];
@@ -638,6 +643,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             [IMDataManager safeSaveForDic:msgDic setObject:toUser forKey:@"toUser"];
             [IMDataManager safeSaveForDic:msgDic setObject:toisAnonymous forKey:@"toisAnonymous"];
             [IMDataManager safeSaveForDic:msgDic setObject:updateTime forKey:@"updateTime"];
+            [IMDataManager safeSaveForDic:msgDic setObject:atList forKey:@"atList"];
 
 
             [result addObject:msgDic];
@@ -655,7 +661,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
         NSString *commentUUID = [parentCommentDic objectForKey:@"commentUUID"];
         __block NSMutableArray *childComments = nil;
         [[self dbInstance] syncUsingTransaction:^(Database *database) {
-            NSString *sql = [NSString stringWithFormat:@"select anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, parentCommentUUID, superParentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime from IM_Work_CommentV2 where isDelete=0 and (parentCommentUUID=:parentCommentUUID Or superParentUUID=:superParentUUID) order by createTime desc;"];
+            NSString *sql = [NSString stringWithFormat:@"select anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, parentCommentUUID, superParentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime, atList from IM_Work_CommentV2 where isDelete=0 and (parentCommentUUID=:parentCommentUUID Or superParentUUID=:superParentUUID) order by createTime desc;"];
             NSLog(@"child sql : %@ - %@", sql, @[commentUUID, commentUUID]);
             DataReader *reader = [database executeReader:sql withParameters:@[commentUUID, commentUUID]];
             if (childComments == nil) {
@@ -685,6 +691,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
                 NSString *toUser = [reader objectForColumnIndex:19];
                 NSNumber *toisAnonymous = [reader objectForColumnIndex:20];
                 NSNumber *updateTime = [reader objectForColumnIndex:21];
+                NSString *atList = [reader objectForColumnIndex:22];
                 
                 NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
                 [IMDataManager safeSaveForDic:msgDic setObject:anonymousName forKey:@"anonymousName"];
@@ -711,6 +718,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
                 [IMDataManager safeSaveForDic:msgDic setObject:toUser forKey:@"toUser"];
                 [IMDataManager safeSaveForDic:msgDic setObject:toisAnonymous forKey:@"toisAnonymous"];
                 [IMDataManager safeSaveForDic:msgDic setObject:updateTime forKey:@"updateTime"];
+                [IMDataManager safeSaveForDic:msgDic setObject:atList forKey:@"atList"];
                 
                 
                 [childComments addObject:msgDic];
@@ -726,7 +734,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
 - (NSArray *)qimDB_getWorkChildCommentsWithParentCommentUUID:(NSString *)commentUUID {
     __block NSMutableArray *childComments = nil;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"select anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, parentCommentUUID, superParentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime from IM_Work_CommentV2 where isDelete=0 and (parentCommentUUID=:parentCommentUUID Or superParentUUID=:superParentUUID) order by createTime desc;"];
+        NSString *sql = [NSString stringWithFormat:@"select anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, parentCommentUUID, superParentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime, atList from IM_Work_CommentV2 where isDelete=0 and (parentCommentUUID=:parentCommentUUID Or superParentUUID=:superParentUUID) order by createTime desc;"];
         NSLog(@"child sql : %@ - %@", sql, @[commentUUID, commentUUID]);
         DataReader *reader = [database executeReader:sql withParameters:@[commentUUID, commentUUID]];
         if (childComments == nil) {
@@ -756,6 +764,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             NSString *toUser = [reader objectForColumnIndex:19];
             NSNumber *toisAnonymous = [reader objectForColumnIndex:20];
             NSNumber *updateTime = [reader objectForColumnIndex:21];
+            NSString *atList = [reader objectForColumnIndex:22];
             
             NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
             [IMDataManager safeSaveForDic:msgDic setObject:anonymousName forKey:@"anonymousName"];
@@ -782,6 +791,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             [IMDataManager safeSaveForDic:msgDic setObject:toUser forKey:@"toUser"];
             [IMDataManager safeSaveForDic:msgDic setObject:toisAnonymous forKey:@"toisAnonymous"];
             [IMDataManager safeSaveForDic:msgDic setObject:updateTime forKey:@"updateTime"];
+            [IMDataManager safeSaveForDic:msgDic setObject:atList forKey:@"atList"];
             
             
             [childComments addObject:msgDic];

@@ -19,6 +19,9 @@
     [[QIMUserCacheManager sharedInstance] setCacheName:cacheName];
 }
 
+- (BOOL)containsObjectForKey:(NSString *)key {
+    return [[QIMUserCacheManager sharedInstance] containsObjectForKey:key];
+}
 - (void)setUserObject:(nullable id)object forKey:(nonnull NSString *)aKey {
     [[QIMUserCacheManager sharedInstance] setUserObject:object forKey:aKey];
 }

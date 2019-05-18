@@ -32,6 +32,15 @@
             if (sCallback) {
                 sCallback(responseData);
             }
+        } else {
+            __typeof(self) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            NSData *responseData = [response data];
+            if (sCallback) {
+                sCallback(responseData);
+            }
         }
     } failure:^(NSError *error) {
         if (fCallback) {
@@ -56,6 +65,15 @@
     __weak __typeof(self) weakSelf = self;
     [QIMHTTPClient sendRequest:request complete:^(QIMHTTPResponse *response) {
         if (response.code == 200) {
+            __typeof(self) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            NSData *responseData = [response data];
+            if (sCallback) {
+                sCallback(responseData);
+            }
+        } else {
             __typeof(self) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -142,6 +160,15 @@
     __weak __typeof(self) weakSelf = self;
     [QIMHTTPClient sendRequest:request complete:^(QIMHTTPResponse *response) {
         if (response.code == 200) {
+            __typeof(self) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            NSData *responseData = [response data];
+            if (sCallback) {
+                sCallback(responseData);
+            }
+        } else {
             __typeof(self) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;

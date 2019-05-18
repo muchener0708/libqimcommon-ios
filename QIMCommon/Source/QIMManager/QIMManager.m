@@ -310,7 +310,7 @@ static QIMManager *__IMManager = nil;
 @implementation QIMManager (RegisterEvent)
 
 - (void)refreshSwitchAccount:(NSDictionary *)notify {
-//    [self checkClientConfig];
+    [self checkClientConfig];
 }
 
 // <iq type='get' id='id_'><key xmlns='urn:xmpp:key'/></iq>
@@ -446,7 +446,7 @@ static QIMManager *__IMManager = nil;
     QIMVerboseLog(@"开始获取群阅读指针2");
     CFAbsoluteTime startTime4 = [[QIMWatchDog sharedInstance] startTime];
     [self updateMucReadMark];
-QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime4]);
+    QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime4]);
     QIMVerboseLog(@"获取群阅读指针结束2");
     dispatch_async(dispatch_get_main_queue(), ^{
         QIMVerboseLog(@"获取阅读指针之后再次强制刷新列表页");
@@ -556,6 +556,9 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
         
         QIMVerboseLog(@"登录之后请求一下驼圈入口开关");
         [self getCricleCamelEntrance];
+        
+        QIMVerboseLog(@"登录之后获取一下驼圈提醒开关");
+        [self getRemoteWorkMomentSwitch];
         
         QIMVerboseLog(@"登录之后请求一下驼圈未读消息");
         [self getupdateRemoteWorkNoticeMsgs];
@@ -1125,10 +1128,10 @@ QIMVerboseLog(@"获取群阅读指针2loginComplate耗时 : %llf", [[QIMWatchDog
     return array;
 }
 
-- (void)updateAtMeMessageWithJid:(NSString *)groupId withMsgId:(NSString *)msgId withReadState:(QIMAtMsgReadState)readState {
+- (void)updateAtMeMessageWithJid:(NSString *)groupId withMsgIds:(NSArray *)msgIds withReadState:(QIMAtMsgReadState)readState {
     dispatch_block_t block = ^{
         [_hasAtMeDic removeObjectForKey:groupId];
-        [[IMDataManager qimDB_SharedInstance] qimDB_UpdateAtMessageReadStateWithGroupId:groupId withMsgId:msgId withReadState:readState];
+        [[IMDataManager qimDB_SharedInstance] qimDB_UpdateAtMessageReadStateWithGroupId:groupId withMsgIds:msgIds withReadState:readState];
         dispatch_async(dispatch_get_main_queue(), ^{
             
             [[NSNotificationCenter defaultCenter] postNotificationName:kAtMeChange object:groupId];

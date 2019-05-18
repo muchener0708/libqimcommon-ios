@@ -65,6 +65,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)getWorkCommentWithLastCommentRId:(NSInteger)lastCommentRId withMomentId:(NSString *)momentId WithLimit:(int)limit WithOffset:(int)offset withFirstLocalComment:(BOOL)firstLocal WithComplete:(void (^)(NSArray *))complete;
 
+#pragma mark - 驼圈提醒
+- (BOOL)getLocalWorkMomentNotifyConfig;
+
+- (void)getRemoteWorkMomentSwitch;
+
+- (void)updateRemoteWorkMomentNotifyConfig:(BOOL)flag withCallBack:(QIMKitUpdateMomentNotifyConfigSuccessedBlock)callback;
+
 #pragma mark - Local NoticeMsg
 
 - (void)getRemoteLastWorkMoment;

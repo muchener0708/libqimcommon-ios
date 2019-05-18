@@ -41,7 +41,7 @@ typedef enum {
 @property (nonatomic, strong) NSString *fileId;
 @property (nonatomic, strong) NSString *fileSizeStr;
 @property (nonatomic, strong) NSString *fileUrl;
-@property (nonatomic, strong)QIMMessageModel *message;
+@property (nonatomic, strong) QIMMessageModel *message;
 @property (nonatomic, strong) NSString *md5;
 @property (nonatomic, strong) NSData * imageData;
 @property (nonatomic, copy) NSString    * toJid;
@@ -128,6 +128,7 @@ typedef enum {
     NSString *fileId = self.fileId;
     if (self.fileReuqestType == FileRequest_Upload) {
         NSString *httpUrl = nil;
+        QIMVerboseLog(@"上传真正的文件结果 : %@ ForMessage: %@", [request responseString], self.message);
         if ([request responseStatusCode] == 200) {
             NSData * data = nil;
             if ([request isResponseCompressed] && [request shouldWaitToInflateCompressedResponses]) {
@@ -136,6 +137,7 @@ typedef enum {
                 data = _receiveData;
             }
             NSDictionary *result = [[QIMJSONSerializer sharedInstance] deserializeObject:data error:nil];
+
             BOOL ret = [[result objectForKey:@"ret"] boolValue];
             if (ret) {
                 NSString *resultUrl = [result objectForKey:@"data"];
@@ -696,8 +698,10 @@ typedef enum {
         [fileRequest setMessage:message];
         [fileRequest appendToJid:jid];
         [request startSynchronous];
+        QIMVerboseLog(@"上传文件 : %@ ForMessage: %@", destUrl, message);
         if ([request responseStatusCode] == 200) {
             NSDictionary *result = [[QIMJSONSerializer sharedInstance] deserializeObject:request.responseData error:nil];
+            QIMVerboseLog(@"上传文件结果 : %@ ForMessage: %@", result, message);
             BOOL ret = [[result objectForKey:@"ret"] boolValue];
             if (!ret) {
                 NSString *resultUrl = [result objectForKey:@"data"];
@@ -735,7 +739,8 @@ typedef enum {
                          [[QIMManager getLastUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
                          [[QIMManager sharedInstance] myRemotelogginKey],
                          [[QIMAppInfo sharedInstance] AppBuildVersion],fileKey,size];
-    
+    QIMVerboseLog(@"上传真正的文件 : %@ ForMessage: %@", destUrl, message);
+
     NSURL *requestUrl = [[NSURL alloc] initWithString:destUrl];
     
     ASIFormDataRequest *formRequest = [[ASIFormDataRequest alloc] initWithURL:requestUrl];

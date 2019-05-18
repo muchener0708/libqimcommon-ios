@@ -526,7 +526,10 @@
         _leaderurl = [baseAddess objectForKey:@"leaderurl"];
         _mobileurl = [baseAddess objectForKey:@"mobileurl"];
         _shareUrl = [baseAddess objectForKey:@"shareurl"];
-        _domainHost = [baseAddess objectForKey:@"domainhost"];
+        NSString *domainHost = [baseAddess objectForKey:@"domainhost"];
+        if (domainHost.length > 0) {
+            _domainHost = domainHost;
+        }
     }
     NSDictionary *qcadminDic = [navConfig objectForKey:@"qcadmin"];
     if (qcadminDic.count) {

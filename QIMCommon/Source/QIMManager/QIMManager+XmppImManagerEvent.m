@@ -347,16 +347,20 @@
                         [[NSNotificationCenter defaultCenter] postNotificationName:kPBPresenceCategoryNotifyWorkNoticeMessage object:nil];
                         NSInteger notReadMessageCount = [[QIMManager sharedInstance] getWorkNoticeMessagesCount];
                         QIMVerboseLog(@"发送驼圈在线消息小红点通知数: %ld", notReadMessageCount);
-                        [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@(notReadMessageCount)];
-                        [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:nil];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@{@"newWorkNoticeCount":@(notReadMessageCount)}];
                     });
                 } else if (eventType == QIMWorkFeedNotifyTypePOST) {
                     QIMVerboseLog(@"online 新帖子 通知 : %@", onlineDict);
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@(1)];
-                        [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@(1)];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@{@"newWorkMoment":@(YES)}];
                         [[NSNotificationCenter defaultCenter] postNotificationName:kNotify_RN_QTALK_SUGGEST_WorkFeed_UPDATE object:[self getLastWorkOnlineMomentWithDic:onlineDict]];
                     });
+                } else if (eventType == QIMWorkFeedNotifyTypePOSTAt) {
+                  //帖子艾特
+                    
+                } else if (eventType == QIMWorkFeedNotifyTypeCommentAt) {
+                  //评论艾特
+                    
                 } else {
                     
                 }
@@ -473,9 +477,8 @@
 }
 
 - (void)receiveGroupMsg:(NSDictionary *)msgDic {
-    QIMVerboseLog(@"在线接收群消息 : %@", msgDic);
     dispatch_async(self.receive_msg_queue, ^{
-            
+        QIMVerboseLog(@"在线接收群消息 : %@", msgDic);
         NSString *sid = [NSString stringWithFormat:@"%@@%@", [msgDic objectForKey:@"fromId"], [msgDic objectForKey:@"domain"]];
         NSString *sendJid = [msgDic objectForKey:@"sendJid"];
         NSString *msg = [msgDic objectForKey:@"msg"];

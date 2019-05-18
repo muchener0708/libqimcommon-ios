@@ -60,6 +60,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray *)getWorkChildCommentsWithParentCommentUUID:(NSString *)parentCommentUUID;
 
+#pragma mark - 驼圈提醒
+- (BOOL)getLocalWorkMomentNotifyConfig;
+
+- (void)getRemoteWorkMomentSwitch;
+
+- (void)updateRemoteWorkMomentNotifyConfig:(BOOL)flag withCallBack:(QIMKitUpdateMomentNotifyConfigSuccessedBlock)callback;
+
 #pragma mark - Local NoticeMsg
 
 - (void)getRemoteLastWorkMoment;

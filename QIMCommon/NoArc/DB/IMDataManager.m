@@ -189,6 +189,21 @@ static dispatch_once_t _onceDBToken;
     return maxRemoteTime;
 }
 
+- (BOOL)qimDB_checkExistUserCacheDataWithKey:(NSString *)key withType:(NSInteger)type {
+    __block BOOL exist = NO;
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        
+    }];
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = [NSString stringWithFormat:@"select 1 from IM_Cache_Data Where key == '%@' and type == %d", key, type];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
+        if ([reader read]) {
+            exist = YES;
+        }
+    }];
+    return exist;
+}
+
 - (DatabaseOperator *) dbInstance {
     return [DatabaseManager GetInstance:_dbPath];
 }
@@ -795,9 +810,20 @@ static dispatch_once_t _onceDBToken;
               toUser                TEXT,\
               toisAnonymous         INTEGER,\
               updateTime            INTEGER);" withParameters:nil];
+    /*
+     
+     CREATE TABLE IM_Work_World_Comment (anonymousName TEXT,anonymousPhoto TEXT,commentUUID TEXT PRIMARY KEY,content TEXT,createTime INTEGER DEFAULT 0,fromHost TEXT,fromUser TEXT,id INTEGER,isAnonymous INTEGER,isDelete INTEGER,isLike INTEGER,likeNum INTEGER,parentCommentUUID TEXT,postUUID TEXT,reviewStatus INTEGER,toHost TEXT,toUser TEXT,updateTime INTEGER DEFAULT 0,toisAnonymous INTEGER,toAnonymousName TEXT,toAnonymousPhoto TEXT,superParentUUID TEXT,newChildString TEXT,commentStatus INTEGER DEFAULT 0,atList TEXT)
+     */
+    
     if (result) {
         if ([database checkExistsOnTable:@"IM_Work_CommentV2" withColumn:@"superParentUUID"] == NO) {
             [database executeNonQuery:@"ALTER TABLE IM_Work_CommentV2 ADD superParentUUID TEXT;" withParameters:nil];
+        }
+        if ([database checkExistsOnTable:@"IM_Work_CommentV2" withColumn:@"commentStatus"] == NO) {
+            [database executeNonQuery:@"ALTER TABLE IM_Work_CommentV2 ADD commentStatus TEXT;" withParameters:nil];
+        }
+        if ([database checkExistsOnTable:@"IM_Work_CommentV2" withColumn:@"atList"] == NO) {
+            [database executeNonQuery:@"ALTER TABLE IM_Work_CommentV2 ADD atList TEXT;" withParameters:nil];
         }
     }
     

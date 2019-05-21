@@ -786,6 +786,11 @@ static dispatch_once_t _onceDBToken;
               commentsNum           INTEGER,\
               review_status         INTEGER,\
               attachCommentList     TEXT);" withParameters:nil];
+    if (result) {
+        if ([database checkExistsOnTable:@"IM_Work_World" withColumn:@"postType"] == NO) {
+            [database executeNonQuery:@"ALTER TABLE IM_Work_World ADD postType INTEGER DEFAULT 1;" withParameters:nil];
+        }
+    }
     //创建工作圈评论表
     result = [database executeNonQuery:@"create table IF NOT EXISTS IM_Work_CommentV2 (\
               anonymousName         TEXT,\

@@ -318,7 +318,7 @@
 #define kPBPresenceCategoryNotifyWorkNoticeLastMessage  @"kPBPresenceCategoryNotifyWorkNoticeLastMessage"
 
 static const NSString *kGetIncrementMucListVersion = @"kGetIncrementMucListVersion";
-static const NSString *kGetUpdateUsersVersion = @"kGetUpdateUsersVersion";
+static const NSString *kGetUpdateUsersV2Version = @"kGetUpdateUsersV2Version";
 static const NSString *kGetGroupReadMarkVersion = @"kGetGroupReadMarkVersion";
 static const NSString *kWorkMomentNotifySwitchConfig = @"kWorkMomentNotifySwitchConfig";
 

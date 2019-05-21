@@ -167,7 +167,6 @@
             case QIMCategoryNotifyMsgTypeOrganizational: {
                 QIMVerboseLog(@"重新获取组织架构");
                 dispatch_async(self.cacheQueue, ^{
-                    [[IMDataManager qimDB_SharedInstance] qimDB_clearUserList];
                     [self updateOrganizationalStructure];
                 });
             }

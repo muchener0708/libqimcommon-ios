@@ -696,7 +696,7 @@ static QIMManager *__IMManager = nil;
 //获取组织架构
 - (void)updateOrganizationalStructure {
     NSString *destUrl = [NSString stringWithFormat:@"%@/update/getUpdateUsers.qunar", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
-    NSInteger userMaxVersion = [[IMDataManager qimDB_SharedInstance] qimDB_getUserCacheDataWithKey:kGetUpdateUsersVersion withType:9];
+    NSInteger userMaxVersion = [[IMDataManager qimDB_SharedInstance] qimDB_getUserCacheDataWithKey:kGetUpdateUsersV2Version withType:7];
     NSDictionary *versionDic = @{@"version":@(userMaxVersion)};
     NSData *versionData = [[QIMJSONSerializer sharedInstance] serializeObject:versionDic error:nil];
     [[QIMManager sharedInstance] sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:versionData withSuccessCallBack:^(NSData *responseData) {
@@ -707,7 +707,7 @@ static QIMManager *__IMManager = nil;
             if (ret && errcode == 0) {
                 NSDictionary *dataDic = [responseDic objectForKey:@"data"];
                 long long maxVersion = [[dataDic objectForKey:@"version"] longLongValue];
-                [[IMDataManager qimDB_SharedInstance] qimDB_UpdateUserCacheDataWithKey:kGetUpdateUsersVersion withType:9 withValue:@"组织架构时间戳" withValueInt:maxVersion];
+                [[IMDataManager qimDB_SharedInstance] qimDB_UpdateUserCacheDataWithKey:kGetUpdateUsersV2Version withType:7 withValue:@"新版组织架构时间戳" withValueInt:maxVersion];
                 NSArray *updateUserList = [dataDic objectForKey:@"update"];
                 NSArray *userList = [dataDic objectForKey:@"update"];
                 [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertOrgansUserInfos:userList];

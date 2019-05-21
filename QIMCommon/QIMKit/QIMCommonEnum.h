@@ -350,6 +350,12 @@ typedef enum : NSUInteger {
     QIMWorkFeedNotifyTypeMyComment = 5,
 } QIMWorkFeedNotifyType;
 
+typedef enum : NSUInteger {
+    QIMWorkFeedContentTypeText = 0,    //驼圈文本
+    QIMWorkFeedContentTypeImage = 1,   //驼圈图片
+    QIMWorkFeedContentTypeLink = 2,    //驼圈LinkUrl
+} QIMWorkFeedContentType;
+
 static const NSString *QIMNavNameKey = @"title";
 static const NSString *QIMNavUrlKey = @"NavUrl";
 

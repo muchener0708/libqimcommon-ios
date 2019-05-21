@@ -736,19 +736,19 @@
         if (ret && errorCode == 0) {
             NSDictionary *data = [result objectForKey:@"data"];
             if ([data isKindOfClass:[NSDictionary class]]) {
-                NSArray * deleteAtList = [data objectForKey:@"deleteComments"];
-                if (deleteAtList.count>0) {
-                    [[IMDataManager qimDB_SharedInstance] qimDB_deleteWorkNoticeMessageWithUUid:deleteAtList];
+                NSArray *deleteComments = [data objectForKey:@"deleteComments"];
+                if (deleteComments.count > 0) {
+                    [[IMDataManager qimDB_SharedInstance] qimDB_deleteWorkNoticeMessageWithUUid:deleteComments];
                 }
-                NSArray * newAtList = [data objectForKey:@"newComment"];
-                if (newAtList>0) {
-                    [[IMDataManager qimDB_SharedInstance]qimDB_bulkinsertNoticeMessage:newAtList];
+                NSArray *newComment = [data objectForKey:@"newComment"];
+                if (newComment > 0) {
+                    [[IMDataManager qimDB_SharedInstance]qimDB_bulkinsertNoticeMessage:newComment];
                 }
                 if (complete) {
-                        complete([newAtList copy]);
+                    complete([newComment copy]);
                 }
             }
-            else{
+            else {
                 if (complete) {
                     complete(nil);
                 }
@@ -779,7 +779,7 @@
     [bodyDic setObject:[[QIMManager sharedInstance]getDomain] forKey:@"ownerHost"];
     [bodyDic setObject:@(20) forKey:@"pgSize"];
     
-    QIMVerboseLog(@"ownerCamel/getMyReply : %@", bodyDic);
+    QIMVerboseLog(@"ownerCamel/getAtList : %@", bodyDic);
     NSData *hotCommentBodyData = [[QIMJSONSerializer sharedInstance] serializeObject:bodyDic error:nil];
     __weak __typeof(self) weakSelf = self;
     [self sendTPPOSTRequestWithUrl:urlStr withRequestBodyData:[[QIMJSONSerializer sharedInstance] serializeObject:bodyDic error:nil] withSuccessCallBack:^(NSData *responseData) {
@@ -790,15 +790,14 @@
             NSDictionary *data = [result objectForKey:@"data"];
             if ([data isKindOfClass:[NSDictionary class]]) {
                 // undo
-                NSArray * deleteAtList = [data objectForKey:@"deleteAtList"];
+                NSArray *deleteAtList = [data objectForKey:@"deleteAtList"];
                 if (deleteAtList.count > 0) {
                     [[IMDataManager qimDB_SharedInstance] qimDB_deleteWorkNoticeMessageWithUUid:deleteAtList];
                 }
-                NSArray * newAtList = [data objectForKey:@"newAtList"];
+                NSArray *newAtList = [data objectForKey:@"newAtList"];
                 if (newAtList.count > 0) {
-                    [[IMDataManager qimDB_SharedInstance]qimDB_bulkinsertNoticeMessage:newAtList];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertNoticeMessage:newAtList];
                 }
-                
                 
                 if (complete) {
                     complete([newAtList copy]);
@@ -883,7 +882,7 @@
                         //发送驼圈离线消息通知
                         [[NSNotificationCenter defaultCenter] postNotificationName:kPBPresenceCategoryNotifyWorkNoticeMessage object:nil];
                         //发送驼圈离线消息小红点通知
-                        NSInteger notReadMessageCount = [[QIMManager sharedInstance] getWorkNoticeMessagesCount];
+                        NSInteger notReadMessageCount = [[QIMManager sharedInstance] getWorkNoticeMessagesCountWithEventType:@[@(QIMWorkFeedNotifyTypeComment), @(QIMWorkFeedNotifyTypePOSTAt), @(QIMWorkFeedNotifyTypeCommentAt)]];
                         QIMVerboseLog(@"发送驼圈离线消息小红点通知数: %ld", notReadMessageCount);
                         [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@{@"newWorkNoticeCount":@(notReadMessageCount)}];
                     });
@@ -1294,12 +1293,22 @@
     return [[IMDataManager qimDB_SharedInstance] qimDB_getWorkChildCommentsWithParentCommentUUID:parentCommentUUID];
 }
 
-- (NSInteger)getWorkNoticeMessagesCount {
-    return [[IMDataManager qimDB_SharedInstance] qimDB_getWorkNoticeMessagesCount];
+- (NSInteger)getWorkNoticeMessagesCountWithEventType:(NSArray *)eventTypes {
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getWorkNoticeMessagesCountWithEventType:eventTypes];
 }
 
 - (BOOL)checkWorkMomentExistWithMomentId:(NSString *)momentId {
     return [[IMDataManager qimDB_SharedInstance] qimDB_checkMomentWithMomentId:momentId];
+}
+
+//新加
+- (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventTypes:(NSArray *)eventTypes readState:(int)readState {
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getWorkNoticeMessagesWithLimit:limit WithOffset:offset eventTypes:eventTypes readState:readState];
+}
+
+//新加
+- (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventTypes:(NSArray *)eventTypes {
+    return [[IMDataManager qimDB_SharedInstance] qimDB_getWorkNoticeMessagesWithLimit:limit WithOffset:offset eventTypes:eventTypes];
 }
 
 - (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset {

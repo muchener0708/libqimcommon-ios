@@ -572,8 +572,11 @@ static QIMManager *__IMManager = nil;
         
         QIMVerboseLog(@"登录之后获取发现页应用列表");
         [self getRemoteFoundNavigation];
-        
     }
+    
+    Class autoTracker = NSClassFromString(@"QIMAutoTrackerOperation");
+    id autoTrackerObject = [[autoTracker alloc] init];
+    [autoTrackerObject performSelectorInBackground:@selector(uploadTracerData) withObject:nil];
 }
 
 - (void)generateClientConfigUpgradeArrayWithType:(QIMClientConfigType)type WithArray:(id)valueArr {

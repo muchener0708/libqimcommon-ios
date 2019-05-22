@@ -89,9 +89,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray *)getWorkChildCommentsWithParentCommentUUID:(NSString *)parentCommentUUID;
 
-- (NSInteger)getWorkNoticeMessagesCount;
+- (NSInteger)getWorkNoticeMessagesCountWithEventType:(NSArray *)eventTypes;
 
 - (BOOL)checkWorkMomentExistWithMomentId:(NSString *)momentId;
+
+- (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventTypes:(NSArray *)eventTypes readState:(int)readState;
+
+- (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventTypes:(NSArray *)eventTypes;
 
 - (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset;
 

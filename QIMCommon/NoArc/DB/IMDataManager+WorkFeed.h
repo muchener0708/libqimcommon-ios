@@ -56,8 +56,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (long long)qimDB_getWorkNoticeMessagesMaxTime;
 
-- (NSInteger)qimDB_getWorkNoticeMessagesCount;
+- (NSInteger)qimDB_getWorkNoticeMessagesCountWithEventType:(NSArray *)eventTyps;
 
+//新加
+- (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventTypes:(NSArray *)eventTypes readState:(int)readState;
+
+//新加
+- (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventTypes:(NSArray *)eventTypes;
+
+//临时
 - (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset;
 
 - (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventType1:(int)eventType1 eventType2:(int)eventType2 readState:(int)readState;
@@ -69,8 +76,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)qimDB_deleteWorkNoticeMessageWithUUid:(NSArray *)deleteListArr;
 
 - (void)qimDB_updateWorkNoticeMessageReadStateWithTime:(long long)time;
-
-- (NSDictionary *)qimDB_getLastWorkMomentMessageDic;
 
 @end
 

@@ -850,6 +850,9 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             NSString *userToHost = [noticeMsgDic objectForKey:@"userToHost"];
             NSNumber *createTime = [noticeMsgDic objectForKey:@"createTime"];
             NSString *userFromHost = [noticeMsgDic objectForKey:@"userFromHost"];
+            if (userFromHost.length < 0) {
+                userFromHost = [noticeMsgDic objectForKey:@"fromHost"];
+            }
             NSString *fromAnonymousName = [noticeMsgDic objectForKey:@"fromAnonymousName"];
             NSString *toAnonymousName = [noticeMsgDic objectForKey:@"toAnonymousName"];
             NSString *toAnonymousPhoto = [noticeMsgDic objectForKey:@"toAnonymousPhoto"];
@@ -873,7 +876,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             [param addObject:toAnonymousPhoto?toAnonymousPhoto:@":NULL"];
             [paramList addObject:param];
         }
-        [database executeBulkInsert:sql withParameters:paramList];
+        BOOL success = [database executeBulkInsert:sql withParameters:paramList];
         [paramList release];
         paramList = nil;
     }];
@@ -891,18 +894,131 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
     return time;
 }
 
-- (NSInteger)qimDB_getWorkNoticeMessagesCount {
+- (NSInteger)qimDB_getWorkNoticeMessagesCountWithEventType:(NSArray *)eventTyps {
     __block NSInteger count = 0;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"select count(*) from IM_Work_NoticeMessage Where readState=0 and eventType=1;"];
-        NSLog(@"sql : %@", sql);
+        NSString *sql = [NSString stringWithFormat:@"select count(*) from IM_Work_NoticeMessage Where readState=0 and eventType in %@;", eventTyps];
+        NSLog(@"qimDB_getWorkNoticeMessagesCountWithEventType sql : %@", sql);
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             count = [[reader objectForColumnIndex:0] integerValue];
         }
     }];
-    NSLog(@"qimDB_getWorkNoticeMessagesCount : %ld", count);
     return count;
+}
+
+- (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventTypes:(NSArray *)eventTypes readState:(int)readState {
+    __block NSMutableArray *result = nil;
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql  = [NSString stringWithFormat:@"select userFrom, readState, postUUID, fromIsAnonymous, toIsAnonymous, eventType, fromAnonymousPhoto, userTo, uuid, content, userToHost, createTime, userFromHost, fromAnonymousName, toAnonymousName, toAnonymousPhoto from IM_Work_NoticeMessage where eventType in %@ and  readState = %ld order by createTime desc limit %d offset %d;", eventTypes, readState, limit, offset];
+        NSLog(@"sql : %@", sql);
+        DataReader *reader = [database executeReader:sql withParameters:nil];
+        NSMutableArray *tempList = nil;
+        if (result == nil) {
+            result = [[NSMutableArray alloc] init];
+        }
+        while ([reader read]) {
+            
+            NSString *userFrom = [reader objectForColumnIndex:0];
+            NSNumber *readState = [reader objectForColumnIndex:1];
+            NSString *postUUID = [reader objectForColumnIndex:2];
+            NSNumber *fromIsAnonymous = [reader objectForColumnIndex:3];
+            NSNumber *toIsAnonymous = [reader objectForColumnIndex:4];
+            NSNumber *eventType = [reader objectForColumnIndex:5];
+            NSString *fromAnonymousPhoto = [reader objectForColumnIndex:6];
+            NSString *userTo = [reader objectForColumnIndex:7];
+            
+            NSString *uuid = [reader objectForColumnIndex:8];
+            NSString *content = [reader objectForColumnIndex:9];
+            NSString *userToHost = [reader objectForColumnIndex:10];
+            NSNumber *createTime = [reader objectForColumnIndex:11];
+            NSString *userFromHost = [reader objectForColumnIndex:12];
+            NSString *fromAnonymousName = [reader objectForColumnIndex:13];
+            NSString *toAnonymousName = [reader objectForColumnIndex:14];
+            NSString *toAnonymousPhoto = [reader objectForColumnIndex:15];
+            
+            NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
+            [IMDataManager safeSaveForDic:msgDic setObject:userFrom forKey:@"userFrom"];
+            [IMDataManager safeSaveForDic:msgDic setObject:readState forKey:@"readState"];
+            [IMDataManager safeSaveForDic:msgDic setObject:postUUID forKey:@"postUUID"];
+            [IMDataManager safeSaveForDic:msgDic setObject:fromIsAnonymous forKey:@"fromIsAnonymous"];
+            [IMDataManager safeSaveForDic:msgDic setObject:toIsAnonymous forKey:@"toIsAnonymous"];
+            [IMDataManager safeSaveForDic:msgDic setObject:eventType forKey:@"eventType"];
+            [IMDataManager safeSaveForDic:msgDic setObject:fromAnonymousPhoto forKey:@"fromAnonymousPhoto"];
+            [IMDataManager safeSaveForDic:msgDic setObject:userTo forKey:@"userTo"];
+            
+            [IMDataManager safeSaveForDic:msgDic setObject:uuid forKey:@"uuid"];
+            [IMDataManager safeSaveForDic:msgDic setObject:content forKey:@"content"];
+            [IMDataManager safeSaveForDic:msgDic setObject:userToHost forKey:@"userToHost"];
+            [IMDataManager safeSaveForDic:msgDic setObject:createTime forKey:@"createTime"];
+            [IMDataManager safeSaveForDic:msgDic setObject:userFromHost forKey:@"userFromHost"];
+            [IMDataManager safeSaveForDic:msgDic setObject:fromAnonymousName forKey:@"fromAnonymousName"];
+            [IMDataManager safeSaveForDic:msgDic setObject:toAnonymousName forKey:@"toAnonymousName"];
+            [IMDataManager safeSaveForDic:msgDic setObject:toAnonymousPhoto forKey:@"toAnonymousPhoto"];
+            
+            [result addObject:msgDic];
+            [msgDic release];
+        }
+    }];
+    //    QIMVerboseLog(@"sql取消息耗时。: %llf", [[QIMWatchDog sharedInstance] escapedTime]);
+    return [result autorelease];
+}
+
+- (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventTypes:(NSArray *)eventTypes {
+    __block NSMutableArray *result = nil;
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql  = [NSString stringWithFormat:@"select userFrom, readState, postUUID, fromIsAnonymous, toIsAnonymous, eventType, fromAnonymousPhoto, userTo, uuid, content, userToHost, createTime, userFromHost, fromAnonymousName, toAnonymousName, toAnonymousPhoto from IM_Work_NoticeMessage where eventType in %@ order by createTime desc limit %d offset %d;", eventTypes, limit, offset];
+        NSLog(@"sql : %@", sql);
+        DataReader *reader = [database executeReader:sql withParameters:nil];
+        NSMutableArray *tempList = nil;
+        if (result == nil) {
+            result = [[NSMutableArray alloc] init];
+        }
+        while ([reader read]) {
+            
+            NSString *userFrom = [reader objectForColumnIndex:0];
+            NSNumber *readState = [reader objectForColumnIndex:1];
+            NSString *postUUID = [reader objectForColumnIndex:2];
+            NSNumber *fromIsAnonymous = [reader objectForColumnIndex:3];
+            NSNumber *toIsAnonymous = [reader objectForColumnIndex:4];
+            NSNumber *eventType = [reader objectForColumnIndex:5];
+            NSString *fromAnonymousPhoto = [reader objectForColumnIndex:6];
+            NSString *userTo = [reader objectForColumnIndex:7];
+            
+            NSString *uuid = [reader objectForColumnIndex:8];
+            NSString *content = [reader objectForColumnIndex:9];
+            NSString *userToHost = [reader objectForColumnIndex:10];
+            NSNumber *createTime = [reader objectForColumnIndex:11];
+            NSString *userFromHost = [reader objectForColumnIndex:12];
+            NSString *fromAnonymousName = [reader objectForColumnIndex:13];
+            NSString *toAnonymousName = [reader objectForColumnIndex:14];
+            NSString *toAnonymousPhoto = [reader objectForColumnIndex:15];
+            
+            NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
+            [IMDataManager safeSaveForDic:msgDic setObject:userFrom forKey:@"userFrom"];
+            [IMDataManager safeSaveForDic:msgDic setObject:readState forKey:@"readState"];
+            [IMDataManager safeSaveForDic:msgDic setObject:postUUID forKey:@"postUUID"];
+            [IMDataManager safeSaveForDic:msgDic setObject:fromIsAnonymous forKey:@"fromIsAnonymous"];
+            [IMDataManager safeSaveForDic:msgDic setObject:toIsAnonymous forKey:@"toIsAnonymous"];
+            [IMDataManager safeSaveForDic:msgDic setObject:eventType forKey:@"eventType"];
+            [IMDataManager safeSaveForDic:msgDic setObject:fromAnonymousPhoto forKey:@"fromAnonymousPhoto"];
+            [IMDataManager safeSaveForDic:msgDic setObject:userTo forKey:@"userTo"];
+            
+            [IMDataManager safeSaveForDic:msgDic setObject:uuid forKey:@"uuid"];
+            [IMDataManager safeSaveForDic:msgDic setObject:content forKey:@"content"];
+            [IMDataManager safeSaveForDic:msgDic setObject:userToHost forKey:@"userToHost"];
+            [IMDataManager safeSaveForDic:msgDic setObject:createTime forKey:@"createTime"];
+            [IMDataManager safeSaveForDic:msgDic setObject:userFromHost forKey:@"userFromHost"];
+            [IMDataManager safeSaveForDic:msgDic setObject:fromAnonymousName forKey:@"fromAnonymousName"];
+            [IMDataManager safeSaveForDic:msgDic setObject:toAnonymousName forKey:@"toAnonymousName"];
+            [IMDataManager safeSaveForDic:msgDic setObject:toAnonymousPhoto forKey:@"toAnonymousPhoto"];
+            
+            [result addObject:msgDic];
+            [msgDic release];
+        }
+    }];
+    //    QIMVerboseLog(@"sql取消息耗时。: %llf", [[QIMWatchDog sharedInstance] escapedTime]);
+    return [result autorelease];
 }
 
 - (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventType1:(int)eventType1 eventType2:(int)eventType2 readState:(int)readState{
@@ -1005,7 +1121,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
 
 - (void)qimDB_updateWorkNoticeMessageReadStateWithTime:(long long)time {
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"update IM_Work_NoticeMessage set readState=1 where readState=0 and eventType=1 and createTime <= %lld", time];
+        NSString *sql = [NSString stringWithFormat:@"update IM_Work_NoticeMessage set readState=1 where readState=0 and createTime <= %lld", time];
         NSLog(@"qimDB_updateWorkNoticeMessageReadStateWithTime sql : %@", sql);
         BOOL success = [database executeNonQuery:sql withParameters:nil];
         if (success) {
@@ -1014,55 +1130,6 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             NSLog(@"qimDB_updateWorkNoticeMessageReadStateWithTime faild");
         }
     }];
-}
-
-- (NSDictionary *)qimDB_getLastWorkMomentMessageDic {
-    __block NSMutableDictionary *result = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = [NSString stringWithFormat:@"select userFrom, readState, postUUID, fromIsAnonymous, toIsAnonymous, eventType, fromAnonymousPhoto, userTo, uuid, content, userToHost, createTime, userFromHost, fromAnonymousName, toAnonymousName, toAnonymousPhoto from IM_Work_NoticeMessage where eventType=0 order by createTime desc limit 1"];
-        DataReader *reader = [database executeReader:sql withParameters:nil];
-        if ([reader read]) {
-            if (!result) {
-                result = [[NSMutableDictionary alloc] init];
-            }
-            NSString *userFrom = [reader objectForColumnIndex:0];
-            NSNumber *readState = [reader objectForColumnIndex:1];
-            NSString *postUUID = [reader objectForColumnIndex:2];
-            NSNumber *fromIsAnonymous = [reader objectForColumnIndex:3];
-            NSNumber *toIsAnonymous = [reader objectForColumnIndex:4];
-            NSNumber *eventType = [reader objectForColumnIndex:5];
-            NSString *fromAnonymousPhoto = [reader objectForColumnIndex:6];
-            NSString *userTo = [reader objectForColumnIndex:7];
-            
-            NSString *uuid = [reader objectForColumnIndex:8];
-            NSString *content = [reader objectForColumnIndex:9];
-            NSString *userToHost = [reader objectForColumnIndex:10];
-            NSNumber *createTime = [reader objectForColumnIndex:11];
-            NSString *userFromHost = [reader objectForColumnIndex:12];
-            NSString *fromAnonymousName = [reader objectForColumnIndex:13];
-            NSString *toAnonymousName = [reader objectForColumnIndex:14];
-            NSString *toAnonymousPhoto = [reader objectForColumnIndex:15];
-            
-            [IMDataManager safeSaveForDic:result setObject:userFrom forKey:@"userFrom"];
-            [IMDataManager safeSaveForDic:result setObject:readState forKey:@"readState"];
-            [IMDataManager safeSaveForDic:result setObject:postUUID forKey:@"postUUID"];
-            [IMDataManager safeSaveForDic:result setObject:fromIsAnonymous forKey:@"fromIsAnonymous"];
-            [IMDataManager safeSaveForDic:result setObject:toIsAnonymous forKey:@"toIsAnonymous"];
-            [IMDataManager safeSaveForDic:result setObject:eventType forKey:@"eventType"];
-            [IMDataManager safeSaveForDic:result setObject:fromAnonymousPhoto forKey:@"fromAnonymousPhoto"];
-            [IMDataManager safeSaveForDic:result setObject:userTo forKey:@"userTo"];
-            
-            [IMDataManager safeSaveForDic:result setObject:uuid forKey:@"uuid"];
-            [IMDataManager safeSaveForDic:result setObject:content forKey:@"content"];
-            [IMDataManager safeSaveForDic:result setObject:userToHost forKey:@"userToHost"];
-            [IMDataManager safeSaveForDic:result setObject:createTime forKey:@"createTime"];
-            [IMDataManager safeSaveForDic:result setObject:userFromHost forKey:@"userFromHost"];
-            [IMDataManager safeSaveForDic:result setObject:fromAnonymousName forKey:@"fromAnonymousName"];
-            [IMDataManager safeSaveForDic:result setObject:toAnonymousName forKey:@"toAnonymousName"];
-            [IMDataManager safeSaveForDic:result setObject:toAnonymousPhoto forKey:@"toAnonymousPhoto"];
-        }
-    }];
-    return [result autorelease];
 }
 
 @end

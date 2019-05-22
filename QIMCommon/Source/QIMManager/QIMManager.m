@@ -338,6 +338,10 @@ static QIMManager *__IMManager = nil;
 }
 
 - (void)loginComplate {
+    QIMVerboseLog(@"初始化一下日志统计组件");
+    Class autoTrackerDataManager = NSClassFromString(@"QIMAutoTrackerDataManager");
+    [autoTrackerDataManager performSelector:@selector(qimDB_sharedLogDBInstanceWithDBFullJid:) withObject:[[QIMManager sharedInstance] getLastJid]];
+    
     NSOperationQueue *loginComplateQueue = [[NSOperationQueue alloc] init];
     [loginComplateQueue setMaxConcurrentOperationCount:1];
     loginComplateQueue.name = @"loginComplateQueue";
@@ -572,8 +576,12 @@ static QIMManager *__IMManager = nil;
         
         QIMVerboseLog(@"登录之后获取发现页应用列表");
         [self getRemoteFoundNavigation];
-        
     }
+    
+    QIMVerboseLog(@"登录之后主动上报日志");
+    Class autoTracker = NSClassFromString(@"QIMAutoTrackerOperation");
+    id autoTrackerObject = [[autoTracker alloc] init];
+    [autoTrackerObject performSelectorInBackground:@selector(uploadTracerData) withObject:nil];
 }
 
 - (void)generateClientConfigUpgradeArrayWithType:(QIMClientConfigType)type WithArray:(id)valueArr {
@@ -1262,7 +1270,6 @@ static QIMManager *__IMManager = nil;
 
 - (void)clearcache {
     QIMWarnLog(@"清除cache");
-
     [_lastLoginTimeDic removeAllObjects];
 }
 

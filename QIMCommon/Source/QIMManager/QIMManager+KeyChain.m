@@ -71,6 +71,10 @@
     [QIMUUIDTools setRequestURL:[[[QIMNavConfigManager sharedInstance] httpHost] dataUsingEncoding:NSUTF8StringEncoding]];
 }
 
++ (void)updateNewHttpRequestURL {
+    [QIMUUIDTools setNewHttpRequestURL:[[[QIMNavConfigManager sharedInstance] newerHttpUrl] dataUsingEncoding:NSUTF8StringEncoding]];
+}
+
 + (void)updateRequestDomain {
     [QIMUUIDTools setRequestDomain:[[[QIMNavConfigManager sharedInstance] domain] dataUsingEncoding:NSUTF8StringEncoding]];
 }

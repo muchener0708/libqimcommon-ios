@@ -229,6 +229,14 @@
         [request startSynchronous];
         QIMVerboseLog(@"获取单人历史记录Url: %@,Body 参数 : %@ loginComplate耗时 : %llf", destUrl, jsonDic, [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime]);
         NSError *error = [request error];
+        
+        
+        NSDictionary *logDic = @{@"costTime":@([[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime]), @"reportTime":@([[NSDate date] timeIntervalSince1970]), @"threadName":@"", @"isMainThread":@([NSThread isMainThread]), @"url":destUrl, @"methodParams":jsonDic, @"requestHeaders":requestHeaders, @"describtion":@"请求单人离线消息"};
+        Class autoManager = NSClassFromString(@"QIMAutoTrackerManager");
+        id autoManagerObject = [[autoManager alloc] init];
+        [autoManagerObject performSelectorInBackground:@selector(addCATTraceData:) withObject:logDic];
+        
+        
         if ([request responseStatusCode] == 200 && !error) {
             NSData *responseData = [request responseData];
             NSDictionary *result = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
@@ -291,6 +299,8 @@
 
 - (NSArray *)getConsultServerlogWithFrom:(NSString *)from virtualId:(NSString *)virtualId to:(NSString *)to version:(long long)version count:(int)count direction:(int)direction {
     
+    CFAbsoluteTime startTime = [[QIMWatchDog sharedInstance] startTime];
+
     __block NSArray *msgList = nil;
     NSArray *fromComs = [from componentsSeparatedByString:@"@"];
     NSArray *toComs = [to componentsSeparatedByString:@"@"];
@@ -324,6 +334,12 @@
     [request appendPostData:requestData];
     
     [request startSynchronous];
+    
+    NSDictionary *logDic = @{@"costTime":@([[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime]), @"reportTime":@([[NSDate date] timeIntervalSince1970]), @"threadName":@"", @"isMainThread":@([NSThread isMainThread]), @"url":destUrl, @"methodParams":params, @"requestHeaders":requestHeaders, @"describtion":@"单人ConsultServer消息（下拉加载)"};
+    Class autoManager = NSClassFromString(@"QIMAutoTrackerManager");
+    id autoManagerObject = [[autoManager alloc] init];
+    [autoManagerObject performSelectorInBackground:@selector(addCATTraceData:) withObject:logDic];
+    
     NSError *error = [request error];
     NSDictionary *result = nil;
     if ([request responseStatusCode] == 200 && !error) {
@@ -342,6 +358,8 @@
 
 - (NSArray *)getUserChatlogWithFrom:(NSString *)from to:(NSString *)to version:(long long)version count:(int)count direction:(int)direction {
     
+    CFAbsoluteTime startTime = [[QIMWatchDog sharedInstance] startTime];
+
     NSArray *fromComs = [from componentsSeparatedByString:@"@"];
     NSArray *toComs = [to componentsSeparatedByString:@"@"];
     NSMutableDictionary *params = [NSMutableDictionary dictionary];
@@ -372,6 +390,11 @@
     [request setRequestHeaders:cookieProperties];
     [request appendPostData:requestData];
     
+    NSDictionary *logDic = @{@"costTime":@([[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime]), @"reportTime":@([[NSDate date] timeIntervalSince1970]), @"threadName":@"", @"isMainThread":@([NSThread isMainThread]), @"url":destUrl, @"methodParams":params, @"requestHeaders":requestHeaders, @"describtion":@"单人ConsultServer消息（下拉加载)"};
+    Class autoManager = NSClassFromString(@"QIMAutoTrackerManager");
+    id autoManagerObject = [[autoManager alloc] init];
+    [autoManagerObject performSelectorInBackground:@selector(addCATTraceData:) withObject:logDic];
+
     [request startSynchronous];
     NSError *error = [request error];
     NSDictionary *result = nil;

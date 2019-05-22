@@ -344,7 +344,7 @@
                     QIMVerboseLog(@"online Comment 通知 : %@", onlineDict);
                     dispatch_async(dispatch_get_main_queue(), ^{
                         [[NSNotificationCenter defaultCenter] postNotificationName:kPBPresenceCategoryNotifyWorkNoticeMessage object:nil];
-                        NSInteger notReadMessageCount = [[QIMManager sharedInstance] getWorkNoticeMessagesCount];
+                        NSInteger notReadMessageCount = [[QIMManager sharedInstance] getWorkNoticeMessagesCountWithEventType:@[@(QIMWorkFeedNotifyTypeComment), @(QIMWorkFeedNotifyTypePOSTAt), @(QIMWorkFeedNotifyTypeCommentAt)]];
                         QIMVerboseLog(@"发送驼圈在线消息小红点通知数: %ld", notReadMessageCount);
                         [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@{@"newWorkNoticeCount":@(notReadMessageCount)}];
                     });
@@ -356,12 +356,26 @@
                     });
                 } else if (eventType == QIMWorkFeedNotifyTypePOSTAt) {
                   //帖子艾特
-                    
+                    QIMVerboseLog(@"online 新帖子艾特 通知 : %@", onlineDict);
+                    QIMVerboseLog(@"online Comment 通知 : %@", onlineDict);
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [[NSNotificationCenter defaultCenter] postNotificationName:kPBPresenceCategoryNotifyWorkNoticeMessage object:nil];
+                        NSInteger notReadMessageCount = [[QIMManager sharedInstance] getWorkNoticeMessagesCountWithEventType:@[@(QIMWorkFeedNotifyTypeComment), @(QIMWorkFeedNotifyTypePOSTAt), @(QIMWorkFeedNotifyTypeCommentAt)]];
+                        QIMVerboseLog(@"发送驼圈在线消息小红点通知数: %ld", notReadMessageCount);
+                        [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@{@"newWorkNoticeCount":@(notReadMessageCount)}];
+                    });
                 } else if (eventType == QIMWorkFeedNotifyTypeCommentAt) {
                   //评论艾特
-                    
+                    QIMVerboseLog(@"online 新评论艾特 通知 : %@", onlineDict);
+                    QIMVerboseLog(@"online Comment 通知 : %@", onlineDict);
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [[NSNotificationCenter defaultCenter] postNotificationName:kPBPresenceCategoryNotifyWorkNoticeMessage object:nil];
+                        NSInteger notReadMessageCount = [[QIMManager sharedInstance] getWorkNoticeMessagesCountWithEventType:@[@(QIMWorkFeedNotifyTypeComment), @(QIMWorkFeedNotifyTypePOSTAt), @(QIMWorkFeedNotifyTypeCommentAt)]];
+                        QIMVerboseLog(@"发送驼圈在线消息小红点通知数: %ld", notReadMessageCount);
+                        [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@{@"newWorkNoticeCount":@(notReadMessageCount)}];
+                    });
                 } else {
-                    
+                    QIMVerboseLog(@"online 驼圈其他通知 : %@", onlineDict);
                 }
             }
                 break;

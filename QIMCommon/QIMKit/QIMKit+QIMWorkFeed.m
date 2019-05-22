@@ -135,12 +135,20 @@
     return [[QIMManager sharedInstance] getLastWorkMoment];
 }
 
-- (NSInteger)getWorkNoticeMessagesCount {
-    return [[QIMManager sharedInstance] getWorkNoticeMessagesCount];
+- (NSInteger)getWorkNoticeMessagesCountWithEventType:(NSArray *)eventTypes {
+    return [[QIMManager sharedInstance] getWorkNoticeMessagesCountWithEventType:eventTypes];
 }
 
 - (BOOL)checkWorkMomentExistWithMomentId:(NSString *)momentId {
     return [[QIMManager sharedInstance] checkWorkMomentExistWithMomentId:momentId];
+}
+
+- (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventTypes:(NSArray *)eventTypes readState:(int)readState {
+    return [[QIMManager sharedInstance] getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventTypes:(NSArray *)eventTypes readState:(int)readState];
+}
+
+- (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventTypes:(NSArray *)eventTypes {
+    return [[QIMManager sharedInstance] getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventTypes:(NSArray *)eventTypes];
 }
 
 - (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset {

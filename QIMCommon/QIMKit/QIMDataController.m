@@ -12,7 +12,7 @@
 #import "QIMFileManager.h"
 #import "QIMManager.h"
 #define kResourceCachePath                          @"Resource"
-#define kImageCahce                                 @"imageCache"
+#define kImageCahce                                 @"QIMImageCache"
 #define kHashSalt                                   @"iqunar"
 #define kResourceEmptyValue                             "\0"
 
@@ -81,11 +81,9 @@ static QIMDataController *__globalDataController = nil;
 
 - (long long) sizeofImagePath {
     NSString *cachePath = [UserCachesPath stringByAppendingPathComponent:kImageCahce];
-    
+    NSString *imageCachePath = [UserCachesPath stringByAppendingPathComponent:@"imageCache"];
     NSString *newcachePath = [QIMFileManager documentsofPath:QIMFileCacheTypeColoction];
-    
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-    NSString *logDirectory = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"Logs"];
+    NSString *logDirectory = [UserCachesPath stringByAppendingPathComponent:@"Logs"];
 
     return [QIMUtility sizeofPath:cachePath] + [QIMUtility sizeofPath:newcachePath] + [QIMUtility sizeofPath:logDirectory];
 }
@@ -104,16 +102,17 @@ static QIMDataController *__globalDataController = nil;
 - (void) removeAllImage {
     NSString *cachePath = [UserCachesPath stringByAppendingPathComponent:kImageCahce];
     NSString *newcachePath = [QIMFileManager documentsofPath:QIMFileCacheTypeColoction];
+    NSString *imageCachePath = [UserCachesPath stringByAppendingPathComponent:@"imageCache"];
     [self deleteAllFilesAtPath:cachePath];
     [self deleteAllFilesAtPath:newcachePath];
+    [self deleteAllFilesAtPath:imageCachePath];
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:kQCRemoveImageCachePathSuccess object:nil];
     });
 }
 
 - (void)clearLogFiles {
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-    NSString *logDirectory = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"Logs"];
+    NSString *logDirectory = [UserCachesPath stringByAppendingPathComponent:@"Logs"];
     [[NSFileManager defaultManager] removeItemAtPath:logDirectory error:nil];
 }
 

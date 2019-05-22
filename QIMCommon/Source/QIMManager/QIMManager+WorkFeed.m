@@ -838,7 +838,7 @@
                     BOOL authSign = [[data objectForKey:@"authSign"] boolValue];
                     BOOL oldAuthSign = [[[QIMUserCacheManager sharedInstance] userObjectForKey:@"kUserWorkFeedEntrance"] boolValue];
                     [[QIMUserCacheManager sharedInstance] setUserObject:@(authSign) forKey:@"kUserWorkFeedEntrance"];
-                    if (authSign != oldAuthSign) {
+                    if (authSign != oldAuthSign && authSign == NO) {
                         dispatch_async(dispatch_get_main_queue(), ^{
                             [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyReloadWorkFeedEntrance object:nil];
                         });

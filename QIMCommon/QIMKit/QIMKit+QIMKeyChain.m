@@ -30,6 +30,10 @@
     [QIMManager updateRequestURL];
 }
 
++ (void)updateNewHttpRequestURL {
+    [QIMManager updateNewHttpRequestURL];
+}
+
 + (void)updateRequestDomain {
     [QIMManager updateRequestDomain];
 }

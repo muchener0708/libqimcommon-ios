@@ -593,7 +593,7 @@ static void ProtobufReconnectReachabilityCallback(SCNetworkReachabilityRef targe
 //                                if (self.usesOldSchoolSecureConnect) {
 //                                    [pbstream oldSchoolSecureConnectWithTimeout:PBXMPPStreamTimeoutNone error:nil];
 //                                } else {
-                                [pbstream connectWithTimeout:8 error:nil];
+//                                [pbstream connectWithTimeout:8 error:nil];
 //                                }
                             } else if ([self multipleReachabilityChanges]) {
                                 [self setMultipleReachabilityChanges:NO];

@@ -1098,6 +1098,7 @@
                 [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@{@"ForceRefresh":@(YES)}];
                 QIMVerboseLog(@"抛出通知 clearAllNoRead: kAtALLChange");
                 [[NSNotificationCenter defaultCenter] postNotificationName:kAtALLChange object:@"allIds"];
+                [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSessionListUpdate object:nil];
             });
         } else if (readType == QIMMessageReadFlagGroupReaded) {
             //群已读
@@ -1198,6 +1199,7 @@
     
     QIMErrorLog(@"Socket已经断开通知");
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(checkNetworkStatus) object:nil];
+    
     [self checkNetworkStatus];
     [self onDisconnect];
 }

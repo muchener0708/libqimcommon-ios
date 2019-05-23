@@ -821,7 +821,8 @@
 - (void)updateNotReadCountCacheByJid:(NSString *)jid {
     dispatch_async(dispatch_get_main_queue(), ^{
         QIMVerboseLog(@"updateNotReadCountCacheByJid: 抛出通知 kMsgNotReadCountChange");
-        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@{@"ForceRefresh":@(YES)}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@{@"XmppId":jid, @"RealJid":jid}];
+//        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@{@"ForceRefresh":@(YES)}];
     });
 }
 
@@ -860,18 +861,21 @@
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     //防止有些cell没有刷新到，字典中未包含GroupId，将未读数计算进去
     
+    NSMutableArray *groupIdList = [[NSMutableArray alloc] initWithCapacity:3];
     NSArray *array = [[QIMManager sharedInstance] getClientConfigInfoArrayWithType:QIMClientConfigTypeKNoticeStickJidDic];
     for (NSDictionary *groupInfoDic in array) {
         NSString *groupId = [groupInfoDic objectForKey:@"ConfigSubKey"];
         if (groupId.length > 0) {
             NSInteger reminded = [[groupInfoDic objectForKey:@"DeleteFlag"] integerValue];
             if (reminded == 0) {
-                count += [[QIMManager sharedInstance] getNotReadMsgCountByJid:groupId WithRealJid:groupId];
+                [groupIdList addObject:groupId];
+//                count += [[QIMManager sharedInstance] getNotReadMsgCountByJid:groupId WithRealJid:groupId];
             }
         }
     }
+    count = [[IMDataManager qimDB_SharedInstance] qimDB_getSumNotReaderMsgCountByXmppIds:groupIdList];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
-    QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start); //
+    QIMVerboseLog(@"耗时 = %f s", end - start); //
     return count;
 }
 
@@ -1023,7 +1027,7 @@
     
     [[IMDataManager qimDB_SharedInstance] qimDB_updateGroupMessageRemoteState:remoteState ByGroupReadList:readList];
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@{@"ForceRefresh":@(YES)}];
+//        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@{@"ForceRefresh":@(YES)}];
         [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@{@"XmppId":xmppId, @"RealJid":xmppId}];
     });
 }
@@ -1034,7 +1038,7 @@
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         QIMVerboseLog(@"发送消息RemoteState阅读状态变化通知 : %ld, %@", remoteState, msgIdList);
         [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageReadStateUpdate object:@{@"State":@(remoteState), @"MsgIds":msgIdList?msgIdList:@[]}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@{@"ForceRefresh":@(YES)}];
+//        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@{@"ForceRefresh":@(YES)}];
         [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@{@"XmppId":xmppId, @"RealJid":realJid}];
     });
 }

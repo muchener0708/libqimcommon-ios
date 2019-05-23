@@ -66,7 +66,6 @@
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"插入好友列表%ld条数据 耗时 = %f s", friendList.count, end - start); //s
-    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_insertFriendWithUserId:(NSString *)userId

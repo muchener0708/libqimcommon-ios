@@ -149,6 +149,7 @@
 
 #pragma mark -  获取离线Notice消息
 - (void)getSystemMsgHistoryListWithUserId:(NSString *)userId WithDomain:(NSString *)domain WithVersion:(long long)version {
+    __block CFAbsoluteTime startTime = [[QIMWatchDog sharedInstance] startTime];
     NSMutableDictionary *params = [NSMutableDictionary dictionary];
     [params setObject:userId forKey:@"user"];
     [params setObject:@(version) forKey:@"time"];
@@ -170,6 +171,14 @@
     [request setHTTPRequestHeaders:cookieProperties];
     __weak __typeof(self) weakSelf = self;
     [QIMHTTPClient sendRequest:request complete:^(QIMHTTPResponse *response) {
+        
+        NSDictionary *logDic = @{@"costTime":@([[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime]), @"reportTime":@([[NSDate date] timeIntervalSince1970]), @"threadName":@"", @"isMainThread":@([NSThread isMainThread]), @"url":destUrl, @"methodParams":params, @"requestHeaders":requestHeaders, @"describtion":@"请求HeadLine离线消息"};
+        
+        Class autoManager = NSClassFromString(@"QIMAutoTrackerManager");
+        id autoManagerObject = [[autoManager alloc] init];
+        [autoManagerObject performSelectorInBackground:@selector(addCATTraceData:) withObject:logDic];
+        
+        
         if (response.code == 200) {
             __typeof(self) strongSelf = weakSelf;
             if (!strongSelf) {

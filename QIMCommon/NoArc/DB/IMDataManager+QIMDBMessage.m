@@ -386,7 +386,7 @@
         }
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
-    QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
+    QIMVerboseLog(@"耗时 = %f s", end - start);
     return flag;
 }
 
@@ -2053,6 +2053,21 @@
     return [result autorelease];
 }
 
+- (NSInteger)qimDB_getSumNotReaderMsgCountByXmppIds:(NSString *)xmppIds {
+    __block NSInteger count = 0;
+    CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = [NSString stringWithFormat:@"SELECT Sum(UnreadCount) FROM IM_SessionList Where XmppId in %@ And RealJid in %@;", xmppIds, xmppIds];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
+        if ([reader read]) {
+            count = [[reader objectForColumnIndex:0] integerValue];
+        }
+    }];
+    CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
+    QIMVerboseLog(@"qimDB_getSumNotReaderMsgCountByXmppIds:(NSString *)xmppIds 耗时 = %f s", end - start); //s
+    return count;
+}
+
 - (NSInteger)qimDB_getNotReaderMsgCountByJid:(NSString *)jid ByRealJid:(NSString *)realJid withChatType:(ChatType)chatType {
     __block NSInteger count = 0;
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
@@ -2063,9 +2078,8 @@
             count = [[reader objectForColumnIndex:0] integerValue];
         }
     }];
-    QIMVerboseLog(@"");
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
-    QIMVerboseLog(@"qimDB_getNotReaderMsgCountByJid:(NSString *)jid ByRealJid:(NSString *)realJid withChatType:(ChatType)chatType耗时 = %f s", end - start); //s
+    QIMVerboseLog(@"耗时 = %f s", end - start); //s
     return count;
 }
 
@@ -2080,7 +2094,7 @@
         }
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
-    QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start); //
+    QIMVerboseLog(@"耗时 = %f s", end - start); //
     return count;
 }
 
@@ -2344,7 +2358,6 @@
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"批量更新%ld条消息阅读状态 耗时 = %f s", msgs.count, end - start); //
-    QIMVerboseLog(@"");
 }
 
 - (long long)qimDB_bulkUpdateGroupMessageReadFlag:(NSArray *)mucArray {
@@ -2397,7 +2410,6 @@
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"DB更新群阅读指针%ld条数据 耗时 = %f s", mucArray.count, end - start); //s
-    QIMVerboseLog(@"");
     
     CFAbsoluteTime start2 = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"DB根据群阅读指针更新艾特消息 开始"); //s
@@ -2485,7 +2497,6 @@
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"在线DB更新群阅读指针%ld条数据 耗时 = %f s", groupReadList.count, end - start); //s
-    QIMVerboseLog(@"");
 }
 
 - (void)qimDB_updateMsgWithMsgRemoteState:(NSInteger)msgRemoteFlag ByMsgIdList:(NSArray *)msgIdList {

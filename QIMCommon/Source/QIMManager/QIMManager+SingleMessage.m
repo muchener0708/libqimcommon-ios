@@ -53,6 +53,7 @@
 }
 
 - (void)getReadFlag {
+    __block CFAbsoluteTime startTime = [[QIMWatchDog sharedInstance] startTime];
     NSString *destUrl = [NSString stringWithFormat:@"%@/qtapi/getreadflag.qunar?server=%@&c=qtalk&u=%@&k=%@&p=iphone&v=%@",
                          [[QIMNavConfigManager sharedInstance] javaurl],
                          [[XmppImManager sharedInstance] domain],
@@ -80,6 +81,14 @@
     [request setHTTPBody:data];
     [request setHTTPRequestHeaders:cookieProperties];
     [QIMHTTPClient sendRequest:request complete:^(QIMHTTPResponse *response) {
+        
+        NSDictionary *logDic = @{@"costTime":@([[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime]), @"reportTime":@([[NSDate date] timeIntervalSince1970]), @"threadName":@"", @"isMainThread":@([NSThread isMainThread]), @"url":destUrl, @"methodParams":jsonDic, @"requestHeaders":requestHeaders, @"describtion":@"请求单人离线消息"};
+        
+        Class autoManager = NSClassFromString(@"QIMAutoTrackerManager");
+        id autoManagerObject = [[autoManager alloc] init];
+        [autoManagerObject performSelectorInBackground:@selector(addCATTraceData:) withObject:logDic];
+        
+        
         if (response.code == 200) {
             NSDictionary *result = [[QIMJSONSerializer sharedInstance] deserializeObject:response.data error:nil];
             BOOL ret = [result objectForKey:@"ret"];

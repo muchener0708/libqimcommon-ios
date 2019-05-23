@@ -371,10 +371,9 @@
 
 - (void)qimDB_insertGroup:(NSString *)groupId {
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"insert or IGNORE into IM_Group(GroupId, Name, LastUpdateTime) values(:GroupId, :Name, :LastUpdateTime);";
+        NSString *sql = @"insert or IGNORE into IM_Group(GroupId, LastUpdateTime) values(:GroupId, :LastUpdateTime);";
         NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:3];
         [param addObject:groupId];
-        [param addObject:[[groupId componentsSeparatedByString:@"@"] objectAtIndex:0]];
         [param addObject:@(0)];
         [database executeNonQuery:sql withParameters:param];
         [param release];
@@ -866,7 +865,6 @@
         }
         [database executeBulkInsert:sql withParameters:params];
     }];
-    QIMVerboseLog(@"");
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"更新群勿扰模式列表%ld条数据 耗时 = %f s", stateList.count, end - start); //s
 }

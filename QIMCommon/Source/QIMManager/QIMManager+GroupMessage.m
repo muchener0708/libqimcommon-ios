@@ -128,6 +128,12 @@
         
         QIMVerboseLog(@"获取群历史记录Url : %@, Body参数: %@ loginComplate耗时 : %llf", destUrl, params, [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime]);
         
+        NSDictionary *logDic = @{@"costTime":@([[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime]), @"reportTime":@([[NSDate date] timeIntervalSince1970]), @"threadName":@"", @"isMainThread":@([NSThread isMainThread]), @"url":destUrl, @"methodParams":params, @"requestHeaders":requestHeaders, @"describtion":@"请求群离线消息"};
+        
+        Class autoManager = NSClassFromString(@"QIMAutoTrackerManager");
+        id autoManagerObject = [[autoManager alloc] init];
+        [autoManagerObject performSelectorInBackground:@selector(addCATTraceData:) withObject:logDic];
+        
         NSError *error = [request error];
         NSDictionary *result = nil;
         if ([request responseStatusCode] == 200 && !error) {
@@ -263,6 +269,7 @@
 
 //更新群阅读指针
 - (void)updateMucReadMark {
+    __block CFAbsoluteTime startTime = [[QIMWatchDog sharedInstance] startTime];
     if (self.remoteKey.length <= 0) {
         [self updateRemoteLoginKey];
     }
@@ -294,6 +301,14 @@
         request.HTTPRequestHeaders = cookieProperties;
         __block NSDictionary *result = nil;
         [QIMHTTPClient sendRequest:request complete:^(QIMHTTPResponse *response) {
+            
+            NSDictionary *logDic = @{@"costTime":@([[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime]), @"reportTime":@([[NSDate date] timeIntervalSince1970]), @"threadName":@"", @"isMainThread":@([NSThread isMainThread]), @"url":destUrl, @"methodParams":params, @"requestHeaders":requestHeaders, @"describtion":@"请求群离线阅读指针"};
+            
+            Class autoManager = NSClassFromString(@"QIMAutoTrackerManager");
+            id autoManagerObject = [[autoManager alloc] init];
+            [autoManagerObject performSelectorInBackground:@selector(addCATTraceData:) withObject:logDic];
+            
+            
              QIMVerboseLog(@"获取群阅读指针结果 : %@", response);
              result = [[QIMJSONSerializer sharedInstance] deserializeObject:response.data error:nil];
              BOOL errcode = [[result objectForKey:@"ret"] boolValue];

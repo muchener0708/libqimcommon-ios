@@ -1098,7 +1098,6 @@
                 QIMVerboseLog(@"clearAllNoRead: 抛出通知 kMsgNotReadCountChange");
                 [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@{@"ForceRefresh":@(YES)}];
                 QIMVerboseLog(@"抛出通知 clearAllNoRead: kAtALLChange");
-                [[NSNotificationCenter defaultCenter] postNotificationName:kAtALLChange object:@"allIds"];
                 [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSessionListUpdate object:nil];
             });
         } else if (readType == QIMMessageReadFlagGroupReaded) {

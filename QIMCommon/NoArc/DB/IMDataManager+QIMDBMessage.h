@@ -135,6 +135,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray *)qimDB_getMsgListByXmppId:(NSString *)xmppId FromTimeStamp:(long long)timeStamp;
 
+- (NSInteger)qimDB_getSumNotReaderMsgCountByXmppIds:(NSString *)xmppIds;
+
 - (NSInteger)qimDB_getNotReaderMsgCountByJid:(NSString *)jid ByRealJid:(NSString *)realJid withChatType:(ChatType)chatType;
 
 - (NSInteger)qimDB_getNotReaderMsgCountByJid:(NSString *)jid ByRealJid:(NSString *)realJid;

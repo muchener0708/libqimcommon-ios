@@ -305,9 +305,8 @@
         }
         long long endTime = [[NSDate date] timeIntervalSince1970] * 1000;
         CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
-        NSLog(@"生成%ld条未读会话列表 耗时 = %f s", result.count, end - start); //s
+        QIMVerboseLog(@"生成%ld条未读会话列表 耗时 = %f s", result.count, end - start); //s
     }];
-    QIMVerboseLog(@"");
     return [result autorelease];
 }
 
@@ -386,7 +385,6 @@
         CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
         NSLog(@"生成%ld条会话列表 耗时 = %f s", result.count, end - start); //s
     }];
-    QIMVerboseLog(@"");
     return [result autorelease];
 }
 

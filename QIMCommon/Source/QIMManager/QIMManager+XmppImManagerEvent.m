@@ -1197,12 +1197,14 @@
 }
 
 - (void)socketDisconnect{
+    if (self.needTryRelogin == YES) {
+        QIMErrorLog(@"Socket已经断开通知");
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(checkNetworkStatus) object:nil];
+        
+        [self checkNetworkStatus];
+        [self onDisconnect];
+    }
     
-    QIMErrorLog(@"Socket已经断开通知");
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(checkNetworkStatus) object:nil];
-    
-    [self checkNetworkStatus];
-    [self onDisconnect];
 }
 
 - (void)serviceStreamEnd:(NSDictionary *)infoDic{

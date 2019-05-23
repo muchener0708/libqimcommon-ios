@@ -29,7 +29,7 @@
     NSString *_innerFileHttpHost;
     NSString *_port;  //xmpp端口
     NSString *_protobufPort;   //Pb端口
-    
+    NSString *_resetPwdUrl; //重设密码
     NSString *_hashHosts;
     
     NSArray *_adItems;
@@ -136,6 +136,7 @@
             _domainHost = @".qunar.com";
             _shareUrl = @"https://qim.qunar.com/sharemsg/index.php";
             _uploadLog = @"https://im.qunar.com/pubapi/qtalk/log/upload.qunar";
+            _resetPwdUrl = @"http://im.qunar.com/clientweb/reterievePassword#/";
         } else if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
             _xmppHost = @"qt.qunar.com";
             _httpHost = @"https://qtapi.qunar.com";
@@ -157,6 +158,7 @@
             _shareUrl = @"https://qim.qunar.com/sharemsg/index.php";
             _email = @"qunar.com";
             _uploadLog = @"https://im.qunar.com/pubapi/qtalk/log/upload.qunar";
+            _resetPwdUrl = @"http://im.qunar.com/clientweb/reterievePassword#/";
         }
     }
     
@@ -526,6 +528,7 @@
         _leaderurl = [baseAddess objectForKey:@"leaderurl"];
         _mobileurl = [baseAddess objectForKey:@"mobileurl"];
         _shareUrl = [baseAddess objectForKey:@"shareurl"];
+        _resetPwdUrl = [baseAddess objectForKey:@"resetPwdUrl"];
         NSString *domainHost = [baseAddess objectForKey:@"domainhost"];
         if (domainHost.length > 0) {
             _domainHost = domainHost;
@@ -571,6 +574,7 @@
                 _tokenSmsUrl = [baseAddess objectForKey:@"sms_token"];
                 _checkSmsUrl = [baseAddess objectForKey:@"sms_verify"];
                 _takeSmsUrl = [baseAddess objectForKey:@"sms_verify"];
+                _resetPwdUrl = [baseAddess objectForKey:@"resetPwdUrl"];
             }
         }
     } failure:^(NSError *error) {

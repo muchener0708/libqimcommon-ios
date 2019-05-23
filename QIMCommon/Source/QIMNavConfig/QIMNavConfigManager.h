@@ -29,6 +29,7 @@
 @property (nonatomic, readonly, copy) NSString *mobileurl;  //手机号领导
 @property (nonatomic, readonly, copy) NSString *shareUrl;   //分享聊天记录
 @property (nonatomic, readonly, copy) NSString *domainHost; //种Cookie的domain
+@property (nonatomic, readonly, copy) NSString *resetPwdUrl;
 
 //hosts
 @property (nonatomic, readonly, copy) NSString *hashHosts;

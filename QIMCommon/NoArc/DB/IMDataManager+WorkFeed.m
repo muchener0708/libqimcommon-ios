@@ -824,7 +824,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
     fromAnonymousName     TEXT
     */
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql = @"insert or Replace into IM_Work_NoticeMessage(userFrom, readState, postUUID, fromIsAnonymous, toIsAnonymous, eventType, fromAnonymousPhoto, userTo, uuid, content, userToHost, createTime, userFromHost, fromAnonymousName, toAnonymousName, toAnonymousPhoto) values(:userFrom, :readState, :postUUID, :fromIsAnonymous, :toIsAnonymous, :eventType, :fromAnonymousPhoto, :userTo, :uuid, :content, :userToHost, :createTime, :userFromHost, :fromAnonymousName, :toAnonymousName, :toAnonymousPhoto);";
+        NSString *sql = @"insert or IGNORE into IM_Work_NoticeMessage(userFrom, readState, postUUID, fromIsAnonymous, toIsAnonymous, eventType, fromAnonymousPhoto, userTo, uuid, content, userToHost, createTime, userFromHost, fromAnonymousName, toAnonymousName, toAnonymousPhoto) values(:userFrom, :readState, :postUUID, :fromIsAnonymous, :toIsAnonymous, :eventType, :fromAnonymousPhoto, :userTo, :uuid, :content, :userToHost, :createTime, :userFromHost, :fromAnonymousName, :toAnonymousName, :toAnonymousPhoto);";
         NSMutableArray *paramList = [[NSMutableArray alloc] init];
         for (NSDictionary *noticeMsgDic in notices) {
             

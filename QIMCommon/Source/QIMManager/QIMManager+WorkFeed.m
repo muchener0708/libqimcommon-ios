@@ -981,6 +981,7 @@
                 NSString *notifyKey = [data objectForKey:@"notifyKey"];
                 [[IMDataManager qimDB_SharedInstance] qimDB_UpdateUserCacheDataWithKey:kWorkMomentNotifySwitchConfig withType:12 withValue:@"驼圈开关" withValueInt:flag];
                 dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyUpdateNotifyConfig object:@(flag)];
                     if (callback) {
                         callback(YES);
                     }

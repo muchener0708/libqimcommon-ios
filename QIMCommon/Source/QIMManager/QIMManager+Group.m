@@ -133,7 +133,7 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeStartalk) {
-            NSString *groupHeaderPath = [NSBundle qim_myLibraryResourcePathWithClassName:@"QIMCommonResource" BundleName:@"QIMCommonResource" pathForResource:@"QIMSTGroupDefaultHeader" ofType:@"png"];
+            NSString *groupHeaderPath = [NSBundle qim_myLibraryResourcePathWithClassName:@"QIMCommonResource" BundleName:@"QIMCommonResource" pathForResource:@"QIMdefaultGroupHeader" ofType:@"png"];
             __defaultGroupHeaderImage = [UIImage imageWithContentsOfFile:groupHeaderPath];
         } else {
             NSString *groupHeaderPath = [NSBundle qim_myLibraryResourcePathWithClassName:@"QIMCommonResource" BundleName:@"QIMCommonResource" pathForResource:@"QIMGroupDefaultHeader" ofType:@"png"];

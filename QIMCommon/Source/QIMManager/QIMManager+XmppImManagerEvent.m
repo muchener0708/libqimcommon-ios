@@ -633,6 +633,7 @@
         
         QIMMessageModel *mesg = [QIMMessageModel new];
         [mesg setXmppId:sid];
+        [mesg setRealJid:sid];
         [mesg setMessageId:msgId];
         [mesg setFrom:sid];
         [mesg setChatType:ChatType_System];

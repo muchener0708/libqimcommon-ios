@@ -314,6 +314,9 @@
 //驼圈未读通知
 #define kNotifyNotReadWorkCountChange              @"kNotifyNotReadWorkCountChange"
 
+//驼圈提醒通知
+#define kNotifyUpdateNotifyConfig                  @"kNotifyUpdateNotifyConfig"
+
 //驼圈
 #define kPBPresenceCategoryNotifyWorkNoticeLastMessage  @"kPBPresenceCategoryNotifyWorkNoticeLastMessage"
 

@@ -754,6 +754,21 @@
     return totalCount;
 }
 
+- (NSArray *)selectUserListExMySelfBySearchStr:(NSString *)searchStr WithLimit:(NSInteger)limit WithOffset:(NSInteger)offset {
+    __block NSArray *array = nil;
+    dispatch_block_t block = ^{
+        
+        array = [[IMDataManager qimDB_SharedInstance] qimDB_selectUserListExMySelfBySearchStr:searchStr WithLimit:limit WithOffset:offset];
+    };
+    
+    if (dispatch_get_specific(self.cacheTag))
+        block();
+    else
+        dispatch_sync(self.cacheQueue, block);
+    
+    return array;
+}
+
 - (NSArray *)searchUserListBySearchStr:(NSString *)searchStr WithLimit:(NSInteger)limit WithOffset:(NSInteger)offset {
     __block NSArray *array = nil;
     dispatch_block_t block = ^{

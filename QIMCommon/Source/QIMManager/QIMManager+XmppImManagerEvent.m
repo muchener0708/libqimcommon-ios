@@ -350,10 +350,15 @@
                     });
                 } else if (eventType == QIMWorkFeedNotifyTypePOST) {
                     QIMVerboseLog(@"online 新帖子 通知 : %@", onlineDict);
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@{@"newWorkMoment":@(YES)}];
-                        [[NSNotificationCenter defaultCenter] postNotificationName:kNotify_RN_QTALK_SUGGEST_WorkFeed_UPDATE object:[self getLastWorkOnlineMomentWithDic:onlineDict]];
-                    });
+                    NSString *owner = [onlineDict objectForKey:@"owner"];
+                    NSString *ownerHost = [onlineDict objectForKey:@"ownerHost"];
+                    NSString *ownerId = [NSString stringWithFormat:@"%@@%@", owner, ownerHost];
+                    if (![ownerId isEqualToString:[[QIMManager sharedInstance] getLastJid]]) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@{@"newWorkMoment":@(YES)}];
+                            [[NSNotificationCenter defaultCenter] postNotificationName:kNotify_RN_QTALK_SUGGEST_WorkFeed_UPDATE object:[self getLastWorkOnlineMomentWithDic:onlineDict]];
+                        });
+                    }
                 } else if (eventType == QIMWorkFeedNotifyTypePOSTAt) {
                   //帖子艾特
                     QIMVerboseLog(@"online 新帖子艾特 通知 : %@", onlineDict);

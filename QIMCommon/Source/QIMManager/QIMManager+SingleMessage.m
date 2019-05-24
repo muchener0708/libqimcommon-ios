@@ -176,6 +176,9 @@
                         long long lastMaxTime = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:chatlog];
                         if (lastMaxTime >= self.lastSingleMsgTime) {
                             self.lastSingleMsgTime = lastMaxTime;
+                        } else {
+                            //插入数据库失败
+                            isSuccess = NO;
                         }
                     }
                 }
@@ -284,20 +287,6 @@
                 QIMErrorLog(@"获取单人历史JSON记录失败");
             }
         }
-        /*
-        if (*flag == NO) {
-            if (self.lastSingleMsgTime) {
-                QIMVerboseLog(@"本地set单人错误时间戳为: %f", self.lastSingleMsgTime);
-                [[QIMUserCacheManager sharedInstance] setUserObject:@(self.lastSingleMsgTime) forKey:kGetNewSingleHistoryMsgError];
-            } else {
-                QIMVerboseLog(@"本地remove单人错误时间戳");
-                [[QIMUserCacheManager sharedInstance] removeUserObjectForKey:kGetNewSingleHistoryMsgError];
-            }
-        } else {
-            QIMVerboseLog(@"本地remove单人错误时间戳");
-            [[QIMUserCacheManager sharedInstance] removeUserObjectForKey:kGetNewSingleHistoryMsgError];
-        }
-        */
     }
     return msgList;
 }

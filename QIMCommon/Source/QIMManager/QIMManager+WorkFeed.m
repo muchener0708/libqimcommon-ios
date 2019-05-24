@@ -742,7 +742,9 @@
                 }
                 NSArray *newComment = [data objectForKey:@"newComment"];
                 if (newComment > 0) {
-                    [[IMDataManager qimDB_SharedInstance]qimDB_bulkinsertNoticeMessage:newComment];
+                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertNoticeMessage:newComment];
+                } else {
+                    [[IMDataManager qimDB_SharedInstance] qimDB_deleteWorkNoticeMessageWithEventTypes:@[@(QIMWorkFeedNotifyTypeMyComment)]];
                 }
                 if (complete) {
                     complete([newComment copy]);
@@ -797,6 +799,8 @@
                 NSArray *newAtList = [data objectForKey:@"newAtList"];
                 if (newAtList.count > 0) {
                     [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertNoticeMessage:newAtList];
+                } else {
+                    [[IMDataManager qimDB_SharedInstance] qimDB_deleteWorkNoticeMessageWithEventTypes:@[@(QIMWorkFeedNotifyTypePOSTAt), @(QIMWorkFeedNotifyTypeCommentAt)]];
                 }
                 
                 if (complete) {

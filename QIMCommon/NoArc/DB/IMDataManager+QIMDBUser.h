@@ -60,6 +60,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSInteger)qimDB_selectUserListTotalCountBySearchStr:(NSString *)searchStr;
 
+- (NSArray *)qimDB_selectUserListExMySelfBySearchStr:(NSString *)searchStr WithLimit:(NSInteger)limit WithOffset:(NSInteger)offset;
+
 - (NSArray *)qimDB_selectUserListBySearchStr:(NSString *)searchStr WithLimit:(NSInteger)limit WithOffset:(NSInteger)offset;
 
 - (NSDictionary *)qimDB_selectUsersDicByXmppIds:(NSArray *)xmppIds;

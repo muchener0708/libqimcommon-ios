@@ -579,14 +579,18 @@
         }
     }
     long long lastTime = [self qimDB_insertGroupSessionWithMsgList:resultDic];
-    [self qimDB_bulkInsertMessage:msgList];
+    BOOL insertSuccessed = [self qimDB_bulkInsertMessage:msgList];
     if (updateMsgList.count > 0) {
         [self qimDB_revokeMessageByMsgList:updateMsgList];
     }
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"插入群消息历史记录%ld条，耗时%fs", msgList.count, end - start); //s
     [resultDic autorelease];
-    return lastTime;
+    if (insertSuccessed == YES) {
+        return lastTime;
+    } else {
+        return 0;
+    }
 }
 
 //群翻页消息
@@ -1352,10 +1356,12 @@
     return [msgList autorelease];
 }
 
-- (void)qimDB_bulkInsertMessage:(NSArray *)msgList {
+- (BOOL)qimDB_bulkInsertMessage:(NSArray *)msgList {
+    
+    __block BOOL isSuccessed = NO;
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     if (msgList.count <= 0) {
-        return;
+        return YES;
     }
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         
@@ -1397,13 +1403,14 @@
             [param release];
             param = nil;
         }
-        [database executeBulkInsert:sql withParameters:params];
+        isSuccessed = [database executeBulkInsert:sql withParameters:params];
         [params release];
         
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
 //    QIMVerboseLog(@"插入%ld条消息， 耗时 : %lf", msgList.count, [[QIMWatchDog sharedInstance] escapedTime]);
+    return isSuccessed;
 }
 
 - (void)qimDB_bulkInsertMessage:(NSArray *)msgList WithSessionId:(NSString *)sessionId {

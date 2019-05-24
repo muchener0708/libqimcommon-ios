@@ -250,6 +250,10 @@
     return [[IMDataManager qimDB_SharedInstance] qimDB_selectUserListTotalCountBySearchStr:searchStr];
 }
 
+- (NSArray *)selectUserListExMySelfBySearchStr:(NSString *)searchStr WithLimit:(NSInteger)limit WithOffset:(NSInteger)offset {
+    return [[IMDataManager qimDB_SharedInstance] qimDB_selectUserListExMySelfBySearchStr:searchStr WithLimit:limit WithOffset:offset];
+}
+
 - (NSArray *)selectUserListBySearchStr:(NSString *)searchStr WithLimit:(NSInteger)limit WithOffset:(NSInteger)offset {
     return [[IMDataManager qimDB_SharedInstance] qimDB_selectUserListBySearchStr:searchStr WithLimit:limit WithOffset:offset];
 }

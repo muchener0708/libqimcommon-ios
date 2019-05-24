@@ -154,8 +154,7 @@
                     self.latestGroupMessageFlag = NO;
                 }
                 QIMVerboseLog(@"是否还要继续拉取群离线消息 : %d", self.latestGroupMessageFlag);
-                [self dealWithGroupMsg:data];
-                getMucHistorySuccess = YES;
+                [self dealWithGroupMsg:data successed:&getMucHistorySuccess];
             } else {
                 if (errCode == 5000) {
                     [self updateRemoteLoginKey];
@@ -166,20 +165,11 @@
             getMucHistorySuccess == NO;
             QIMErrorLog(@"获取群历史记录失败了了了, 没有result");
         }
-        /*
-        if (getMucHistorySuccess == NO) {
-            QIMWarnLog(@"拉历史失败之后set本地群最后消息时间戳为 : %lf", self.lastGroupMsgTime);
-            [[QIMUserCacheManager sharedInstance] setUserObject:@(self.lastGroupMsgTime) forKey:kGetNewGroupHistoryMsgError];
-        } else {
-            QIMVerboseLog(@"remove本地群最后消息时间戳");
-            [[QIMUserCacheManager sharedInstance] removeUserObjectForKey:kGetNewGroupHistoryMsgError];
-        }
-        */
     }
     return getMucHistorySuccess;
 }
 
-- (void)dealWithGroupMsg:(NSArray * _Nonnull)data {
+- (void)dealWithGroupMsg:(NSArray * _Nonnull)data successed:(BOOL *)flag {
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     if (data.count > 0) {
         NSMutableArray <NSDictionary *>*atAllMsgList = [[NSMutableArray alloc] initWithCapacity:3];
@@ -187,6 +177,9 @@
         long long lastTime = [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertIphoneHistoryGroupJSONMsg:data WithAtAllMsgList:&atAllMsgList WithNormaleAtMsgList:&normalMsgList];
         if (self.lastGroupMsgTime <= lastTime) {
             self.lastGroupMsgTime = lastTime;
+            *flag = YES;
+        } else {
+            *flag = NO;
         }
         for (NSDictionary *infoDic in atAllMsgList) {
             NSString *groupId = [infoDic objectForKey:@"SessionId"];

@@ -168,6 +168,8 @@
 
 - (NSInteger)searchUserListTotalCountBySearchStr:(NSString *)searchStr;
 
+- (NSArray *)selectUserListExMySelfBySearchStr:(NSString *)searchStr WithLimit:(NSInteger)limit WithOffset:(NSInteger)offset;
+
 - (NSArray *)searchUserListBySearchStr:(NSString *)searchStr WithLimit:(NSInteger)limit WithOffset:(NSInteger)offset;
 
 //好友页面搜索

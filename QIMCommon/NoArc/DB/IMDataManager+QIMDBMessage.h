@@ -99,7 +99,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray *)qimDB_bulkInsertPageHistoryChatJSONMsg:(NSArray *)list
                                          WithXmppId:(NSString *)xmppId;
 
-- (void)qimDB_bulkInsertMessage:(NSArray *)msgList;
+- (BOOL)qimDB_bulkInsertMessage:(NSArray *)msgList;
 
 - (void)qimDB_bulkInsertMessage:(NSArray *)msgList WithSessionId:(NSString *)sessionId;
 

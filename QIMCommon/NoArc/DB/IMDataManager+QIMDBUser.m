@@ -616,6 +616,52 @@
     return [[self qimDB_selectUserListBySearchStr:searchStr] count];
 }
 
+- (NSArray *)qimDB_selectUserListExMySelfBySearchStr:(NSString *)searchStr WithLimit:(NSInteger)limit WithOffset:(NSInteger)offset {
+    __block NSMutableArray *list = nil;
+    __block NSMutableArray *firstlist = [NSMutableArray array];
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        
+        NSString *sql = [NSString stringWithFormat:@"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime,SearchIndex from IM_Users as a LEFT JOIN (select *from IM_Client_Config where ConfigValue like '%%%@%%' and ConfigKey='kMarkupNames') as b where (a.XmppId=b.ConfigSubKey or a.UserId like '%%%@%%' OR a.Name like '%%%@%%' OR a.SearchIndex like '%%%@%%')", searchStr, searchStr, searchStr, searchStr];
+        if (limit != -1 && offset != -1) {
+            sql = [sql stringByAppendingString:[NSString stringWithFormat:@"LIMIT %ld OFFSET %ld", (long)limit, (long)offset]];
+        }
+        NSLog(@"search Sql : %@", sql);
+        DataReader *reader = [database executeReader:sql withParameters:nil];
+        while ([reader read]) {
+            if (list == nil) {
+                list = [[NSMutableArray alloc] init];
+            }
+            NSString *userId = [reader objectForColumnIndex:0];
+            NSString *xmppId = [reader objectForColumnIndex:1];
+            if ([xmppId isEqualToString:[self getDbOwnerFullJid]]) {
+                continue;
+            }
+            NSString *name = [reader objectForColumnIndex:2];
+            NSString *descInfo = [reader objectForColumnIndex:3];
+            NSString *headerSrc = [reader objectForColumnIndex:4];
+            NSString *searchIndex = [reader objectForColumnIndex:7];
+            
+            NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+            [IMDataManager safeSaveForDic:dic setObject:userId forKey:@"UserId"];
+            [IMDataManager safeSaveForDic:dic setObject:xmppId forKey:@"XmppId"];
+            [IMDataManager safeSaveForDic:dic setObject:name forKey:@"Name"];
+            [IMDataManager safeSaveForDic:dic setObject:descInfo forKey:@"DescInfo"];
+            [IMDataManager safeSaveForDic:dic setObject:headerSrc forKey:@"HeaderSrc"];
+            searchIndex = [NSString stringWithFormat:@"|%@",searchIndex];
+            if ([userId isEqualToString:searchStr] || [xmppId isEqualToString:searchStr] || [name isEqualToString:searchStr] || [searchIndex rangeOfString:[NSString stringWithFormat:@"|%@|",searchStr] options:NSCaseInsensitiveSearch].location != NSNotFound ) {
+                [firstlist addObject:dic];
+            } else {
+                [list addObject:dic];
+            }
+        }
+    }];
+    
+    if (firstlist.count > 0) {
+        [list insertObjects:firstlist atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, firstlist.count)]];
+    }
+    return [list autorelease];
+}
+
 - (NSArray *)qimDB_selectUserListBySearchStr:(NSString *)searchStr WithLimit:(NSInteger)limit WithOffset:(NSInteger)offset {
     __block NSMutableArray *list = nil;
     __block NSMutableArray *firstlist = [NSMutableArray array];

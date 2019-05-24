@@ -75,6 +75,8 @@ NS_ASSUME_NONNULL_BEGIN
 //我的驼圈儿根据uuid 数组删除deleteListArr
 - (void)qimDB_deleteWorkNoticeMessageWithUUid:(NSArray *)deleteListArr;
 
+- (void)qimDB_deleteWorkNoticeMessageWithEventTypes:(NSArray *)eventTypes;
+
 - (void)qimDB_updateWorkNoticeMessageReadStateWithTime:(long long)time;
 
 @end

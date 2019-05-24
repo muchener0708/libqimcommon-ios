@@ -1119,6 +1119,16 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
     }];
 }
 
+- (void)qimDB_deleteWorkNoticeMessageWithEventTypes:(NSArray *)eventTypes {
+    if (eventTypes.count <= 0) {
+        return ;
+    }
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *deleteSql = [NSString stringWithFormat:@"delete from IM_Work_NoticeMessage where eventType in %@", eventTypes];
+        BOOL result = [database executeBulkInsert:deleteSql withParameters:nil];
+    }];
+}
+
 - (void)qimDB_updateWorkNoticeMessageReadStateWithTime:(long long)time {
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = [NSString stringWithFormat:@"update IM_Work_NoticeMessage set readState=1 where readState=0 and createTime <= %lld", time];

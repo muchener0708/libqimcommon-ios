@@ -75,6 +75,10 @@
     return [[QIMNavConfigManager sharedInstance] domainHost];
 }
 
+- (NSString *)qimNav_resetPwdUrl{
+    return [[QIMNavConfigManager sharedInstance] resetPwdUrl];
+}
+
 //hosts
 - (NSString *)qimNav_HashHosts {
     return [[QIMNavConfigManager sharedInstance] hashHosts];

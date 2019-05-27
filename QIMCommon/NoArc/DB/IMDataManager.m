@@ -353,9 +353,9 @@ static dispatch_once_t _onceDBToken;
                   update IM_SessionList set UnreadCount = case when (new.ReadState& 2) =2 and old.ReadState & 2 <>2 then (case when\ UnreadCount >0 then (unreadcount -1) else 0 end ) when (new.ReadState & 2) <>2 and old.ReadState & 2 =2 then\ UnreadCount + 1 else UnreadCount end where XmppId = new.XmppId and RealJid = new.RealJid and new.Direction = 1;\
                   end" withParameters:nil];
         
-        result = [database executeNonQuery:@"DROP TRIGGER singlelastupdatetime_insert;" withParameters:nil];
-        result = [database executeNonQuery:@"DROP TRIGGER grouplastupdatetime_insert;" withParameters:nil];
-        result = [database executeNonQuery:@"DROP TRIGGER systemlastupdatetime_insert;" withParameters:nil];
+        result = [database executeNonQuery:@"DROP TRIGGER if EXISTS singlelastupdatetime_insert;" withParameters:nil];
+        result = [database executeNonQuery:@"DROP TRIGGER if EXISTS grouplastupdatetime_insert;" withParameters:nil];
+        result = [database executeNonQuery:@"DROP TRIGGER if EXISTS systemlastupdatetime_insert;" withParameters:nil];
         
         result = [database executeNonQuery:@"CREATE TRIGGER IF NOT EXISTS lastupdatetime_insert after insert on IM_Message\
                   for each row begin\
@@ -381,9 +381,9 @@ static dispatch_once_t _onceDBToken;
                   end" withParameters:nil];
         */
         
-        result = [database executeNonQuery:@"DROP TRIGGER singlelastupdatetime_update;" withParameters:nil];
-        result = [database executeNonQuery:@"DROP TRIGGER grouplastupdatetime_update;" withParameters:nil];
-        result = [database executeNonQuery:@"DROP TRIGGER systemlastupdatetime_update;" withParameters:nil];
+        result = [database executeNonQuery:@"DROP TRIGGER if EXISTS singlelastupdatetime_update;" withParameters:nil];
+        result = [database executeNonQuery:@"DROP TRIGGER if EXISTS grouplastupdatetime_update;" withParameters:nil];
+        result = [database executeNonQuery:@"DROP TRIGGER if EXISTS systemlastupdatetime_update;" withParameters:nil];
         //更新时间
         result = [database executeNonQuery:@"CREATE TRIGGER IF NOT EXISTS updatetime_update after update of State on IM_Message\
                   for each row begin\

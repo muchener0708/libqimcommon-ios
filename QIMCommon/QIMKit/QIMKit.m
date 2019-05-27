@@ -69,6 +69,50 @@ static QIMKit *__global_QIMKit = nil;
     return [[QIMManager sharedInstance] lastQueue];
 }
 
+- (dispatch_queue_t)getLoadSessionNameQueue {
+    return [[[QIMManager sharedInstance] load_session_name] queue];
+}
+
+- (dispatch_queue_t)getLoadHeaderImageQueue {
+    return [[[QIMManager sharedInstance] load_user_header] queue];
+}
+
+- (dispatch_queue_t)getLoadSessionContentQueue {
+    return [[[QIMManager sharedInstance] load_session_content] queue];
+}
+
+- (dispatch_queue_t)getLoadSessionUnReadCountQueue {
+    return [[[QIMManager sharedInstance] load_session_unreadcount] queue];
+}
+
+- (dispatch_queue_t)getLoadGroupCardFromDBQueue {
+    return [[[QIMManager sharedInstance] load_groupDB_VCard] queue];
+}
+
+- (NSString *)getOpsFoundRNDebugUrl {
+    return [[QIMManager sharedInstance] opsFoundRNDebugUrl];
+}
+
+- (void)setOpsFoundRNDebugUrl:(NSString *)opsFoundRNDebugUrl {
+    [[QIMManager sharedInstance] setOpsFoundRNDebugUrl:opsFoundRNDebugUrl];
+}
+
+- (NSString *)qtalkFoundRNDebugUrl {
+    return [[QIMManager sharedInstance] qtalkFoundRNDebugUrl];
+}
+
+- (void)setQtalkFoundRNDebugUrl:(NSString *)qtalkFoundRNDebugUrl {
+    [[QIMManager sharedInstance] setQtalkFoundRNDebugUrl:qtalkFoundRNDebugUrl];
+}
+
+- (NSString *)qtalkSearchRNDebugUrl {
+    return [[QIMManager sharedInstance] qtalkSearchRNDebugUrl];
+}
+
+- (void)setQtalkSearchRNDebugUrl:(NSString *)qtalkSearchRNDebugUrl {
+    [[QIMManager sharedInstance] setQtalkSearchRNDebugUrl:qtalkSearchRNDebugUrl];
+}
+
 - (NSString *)getImagerCache {
     return [[QIMManager sharedInstance] getImagerCache];
 }

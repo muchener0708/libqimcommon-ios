@@ -355,7 +355,7 @@
     __block int count = 0;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = [NSString stringWithFormat:@"SELECT Count(*) from IM_Message_Collection as a left join IM_Message as b on a.MsgId = b.MsgId where ReadState & 0x02 != 0x02 ORDER by LastUpdateTime;"];
-        DataReader *reader = [database executeReader:sql withParameters:@[@(readState)]];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             count = [[reader objectForColumnIndex:0] integerValue];
         }
@@ -368,7 +368,7 @@
     __block int count = 0;
     [[self dbInstance] syncUsingTransaction:^(Database *database) {
         NSString *sql = [NSString stringWithFormat:@"SELECT Count(*) from IM_Message_Collection as a left join IM_Message as b on a.MsgId = b.MsgId where (Originto = '%@' and ReadState & 0x02 != 0x02) ORDER by LastUpdateTime;", bindId];
-        DataReader *reader = [database executeReader:sql withParameters:@[@(readState)]];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             count = [[reader objectForColumnIndex:0] integerValue];
         }

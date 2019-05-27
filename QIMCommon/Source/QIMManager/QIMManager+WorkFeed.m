@@ -882,11 +882,11 @@
                 NSArray *msgList = [data objectForKey:@"msgList"];
                 if ([msgList isKindOfClass:[NSArray class]]) {
                     [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertNoticeMessage:msgList];
+                    NSInteger notReadMessageCount = [[QIMManager sharedInstance] getWorkNoticeMessagesCountWithEventType:@[@(QIMWorkFeedNotifyTypeComment), @(QIMWorkFeedNotifyTypePOSTAt), @(QIMWorkFeedNotifyTypeCommentAt)]];
                     dispatch_async(dispatch_get_main_queue(), ^{
                         //发送驼圈离线消息通知
                         [[NSNotificationCenter defaultCenter] postNotificationName:kPBPresenceCategoryNotifyWorkNoticeMessage object:nil];
                         //发送驼圈离线消息小红点通知
-                        NSInteger notReadMessageCount = [[QIMManager sharedInstance] getWorkNoticeMessagesCountWithEventType:@[@(QIMWorkFeedNotifyTypeComment), @(QIMWorkFeedNotifyTypePOSTAt), @(QIMWorkFeedNotifyTypeCommentAt)]];
                         QIMVerboseLog(@"发送驼圈离线消息小红点通知数: %ld", notReadMessageCount);
                         [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyNotReadWorkCountChange object:@{@"newWorkNoticeCount":@(notReadMessageCount)}];
                     });

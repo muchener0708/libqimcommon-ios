@@ -647,6 +647,7 @@
         [mesg setMessage:msg];
         [mesg setMessageDate:msgDate];
         [mesg setMsgRaw:msgRaw];
+        [mesg setMessageSendState:QIMMessageSendState_Success];
         [self addSessionByType:ChatType_System ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
 
         if (![autoReply isEqualToString:@"true"]) {
@@ -765,6 +766,7 @@
         [mesg setMessage:msg];
         [mesg setMessageDate:msgDate];
         [mesg setMsgRaw:msgRaw];
+        [mesg setMessageSendState:QIMMessageSendState_Success];
         [self addSessionByType:ChatType_SingleChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:YES];
         // 消息落地
         if (![autoReply isEqualToString:@"true"]) {
@@ -947,7 +949,7 @@
         [mesg setExtendInformation:extendInfo];
         [mesg setTo:[[QIMManager sharedInstance] getLastJid]];
         [mesg setMsgRaw:msgRaw];
-        
+        [mesg setMessageSendState:QIMMessageSendState_Success];
         [self addSessionByType:ChatType_CollectionChat ById:sid ByMsgId:mesg.messageId WithMsgTime:mesg.messageDate WithNeedUpdate:NO];
         
         // 消息落地
@@ -1039,6 +1041,7 @@
         [mesg setMessageDate:msgDate];
         [mesg setMsgRaw:msgRaw];
         [mesg setRealJid:realFrom];
+        [mesg setMessageSendState:QIMMessageSendState_Success];
         [mesg setChatType:chatType];
         // 消息落地
         

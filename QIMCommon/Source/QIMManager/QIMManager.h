@@ -15,6 +15,7 @@
 #import "IMDataManager+QIMDBUser.h"
 #import "IMDataManager+WorkFeed.h"
 #import "IMDataManager+QIMUserMedal.h"
+#import "YYDispatchQueuePool.h"
 
 #define DEFAULT_MSG_NUM 450
 #define DEFAULT_CHATMSG_NUM 1000
@@ -41,7 +42,11 @@
 @property (nonatomic, strong) dispatch_queue_t load_customEvent_queue;
 @property (nonatomic, strong) dispatch_queue_t lastQueue;
 
-@property (nonatomic, strong) dispatch_queue_t load_user_header;
+@property (nonatomic, strong) YYDispatchQueuePool *load_user_header;
+@property (nonatomic, strong) YYDispatchQueuePool *load_session_content;
+@property (nonatomic, strong) YYDispatchQueuePool *load_session_name;
+@property (nonatomic, strong) YYDispatchQueuePool *load_session_unreadcount;
+@property (nonatomic, strong) YYDispatchQueuePool *load_groupDB_VCard;
 @property (nonatomic, strong) dispatch_queue_t update_group_member_queue;
 @property (nonatomic, strong) dispatch_queue_t load_group_offline_msg_queue;
 @property (nonatomic, strong) dispatch_queue_t update_chat_card;
@@ -62,8 +67,9 @@
 @property (nonatomic, assign) dispatch_queue_t load_offlineSingleHistory_msg;
 @property (nonatomic, assign) dispatch_queue_t load_offlineGroupHistory_msg;
 @property (nonatomic, assign) dispatch_queue_t load_offlineSystemHistory_msg;
-@property (nonatomic, strong) dispatch_queue_t load_customEvent_queue;
+@property (nonatomic, assign) dispatch_queue_t load_customEvent_queue;
 @property (nonatomic, assign) dispatch_queue_t load_user_header;
+@property (nonatomic, assign) dispatch_queue_t load_session_content;
 @property (nonatomic, assign) dispatch_queue_t update_group_member_queue;
 @property (nonatomic, assign) dispatch_queue_t load_group_offline_msg_queue;
 @property (nonatomic, assign) dispatch_queue_t update_chat_card;
@@ -164,6 +170,10 @@
 @property (nonatomic, assign) NSTimeInterval lastSystemMsgTime;     //拉取HeadLine消息时间戳
 @property (nonatomic, assign) NSTimeInterval lastMaxMucReadMarkTime;   //拉取群阅读指针时间戳
 @property (nonatomic, assign) NSTimeInterval lastWorkFeedMsgMsgTime;     //拉取驼圈消息时间戳
+
+@property (nonatomic, copy) NSString *opsFoundRNDebugUrl;              //ops发现页测试地址
+@property (nonatomic, copy) NSString *qtalkFoundRNDebugUrl;            //qtalk发现页测试地址
+@property (nonatomic, copy) NSString *qtalkSearchRNDebugUrl;           //qtalk搜索测试地址
 
 @property (nonatomic, strong) NSMutableDictionary *groupVCardDict;  //群聊名片缓存Dict
 @property (nonatomic, strong) NSMutableDictionary *userVCardDict;   //用户名片缓存Dict

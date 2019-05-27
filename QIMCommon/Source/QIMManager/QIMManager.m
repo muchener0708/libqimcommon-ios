@@ -193,7 +193,13 @@ static QIMManager *__IMManager = nil;
     self.receive_msgSendState_queue = dispatch_queue_create("Receive MsgSendState Queue", DISPATCH_QUEUE_SERIAL);
     self.receive_msgReadState_queue = dispatch_queue_create("Receive MsgReadState Queue", DISPATCH_QUEUE_SERIAL);
     self.receive_notify_queue = dispatch_queue_create("Receive Presence Notify Msg", DISPATCH_QUEUE_PRIORITY_DEFAULT);
-    self.load_user_header = dispatch_queue_create("Load User Header", DISPATCH_QUEUE_PRIORITY_DEFAULT);
+    self.load_user_header = [[YYDispatchQueuePool alloc] initWithName:@"Load User Header" queueCount:2 qos:NSQualityOfServiceUserInitiated];
+//    dispatch_queue_create("Load User Header", DISPATCH_QUEUE_PRIORITY_DEFAULT);
+    self.load_session_content = [[YYDispatchQueuePool alloc] initWithName:@"load_session_content" queueCount:2 qos:NSQualityOfServiceUserInitiated];
+    self.load_session_name = [[YYDispatchQueuePool alloc] initWithName:@"load_session_name" queueCount:2 qos:NSQualityOfServiceUserInitiated];
+    self.load_session_unreadcount = [[YYDispatchQueuePool alloc] initWithName:@"load_session_unreadcount" queueCount:2 qos:NSQualityOfServiceBackground];
+    self.load_groupDB_VCard = [[YYDispatchQueuePool alloc] initWithName:@"load group card from DB" queueCount:2 qos:NSQualityOfServiceUserInitiated];
+//    dispatch_queue_create("Load Session Content", DISPATCH_QUEUE_PRIORITY_DEFAULT);
     self.lastReceiveGroupMsgTimeDic = [[NSMutableDictionary alloc] init];
     self.load_customEvent_queue = dispatch_queue_create("Load CustomEvent Queue", DISPATCH_QUEUE_SERIAL);
     self.lastQueue = dispatch_queue_create("Last Manager Queue", DISPATCH_QUEUE_SERIAL);
@@ -303,6 +309,9 @@ static QIMManager *__IMManager = nil;
             }
         }
     }
+    _opsFoundRNDebugUrl = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"opsFoundRNDebugUrl"];
+    _qtalkFoundRNDebugUrl = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"qtalkFoundRNDebugUrl"];
+    _qtalkSearchRNDebugUrl = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"qtalkSearchRNDebugUrl"];
 }
 
 @end

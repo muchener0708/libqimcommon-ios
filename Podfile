@@ -26,4 +26,5 @@ target 'QIMCommon' do
     pod 'CocoaAsyncSocket'
     
     pod 'AvoidCrash'
+    pod 'YYDispatchQueuePool'
 end

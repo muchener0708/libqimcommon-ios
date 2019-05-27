@@ -103,6 +103,7 @@ PODS:
   - Reachability (3.2)
   - UICKeyChainStore (2.1.2)
   - YYCache (1.0.4)
+  - YYDispatchQueuePool (1.0)
   - YYModel (1.0.4)
   - ZipArchive (1.4.0)
 
@@ -118,6 +119,7 @@ DEPENDENCIES:
   - QIMOpenSSL
   - UICKeyChainStore
   - YYCache
+  - YYDispatchQueuePool
   - YYModel
 
 SPEC REPOS:
@@ -135,6 +137,7 @@ SPEC REPOS:
     - Reachability
     - UICKeyChainStore
     - YYCache
+    - YYDispatchQueuePool
     - YYModel
     - ZipArchive
 
@@ -151,9 +154,10 @@ SPEC CHECKSUMS:
   Reachability: 33e18b67625424e47b6cde6d202dce689ad7af96
   UICKeyChainStore: 85db518bb1d294366d15ec9b92a416c4e670518f
   YYCache: 8105b6638f5e849296c71f331ff83891a4942952
+  YYDispatchQueuePool: 3dfb2274bcc74207688dde8ac6f7bdd46871dd7b
   YYModel: 2a7fdd96aaa4b86a824e26d0c517de8928c04b30
   ZipArchive: e25a4373192673e3229ac8d6e9f64a3e5713c966
 
-PODFILE CHECKSUM: 96e71da3d72543cee0acf0499928c92ea72f49c3
+PODFILE CHECKSUM: 88b9953ffc0f46b60e8553447d4ed470d6988c5f
 
 COCOAPODS: 1.6.0

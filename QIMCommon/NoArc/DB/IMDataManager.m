@@ -353,6 +353,17 @@ static dispatch_once_t _onceDBToken;
                   update IM_SessionList set UnreadCount = case when (new.ReadState& 2) =2 and old.ReadState & 2 <>2 then (case when\ UnreadCount >0 then (unreadcount -1) else 0 end ) when (new.ReadState & 2) <>2 and old.ReadState & 2 =2 then\ UnreadCount + 1 else UnreadCount end where XmppId = new.XmppId and RealJid = new.RealJid and new.Direction = 1;\
                   end" withParameters:nil];
         
+        result = [database executeNonQuery:@"DROP TRIGGER singlelastupdatetime_insert;" withParameters:nil];
+        result = [database executeNonQuery:@"DROP TRIGGER grouplastupdatetime_insert;" withParameters:nil];
+        result = [database executeNonQuery:@"DROP TRIGGER systemlastupdatetime_insert;" withParameters:nil];
+        
+        result = [database executeNonQuery:@"CREATE TRIGGER IF NOT EXISTS lastupdatetime_insert after insert on IM_Message\
+                  for each row begin\
+                  update IM_Cache_Data set valueInt = case when (valueInt<new.LastUpdateTime and new.State&2=2 and (new.ChatType=0 or new.ChatType=4 or new.ChatType=5 or new.ChatType=6)) then new.LastUpdateTime else valueInt end where key='singlelastupdatetime' and type=10 ;\
+                  update IM_Cache_Data set valueInt = case when (valueInt<new.LastUpdateTime and new.State&2=2 and new.ChatType=1) then new.LastUpdateTime else valueInt end where key='grouplastupdatetime' and type=10 ;\
+                  update IM_Cache_Data set valueInt = case when (valueInt<new.LastUpdateTime and new.State&2=2 and new.ChatType=2) then new.LastUpdateTime else valueInt end where key='systemlastupdatetime' and type=10 ;\
+                  end" withParameters:nil];
+        /*
         //插入单人消息时更新单人消息最后一条消息时间戳
         result = [database executeNonQuery:@"CREATE TRIGGER IF NOT EXISTS singlelastupdatetime_insert after insert on IM_Message\
                   for each row begin\
@@ -368,7 +379,19 @@ static dispatch_once_t _onceDBToken;
                   for each row begin\
                   update IM_Cache_Data set valueInt = case when (valueInt<new.LastUpdateTime and new.State&2=2 and new.ChatType=2) then new.LastUpdateTime else valueInt end where key='systemlastupdatetime' and type=10 ;\
                   end" withParameters:nil];
+        */
         
+        result = [database executeNonQuery:@"DROP TRIGGER singlelastupdatetime_update;" withParameters:nil];
+        result = [database executeNonQuery:@"DROP TRIGGER grouplastupdatetime_update;" withParameters:nil];
+        result = [database executeNonQuery:@"DROP TRIGGER systemlastupdatetime_update;" withParameters:nil];
+        //更新时间
+        result = [database executeNonQuery:@"CREATE TRIGGER IF NOT EXISTS updatetime_update after update of State on IM_Message\
+                  for each row begin\
+                  update IM_Cache_Data set valueInt = case when (valueInt<new.LastUpdateTime and old.State&2<>2 and new.State&2=2 and (new.ChatType=0 or new.ChatType=4 or new.ChatType=5 or new.ChatType=6)) then new.LastUpdateTime else valueInt end where key='singlelastupdatetime' and type=10 ;\
+                  update IM_Cache_Data set valueInt = case when (valueInt<new.LastUpdateTime and old.State&2<>2 and new.State&2=2 and new.ChatType=1) then new.LastUpdateTime else valueInt end where key='grouplastupdatetime' and type=10 ;\
+                  update IM_Cache_Data set valueInt = case when (valueInt<new.LastUpdateTime and old.State&2<>2 and new.State&2=2 and new.ChatType=2) then new.LastUpdateTime else valueInt end where key='systemlastupdatetime' and type=10 ;\
+                  end" withParameters:nil];
+        /*
         result = [database executeNonQuery:@"CREATE TRIGGER IF NOT EXISTS singlelastupdatetime_update after update of State on IM_Message\
                   for each row begin\
                   update IM_Cache_Data set valueInt = case when (valueInt<new.LastUpdateTime and old.State&2<>2 and new.State&2=2 and (new.ChatType=0 or new.ChatType=4 or new.ChatType=5 or new.ChatType=6)) then new.LastUpdateTime else valueInt end where key='singlelastupdatetime' and type=10 ;\
@@ -383,6 +406,7 @@ static dispatch_once_t _onceDBToken;
                   for each row begin\
                   update IM_Cache_Data set valueInt = case when (valueInt<new.LastUpdateTime and old.State&2<>2 and new.State&2=2 and new.ChatType=2) then new.LastUpdateTime else valueInt end where key='systemlastupdatetime' and type=10 ;\
                   end" withParameters:nil];
+        */
     }
     
     //创建公众号表

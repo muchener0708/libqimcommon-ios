@@ -21,6 +21,9 @@
 - (NSString *)qimNav_Domain;
 - (QTLoginType)qimNav_LoginType; //登录方式
 - (NSString *)qimNav_XmppHost;
+- (NSString *)qimNav_LeaderUrl;
+
+- (NSString *)qimNav_Mobileurl;
 - (NSString *)qimNav_resetPwdUrl;
 
 /**

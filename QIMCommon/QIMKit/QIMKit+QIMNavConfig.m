@@ -75,6 +75,14 @@
     return [[QIMNavConfigManager sharedInstance] domainHost];
 }
 
+- (NSString *)qimNav_LeaderUrl {
+    return [[QIMNavConfigManager sharedInstance] leaderurl];
+}
+
+- (NSString *)qimNav_Mobileurl {
+    return [[QIMNavConfigManager sharedInstance] mobileurl];
+}
+
 - (NSString *)qimNav_resetPwdUrl{
     return [[QIMNavConfigManager sharedInstance] resetPwdUrl];
 }

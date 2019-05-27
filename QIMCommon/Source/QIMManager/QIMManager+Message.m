@@ -869,11 +869,12 @@
             NSInteger reminded = [[groupInfoDic objectForKey:@"DeleteFlag"] integerValue];
             if (reminded == 0) {
                 [groupIdList addObject:groupId];
-//                count += [[QIMManager sharedInstance] getNotReadMsgCountByJid:groupId WithRealJid:groupId];
             }
         }
     }
-    count = [[IMDataManager qimDB_SharedInstance] qimDB_getSumNotReaderMsgCountByXmppIds:groupIdList];
+    if (groupIdList.count > 0) {
+        count = [[IMDataManager qimDB_SharedInstance] qimDB_getSumNotReaderMsgCountByXmppIds:groupIdList];
+    }
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"耗时 = %f s", end - start); //
     return count;

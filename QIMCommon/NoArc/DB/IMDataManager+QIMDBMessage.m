@@ -2766,6 +2766,7 @@
 }
 
 - (NSArray *)qimDB_getAtMessageWithGroupId:(NSString *)groupId {
+    CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     if (groupId.length > 0) {
         __block NSMutableArray *atMessageArray = nil;
         [[self dbInstance] syncUsingTransaction:^(Database *database) {
@@ -2798,6 +2799,8 @@
             [parames release];
             parames = nil;
         }];
+        CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
+        QIMVerboseLog(@"耗时 = %f s", end - start); //
         return atMessageArray;
     }
     return nil;

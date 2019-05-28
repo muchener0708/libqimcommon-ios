@@ -782,6 +782,7 @@
     if (self.updateGroupList == nil) {
         self.updateGroupList = [NSMutableArray arrayWithCapacity:[newGroupList count]];
     }
+    NSMutableArray *updateGroupList = [NSMutableArray arrayWithCapacity:[newGroupList count]];
     for (NSDictionary *group in newGroupList) {
         NSString *groupId = [group objectForKey:@"M"];
         NSString *groupDomain = [group objectForKey:@"D"];

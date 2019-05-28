@@ -8,7 +8,6 @@
 
 #import "IMDataManager+QIMDBMessage.h"
 #import "Database.h"
-//#import "WCDB.h"
 #import "QIMJSONSerializer.h"
 
 @implementation IMDataManager (QIMDBMessage)

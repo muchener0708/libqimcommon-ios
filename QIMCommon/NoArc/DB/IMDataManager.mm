@@ -9,10 +9,8 @@
 
 #import "IMDataManager.h"
 #import "Database.h"
-//#import "Message.pb.h"
 #import "QIMDBLogger.h"
 #import "QIMWatchDog.h"
-#import "WCDB.h"
 #import "IMDataManager+QIMDBMessage.h"
 
 static IMDataManager *__global_data_manager = nil;
@@ -46,8 +44,14 @@ static dispatch_once_t _onceDBToken;
         [__global_data_manager setdbPath:dbPath];
         [__global_data_manager setDBOwnerFullJid:dbOwnerFullJid];
         [__global_data_manager setDomain:[[dbOwnerFullJid componentsSeparatedByString:@"@"] lastObject]];
+        __global_data_manager.dataBasePoolManager = [QIMDataBaseQueueManager databasePoolWithPath:dbPath];
+        [__global_data_manager openDB];
     });
     return __global_data_manager;
+}
+
+- (id)dataBasePoolManager {
+    return _dataBasePoolManager;
 }
 
 - (NSString *)getDbOwnerFullJid {
@@ -89,38 +93,50 @@ static dispatch_once_t _onceDBToken;
         [_timeSmtapFormatter setDateFormat:@"yyyy-MM-dd HH:mm"];
         
         QIMVerboseLog(@"DB Path %@", _dbPath);
-        BOOL notCheckCreateDataBase = [[NSFileManager defaultManager] fileExistsAtPath:_dbPath] == NO;
-        BOOL isSuccess = [DatabaseManager OpenByFullPath:_dbPath];
-        if (isSuccess == NO) {
-            // 防止数据库文件无效 But 有一种数据库文件能打开 缺不是有效文件 不知怎么解
-            [[NSFileManager defaultManager] removeItemAtPath:_dbPath error:nil];
-            [DatabaseManager OpenByFullPath:_dbPath];
-        }
-        NSArray *paths = [_dbPath pathComponents];
-        NSString *dbValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"dbVersion"];
-        NSString *currentValue = [NSString stringWithFormat:@"%@_%lld",[paths objectAtIndex:paths.count-2] , [[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"] longLongValue]];
-        if (notCheckCreateDataBase || [currentValue isEqualToString:dbValue] == NO) {
-            __block BOOL result = NO;
-            [[self dbInstance] syncUsingTransaction:^(Database *database) {
-                result = [self createDb:database];
-            }];
-            if (result) {
-                QIMVerboseLog(@"创建DB文件成功");
-                [self insertUserCacheData];
-                [[NSUserDefaults standardUserDefaults] setObject:currentValue forKey:@"dbVersion"];
-                [[NSUserDefaults standardUserDefaults] synchronize];
-            } else {
-                QIMVerboseLog(@"创建DB文件失败");
-            }
-        } else {
-            QIMVerboseLog(@"notCheckCreateDataBase : %d, [currentValue isEqualToString:dbValue] : %d", notCheckCreateDataBase, [currentValue isEqualToString:dbValue]);
-        }
-        
-//        [self initSQLiteLog];
-        [self qimDB_updateMsgTimeToMillSecond];
         
     }
     return self;
+}
+
+- (void)openDB {
+    DatabaseOperator *op = [_dataBasePoolManager getDatabaseOperator];
+    Database *dataBase = op.database;
+    BOOL isSuccess = [dataBase open:_dbPath usingCurrentThread:YES];
+    if (isSuccess == NO) {
+        // 防止数据库文件无效 But 有一种数据库文件能打开 缺不是有效文件 不知怎么解
+        [[NSFileManager defaultManager] removeItemAtPath:_dbPath error:nil];
+        [self reCreateDB];
+    } else {
+        
+    }
+    
+    [self reCreateDB];
+//    [self initSQLiteLog];
+    [self qimDB_updateMsgTimeToMillSecond];
+}
+
+- (void)reCreateDB {
+    BOOL notCheckCreateDataBase = [[NSFileManager defaultManager] fileExistsAtPath:_dbPath] == NO;
+    NSArray *paths = [_dbPath pathComponents];
+    NSString *dbValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"dbVersion"];
+    NSString *currentValue = [NSString stringWithFormat:@"%@_%lld",[paths objectAtIndex:paths.count-2] , [[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"] longLongValue]];
+    if (notCheckCreateDataBase || [currentValue isEqualToString:dbValue] == NO) {
+        QIMVerboseLog(@"reCreateDB");
+        __block BOOL result = NO;
+        [[self dbInstance] syncUsingTransaction:^(Database *database) {
+            result = [self createDb:database];
+        }];
+        if (result) {
+            QIMVerboseLog(@"创建DB文件成功");
+            [self insertUserCacheData];
+            [[NSUserDefaults standardUserDefaults] setObject:currentValue forKey:@"dbVersion"];
+            [[NSUserDefaults standardUserDefaults] synchronize];
+        } else {
+            QIMVerboseLog(@"创建DB文件失败");
+        }
+    } else {
+        QIMVerboseLog(@"notCheckCreateDataBase : %d, [currentValue isEqualToString:dbValue] : %d", notCheckCreateDataBase, [currentValue isEqualToString:dbValue]);
+    }
 }
 
 - (void)initSQLiteLog {
@@ -198,8 +214,8 @@ static dispatch_once_t _onceDBToken;
     return exist;
 }
 
-- (DatabaseOperator *) dbInstance {
-    return [DatabaseManager GetInstance:_dbPath];
+- (DatabaseOperator *)dbInstance {
+    return [self.dataBasePoolManager getDatabaseOperator];
 }
 
 + (void)safeSaveForDic:(NSMutableDictionary *)dic setObject:(id)value forKey:(id)key{
@@ -897,12 +913,17 @@ static dispatch_once_t _onceDBToken;
 }
 
 - (void)qimDB_closeDataBase{
+    QIMDataBaseQueueManager *manager = [QIMDataBaseQueueManager databasePoolWithPath:_dbPath];
+    [manager releaseAllDatabases];
     __global_data_manager = nil;
+    _onceDBToken = 0;
+    /*
     BOOL result = [DatabaseManager CloseByFullPath:_dbPath];
     if (result) {
         __global_data_manager = nil;
         _onceDBToken = 0;
     }
+     */
 }
 
 + (void)qimDB_clearDataBaseCache{

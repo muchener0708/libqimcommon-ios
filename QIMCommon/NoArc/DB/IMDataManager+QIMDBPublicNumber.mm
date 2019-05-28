@@ -8,7 +8,6 @@
 
 #import "IMDataManager+QIMDBPublicNumber.h"
 #import "Database.h"
-//#import "WCDB.h"
 #import "QIMPublicRedefineHeader.h"
 
 @implementation IMDataManager (QIMDBPublicNumber)

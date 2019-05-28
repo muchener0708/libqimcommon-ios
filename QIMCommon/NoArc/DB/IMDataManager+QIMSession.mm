@@ -8,7 +8,6 @@
 
 #import "IMDataManager+QIMSession.h"
 #import "Database.h"
-//#import "WCDB.h"
 
 @implementation IMDataManager (QIMSession)
 

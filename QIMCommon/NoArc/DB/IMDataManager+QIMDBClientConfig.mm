@@ -8,7 +8,6 @@
 
 #import "IMDataManager+QIMDBClientConfig.h"
 #import "Database.h"
-//#import "WCDB.h"
 
 @implementation IMDataManager (QIMDBClientConfig)
 

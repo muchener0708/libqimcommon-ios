@@ -10,10 +10,15 @@
 #import "QIMCommonEnum.h"
 #import "QIMPublicRedefineHeader.h"
 #import <QIMCommonCategories/QIMCommonCategories.h>
+#import "QIMDataBaseQueueManager.h"
 
 @class UserInfo;
 
 @interface IMDataManager : NSObject
+
+@property (nonatomic, copy) NSString *dbPath;
+@property (nonatomic, copy) NSString *dbOwnerDomain;
+@property (nonatomic, copy) NSString *dbOwnerFullJid;
 
 //@property (nonatomic, strong) NSString *dbOwnerId;  //数据库所有者Id
 //
@@ -22,6 +27,8 @@
 //@property (nonatomic, copy) NSString *dbOwnerFullJid;   //数据库所有者XmppId
 
 @property (nonatomic, strong) NSDateFormatter *timeSmtapFormatter;
+
+@property (nonatomic, strong) QIMDataBaseQueueManager *dataBasePoolManager;
 
 
 + (IMDataManager *) qimDB_SharedInstance;

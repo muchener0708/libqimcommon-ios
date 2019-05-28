@@ -8,7 +8,6 @@
 
 #import "IMDataManager+QIMDBQuickReply.h"
 #import "Database.h"
-//#import "WCDB.h"
 
 @implementation IMDataManager (QIMDBQuickReply)
 

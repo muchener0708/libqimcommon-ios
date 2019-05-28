@@ -64,8 +64,8 @@ Pod::Spec.new do |s|
   s.dependency 'AvoidCrash'
   
   s.dependency 'CocoaLumberjack'
-  s.dependency 'WCDB'
-  
+#  s.dependency 'WCDB'
+
   s.frameworks = 'Foundation', 'CoreTelephony', 'SystemConfiguration', 'AudioToolbox', 'AVFoundation', 'UserNotifications', 'CoreTelephony','QuartzCore', 'CoreGraphics', 'Security'
     s.libraries = 'sqlite3.0', 'stdc++', 'bz2'
 

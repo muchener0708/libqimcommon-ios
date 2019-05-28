@@ -8,7 +8,6 @@
 
 #import "IMDataManager+QIMNote.h"
 #import "Database.h"
-//#import "WCDB.h"
 
 @implementation IMDataManager (QIMNote)
 

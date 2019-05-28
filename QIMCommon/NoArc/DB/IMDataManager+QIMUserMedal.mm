@@ -8,7 +8,6 @@
 
 #import "IMDataManager+QIMUserMedal.h"
 #import "Database.h"
-//#import "WCDB.h"
 
 @implementation IMDataManager (QIMUserMedal)
 

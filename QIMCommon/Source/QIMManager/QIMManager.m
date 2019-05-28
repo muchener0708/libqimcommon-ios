@@ -309,9 +309,6 @@ static QIMManager *__IMManager = nil;
             }
         }
     }
-    _opsFoundRNDebugUrl = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"opsFoundRNDebugUrl"];
-    _qtalkFoundRNDebugUrl = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"qtalkFoundRNDebugUrl"];
-    _qtalkSearchRNDebugUrl = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"qtalkSearchRNDebugUrl"];
 }
 
 @end
@@ -1096,6 +1093,36 @@ static QIMManager *__IMManager = nil;
 
 - (void)setPickerPixelOriginal:(BOOL)flag {
     [[QIMUserCacheManager sharedInstance] setUserObject:@(flag) forKey:@"pickerPixelOriginal"];
+}
+
+//OPS发现页RN调试
+- (NSString *)opsFoundRNDebugUrl {
+    NSString *opsFoundRNDebugUrl = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"opsFoundRNDebugUrl"];
+    return opsFoundRNDebugUrl;
+}
+
+- (void)setOpsFoundRNDebugUrl:(NSString *)opsFoundRNDebugUrl {
+    [[QIMUserCacheManager sharedInstance] setUserObject:opsFoundRNDebugUrl forKey:@"opsFoundRNDebugUrl"];
+}
+
+//qtalk发现页测试地址
+- (NSString *)qtalkFoundRNDebugUrl {
+    NSString *qtalkFoundRNDebugUrl = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"qtalkFoundRNDebugUrl"];
+    return qtalkFoundRNDebugUrl;
+}
+
+- (void)setQtalkFoundRNDebugUrl:(NSString *)qtalkFoundRNDebugUrl {
+    [[QIMUserCacheManager sharedInstance] setUserObject:qtalkFoundRNDebugUrl forKey:@"qtalkFoundRNDebugUrl"];
+}
+
+//qtalk搜索测试地址
+- (NSString *)qtalkSearchRNDebugUrl {
+    NSString *qtalkSearchRNDebugUrl = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"qtalkSearchRNDebugUrl"];
+    return qtalkSearchRNDebugUrl;
+}
+
+- (void)setQtalkSearchRNDebugUrl:(NSString *)qtalkSearchRNDebugUrl {
+    [[QIMUserCacheManager sharedInstance] setUserObject:qtalkSearchRNDebugUrl forKey:@"qtalkSearchRNDebugUrl"];
 }
 
 //是否优先展示对方个性签名

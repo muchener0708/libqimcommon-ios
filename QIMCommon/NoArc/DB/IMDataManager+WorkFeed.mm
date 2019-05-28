@@ -8,6 +8,7 @@
 
 #import "IMDataManager+WorkFeed.h"
 #import "Database.h"
+//#import "WCDB.h"
 #import "QIMJSONSerializer.h"
 
 @implementation IMDataManager (WorkFeed)
@@ -90,8 +91,6 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             [paramList addObject:param];
         }
         [database executeBulkInsert:sql withParameters:paramList];
-        [paramList release];
-        paramList = nil;
     }];
 }
 
@@ -112,8 +111,6 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             [paramList addObject:param];
         }
         [database executeBulkInsert:sql withParameters:paramList];
-        [paramList release];
-        paramList = nil;
     }];
 }
 
@@ -165,7 +162,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             [IMDataManager safeSaveForDic:result setObject:attachCommentList forKey:@"attachCommentList"];
         }
     }];
-    return [result autorelease];
+    return result;
 }
 
 - (NSDictionary *)qimDB_getLastWorkMoment {
@@ -216,7 +213,7 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             [IMDataManager safeSaveForDic:result setObject:attachCommentList forKey:@"attachCommentList"];
         }
     }];
-    return [result autorelease];
+    return result;
 }
 
 - (NSArray *)qimDB_getWorkMomentWithXmppId:(NSString *)xmppId WithLimit:(int)limit WithOffset:(int)offset {
@@ -276,12 +273,11 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             [IMDataManager safeSaveForDic:msgDic setObject:attachCommentList forKey:@"attachCommentList"];
 
             [result addObject:msgDic];
-            [msgDic release];
         }
     }];
     CFAbsoluteTime endTime = CFAbsoluteTimeGetCurrent();
     NSLog(@"sql取Moment消息耗时。: %llf", endTime - startTime);
-    return [result autorelease];
+    return result;
 }
 
 - (void)qimDB_deleteMomentWithRId:(NSInteger)rId {
@@ -308,11 +304,8 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             [param addObject:likeNum];
             [param addObject:uuid];
             [params addObject:param];
-            [param release];
-            param = nil;
         }
         [database executeBulkInsert:sql withParameters:params];
-        [params release];
     }];
 }
 
@@ -380,8 +373,6 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             }
         }
         [database executeBulkInsert:sql withParameters:paramList];
-        [paramList release];
-        paramList = nil;
     }];
 }
 
@@ -402,8 +393,6 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             }
         }
         [database executeBulkInsert:sql withParameters:paramList];
-        [paramList release];
-        paramList = nil;
     }];
 }
 
@@ -492,10 +481,6 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
         }
         [database executeBulkInsert:deleteSql withParameters:deleteParamList];
         [database executeBulkInsert:sql withParameters:paramList];
-        [deleteParamList release];
-        deleteParamList = nil;
-        [paramList release];
-        paramList = nil;
     }];
     [self qimDB_bulkinsertNewChildComments:newChilds];
 }
@@ -575,10 +560,6 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
         }
         [database executeBulkInsert:deleteSql withParameters:deleteParamList];
         [database executeBulkInsert:sql withParameters:paramList];
-        [deleteParamList release];
-        deleteParamList = nil;
-        [paramList release];
-        paramList = nil;
     }];
 }
 
@@ -647,11 +628,9 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
 
 
             [result addObject:msgDic];
-            [msgDic release];
         }
     }];
-    //    QIMVerboseLog(@"sql取消息耗时。: %llf", [[QIMWatchDog sharedInstance] escapedTime]);
-    return [self qimDB_getWorkChildCommentsWithParentComments:[result autorelease]];
+    return [self qimDB_getWorkChildCommentsWithParentComments:result];
 }
 
 - (NSArray *)qimDB_getWorkChildCommentsWithParentComments:(NSArray *)comments {
@@ -722,13 +701,12 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
                 
                 
                 [childComments addObject:msgDic];
-                [msgDic release];
             }
         }];
         [IMDataManager safeSaveForDic:parentCommentDic setObject:childComments forKey:@"newChild"];
         [result addObject:parentCommentDic];
     }
-    return [result autorelease];
+    return result;
 }
 
 - (NSArray *)qimDB_getWorkChildCommentsWithParentCommentUUID:(NSString *)commentUUID {
@@ -795,10 +773,9 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             
             
             [childComments addObject:msgDic];
-            [msgDic release];
         }
     }];
-    return [childComments autorelease];
+    return childComments;
 }
 
 #pragma mark - NoticeMessage
@@ -877,8 +854,6 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             [paramList addObject:param];
         }
         BOOL success = [database executeBulkInsert:sql withParameters:paramList];
-        [paramList release];
-        paramList = nil;
     }];
 }
 //获取服务器事件差，来获取剩余未读消息
@@ -957,11 +932,10 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             [IMDataManager safeSaveForDic:msgDic setObject:toAnonymousPhoto forKey:@"toAnonymousPhoto"];
             
             [result addObject:msgDic];
-            [msgDic release];
         }
     }];
     //    QIMVerboseLog(@"sql取消息耗时。: %llf", [[QIMWatchDog sharedInstance] escapedTime]);
-    return [result autorelease];
+    return result;
 }
 
 - (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventTypes:(NSArray *)eventTypes {
@@ -1014,88 +988,12 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             [IMDataManager safeSaveForDic:msgDic setObject:toAnonymousPhoto forKey:@"toAnonymousPhoto"];
             
             [result addObject:msgDic];
-            [msgDic release];
         }
     }];
     //    QIMVerboseLog(@"sql取消息耗时。: %llf", [[QIMWatchDog sharedInstance] escapedTime]);
-    return [result autorelease];
+    return result;
 }
 
-- (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventType1:(int)eventType1 eventType2:(int)eventType2 readState:(int)readState{
-    __block NSMutableArray *result = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
-        NSString *sql  = @"";
-        if (eventType2 && readState == 3) {
-            sql = [NSString stringWithFormat:@"select userFrom, readState, postUUID, fromIsAnonymous, toIsAnonymous, eventType, fromAnonymousPhoto, userTo, uuid, content, userToHost, createTime, userFromHost, fromAnonymousName, toAnonymousName, toAnonymousPhoto from IM_Work_NoticeMessage where eventType=%d or eventType=%d order by createTime desc limit %d offset %d;", eventType1, eventType2 , limit, offset];
-        }
-        else if (readState == 3) {
-            sql = [NSString stringWithFormat:@"select userFrom, readState, postUUID, fromIsAnonymous, toIsAnonymous, eventType, fromAnonymousPhoto, userTo, uuid, content, userToHost, createTime, userFromHost, fromAnonymousName, toAnonymousName, toAnonymousPhoto from IM_Work_NoticeMessage where eventType=%d order by createTime desc limit %d offset %d;", eventType1, limit, offset];
-        }
-        else{
-            sql = [NSString stringWithFormat:@"select userFrom, readState, postUUID, fromIsAnonymous, toIsAnonymous, eventType, fromAnonymousPhoto, userTo, uuid, content, userToHost, createTime, userFromHost, fromAnonymousName, toAnonymousName, toAnonymousPhoto from IM_Work_NoticeMessage where eventType=%d and readState=%d order by createTime desc limit %d offset %d;",eventType1 ,readState , limit, offset];
-        }
-        NSLog(@"sql : %@", sql);
-        DataReader *reader = [database executeReader:sql withParameters:nil];
-        NSMutableArray *tempList = nil;
-        if (result == nil) {
-            result = [[NSMutableArray alloc] init];
-        }
-        while ([reader read]) {
-            
-            NSString *userFrom = [reader objectForColumnIndex:0];
-            NSNumber *readState = [reader objectForColumnIndex:1];
-            NSString *postUUID = [reader objectForColumnIndex:2];
-            NSNumber *fromIsAnonymous = [reader objectForColumnIndex:3];
-            NSNumber *toIsAnonymous = [reader objectForColumnIndex:4];
-            NSNumber *eventType = [reader objectForColumnIndex:5];
-            NSString *fromAnonymousPhoto = [reader objectForColumnIndex:6];
-            NSString *userTo = [reader objectForColumnIndex:7];
-            
-            NSString *uuid = [reader objectForColumnIndex:8];
-            NSString *content = [reader objectForColumnIndex:9];
-            NSString *userToHost = [reader objectForColumnIndex:10];
-            NSNumber *createTime = [reader objectForColumnIndex:11];
-            NSString *userFromHost = [reader objectForColumnIndex:12];
-            NSString *fromAnonymousName = [reader objectForColumnIndex:13];
-            NSString *toAnonymousName = [reader objectForColumnIndex:14];
-            NSString *toAnonymousPhoto = [reader objectForColumnIndex:15];
-            
-            NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
-            [IMDataManager safeSaveForDic:msgDic setObject:userFrom forKey:@"userFrom"];
-            [IMDataManager safeSaveForDic:msgDic setObject:readState forKey:@"readState"];
-            [IMDataManager safeSaveForDic:msgDic setObject:postUUID forKey:@"postUUID"];
-            [IMDataManager safeSaveForDic:msgDic setObject:fromIsAnonymous forKey:@"fromIsAnonymous"];
-            [IMDataManager safeSaveForDic:msgDic setObject:toIsAnonymous forKey:@"toIsAnonymous"];
-            [IMDataManager safeSaveForDic:msgDic setObject:eventType forKey:@"eventType"];
-            [IMDataManager safeSaveForDic:msgDic setObject:fromAnonymousPhoto forKey:@"fromAnonymousPhoto"];
-            [IMDataManager safeSaveForDic:msgDic setObject:userTo forKey:@"userTo"];
-            
-            [IMDataManager safeSaveForDic:msgDic setObject:uuid forKey:@"uuid"];
-            [IMDataManager safeSaveForDic:msgDic setObject:content forKey:@"content"];
-            [IMDataManager safeSaveForDic:msgDic setObject:userToHost forKey:@"userToHost"];
-            [IMDataManager safeSaveForDic:msgDic setObject:createTime forKey:@"createTime"];
-            [IMDataManager safeSaveForDic:msgDic setObject:userFromHost forKey:@"userFromHost"];
-            [IMDataManager safeSaveForDic:msgDic setObject:fromAnonymousName forKey:@"fromAnonymousName"];
-            [IMDataManager safeSaveForDic:msgDic setObject:toAnonymousName forKey:@"toAnonymousName"];
-            [IMDataManager safeSaveForDic:msgDic setObject:toAnonymousPhoto forKey:@"toAnonymousPhoto"];
-            
-            [result addObject:msgDic];
-            [msgDic release];
-        }
-    }];
-    //    QIMVerboseLog(@"sql取消息耗时。: %llf", [[QIMWatchDog sharedInstance] escapedTime]);
-    return [result autorelease];
-}
-
-//驼圈数据库取数据库带参数方法
-- (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventType:(int)eventType readState:(int)readState{
-    return [self qimDB_getWorkNoticeMessagesWithLimit:limit WithOffset:offset eventType1:eventType eventType2:nil readState:readState];
-}
-
-//我的驼圈儿读数据库操作
-- (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset {
-    return [self qimDB_getWorkNoticeMessagesWithLimit:limit WithOffset:offset eventType:1 readState:0];
-}
 //我的驼圈儿根据uuid 数组删除deleteListArr
 - (void)qimDB_deleteWorkNoticeMessageWithUUid:(NSArray *)deleteListArr{
     if (deleteListArr.count <= 0) {
@@ -1114,8 +1012,6 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
             [paramList addObject:param];
         }
         BOOL result = [database executeBulkInsert:deleteSql withParameters:paramList];
-        [paramList release];
-        paramList = nil;
     }];
 }
 

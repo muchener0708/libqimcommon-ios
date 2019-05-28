@@ -8,6 +8,7 @@
 
 #import "IMDataManager+QIMSession.h"
 #import "Database.h"
+//#import "WCDB.h"
 
 @implementation IMDataManager (QIMSession)
 
@@ -28,7 +29,7 @@
         BOOL isConsult = [[value objectForKey:@"Consult"] boolValue];
         NSString *userId = [value objectForKey:@"UserId"];
         NSString *realJid = [value objectForKey:@"RealJid"];
-        ChatType chatType = [[value objectForKey:@"ChatType"] intValue];
+        NSInteger chattype = [[value objectForKey:@"ChatType"] integerValue];
         NSArray *msgs = [value objectForKey:@"msgList"];
         long long msgTime = [[value objectForKey:@"lastDate"] longLongValue];
         NSString *msgId = [value objectForKey:@"MsgId"];
@@ -37,12 +38,12 @@
         }
         if (isConsult) {
 
-            [[IMDataManager qimDB_SharedInstance] qimDB_insertSessionWithSessionId:userId WithUserId:userId WithLastMsgId:userId WithLastUpdateTime:msgTime ChatType:chatType WithRealJid:realJid];
+            [[IMDataManager qimDB_SharedInstance] qimDB_insertSessionWithSessionId:userId WithUserId:userId WithLastMsgId:userId WithLastUpdateTime:msgTime ChatType:chattype WithRealJid:realJid];
         } else {
             if ([key containsString:@"collection_rbt"]) {
                 [[IMDataManager qimDB_SharedInstance] qimDB_insertSessionWithSessionId:key WithUserId:[[key componentsSeparatedByString:@"@"] objectAtIndex:0] WithLastMsgId:msgId WithLastUpdateTime:msgTime ChatType:ChatType_CollectionChat WithRealJid:key];
             } else {
-                [[IMDataManager qimDB_SharedInstance] qimDB_insertSessionWithSessionId:key WithUserId:[[key componentsSeparatedByString:@"@"] objectAtIndex:0] WithLastMsgId:msgId WithLastUpdateTime:msgTime ChatType:chatType WithRealJid:key];
+                [[IMDataManager qimDB_SharedInstance] qimDB_insertSessionWithSessionId:key WithUserId:[[key componentsSeparatedByString:@"@"] objectAtIndex:0] WithLastMsgId:msgId WithLastUpdateTime:msgTime ChatType:chattype WithRealJid:key];
             }
         }
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -106,8 +107,6 @@
             [param addObject:realJid?realJid:@":NULL"];
             [param addObject:[NSNumber numberWithInt:ChatType]];
             [database executeNonQuery:sql withParameters:param];
-            [param release];
-            param = nil;
         }];
     } else {
         [[self dbInstance] syncUsingTransaction:^(Database *database) {
@@ -120,8 +119,6 @@
             [param addObject:[NSNumber numberWithInt:ChatType]];
             [param addObject:realJid?realJid:@":NULL"];
             [database executeNonQuery:sql withParameters:param];
-            [param release];
-            param = nil;
         }];
     }
     QIMVerboseLog(@"");
@@ -164,7 +161,7 @@
         }
     }];
     QIMVerboseLog(@"");
-    return [result autorelease];
+    return result;
 }
 
 - (NSArray *)qimDB_getFullSessionListWithSingleChatType:(int)singleChatType {
@@ -225,12 +222,11 @@
                 [IMDataManager safeSaveForDic:sessionDic setObject:nickName forKey:@"NickName"];
                 [IMDataManager safeSaveForDic:sessionDic setObject:realJid forKey:@"RealJid"];
                 [result addObject:sessionDic];
-                [sessionDic release];
             }
         }
     }];
     QIMVerboseLog(@"");
-    return [result autorelease];
+    return result;
 }
 
 - (NSArray *)qimDB_getNotReadSessionList {
@@ -300,14 +296,13 @@
                 [IMDataManager safeSaveForDic:sessionDic setObject:msgFrom forKey:@"MsgFrom"];
                 [IMDataManager safeSaveForDic:sessionDic setObject:unreadCount forKey:@"UnreadCount"];
                 [result addObject:sessionDic];
-                [sessionDic release];
             }
         }
         long long endTime = [[NSDate date] timeIntervalSince1970] * 1000;
         CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
         QIMVerboseLog(@"生成%ld条未读会话列表 耗时 = %f s", result.count, end - start); //s
     }];
-    return [result autorelease];
+    return result;
 }
 
 
@@ -378,14 +373,13 @@
                 [IMDataManager safeSaveForDic:sessionDic setObject:msgFrom forKey:@"MsgFrom"];
                 [IMDataManager safeSaveForDic:sessionDic setObject:unreadCount forKey:@"UnreadCount"];
                 [result addObject:sessionDic];
-                [sessionDic release];
             }
         }
         long long endTime = [[NSDate date] timeIntervalSince1970] * 1000;
         CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
         NSLog(@"生成%ld条会话列表 耗时 = %f s", result.count, end - start); //s
     }];
-    return [result autorelease];
+    return result;
 }
 
 - (NSArray *)qimDB_getSessionListXMPPIDWithSingleChatType:(int)singleChatType {
@@ -406,7 +400,7 @@
         }
     }];
     QIMVerboseLog(@"");
-    return [result autorelease];
+    return result;
 }
 
 - (NSDictionary *)qimDB_getChatSessionWithUserId:(NSString *)userId chatType:(int)chatType{
@@ -418,8 +412,6 @@
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:userId];
         DataReader *reader = [database executeReader:sql withParameters:param];
-        [param release];
-        param = nil;
         if ([reader read]) {
             
             NSString *xmppId = [reader objectForColumnIndex:0];
@@ -451,7 +443,7 @@
         }
     }];
     QIMVerboseLog(@"");
-    return [chatSession autorelease];
+    return chatSession;
 }
 
 - (NSDictionary *)qimDB_getChatSessionWithUserId:(NSString *)userId WithRealJid:(NSString *)realJid {
@@ -462,8 +454,6 @@
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:userId];
         DataReader *reader = [database executeReader:sql withParameters:param];
-        [param release];
-        param = nil;
         if ([reader read]) {
             
             NSString *xmppId = [reader objectForColumnIndex:0];
@@ -483,7 +473,7 @@
         }
     }];
     QIMVerboseLog(@"");
-    return [chatSession autorelease];
+    return chatSession;
 }
 
 
@@ -496,8 +486,6 @@
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:userId];
         DataReader *reader = [database executeReader:sql withParameters:param];
-        [param release];
-        param = nil;
         if ([reader read]) {
             
             NSString *xmppId = [reader objectForColumnIndex:0];
@@ -527,7 +515,7 @@
         }
     }];
     QIMVerboseLog(@"");
-    return [chatSession autorelease];
+    return chatSession;
 }
 
 - (NSInteger)qimDB_getAppNotReadCount {

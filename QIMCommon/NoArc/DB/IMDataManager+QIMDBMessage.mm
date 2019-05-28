@@ -8,6 +8,7 @@
 
 #import "IMDataManager+QIMDBMessage.h"
 #import "Database.h"
+//#import "WCDB.h"
 #import "QIMJSONSerializer.h"
 
 @implementation IMDataManager (QIMDBMessage)
@@ -178,7 +179,7 @@
                          WithMsgDate:(long long)msgDate
                        WithReadedTag:(int)readedTag
                         ExtendedFlag:(int)ExtendedFlag {
-    [self qimDB_updateMessageWithMsgId:msgId WithSessionId:sessionId WithFrom:from WithTo:to WithContent:content WithPlatform:platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:readedTag ExtendedFlag:ExtendedFlag WithMsgRaw:nil];
+    [self qimDB_updateMessageWithMsgId:msgId WithSessionId:sessionId WithFrom:from WithTo:to WithContent:content WithExtendInfo:nil WithPlatform:platform WithMsgType:msgType WithMsgState:msgState WithMsgDirection:msgDirection WithMsgDate:msgDate WithReadedTag:readedTag ExtendedFlag:ExtendedFlag WithMsgRaw:nil];
 }
 
 
@@ -215,8 +216,6 @@
         [param addObject:msgRaw?msgRaw:@":NULL"];
         [param addObject:msgId];
         [database executeNonQuery:sql withParameters:param];
-        [param release];
-        param = nil;
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
@@ -235,11 +234,8 @@
             [param addObject:@(-1)];
             [param addObject:msgId];
             [params addObject:param];
-            [param release];
-            param = nil;
         }
         [database executeBulkInsert:sql withParameters:params];
-        [params release];
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
@@ -256,8 +252,6 @@
         [param addObject:@(msgType)];
         [param addObject:msgId];
         [database executeNonQuery:sql withParameters:param];
-        [param release];
-        param = nil;
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
@@ -302,8 +296,6 @@
         [param addObject:msgRaw?msgRaw:@":NULL"];
         [param addObject:msgId];
         [database executeNonQuery:sql withParameters:param];
-        [param release];
-        param = nil;
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
@@ -340,15 +332,15 @@
         NSString *to = [msgDic objectForKey:@"ToJid"];
         NSString *content = [msgDic objectForKey:@"MessageBody"];
         NSString *extendInfo = [msgDic objectForKey:@"MessageExtendInfo"];
-        IMPlatform platform = [[msgDic objectForKey:@"platform"] integerValue];
-        QIMMessageType msgType = [[msgDic objectForKey:@"MessageType"] integerValue];
-        ChatType chatType = [[msgDic objectForKey:@"chatType"] integerValue];
-        QIMMessageSendState msgState = [[msgDic objectForKey:@"messageSendState"] integerValue];
-        QIMMessageDirection msgDirection = [[msgDic objectForKey:@"messageDirection"] integerValue];
+        NSInteger platform = [[msgDic objectForKey:@"platform"] integerValue];
+        NSInteger msgType = [[msgDic objectForKey:@"MessageType"] integerValue];
+        NSInteger chatType = [[msgDic objectForKey:@"chatType"] integerValue];
+        NSInteger msgState = [[msgDic objectForKey:@"messageSendState"] integerValue];
+        NSInteger msgDirection = [[msgDic objectForKey:@"messageDirection"] integerValue];
         long long msgDate = [[msgDic objectForKey:@"messageDate"] longLongValue];
         id msgRaw = [msgDic objectForKey:@""];
         NSString *realJid = [msgDic objectForKey:@"realJid"];
-        QIMMessageRemoteReadState readState = [[msgDic objectForKey:@"messageReadState"] integerValue];
+        NSInteger readState = [[msgDic objectForKey:@"messageReadState"] integerValue];
         
         NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:11];
         [param addObject:msgId?msgId:@":NULL"];
@@ -368,8 +360,6 @@
         [param addObject:msgRaw?msgRaw:@":NULL"];
         [param addObject:realJid?realJid:@":NULL"];
         [database executeNonQuery:sql withParameters:param];
-        [param release];
-        param = nil;
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
@@ -421,13 +411,11 @@
             [IMDataManager safeSaveForDic:value setObject:headUrl forKey:@"headerUrl"];
             [IMDataManager safeSaveForDic:value setObject:msgId forKey:@"msgId"];
             [resultList addObject:value];
-            [value release];
-            value = nil;
         }
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
-    return [resultList autorelease];
+    return resultList;
 }
 
 #pragma mark - 插入群JSON消息
@@ -547,8 +535,6 @@
                     if (atMe == YES) {
                         [*normalMsgList addObject:msgDic];
                     }
-                    [msgDic release];
-                    msgDic = nil;
                 } else {
                     if ([msg rangeOfString:@"@"].location != NSNotFound) {
                         NSArray *array = [msg componentsSeparatedByString:@"@"];
@@ -571,8 +557,6 @@
                         if (hasAt) {
                             [*normalMsgList addObject:msgDic];
                         }
-                        [msgDic release];
-                        msgDic = nil;
                     }
                 }
             }
@@ -585,7 +569,6 @@
     }
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"插入群消息历史记录%ld条，耗时%fs", msgList.count, end - start); //s
-    [resultDic autorelease];
     if (insertSuccessed == YES) {
         return lastTime;
     } else {
@@ -689,7 +672,7 @@
     }
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
-    return [msgList autorelease];
+    return msgList;
 }
 
 /**
@@ -794,16 +777,16 @@
                     // 自己发的
                     realJid = [realTo componentsSeparatedByString:@"/"].firstObject;
                     if (chatId.intValue == 4) {
-                        key = [[NSString stringWithFormat:@"%@-%@",toJid,toJid] retain];
+                        key = [NSString stringWithFormat:@"%@-%@",toJid,toJid];
                     } else {
-                        key = [[NSString stringWithFormat:@"%@-%@",toJid,realJid] retain];
+                        key = [NSString stringWithFormat:@"%@-%@",toJid,realJid];
                     }
                     userId = toJid;
                 } else {
-                    key = [toJid retain];
+                    key = toJid;
                 }
                 direction = 0;
-                result = [[resultDic objectForKey:key] retain];
+                result = [resultDic objectForKey:key];
                 if (result == nil) {
                     result = [[NSMutableDictionary alloc] init];
                     if (key) {
@@ -833,15 +816,15 @@
                         realJid = [realfrom componentsSeparatedByString:@"/"].firstObject;
                     }
                     if (chatId.intValue == 4) {
-                        key = [[NSString stringWithFormat:@"%@-%@",fromJid,realJid] retain];
+                        key = [NSString stringWithFormat:@"%@-%@",fromJid,realJid];
                     } else {
-                        key = [[NSString stringWithFormat:@"%@-%@",fromJid,fromJid] retain];
+                        key = [NSString stringWithFormat:@"%@-%@",fromJid,fromJid];
                     }
                     userId = fromJid;
                 } else {
-                    key = [fromJid retain];
+                    key = fromJid;
                 }
-                result = [[resultDic objectForKey:key] retain];
+                result = [resultDic objectForKey:key];
                 if (result == nil) {
                     result = [[NSMutableDictionary alloc] init];
                     if (key) {
@@ -863,7 +846,7 @@
                 }
             }
             lastDate = [[result objectForKey:@"lastDate"] longLongValue];
-            msgList = [[result objectForKey:@"msgList"] retain];
+            msgList = [result objectForKey:@"msgList"];
             if (msgList == nil) {
                 msgList = [[NSMutableArray alloc] initWithCapacity:100];
             }
@@ -960,8 +943,6 @@
             NSData *msgRawData = [NSJSONSerialization dataWithJSONObject:dic options:NSJSONWritingPrettyPrinted error:nil];
             NSString *msgRaw = [[NSString alloc] initWithData:msgRawData encoding:NSUTF8StringEncoding];
             [msgDic setObject:msgRaw?msgRaw:@"" forKey:@"MsgRaw"];
-            [msgRaw release];
-            msgRaw = nil;
             if (channelInfo) {
                 [msgDic setObject:channelInfo forKey:@"channelid"];
             }
@@ -1028,8 +1009,6 @@
             }
             [msgList addObject:msgDic];
             [insertMsgList addObject:msgDic];
-            [msgDic release];
-            msgDic = nil;
         }
         [result setObject:@(lastDate) forKey:@"lastDate"];
     }
@@ -1043,9 +1022,6 @@
     }
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"插入单人历史消息%ld条， 耗时 = %f s", insertMsgList.count, end - start);
-    [insertMsgList release];
-    [updateMsgList release];
-    [resultDic release];
     return lastMaxTime;
 }
 
@@ -1056,12 +1032,12 @@
         NSString *sql = [NSString stringWithFormat:@"Select Content from IM_Message Where Type = 2004 AND Content like '%%%@%%';", msgId];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
-            c2BMessageFeedBackStr = [[reader objectForColumnIndex:0] retain];
+            c2BMessageFeedBackStr = [reader objectForColumnIndex:0];
         }
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
-    return [c2BMessageFeedBackStr autorelease];
+    return c2BMessageFeedBackStr;
 }
 
 #pragma mark - 单人JSON历史消息翻页
@@ -1155,9 +1131,9 @@
                 if ([tempRealXmppFrpm isEqualToString:[self getDbOwnerFullJid]]) {
                     //自己发的
                     if (chatId.intValue == 4) {
-                        key = [[NSString stringWithFormat:@"%@-%@",toJid,toJid] retain];
+                        key = [NSString stringWithFormat:@"%@-%@",toJid,toJid];
                     } else {
-                        key = [[NSString stringWithFormat:@"%@-%@",toJid,realJid] retain];
+                        key = [NSString stringWithFormat:@"%@-%@",toJid,realJid];
                     }
                     direction = 0;
                     if (msgType == 1003 || msgType == 1004) {
@@ -1189,9 +1165,9 @@
                         realJid = [realfrom componentsSeparatedByString:@"/"].firstObject;
                     }
                     if (chatId.intValue == 4) {
-                        key = [[NSString stringWithFormat:@"%@-%@",fromJid,realJid] retain];
+                        key = [NSString stringWithFormat:@"%@-%@",fromJid,realJid];
                     } else {
-                        key = [[NSString stringWithFormat:@"%@-%@",fromJid,fromJid] retain];
+                        key = [NSString stringWithFormat:@"%@-%@",fromJid,fromJid];
                     }
                     userId = fromJid;
                     if (msgType == 1004) {
@@ -1211,11 +1187,11 @@
             } else {
                 if ([fromJid isEqualToString:[self getDbOwnerFullJid]] == YES) {
                     
-                    key = [toJid retain];
+                    key = toJid;
                     direction = QIMMessageDirection_Sent;
                 } else {
                     direction = QIMMessageDirection_Received;
-                    key = [fromJid retain];
+                    key = fromJid;
                 }
             }
             
@@ -1353,7 +1329,7 @@
     [self qimDB_bulkInsertMessage:msgList WithSessionId:xmppId];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
-    return [msgList autorelease];
+    return msgList;
 }
 
 - (BOOL)qimDB_bulkInsertMessage:(NSArray *)msgList {
@@ -1400,12 +1376,8 @@
             [param addObject:realJid?realJid:(from?from:@":NULL")];
             [param addObject:extendInfo?extendInfo:@":NULL"];
             [params addObject:param];
-            [param release];
-            param = nil;
         }
         isSuccessed = [database executeBulkInsert:sql withParameters:params];
-        [params release];
-        
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
@@ -1453,11 +1425,8 @@
             [param addObject:realJid?realJid:@":NULL"];
             [param addObject:extendInfo?extendInfo:@":NULL"];
             [params addObject:param];
-            [param release];
-            param = nil;
         }
         [database executeBulkInsert:sql withParameters:params];
-        [params release];
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
@@ -1499,8 +1468,6 @@
         [param addObject:realJid];
         [param addObject:@(msgDirection)];
         DataReader *reader = [database executeReader:sql withParameters:param];
-        [param release];
-        param = nil;
         if ([reader read]) {
             timeStamp = [[reader objectForColumnIndex:0] longLongValue];
             if (timeStamp <= 0) {
@@ -1521,8 +1488,6 @@
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:sesId];
         DataReader *reader = [database executeReader:sql withParameters:param];
-        [param release];
-        param = nil;
         while ([reader read]) {
             
             if (result == nil) {
@@ -1564,12 +1529,11 @@
             [IMDataManager safeSaveForDic:msgDic setObject:realJid forKey:@"RealJid"];
             
             [result addObject:msgDic];
-            [msgDic release];
         }
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
-    return [result autorelease];
+    return result;
 }
 
 - (NSDictionary *)qimDB_getMsgsByMsgId:(NSString *)msgId {
@@ -1584,8 +1548,6 @@
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:msgId];
         DataReader *reader = [database executeReader:sql withParameters:param];
-        [param release];
-        param = nil;
         if (!result) {
             result = [[NSMutableDictionary alloc] init];
         }
@@ -1627,7 +1589,7 @@
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
-    return [result autorelease];
+    return result;
 }
 
 - (NSArray *)qimDB_getMsgsByMsgType:(NSArray *)msgTypes ByXmppId:(NSString *)xmppId ByReadJid:(NSString *)realJid {
@@ -1714,8 +1676,6 @@
         [param addObject:[NSNumber numberWithInt:msgType]];
         [param addObject:xmppId];
         DataReader *reader = [database executeReader:sql withParameters:param];
-        [param release];
-        param = nil;
         
         while ([reader read]) {
             NSString *msgId = [reader objectForColumnIndex:0];
@@ -1769,8 +1729,6 @@
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:[NSNumber numberWithInt:msgType]];
         DataReader *reader = [database executeReader:sql withParameters:param];
-        [param release];
-        param = nil;
         
         while ([reader read]) {
             NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
@@ -1832,8 +1790,6 @@
         [param addObject:sesId];
         [param addObject:realJid?realJid:@":NULL"];
         DataReader *reader = [database executeReader:sql withParameters:param];
-        [param release];
-        param = nil;
         
         NSMutableArray *tempList = nil;
         if (result == nil) {
@@ -1893,17 +1849,15 @@
             [IMDataManager safeSaveForDic:msgDic setObject:realJid forKey:@"RealJid"];
             
             [tempList addObject:msgDic];
-            [msgDic release];
         }
         for (int i = (int)tempList.count - 1;i>= 0;i--) {
             [result addObject:[tempList objectAtIndex:i]];
         }
-        [tempList release];
     }];
 //    QIMVerboseLog(@"sql取消息耗时。: %llf", [[QIMWatchDog sharedInstance] escapedTime]);
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start); //
-    return [result autorelease];
+    return result;
 }
 
 - (NSArray *)qimDB_getMsgListByXmppId:(NSString *)xmppId WithRealJid:(NSString *)realJid FromTimeStamp:(long long)timeStamp {
@@ -1928,9 +1882,6 @@
             [param addObject:@(timeStamp)];
         }
         DataReader *reader = [database executeReader:sql withParameters:param];
-        [param release];
-        param = nil;
-        
         NSMutableArray *tempList = nil;
         if (result == nil) {
             result = [[NSMutableArray alloc] init];
@@ -1976,16 +1927,14 @@
             [IMDataManager safeSaveForDic:msgDic setObject:realJid forKey:@"RealJid"];
         
             [tempList addObject:msgDic];
-            [msgDic release];
         }
         for (int i = (int)tempList.count - 1; i>= 0;i--) {
             [result addObject:[tempList objectAtIndex:i]];
         }
-        [tempList release];
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start); //
-    return [result autorelease];
+    return result;
 }
 
 - (NSArray *)qimDB_getMsgListByXmppId:(NSString *)xmppId FromTimeStamp:(long long)timeStamp {
@@ -2001,8 +1950,6 @@
         [param addObject:xmppId];
         [param addObject:@(timeStamp)];
         DataReader *reader = [database executeReader:sql withParameters:param];
-        [param release];
-        param = nil;
         
         NSMutableArray *tempList = nil;
         if (result == nil) {
@@ -2048,16 +1995,14 @@
             [IMDataManager safeSaveForDic:msgDic setObject:realJid forKey:@"RealJid"];
             
             [tempList addObject:msgDic];
-            [msgDic release];
         }
         for (int i = (int)tempList.count - 1;i>= 0;i--) {
             [result addObject:[tempList objectAtIndex:i]];
         }
-        [tempList release];
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start); //
-    return [result autorelease];
+    return result;
 }
 
 - (NSInteger)qimDB_getSumNotReaderMsgCountByXmppIds:(NSString *)xmppIds {
@@ -2161,7 +2106,7 @@
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
-    return [resultList autorelease];
+    return resultList;
 }
 
 #pragma mark - 消息数据方法
@@ -2173,12 +2118,12 @@
         NSString *sql = @"select MsgId from IM_Message Where XmppId=:XmppId And Type != 101 order by LastUpdateTime desc limit 1";
         DataReader *reader = [database executeReader:sql withParameters:@[jid]];
         if ([reader read]) {
-            lastMsgId = [[reader objectForColumnIndex:0] retain];
+            lastMsgId = [reader objectForColumnIndex:0];
         }
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
-    return [lastMsgId autorelease];
+    return lastMsgId;
 }
 
 - (long long)qimDB_getMsgTimeWithMsgId:(NSString *)msgId {
@@ -2238,13 +2183,11 @@
             [IMDataManager safeSaveForDic:dict setObject:xmppId forKey:@"XmppId"];
             [IMDataManager safeSaveForDic:dict setObject:msgIds forKey:@"MsgIds"];
             [resultList addObject:dict];
-            [dict release];
-            dict = nil;
         }
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
-    return [resultList autorelease];
+    return resultList;
 }
 
 - (NSArray *)qimDB_getNotReadMsgListForUserId:(NSString *)userId ForRealJid:(NSString *)realJid {
@@ -2260,8 +2203,6 @@
         [param addObject:realJid];
         [param addObject:@(QIMMessageDirection_Received)];
         DataReader *reader = [database executeReader:sql withParameters:param];
-        [param release];
-        param = nil;
         while ([reader read]) {
             
             if (result == nil) {
@@ -2276,7 +2217,7 @@
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
-    return [result autorelease];
+    return result;
 }
 
 - (NSArray *)qimDB_getNotReadMsgListForUserId:(NSString *)userId {
@@ -2288,8 +2229,6 @@
         [param addObject:userId];
         [param addObject:@(QIMMessageDirection_Received)];
         DataReader *reader = [database executeReader:sql withParameters:param];
-        [param release];
-        param = nil;
         while ([reader read]) {
             
             if (result == nil) {
@@ -2304,7 +2243,7 @@
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
-    return [result autorelease];
+    return result;
 }
 
 // 0 未读 1是读过了
@@ -2689,24 +2628,12 @@
             [parames addObject:@(atType)];
             [parames addObject:@(msgTime)];
             [database executeNonQuery:sql withParameters:parames];
-            [parames release];
-            parames = nil;
         }];
     }
 }
 
 - (void)qimDB_UpdateAtMessageReadStateWithGroupId:(NSString *)groupId withReadState:(QIMAtMsgReadState)readState {
     if (groupId.length > 0) {
-        /*
-        [[self dbInstance] syncUsingTransaction:^(Database *database) {
-            NSString *sql = [NSString stringWithFormat:@"Update IM_AT_Message Set ReadState=:ReadState Where GroupId = :GroupId"];
-            NSMutableArray *parames = [[NSMutableArray alloc] init];
-            [parames addObject:@(readState)];
-            [parames addObject:groupId];
-            [database executeNonQuery:sql withParameters:parames];
-            [parames release];
-            parames = nil;
-        }]; */
         if (readState == QIMAtMsgHasReadState) {
             [[self dbInstance] syncUsingTransaction:^(Database *database) {
                 NSString *sql = @"delete from IM_AT_Message where GroupId = :GroupId;";
@@ -2715,8 +2642,6 @@
                 [param addObject:groupId];
                 [paramList addObject:param];
                 [database executeNonQuery:sql withParameters:paramList];
-                [paramList release];
-                paramList = nil;
             }];
         } else {
             
@@ -2736,32 +2661,11 @@
                     [param addObject:groupId];
                     [param addObject:msgId];
                     [params addObject:param];
-                    [param release];
-                    param = nil;
                 }
                 [database executeBulkInsert:sql withParameters:params];
-                [params release];
-                params = nil;
             }];
         } else {
-            
         }
-        /*
-        [[self dbInstance] syncUsingTransaction:^(Database *database) {
-            NSString *sql = [NSString stringWithFormat:@"Update IM_AT_Message Set ReadState=:ReadState Where GroupId = :GroupId And MsgId = :MsgId;"];
-            for (NSString *msgId in msgIds) {
-                
-                NSMutableArray *param = [[NSMutableArray alloc] init];
-                [param addObject:@(readState)];
-                [param addObject:groupId];
-                [param addObject:msgId];
-                [params addObject:param];
-                [param release];
-                param = nil;
-            }
-            [database executeBulkInsert:sql withParameters:params];
-            [params release];
-        }]; */
     }
 }
 
@@ -2791,13 +2695,10 @@
                     [IMDataManager safeSaveForDic:msgDic setObject:msgDate forKey:@"MsgDate"];
                     [IMDataManager safeSaveForDic:msgDic setObject:readState forKey:@"ReadState"];
                     [atMessageArray addObject:msgDic];
-                    [msgDic release];
                 } else {
                     
                 }
             }
-            [parames release];
-            parames = nil;
         }];
         CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
         QIMVerboseLog(@"耗时 = %f s", end - start); //
@@ -2823,12 +2724,8 @@
             [param addObject:groupId];
             [param addObject:@(mucLastReadFlagTime)];
             [params addObject:param];
-            [param release];
-            param = nil;
         }
         [database executeBulkInsert:sql withParameters:params];
-        [params release];
-        params = nil;
     }];
 }
 
@@ -2839,10 +2736,7 @@
         NSMutableArray *parames = [[NSMutableArray alloc] init];
         [parames addObject:groupId];
         [parames addObject:msgId];
-        BOOL clearATSuccess = [database executeNonQuery:sql withParameters:parames];
-        
-        [parames release];
-        parames = nil;
+        clearATSuccess = [database executeNonQuery:sql withParameters:parames];
     }];
     return clearATSuccess;
 }
@@ -2853,10 +2747,7 @@
         NSString *sql = [NSString stringWithFormat:@"delete from IM_AT_Message where GroupId=:GroupId"];
         NSMutableArray *parames = [[NSMutableArray alloc] init];
         [parames addObject:groupId];
-        BOOL clearATSuccess = [database executeNonQuery:sql withParameters:parames];
-        
-        [parames release];
-        parames = nil;
+        clearATSuccess = [database executeNonQuery:sql withParameters:parames];
     }];
     return clearATSuccess;
 }

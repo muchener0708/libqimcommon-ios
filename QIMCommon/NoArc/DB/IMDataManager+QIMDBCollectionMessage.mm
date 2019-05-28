@@ -8,6 +8,7 @@
 
 #import "IMDataManager+QIMDBCollectionMessage.h"
 #import "Database.h"
+//#import "WCDB.h"
 #import "QIMPublicRedefineHeader.h"
 
 @implementation IMDataManager (QIMDBCollectionMessage)
@@ -31,12 +32,10 @@
             [IMDataManager safeSaveForDic:value setObject:bindName forKey:@"BindName"];
             [IMDataManager safeSaveForDic:value setObject:headerSrc forKey:@"HeaderSrc"];
             [resultList addObject:value];
-            [value release];
-            value = nil;
         }
     }];
     QIMVerboseLog(@"");
-    return [resultList autorelease];
+    return resultList;
 }
 
 - (void)qimDB_bulkinsertCollectionAccountList:(NSArray *)accounts {
@@ -75,7 +74,6 @@
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:jid];
         DataReader *reader = [database executeReader:sql withParameters:param];
-        [param release];
         if ([reader read]) {
             user = [[NSMutableDictionary alloc] init];
             NSString *userId = [reader objectForColumnIndex:0];
@@ -98,7 +96,7 @@
         
     }];
     QIMVerboseLog(@"");
-    return [user autorelease];
+    return user;
 }
 
 - (void)qimDB_bulkInsertCollectionUserCards:(NSArray *)userCards {
@@ -173,7 +171,7 @@
         }
     }];
     QIMVerboseLog(@"");
-    return [groupCardDic autorelease];
+    return groupCardDic;
 }
 
 - (void)qimDB_bulkInsertCollectionGroupCards:(NSArray *)array{
@@ -198,8 +196,6 @@
             [paramList addObject:param];
         }
         [database executeBulkInsert:sql withParameters:paramList];
-        [paramList release];
-        paramList = nil;
     }];
     QIMVerboseLog(@"");
 }
@@ -220,7 +216,7 @@
         }
     }];
     QIMVerboseLog(@"");
-    return [resultDic autorelease];
+    return resultDic;
 }
 
 - (NSArray *)qimDB_getCollectionSessionListWithBindId:(NSString *)bindId {
@@ -262,11 +258,10 @@
             [IMDataManager safeSaveForDic:sessionDic setObject:chatType forKey:@"ChatType"];
             [IMDataManager safeSaveForDic:sessionDic setObject:nickName forKey:@"NickName"];
             [resultList addObject:sessionDic];
-            [sessionDic release];
         }
     }];
     QIMVerboseLog(@"");
-    return [resultList autorelease];
+    return resultList;
 }
 
 - (NSArray *)qimDB_getCollectionMsgListWithBindId:(NSString *)bindId {
@@ -277,8 +272,6 @@
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:bindId];
         DataReader *reader = [database executeReader:sql withParameters:param];
-        [param release];
-        param = nil;
         result = [[NSMutableArray alloc] initWithCapacity:100];
         while ([reader read]) {
             if (result == nil) {
@@ -307,11 +300,10 @@
             [IMDataManager safeSaveForDic:msgDic setObject:msgDateTime forKey:@"MsgDateTime"];
             [IMDataManager safeSaveForDic:msgDic setObject:extendInfo forKey:@"ExtendInfo"];
             [result addObject:msgDic];
-            [msgDic release];
         }
     }];
     QIMVerboseLog(@"");
-    return [result autorelease];
+    return result;
 }
 
 - (BOOL)qimDB_checkCollectionMsgById:(NSString *)msgId {
@@ -465,7 +457,7 @@
         }
     }];
     QIMVerboseLog(@"");
-    return [msgDic autorelease];
+    return msgDic;
 }
 
 - (NSArray *)qimDB_getCollectionMsgListWithUserId:(NSString *)userId originUserId:(NSString *)originUserId{
@@ -516,12 +508,11 @@
             [IMDataManager safeSaveForDic:msgDic setObject:messageRaw forKey:@"MessageRaw"];
             [IMDataManager safeSaveForDic:msgDic setObject:realJid forKey:@"RealJid"];
             [result addObject:msgDic];
-            [msgDic release];
         }
         
     }];
     QIMVerboseLog(@"");
-    return [result autorelease];
+    return result;
 }
 
 @end

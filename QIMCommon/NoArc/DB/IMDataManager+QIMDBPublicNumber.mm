@@ -8,6 +8,7 @@
 
 #import "IMDataManager+QIMDBPublicNumber.h"
 #import "Database.h"
+//#import "WCDB.h"
 #import "QIMPublicRedefineHeader.h"
 
 @implementation IMDataManager (QIMDBPublicNumber)
@@ -30,7 +31,7 @@
             [IMDataManager safeSaveForDic:result setObject:@(ChatType_PublicNumber) forKey:@"ChatType"];
         }
     }];
-    return [result autorelease];
+    return result;
 }
 
 - (BOOL)qimDB_checkPublicNumberMsgById:(NSString *)msgId {
@@ -158,12 +159,9 @@
             [IMDataManager safeSaveForDic:value setObject:xmppId forKey:@"robot_name"];
             [IMDataManager safeSaveForDic:value setObject:lastUpdateTime forKey:@"version"];
             [resultList addObject:value];
-            [value release];
-            value = nil;
         }
-        
     }];
-    return [resultList autorelease];
+    return resultList;
 }
 
 - (NSArray *)qimDB_getPublicNumberList {
@@ -203,12 +201,10 @@
             [IMDataManager safeSaveForDic:value setObject:content forKey:@"Content"];
             [IMDataManager safeSaveForDic:value setObject:msgType forKey:@"MsgType"];
             [resultList addObject:value];
-            [value release];
-            value = nil;
         }
         
     }];
-    return [resultList autorelease];
+    return resultList;
 }
 
 - (NSArray *)qimDB_searchPublicNumberListByKeyStr:(NSString *)keyStr {
@@ -248,12 +244,9 @@
             [IMDataManager safeSaveForDic:value setObject:content forKey:@"Content"];
             [IMDataManager safeSaveForDic:value setObject:msgType forKey:@"MsgType"];
             [resultList addObject:value];
-            [value release];
-            value = nil;
         }
-        
     }];
-    return [resultList autorelease];
+    return resultList;
 }
 
 - (NSInteger)qimDB_getRnSearchPublicNumberListByKeyStr:(NSString *)keyStr {
@@ -290,11 +283,9 @@
             [IMDataManager safeSaveForDic:value setObject:content forKey:@"content"];
             [IMDataManager safeSaveForDic:value setObject:(icon.length > 0) ? icon : @":NULL" forKey:@"icon"];
             [resultList addObject:value];
-            [value release];
-            value = nil;
         }
     }];
-    return [resultList autorelease];
+    return resultList;
 }
 
 - (NSDictionary *)qimDB_getPublicNumberCardByJId:(NSString *)jid {
@@ -327,7 +318,7 @@
         }
         
     }];
-    return [resultDic autorelease];
+    return resultDic;
 }
 
 - (void)qimDB_insetPublicNumberMsgWithMsgId:(NSString *)msgId
@@ -357,9 +348,6 @@
         [params addObject:@(readedTag)];
         [params addObject:@(msgDate)];
         [database executeNonQuery:sql withParameters:params];
-        [params release];
-        params = nil;
-        
     }];
 }
 
@@ -405,11 +393,9 @@
             [IMDataManager safeSaveForDic:value setObject:readedTag forKey:@"ReadedTag"];
             [IMDataManager safeSaveForDic:value setObject:lastUpdateTime forKey:@"LastUpdateTime"];
             [resultList addObject:value];
-            [value release];
-            value = nil;
         }
     }];
-    return [resultList autorelease];
+    return resultList;
 }
 
 @end

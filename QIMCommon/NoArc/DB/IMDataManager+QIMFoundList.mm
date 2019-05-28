@@ -9,6 +9,7 @@
 
 #import "IMDataManager+QIMFoundList.h"
 #import "Database.h"
+//#import "WCDB.h"
 
 @implementation IMDataManager (QIMFoundList)
 
@@ -19,7 +20,6 @@
         [parames addObject:version];
         [parames addObject:foundListStr?foundListStr:@":NULL"];
         [database executeNonQuery:sql withParameters:parames];
-        [parames release];
         parames = nil;
     }];
 }
@@ -30,10 +30,10 @@
         NSString *sql = @"SELECT foundList FROM IM_Found_List WHERE version = :version";
         DataReader *reader = [database executeReader:sql withParameters:@[version]];
         if ([reader read]) {
-            result = [[reader objectForColumnIndex:0] retain];
+            result = [reader objectForColumnIndex:0];
         }
     }];
-    return [result autorelease];
+    return result;
 }
 
 @end

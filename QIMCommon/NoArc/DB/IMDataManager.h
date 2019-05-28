@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "QIMCommonEnum.h"
 #import "QIMPublicRedefineHeader.h"
+#import <QIMCommonCategories/QIMCommonCategories.h>
 
 @class UserInfo;
 

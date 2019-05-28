@@ -9,9 +9,11 @@
 
 #import "IMDataManager.h"
 #import "Database.h"
-#import "Message.pb.h"
+//#import "Message.pb.h"
 #import "QIMDBLogger.h"
 #import "QIMWatchDog.h"
+#import "WCDB.h"
+#import "IMDataManager+QIMDBMessage.h"
 
 static IMDataManager *__global_data_manager = nil;
 @interface IMDataManager()
@@ -24,18 +26,16 @@ static IMDataManager *__global_data_manager = nil;
     NSDateFormatter *_timeSmtapFormatter;
 }
 
-+ (IMDataManager *) qimDB_SharedInstance {
++ (IMDataManager *)qimDB_SharedInstance {
     return __global_data_manager;
 }
 
-- (void) setdbPath:(NSString *) dbPath {
-    [_dbPath release];
-    _dbPath = [dbPath retain];
+- (void)setdbPath:(NSString *)dbPath {
+    _dbPath = dbPath;
 }
 
 - (void)setDBOwnerFullJid:(NSString *)dbFullJid {
-    [_dbOwnerFullJid release];
-    _dbOwnerFullJid = [dbFullJid retain];
+    _dbOwnerFullJid = dbFullJid;
 }
 
 static dispatch_once_t _onceDBToken;
@@ -56,9 +56,7 @@ static dispatch_once_t _onceDBToken;
 }
 
 - (void)setDomain:(NSString*)domain{
-    [_dbOwnerDomain release];
-
-    _dbOwnerDomain = [domain retain];
+    _dbOwnerDomain = domain;
 }
 
 - (NSString *)getDBOwnerDomain {
@@ -73,7 +71,7 @@ static dispatch_once_t _onceDBToken;
     CFRelease(UUID);
     if (UUIDString)
     CFRelease(UUIDString);
-    return [result autorelease];
+    return result;
 }
 
 - (NSString *)UUID{
@@ -158,8 +156,6 @@ static dispatch_once_t _onceDBToken;
         [parames addObject:value?value:@":NULL"];
         [parames addObject:@(valueInt)];
         [database executeNonQuery:sql withParameters:parames];
-        [parames release];
-        parames = nil;
     }];
 }
 
@@ -172,8 +168,6 @@ static dispatch_once_t _onceDBToken;
         [parames addObject:value?value:@":NULL"];
         [parames addObject:@(valueInt)];
         [database executeNonQuery:sql withParameters:parames];
-        [parames release];
-        parames = nil;
     }];
 }
 

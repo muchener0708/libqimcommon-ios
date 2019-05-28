@@ -151,10 +151,6 @@
     return [[QIMManager sharedInstance] getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventTypes:(NSArray *)eventTypes];
 }
 
-- (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset {
-    return [[QIMManager sharedInstance] getWorkNoticeMessagesWithLimit:limit WithOffset:offset];
-}
-
 - (void)updateLocalWorkNoticeMsgReadStateWithTime:(long long)time {
     [[QIMManager sharedInstance] updateLocalWorkNoticeMsgReadStateWithTime:time];
 }

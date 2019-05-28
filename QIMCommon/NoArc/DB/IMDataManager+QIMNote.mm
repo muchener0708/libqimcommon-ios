@@ -8,6 +8,7 @@
 
 #import "IMDataManager+QIMNote.h"
 #import "Database.h"
+//#import "WCDB.h"
 
 @implementation IMDataManager (QIMNote)
 
@@ -54,8 +55,6 @@
         [parames addObject:@(qstate)];
         [parames addObject:@(qExtendedFlag)];
         [database executeNonQuery:sql withParameters:parames];
-        [parames release];
-        parames = nil;
     }];
 }
 
@@ -84,8 +83,6 @@
         [parames addObject:@(qid)];
         [parames addObject:@(cid)];
         [database executeNonQuery:sql withParameters:parames];
-        [parames release];
-        parames = nil;
     }];
 }
 
@@ -104,11 +101,8 @@
             [param addObject:@(version)];
             [param addObject:@(cId)];
             [params addObject:param];
-            [param release];
-            param = nil;
         }
         [database executeBulkInsert:sql withParameters:params];
-        [params release];
     }];
 }
 
@@ -151,8 +145,6 @@
         [parames addObject:@(qExtendedFlag)];
         [parames addObject:@(cid)];
         [database executeNonQuery:sql withParameters:parames];
-        [parames release];
-        parames = nil;
     }];
 }
 
@@ -221,11 +213,9 @@
             [IMDataManager safeSaveForDic:paramDic setObject:q_introduce ? q_introduce : @"" forKey:@"desc"];
             [IMDataManager safeSaveForDic:paramDic setObject:q_content ? q_content : @"" forKey:@"content"];
             [resultList addObject:paramDic];
-            [paramDic release];
-            paramDic = nil;
         }
     }];
-    return [resultList autorelease];
+    return resultList;
 }
 
 - (NSDictionary *)getQTNotesMainItemWithCid:(NSInteger)cid {
@@ -263,11 +253,9 @@
             [IMDataManager safeSaveForDic:paramDic setObject:q_state forKey:@"q_state"];
             [IMDataManager safeSaveForDic:paramDic setObject:q_ExtendedFlag forKey:@"q_ExtendedFlag"];
             [resultList addObject:paramDic];
-            [paramDic release];
-            paramDic = nil;
         }
     }];
-    return [resultList autorelease];
+    return resultList;
 }
 
 - (NSInteger)getQTNoteMainItemMaxTimeWithQType:(NSInteger)qType {
@@ -368,8 +356,6 @@
         [param addObject:@(qs_ExtendedFlag)];
         [param addObject:@(csid)];
         [database executeNonQuery:sql withParameters:param];
-        [param release];
-        param = nil;
     }];
 }
 
@@ -387,11 +373,8 @@
             [param addObject:@(version)];
             [param addObject:@(csId)];
             [params addObject:param];
-            [param release];
-            param = nil;
         }
         [database executeBulkInsert:sql withParameters:params];
-        [params release];
     }];
 }
 
@@ -420,8 +403,6 @@
         [param addObject:@(qsExtendedFlag)];
         [param addObject:@(Csid)];
         [database executeNonQuery:sql withParameters:param];
-        [param release];
-        param = nil;
     }];
 }
 
@@ -474,11 +455,9 @@
             [IMDataManager safeSaveForDic:paramDic setObject:qs_introduce ? qs_introduce : @"" forKey:@"desc"];
             [IMDataManager safeSaveForDic:paramDic setObject:qs_content ? qs_content : @"" forKey:@"content"];
             [resultList addObject:paramDic];
-            [paramDic release];
-            paramDic = nil;
         }
     }];
-    return [resultList autorelease];
+    return resultList;
 }
 
 - (NSArray *)getQTNotesSubItemWithCid:(NSInteger)cid QSExtendedFlag:(NSInteger)qsExtendedFlag {
@@ -560,11 +539,9 @@
             [IMDataManager safeSaveForDic:paramDic setObject:qs_state forKey:@"qs_state"];
             [IMDataManager safeSaveForDic:paramDic setObject:qs_ExtendedFlag forKey:@"qs_ExtendedFlag"];
             [resultList addObject:paramDic];
-            [paramDic release];
-            paramDic = nil;
         }
     }];
-    return [resultList autorelease];
+    return resultList;
 }
 
 - (NSInteger)getQTNoteSubItemMaxTimeWithCid:(NSInteger)cid

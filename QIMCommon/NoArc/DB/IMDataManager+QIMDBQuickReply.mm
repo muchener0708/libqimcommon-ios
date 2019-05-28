@@ -8,6 +8,7 @@
 
 #import "IMDataManager+QIMDBQuickReply.h"
 #import "Database.h"
+//#import "WCDB.h"
 
 @implementation IMDataManager (QIMDBQuickReply)
 
@@ -52,11 +53,8 @@
             [param addObject:@(version)];
             
             [params addObject:param];
-            [param release];
-            param = nil;
         }
         [database executeBulkInsert:sql withParameters:params];
-        [params release];
     }];
 }
 
@@ -119,7 +117,7 @@
             [result addObject:dic];
         }
     }];
-    return [result autorelease];
+    return result;
 }
 
 #pragma mark - Item
@@ -165,11 +163,8 @@
             [param addObject:@(contentseq)];
             [param addObject:@(version)];
             [params addObject:param];
-            [param release];
-            param = nil;
         }
         [database executeBulkInsert:sql withParameters:params];
-        [params release];
     }];
 }
 
@@ -219,7 +214,7 @@
             [result addObject:dic];
         }
     }];
-    return [result autorelease];
+    return result;
 }
 
 @end

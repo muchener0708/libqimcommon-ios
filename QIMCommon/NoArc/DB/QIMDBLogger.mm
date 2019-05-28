@@ -145,15 +145,12 @@
                 [param addObject:logEntry->message];
                 [param addObject:logEntry->timestamp];
                 [params addObject:param];
-                [param release];
-                param = nil;
             }
         }
         BOOL result = [database executeBulkInsert:cmd withParameters:params];
         if (!result) {
             QIMVerboseLog(@"Error inserting log entries");
         }
-        [params release];
     }];
     
     /*

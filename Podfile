@@ -27,4 +27,5 @@ target 'QIMCommon' do
     
     pod 'AvoidCrash'
     pod 'YYDispatchQueuePool'
+    pod 'WCDB'
 end

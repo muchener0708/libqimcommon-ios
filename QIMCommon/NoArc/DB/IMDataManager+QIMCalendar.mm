@@ -8,6 +8,7 @@
 
 #import "IMDataManager+QIMCalendar.h"
 #import "Database.h"
+//#import "WCDB.h"
 #import "QIMPublicRedefineHeader.h"
 
 @implementation IMDataManager (QIMCalendar)
@@ -70,12 +71,10 @@
             [param setQIMSafeObject:canceled forKey:@"canceled"];
 
             [areaList addObject:param];
-            [param release];
-            param = nil;
         }
     }];
     QIMVerboseLog(@"");
-    return [areaList autorelease];
+    return areaList;
 }
 
 - (void)qimDB_bulkInsertTrips:(NSArray *)trips {
@@ -174,12 +173,10 @@
             [param setQIMSafeObject:eveningEnds forKey:@"eveningEnds"];
             [param setQIMSafeObject:description forKey:@"description"];
             [areaList addObject:param];
-            [param release];
-            param = nil;
         }
     }];
     QIMVerboseLog(@"");
-    return [areaList autorelease];
+    return areaList;
 }
 
 - (void)qimDB_bulkInsertArea:(NSArray *)areaList {

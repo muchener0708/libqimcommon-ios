@@ -8,6 +8,7 @@
 
 #import "IMDataManager+QIMUserMedal.h"
 #import "Database.h"
+//#import "WCDB.h"
 
 @implementation IMDataManager (QIMUserMedal)
 
@@ -33,11 +34,9 @@
             [IMDataManager safeSaveForDic:paramDic setObject:URLDesc forKey:@"desc"];
             [IMDataManager safeSaveForDic:paramDic setObject:LastUpdateTime forKey:@"LastUpdateTime"];
             [resultList addObject:paramDic];
-            [paramDic release];
-            paramDic = nil;
         }
     }];
-    return [resultList autorelease];
+    return resultList;
 }
 
 - (void)qimDB_bulkInsertUserMedalsWithData:(NSArray *)userMedals {
@@ -63,11 +62,8 @@
             [param addObject:urldesc ? urldesc : @""];
             [param addObject:updateTime ? updateTime : @(0)];
             [params addObject:param];
-            [param release];
-            param = nil;
         }
         [database executeBulkInsert:sql withParameters:params];
-        [params release];
     }];
 }
 

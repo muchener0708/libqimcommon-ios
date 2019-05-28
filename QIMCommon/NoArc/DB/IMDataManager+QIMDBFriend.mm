@@ -8,6 +8,7 @@
 
 #import "IMDataManager+QIMDBFriend.h"
 #import "Database.h"
+//#import "WCDB.h"
 #import "QIMPublicRedefineHeader.h"
 
 @implementation IMDataManager (QIMDBFriend)
@@ -56,13 +57,9 @@
             [param addObject:incrementVersion?incrementVersion:@":NULL"];
             [param addObject:lastUpdateTime?lastUpdateTime:@":NULL"];
             [params addObject:param];
-            [param release];
-            param = nil;
         }
         [database executeNonQuery:deleteSql withParameters:nil];
         [database executeBulkInsert:sql withParameters:params];
-        [params release];
-        params = nil;
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"插入好友列表%ld条数据 耗时 = %f s", friendList.count, end - start); //s
@@ -160,12 +157,10 @@
                 [IMDataManager safeSaveForDic:paramDic setObject:[NSKeyedUnarchiver unarchiveObjectWithData:userInfoData] forKey:@"UserInfo"];
             }
             [resultList addObject:paramDic];
-            [paramDic release];
-            paramDic = nil;
         }
     }];
     QIMVerboseLog(@"");
-    return [resultList autorelease];
+    return resultList;
 }
 
 - (NSMutableArray *)qimDB_selectFriendListInGroupId:(NSString *)groupId {
@@ -192,12 +187,10 @@
             [IMDataManager safeSaveForDic:paramDic setObject:headerSrc forKey:@"HeaderSrc"];
             [IMDataManager safeSaveForDic:paramDic setObject:SearchIndex forKey:@"SearchIndex"];
             [resultList addObject:paramDic];
-            [paramDic release];
-            paramDic = nil;
         }
     }];
     QIMVerboseLog(@"");
-    return [resultList autorelease];
+    return resultList;
 }
 
 - (NSDictionary *)qimDB_selectFriendInfoWithUserId:(NSString *)userId {
@@ -224,7 +217,7 @@
         }
     }];
     QIMVerboseLog(@"");
-    return [resultDic autorelease];
+    return resultDic;
 }
 
 - (NSDictionary *)qimDB_selectFriendInfoWithXmppId:(NSString *)xmppId {
@@ -251,7 +244,7 @@
         }
     }];
     QIMVerboseLog(@"");
-    return [resultDic autorelease];
+    return resultDic;
 }
 
 - (void)qimDB_bulkInsertNotifyList:(NSArray *)notifyList {
@@ -285,12 +278,8 @@
             [param addObject:@(state)];
             [param addObject:@(lastUpdateTime)];
             [params addObject:param];
-            [param release];
-            param = nil;
         }
         [database executeBulkInsert:sql withParameters:params];
-        [params release];
-        params = nil;
     }];
     QIMVerboseLog(@"");
 }
@@ -326,11 +315,8 @@
             [param addObject:@(state)];
             [param addObject:@(lastUpdateTime)];
             [params addObject:param];
-            [param release];
-            param = nil;
         }
         [database executeBulkInsert:sql withParameters:params];
-        [params release];
     }];
     QIMVerboseLog(@"");
 }
@@ -403,12 +389,10 @@
             [IMDataManager safeSaveForDic:paramDic setObject:userInfo forKey:@"UserInfo"];
             [IMDataManager safeSaveForDic:paramDic setObject:state forKey:@"State"];
             [resultList addObject:paramDic];
-            [paramDic release];
-            paramDic = nil;
         }
     }];
     QIMVerboseLog(@"");
-    return [resultList autorelease];
+    return resultList;
 }
 
 - (NSDictionary *)qimDB_getLastFriendNotify {
@@ -442,7 +426,7 @@
         }
     }];
     QIMVerboseLog(@"");
-    return [friendNotify autorelease];
+    return friendNotify;
 }
 
 - (int)qimDB_getFriendNotifyCount {

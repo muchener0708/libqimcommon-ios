@@ -8,6 +8,7 @@
 
 #import "IMDataManager+QIMDBClientConfig.h"
 #import "Database.h"
+//#import "WCDB.h"
 
 @implementation IMDataManager (QIMDBClientConfig)
 
@@ -59,11 +60,11 @@
         NSString *sql =  [NSString stringWithFormat:@"select ConfigValue from IM_Client_Config where ConfigKey = '%@' And ConfigSubKey = '%@' And DeleteFlag = %d;", configKey, subKey, deleteFlag];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
-            configValue = [[reader objectForColumnIndex:0] retain];
+            configValue = [reader objectForColumnIndex:0];
         }
     }];
     QIMVerboseLog(@"");
-    return [configValue autorelease];
+    return configValue;
 }
 
 - (NSMutableDictionary *)qimDB_getConfigDicWithConfigKey:(NSString *)configKey WithDeleteFlag:(BOOL)deleteFlag {
@@ -85,7 +86,7 @@
         }
     }];
     QIMVerboseLog(@"");
-    return [result autorelease];
+    return result;
 }
 
 - (NSArray *)qimDB_getConfigInfoArrayWithConfigKey:(NSString *)configKey WithDeleteFlag:(BOOL)deleteFlag {
@@ -108,7 +109,7 @@
         }
     }];
     QIMVerboseLog(@"");
-    return [result autorelease];
+    return result;
 }
 
 - (NSArray *)qimDB_getConfigValueArrayWithConfigKey:(NSString *)configKey WithDeleteFlag:(BOOL)deleteFlag {
@@ -125,7 +126,7 @@
         }
     }];
     QIMVerboseLog(@"");
-    return [result autorelease];
+    return result;
 }
 
 - (void)qimDB_bulkInsertConfigArrayWithConfigKey:(NSString *)configKey WithConfigVersion:(NSInteger)configVersion ConfigArray:(NSArray *)configArray {
@@ -154,11 +155,8 @@
             [param addObject:@(isDel)];
 
             [params addObject:param];
-            [param release];
-            param = nil;
         }
         [database executeBulkInsert:sql withParameters:params];
-        [params release];
     }];
     QIMVerboseLog(@"");
 }
@@ -191,13 +189,10 @@
             [IMDataManager safeSaveForDic:value setObject:nickName forKey:@"Name"];
             [IMDataManager safeSaveForDic:value setObject:headUrl forKey:@"HeaderUri"];
             [resultList addObject:value];
-            [value release];
-            value = nil;
         }
-        
     }];
     QIMVerboseLog(@"");
-    return [resultList autorelease];
+    return resultList;
 }
 
 -(NSMutableArray *)qimDB_getConfigArrayFriendsNotInStarContacts{
@@ -227,12 +222,10 @@
             [IMDataManager safeSaveForDic:value setObject:nickName forKey:@"Name"];
             [IMDataManager safeSaveForDic:value setObject:headUrl forKey:@"HeaderUri"];
             [resultList addObject:value];
-            [value release];
-            value = nil;
         }
     }];
     QIMVerboseLog(@"");
-    return [resultList autorelease];
+    return resultList;
 }
 
 -(NSMutableArray *)qimDB_getConfigArrayUserNotInStartContacts:(NSString *)key{
@@ -261,12 +254,10 @@
             [IMDataManager safeSaveForDic:value setObject:nickName forKey:@"Name"];
             [IMDataManager safeSaveForDic:value setObject:headUrl forKey:@"HeaderUri"];
             [resultList addObject:value];
-            [value release];
-            value = nil;
         }
     }];
     QIMVerboseLog(@"");
-    return [resultList autorelease];
+    return resultList;
 }
 
 

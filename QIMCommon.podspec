@@ -34,11 +34,11 @@ Pod::Spec.new do |s|
     puts '---------QIMCommonSDK源码-------'
     s.public_header_files = "QIMCommon/QIMKit/**/*.{h}", "QIMCommon/NoArc/**/*.{h}"
 
-    s.source_files = "QIMCommon/Source/**/*.{h,m,c}", "QIMCommon/QIMKit/**/*.{h,m,c}", "QIMCommon/NoArc/**/*.{h,m}"
+    s.source_files = "QIMCommon/Source/**/*.{h,m,c}", "QIMCommon/QIMKit/**/*.{h,m,c}", "QIMCommon/NoArc/**/*.{h,m,mm}"
     s.xcconfig = { 'GCC_PREPROCESSOR_DEFINITIONS' => 'DEBUGLOG=1'}
 
-    s.requires_arc = false  
-    s.requires_arc = ['QIMCommon/Source/**/*', "QIMCommon/QIMKit/**/*.{h,m,c}"]
+    # s.requires_arc = false  
+    # s.requires_arc = ['QIMCommon/Source/**/*', "QIMCommon/QIMKit/**/*.{h,m,c}"]
 
   end
   

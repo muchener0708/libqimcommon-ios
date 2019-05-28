@@ -1316,10 +1316,6 @@
     return [[IMDataManager qimDB_SharedInstance] qimDB_getWorkNoticeMessagesWithLimit:limit WithOffset:offset eventTypes:eventTypes];
 }
 
-- (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset {
-    return [[IMDataManager qimDB_SharedInstance] qimDB_getWorkNoticeMessagesWithLimit:limit WithOffset:offset];
-}
-
 - (void)updateLocalWorkNoticeMsgReadStateWithTime:(long long)time {
     [[IMDataManager qimDB_SharedInstance] qimDB_updateWorkNoticeMessageReadStateWithTime:time];
 }

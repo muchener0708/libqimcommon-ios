@@ -8,6 +8,7 @@
 
 #import "IMDataManager+QIMDBUser.h"
 #import "Database.h"
+//#import "WCDB.h"
 #import "QIMPublicRedefineHeader.h"
 
 @implementation IMDataManager (QIMDBUser)
@@ -65,11 +66,8 @@
             [param addObject:uType];
             [param addObject:(email.length > 0) ? email : @":NULL"];
             [params addObject:param];
-            [param release];
-            param = nil;
         }
         [database executeBulkInsert:sql withParameters:params];
-        [params release];
     }];
 }
 
@@ -97,12 +95,8 @@
             [param addObject:searchIndex];
             [param addObject:userId];
             [params addObject:param];
-            [param release];
-            param = nil;
-            [searchIndex release];
         }
         [database executeBulkInsert:sql withParameters:params];
-        [params release];
     }];
 }
 
@@ -133,11 +127,8 @@
             [param addObject:UserInfo ? UserInfo : @""];
             [param addObject:@(0)];
             [params addObject:param];
-            [param release];
-            param = nil;
         }
         [database executeBulkInsert:sql withParameters:params];
-        [params release];
         CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
         QIMVerboseLog(@"更新组织架构%ld条数据 耗时 = %f s", userInfos.count, end - start); //s
     }];
@@ -157,8 +148,6 @@
         [insertParam addObject:@(time)];
         
         [database executeNonQuery:insertSql withParameters:insertParam];
-        [insertParam release];
-        insertParam = nil;
     }];
 }
 
@@ -184,11 +173,8 @@
             [param addObject:UserInfo];
             [param addObject:LastUpdateTime];
             [params addObject:param];
-            [param release];
-            param = nil;
         }
         [database executeBulkInsert:sql withParameters:params];
-        [params release];
     }];
 }
 
@@ -203,7 +189,6 @@
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:jid];
         DataReader *reader = [database executeReader:sql withParameters:param];
-        [param release];
         if ([reader read]) {
             user = [[NSMutableDictionary alloc] init];
             NSString *userId = [reader objectForColumnIndex:0];
@@ -229,7 +214,7 @@
             [IMDataManager safeSaveForDic:user setObject:sex forKey:@"Sex"];
         }
     }];
-    return [user autorelease];
+    return user;
 }
 
 - (void)qimDB_clearUserList {
@@ -279,11 +264,8 @@
             [param addObject:UserInfo];
             [param addObject:LastUpdateTime];
             [params addObject:param];
-            [param release];
-            param = nil;
         }
         [database executeBulkInsert:sql withParameters:params];
-        [params release];
     }];
 }
 
@@ -297,8 +279,6 @@
         [param addObject:version];
         [param addObject:userId];
         [database executeNonQuery:sql withParameters:param];
-        [param release];
-        param = nil;
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"更新用户信息 耗时 = %f s userId : %@, headerSrc: %@, version: %@", end - start, userId, headerSrc, version); //s
@@ -336,8 +316,6 @@
             [insertParam addObject:LastUpdateTime];
             [insertParam addObject:mood?mood:@":NULL"];
             [insertParams addObject:insertParam?insertParam:@":NULL"];
-            [insertParam release];
-            insertParam = nil;
             
             NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:11];
             [param addObject:Name?Name:@":NULL"];
@@ -350,13 +328,9 @@
             [param addObject:mood?mood:@":NULL"];
             [param addObject:xmppId?xmppId:@":NULL"];
             [params addObject:param];
-            [param release];
-            param = nil;
         }
         [database executeBulkInsert:insertSql withParameters:insertParams];
-        [insertParams release];
         [database executeBulkInsert:sql withParameters:params];
-        [params release];
     }];
 }
 
@@ -371,13 +345,12 @@
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:userId];
         DataReader *reader = [database executeReader:sql withParameters:param];
-        [param release];
         param = nil;
         if ([reader read]) {
-            headerSrc = [[reader objectForColumnIndex:0] retain];
+            headerSrc = [reader objectForColumnIndex:0];
         }
     }];
-    return [headerSrc autorelease];
+    return headerSrc;
 }
 
 - (NSDictionary *)qimDB_selectUserByID:(NSString *)userId{
@@ -391,7 +364,6 @@
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:userId];
         DataReader *reader = [database executeReader:sql withParameters:param];
-        [param release];
         if ([reader read]) {
             user = [[NSMutableDictionary alloc] init];
             NSString *userId = [reader objectForColumnIndex:0];
@@ -415,7 +387,7 @@
             [IMDataManager safeSaveForDic:user setObject:sex forKey:@"Sex"];
         }
     }];
-    return [user autorelease];
+    return user;
 }
 
 - (NSDictionary *)qimDB_selectUserBackInfoByXmppId:(NSString *)xmppId {
@@ -428,7 +400,6 @@
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:xmppId];
         DataReader *reader = [database executeReader:sql withParameters:param];
-        [param release];
         if ([reader read]) {
             userBackInfo = [[NSMutableDictionary alloc] init];
             NSString *workInfo = [reader objectForColumnName:@"UserWorkInfo"];
@@ -437,7 +408,7 @@
             [IMDataManager safeSaveForDic:userBackInfo setObject:dateTime forKey:@"LastUpdateTime"];
         }
     }];
-    return [userBackInfo autorelease];
+    return userBackInfo;
 }
 
 - (NSDictionary *)qimDB_selectUserByIndex:(NSString *)index{
@@ -453,7 +424,6 @@
         [param addObject:index];
         [param addObject:index];
         DataReader *reader = [database executeReader:sql withParameters:param];
-        [param release];
         if ([reader read]) {
             user = [[NSMutableDictionary alloc] init];
             NSString *userId = [reader objectForColumnIndex:0];
@@ -477,7 +447,7 @@
             [IMDataManager safeSaveForDic:user setObject:sex forKey:@"Sex"];
         }
     }];
-    return [user autorelease];
+    return user;
 }
 
 - (NSArray *)qimDB_selectXmppIdList{
@@ -492,7 +462,7 @@
             [list addObject:[reader objectForColumnIndex:0]];
         }
     }];
-    return [list autorelease];
+    return list;
 }
 
 - (NSArray *)qimDB_selectUserIdList{
@@ -507,7 +477,7 @@
             [list addObject:[reader objectForColumnIndex:0]];
         }
     }];
-    return [list autorelease];
+    return list;
 }
 
 - (NSArray *)qimDB_getOrganUserList {
@@ -539,10 +509,9 @@
             [IMDataManager safeSaveForDic:user setObject:mood forKey:@"Mood"];
             
             [list addObject:user];
-            [user release];
         }
     }];
-    return [list autorelease];
+    return list;
 }
 
 //Select a.UserId, a.XmppId, a.Name, a.DescInfo, a.HeaderSrc, a.UserInfo, a.LastUpdateTime from IM_Group_Member as b left join IM_Users as a on a.Name = b.Name where GroupId = 'qtalk客户端开发群@conference.ejabhost1'
@@ -574,7 +543,7 @@
             [list addObject:dic];
         }
     }];
-    return [list autorelease];
+    return list;
 }
 
 - (NSArray *)qimDB_searchUserBySearchStr:(NSString *)searchStr notInGroup:(NSString *)groupId {
@@ -605,7 +574,7 @@
             [list addObject:dic];
         }
     }];
-    return [list autorelease];
+    return list;
 }
 
 - (NSArray *)qimDB_selectUserListBySearchStr:(NSString *)searchStr {
@@ -659,7 +628,7 @@
     if (firstlist.count > 0) {
         [list insertObjects:firstlist atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, firstlist.count)]];
     }
-    return [list autorelease];
+    return list;
 }
 
 - (NSArray *)qimDB_selectUserListBySearchStr:(NSString *)searchStr WithLimit:(NSInteger)limit WithOffset:(NSInteger)offset {
@@ -702,7 +671,7 @@
     if (firstlist.count > 0) {
         [list insertObjects:firstlist atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, firstlist.count)]];
     }
-    return [list autorelease];
+    return list;
 }
 
 - (NSDictionary *)qimDB_selectUsersDicByXmppIds:(NSArray *)xmppIds{
@@ -747,7 +716,7 @@
             [usersDic setObject:dic forKey:xmppId];
         }
     }];
-    return [usersDic autorelease];
+    return usersDic;
 }
 
 - (NSArray *)qimDB_selectUserListByUserIds:(NSArray *)userIds{
@@ -795,7 +764,7 @@
             [list addObject:dic];
         }
     }];
-    return [list autorelease];
+    return list;
 }
 
 - (BOOL)qimDB_checkExitsUser {

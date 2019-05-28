@@ -86,7 +86,13 @@
 - (BOOL)getMucHistoryV2WithTimeOut:(NSTimeInterval)timeOut {
 
     if (self.remoteKey.length <= 0) {
-        [self updateRemoteLoginKey];
+        NSDictionary *logDic = @{@"reportTime":@([[NSDate date] timeIntervalSince1970]), @"threadName":@"", @"isMainThread":@([NSThread isMainThread]), @"describtion":@"当前remoteKey为空，不要拉群历史了"};
+        Class autoManager = NSClassFromString(@"QIMAutoTrackerManager");
+        id autoManagerObject = [[autoManager alloc] init];
+        [autoManagerObject performSelectorInBackground:@selector(addCATTraceData:) withObject:logDic];
+
+        QIMVerboseLog(@"当前remoteKey为空，不要拉群历史了");
+        return NO;
     }
     __block BOOL getMucHistorySuccess = NO;
     NSString *jid = [QIMManager getLastUserName];
@@ -156,6 +162,7 @@
                 QIMVerboseLog(@"是否还要继续拉取群离线消息 : %d", self.latestGroupMessageFlag);
                 [self dealWithGroupMsg:data successed:&getMucHistorySuccess];
             } else {
+                getMucHistorySuccess == NO;
                 if (errCode == 5000) {
                     [self updateRemoteLoginKey];
                 }
@@ -179,6 +186,7 @@
             self.lastGroupMsgTime = lastTime;
             *flag = YES;
         } else {
+            self.lastGroupMsgTime = 0;
             *flag = NO;
         }
         for (NSDictionary *infoDic in atAllMsgList) {

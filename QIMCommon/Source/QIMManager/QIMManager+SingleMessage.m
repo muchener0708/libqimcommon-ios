@@ -145,6 +145,16 @@
 }
 
 - (BOOL)updateOfflineMessagesV2 {
+    if (self.remoteKey.length <= 0) {
+        QIMVerboseLog(@"当前RemoteKey为空，不要拉单人历史了");
+        
+        NSDictionary *logDic = @{@"reportTime":@([[NSDate date] timeIntervalSince1970]), @"threadName":@"", @"isMainThread":@([NSThread isMainThread]), @"describtion":@"当前RemoteKey为空，不要拉单人历史了"};
+        Class autoManager = NSClassFromString(@"QIMAutoTrackerManager");
+        id autoManagerObject = [[autoManager alloc] init];
+        [autoManagerObject performSelectorInBackground:@selector(addCATTraceData:) withObject:logDic];
+
+        return NO;
+    }
     BOOL isSuccess = NO;
     NSTimeInterval timeOut = 6;
     int count = 0;
@@ -179,6 +189,7 @@
                         } else {
                             //插入数据库失败
                             isSuccess = NO;
+                            self.lastSingleMsgTime = 0;
                         }
                     }
                 }
@@ -243,7 +254,7 @@
         NSError *error = [request error];
         
         
-        NSDictionary *logDic = @{@"costTime":@([[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime]), @"reportTime":@([[NSDate date] timeIntervalSince1970]), @"threadName":@"", @"isMainThread":@([NSThread isMainThread]), @"url":destUrl, @"methodParams":jsonDic, @"requestHeaders":requestHeaders, @"describtion":@"请求单人离线消息"};
+        NSDictionary *logDic = @{@"costTime":@([[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime]), @"reportTime":@([[NSDate date] timeIntervalSince1970]), @"threadName":@"", @"isMainThread":@([NSThread isMainThread]), @"url":destUrl, @"methodParams":jsonDic, @"requestHeaders":cookieProperties, @"describtion":@"请求单人离线消息"};
         Class autoManager = NSClassFromString(@"QIMAutoTrackerManager");
         id autoManagerObject = [[autoManager alloc] init];
         [autoManagerObject performSelectorInBackground:@selector(addCATTraceData:) withObject:logDic];
@@ -270,6 +281,7 @@
                         QIMVerboseLog(@"获取单人历史JSON记录请求成功");
                     }
                 } else {
+                    *flag = NO;
                     if (errCode == 5000) {
                         [self updateRemoteLoginKey];
                     }

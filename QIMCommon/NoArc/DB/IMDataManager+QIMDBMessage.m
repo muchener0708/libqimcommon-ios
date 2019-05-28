@@ -584,11 +584,16 @@
         [self qimDB_revokeMessageByMsgList:updateMsgList];
     }
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
-    QIMVerboseLog(@"插入群消息历史记录%ld条，耗时%fs", msgList.count, end - start); //s
+    QIMVerboseLog(@"插入群消息历史记录%ld条，耗时%fs，成功与否:%d", msgList.count, end - start, insertSuccessed); //s
     [resultDic autorelease];
     if (insertSuccessed == YES) {
         return lastTime;
     } else {
+        NSDictionary *logDic = @{@"costTime":@(end - start), @"reportTime":@([[NSDate date] timeIntervalSince1970]), @"threadName":@"", @"isMainThread":@([NSThread isMainThread]), @"describtion":@"插库群消息历史记录失败"};
+        Class autoManager = NSClassFromString(@"QIMAutoTrackerManager");
+        id autoManagerObject = [[autoManager alloc] init];
+        [autoManagerObject performSelectorInBackground:@selector(addCATTraceData:) withObject:logDic];
+        
         return 0;
     }
 }
@@ -1034,7 +1039,7 @@
         [result setObject:@(lastDate) forKey:@"lastDate"];
     }
     long long lastMaxTime = [self qimDB_insertSessionWithMsgList:resultDic];
-    [self qimDB_bulkInsertMessage:insertMsgList];
+    BOOL success = [self qimDB_bulkInsertMessage:insertMsgList];
     if (updateMsgList.count > 0) {
         [self qimDB_revokeMessageByMsgList:updateMsgList];
     }
@@ -1042,11 +1047,21 @@
         [self qimDB_bulkInsertCollectionMsgWithMsgDics:collectionOriginMsgList];
     }
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
-    QIMVerboseLog(@"插入单人历史消息%ld条， 耗时 = %f s", insertMsgList.count, end - start);
+    QIMVerboseLog(@"插入单人历史消息%ld条， 耗时 = %f s， 插入成功与否 : %d", insertMsgList.count, end - start, success);
     [insertMsgList release];
     [updateMsgList release];
     [resultDic release];
-    return lastMaxTime;
+    if (success == YES) {
+        return lastMaxTime;
+    } else {
+        
+        NSDictionary *logDic = @{@"costTime":@(end - start), @"reportTime":@([[NSDate date] timeIntervalSince1970]), @"threadName":@"", @"isMainThread":@([NSThread isMainThread]), @"describtion":@"插库单人历史消息失败"};
+        Class autoManager = NSClassFromString(@"QIMAutoTrackerManager");
+        id autoManagerObject = [[autoManager alloc] init];
+        [autoManagerObject performSelectorInBackground:@selector(addCATTraceData:) withObject:logDic];
+
+        return NO;
+    }
 }
 
 - (NSString *)qimDB_getC2BMessageFeedBackWithMsgId:(NSString *)msgId {

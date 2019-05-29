@@ -7,7 +7,7 @@
 //
 
 #import "IMDataManager+QIMDBCollectionMessage.h"
-#import "Database.h"
+#import "QIMDataBase.h"
 #import "QIMPublicRedefineHeader.h"
 
 @implementation IMDataManager (QIMDBCollectionMessage)
@@ -16,7 +16,7 @@
 
 - (NSArray *)qimDB_getCollectionAccountList {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"SELECT b.XmppId, c.Name, c.HeaderSrc FROM IM_Collection_User AS b, IM_Collection_User_Card AS c WHERE b.XmppId=c.XmppId;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -38,7 +38,7 @@
 }
 
 - (void)qimDB_bulkinsertCollectionAccountList:(NSArray *)accounts {
-    [[self dbInstance] usingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"INSERT OR REPLACE INTO IM_Collection_User(XmppId,BIND) VALUES(:XmppId,:BIND);";
         
         NSMutableArray *paramList = [NSMutableArray array];
@@ -57,7 +57,8 @@
                 [paramList addObject:params];
             }
         }
-        [database executeBulkInsert:sql withParameters:paramList];
+        //Mark DBUpadte
+//        [database executeBulkInsert:sql withParameters:paramList];
     }];
     QIMVerboseLog(@"");
 }
@@ -67,7 +68,7 @@
         return nil;
     }
     __block NSMutableDictionary *user = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         
         NSString *sql = @"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime,SearchIndex from IM_Collection_User_Card Where XmppId = :XmppId;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
@@ -99,7 +100,7 @@
 }
 
 - (void)qimDB_bulkInsertCollectionUserCards:(NSArray *)userCards {
-    [[self dbInstance] usingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"INSERT OR REPLACE INTO IM_Collection_User_Card(UserId, XmppId, Name, DescInfo, HeaderSrc, SearchIndex, UserInfo, LastUpdateTime, IncrementVersion, ExtendedFlag) VALUES(:UserId,:XmppId,:Name, :DescInfo, :HeaderSrc, :SearchIndex, :UserInfo, :LastUpdateTime, :IncrementVersion, :ExtendedFlag);";
         NSMutableArray *paramList = [NSMutableArray array];
         for (NSDictionary *userCardDic in userCards) {
@@ -146,7 +147,7 @@
 
 - (NSDictionary *)qimDB_getCollectionGroupCardByGroupId:(NSString *)groupId{
     __block NSMutableDictionary *groupCardDic = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select GroupId, Name, Introduce, HeaderSrc, Topic, LastUpdateTime From IM_Collection_Group_Card Where GroupId = :GroupId;";
         DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
         if ([reader read]) {
@@ -174,7 +175,7 @@
 }
 
 - (void)qimDB_bulkInsertCollectionGroupCards:(NSArray *)array{
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Insert or replace Into IM_Collection_Group_Card(GroupId,Name,Introduce,HeaderSrc,Topic,LastUpdateTime,ExtendedFlag) values(:GroupId,:Name,:Introduce,:HeaderSrc,:Topic,:LastUpdateTime,:ExtendedFlag);";
         NSMutableArray *paramList = [[NSMutableArray alloc] initWithCapacity:2];
         for (NSMutableDictionary *infoDic in array) {
@@ -201,7 +202,7 @@
 
 - (NSDictionary *)qimDB_getLastCollectionMsgWithLastMsgId:(NSString *)lastMsgId {
     __block NSMutableDictionary *resultDic = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = [NSString stringWithFormat:@"select c.Originfrom, s.ChatType, m.content FROM IM_SessionList AS s, IM_Message AS m, IM_Message_Collection AS c WHERE m.MsgId='%@' AND c.MsgId='%@' AND s.ChatType=%@;", lastMsgId, lastMsgId, @(ChatType_CollectionChat)];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
@@ -220,7 +221,7 @@
 
 - (NSArray *)qimDB_getCollectionSessionListWithBindId:(NSString *)bindId {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         
         NSString *sql = [NSString stringWithFormat:@"SELECT a.Originfrom, a.Originto, case a.Origintype when 'chat' THEN 0 WHEN 'groupchat' THEN 1 end as ChatType, Content, CASE a.Origintype When 'chat' THEN (SELECT Name from IM_Collection_User_Card WHERE XmppId like '%%a.Originfrom%%') ELSE (select Name from IM_Collection_Group_Card WHERE GroupId like '%%a.Originfrom%%') end as Name, CASE a.Origintype WHEN 'chat' Then (select HeaderSrc FROM IM_Collection_User_Card Where XmppId like '%%a.Originfrom%%') ELSE (select HeaderSrc FROM IM_Collection_Group_Card where GroupId like '%%a.Originfrom%%') end as HeaderSrc, CASE a.Origintype WHEN 'chat' Then '' ELSE a.Originfrom end as NickName, a.MsgId, b.LastUpdateTime, b.Type, b.State FROM IM_Message_Collection as a left join IM_Message as b on a.msgId = b.msgid where Originto ='%@' group by originfrom,originto ORDER by LastUpdateTime DESC;", bindId];
         DataReader *reader = [database executeReader:sql withParameters:nil];
@@ -265,7 +266,7 @@
 
 - (NSArray *)qimDB_getCollectionMsgListWithBindId:(NSString *)bindId {
     __block NSMutableArray *result = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         
         NSString *sql = @"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime, ExtendInfo From IM_Message Where \"To\" = :to;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
@@ -307,7 +308,7 @@
 
 - (BOOL)qimDB_checkCollectionMsgById:(NSString *)msgId {
     __block BOOL flag = NO;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select 1 From IM_Message_Collection Where MsgId = :MsgId;";
         DataReader *reader = [database executeReader:sql withParameters:@[msgId]];
         if ([reader read]) {
@@ -319,7 +320,7 @@
 }
 
 - (void)qimDB_bulkInsertCollectionMsgWithMsgDics:(NSArray *)msgs {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"INSERT OR IGNORE INTO IM_Message_Collection(MsgId, Originfrom, Originto, Origintype) VALUES(:MsgId, :Originfrom, :Originto, :Origintype);";
         NSMutableArray *paramList = [[NSMutableArray alloc] init];
         for (NSDictionary *msg in msgs) {
@@ -344,7 +345,7 @@
 
 - (NSInteger)qimDB_getCollectionMsgNotReadCountByDidReadState:(NSInteger)readState {
     __block int count = 0;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = [NSString stringWithFormat:@"SELECT Count(*) from IM_Message_Collection as a left join IM_Message as b on a.MsgId = b.MsgId where ReadState & 0x02 != 0x02 ORDER by LastUpdateTime;"];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
@@ -357,7 +358,7 @@
 
 - (NSInteger)qimDB_getCollectionMsgNotReadCountByDidReadState:(NSInteger)readState ForBindId:(NSString *)bindId {
     __block int count = 0;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = [NSString stringWithFormat:@"SELECT Count(*) from IM_Message_Collection as a left join IM_Message as b on a.MsgId = b.MsgId where (Originto = '%@' and ReadState & 0x02 != 0x02) ORDER by LastUpdateTime;", bindId];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
@@ -370,7 +371,7 @@
 
 -(NSInteger)qimDB_getCollectionMsgNotReadCountgetCollectionMsgNotReadCountByDidReadState:(NSInteger)readState ForBindId:(NSString *)bindId originUserId:(NSString *)originUserId {
     __block int count = 0;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = [NSString stringWithFormat:@"SELECT Count(*) from IM_Message_Collection as a left join IM_Message as b on a.MsgId = b.MsgId where (Originto = '%@' and ReadState & 0x02 != 0x02 and Originfrom Like '%%%@%%') ORDER by LastUpdateTime;", bindId, originUserId];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
@@ -382,7 +383,7 @@
 }
 
 - (void)qimDB_updateCollectionMsgNotReadStateByJid:(NSString *)jid WithReadtate:(NSInteger)readState {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         
         NSString *sql = @"Update IM_Message Set ReadState = :readState Where XmppId=:XmppId;";
         [database executeNonQuery:sql withParameters:@[@(readState), jid]];
@@ -392,7 +393,7 @@
 
 - (void)qimDB_updateCollectionMsgNotReadStateForBindId:(NSString *)bindId originUserId:(NSString *)originUserId WithReadState:(NSInteger)readState{
     NSArray *msgList = [self qimDB_getCollectionMsgListWithUserId:bindId originUserId:originUserId];
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSMutableString *sql = [NSMutableString stringWithString:@"Update IM_Message Set ReadState = :readState Where MsgId = :MsgId;"];
         NSMutableArray *params = nil;
         for (NSDictionary *msgDic in msgList) {
@@ -412,7 +413,7 @@
 
 - (NSDictionary *)qimDB_getCollectionMsgListForMsgId:(NSString *)msgId {
     __block NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = [NSString stringWithFormat:@"SELECT a.MsgId, Originfrom, Originto, Origintype, XmppId, Platform, \"From\", \"To\", Content, ExtendInfo, Type, State, Direction, ContentResolve, ReadState, LastUpdateTime, MessageRaw, RealJid from IM_Message_Collection as a left join IM_Message as b on a.MsgId = b.MsgId where (a.MsgId = '%@') ORDER by LastUpdateTime;", msgId];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -461,7 +462,7 @@
 
 - (NSArray *)qimDB_getCollectionMsgListWithUserId:(NSString *)userId originUserId:(NSString *)originUserId{
     __block NSMutableArray *result = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = [NSString stringWithFormat:@"SELECT a.MsgId, Originfrom, Originto, Origintype, XmppId, Platform, \"From\", \"To\", Content, ExtendInfo, Type, State, Direction, ContentResolve, ReadState, LastUpdateTime, MessageRaw, RealJid from IM_Message_Collection as a left join IM_Message as b on a.MsgId = b.MsgId where (Originto = '%@' and Originfrom Like '%%%@%%') ORDER by LastUpdateTime", userId, originUserId];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {

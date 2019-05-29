@@ -7,7 +7,7 @@
 //
 
 #import "IMDataManager+QIMDBFriend.h"
-#import "Database.h"
+#import "QIMDataBase.h"
 #import "QIMPublicRedefineHeader.h"
 
 @implementation IMDataManager (QIMDBFriend)
@@ -19,7 +19,7 @@
         return;
     }
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSMutableString *deleteSql = [NSMutableString stringWithString:@"Delete From IM_Friend_List Where UserId not in ("];
         NSString *sql = @"Insert or replace Into IM_Friend_List(UserId,XmppId,Name,DescInfo,HeaderSrc,SearchIndex,UserInfo,IncrementVersion,LastUpdateTime) values(:UserId,:XmppId,:Name,:DescInfo,:HeaderSrc,:SearchIndex,:UserInfo,:IncrementVersion,:LastUpdateTime);";
         NSMutableArray *params = [[NSMutableArray alloc] init];
@@ -76,7 +76,7 @@
     if (userId.length <= 0) {
         return;
     }
-    [[self dbInstance] usingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Insert Into IM_Friend_List(UserId,XmppId,Name,DescInfo,HeaderSrc,SearchIndex,UserInfo,IncrementVersion,LastUpdateTime) values(:UserId,:XmppId,:Name,:DescInfo,:HeaderSrc,:SearchIndex,:UserInfo,:IncrementVersion,:LastUpdateTime);";
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:userId?userId:@":NULL"];
@@ -92,13 +92,14 @@
         [param addObject:userInfoData?userInfoData:@":NULL"];
         [param addObject:@(incrementVersion)];
         [param addObject:@(lastUpdateTime)];
-        [database executeNonQuery:sql withParameters:param];
+        //Mark DBUpadte
+//        [database executeNonQuery:sql withParameters:param];
     }];
     QIMVerboseLog(@"");
 }
 
 - (void)qimDB_deleteFriendListWithXmppId:(NSString *)xmppId {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Delete From IM_Friend_List Where XmppId=:XmppId;";
         [database executeNonQuery:sql withParameters:@[xmppId]];
     }];
@@ -106,7 +107,7 @@
 }
 
 - (void)qimDB_deleteFriendListWithUserId:(NSString *)userId {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Delete From IM_Friend_List Where UserId=:UserId;";
         [database executeNonQuery:sql withParameters:@[userId]];
     }];
@@ -114,7 +115,7 @@
 }
 
 - (void)qimDB_deleteFriendList {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *deleteSql = @"Delete From IM_Friend_List;";
         [database executeNonQuery:deleteSql withParameters:nil];
     }];
@@ -122,7 +123,7 @@
 }
 
 - (void)qimDB_deleteSessionList {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *deleteSql = @"Delete From IM_SessionList;";
         [database executeNonQuery:deleteSql withParameters:nil];
     }];
@@ -131,7 +132,7 @@
 
 - (NSMutableArray *)qimDB_selectFriendList {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select UserId,XmppId,Name,DescInfo,HeaderSrc,UserInfo,SearchIndex From IM_Friend_List Order By Name Desc;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -167,7 +168,7 @@
         return nil;
     }
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = [NSString stringWithFormat:@"select a.UserId,a.XmppId,b.Name,b.HeaderSrc,b.SearchIndex from IM_Friend_List as a join IM_Users as b where a.XmppId = b.XmppId and a.XmppId NOT IN(select MemberJid from IM_Group_Member where GroupId = '%@');", groupId];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -194,7 +195,7 @@
 
 - (NSDictionary *)qimDB_selectFriendInfoWithUserId:(NSString *)userId {
     __block NSMutableDictionary *resultDic = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select UserId,XmppId,Name,DescInfo,HeaderSrc,UserInfo From IM_Friend_List Where XmppId=:XmppId;";
         DataReader *reader = [database executeReader:sql withParameters:@[userId]];
         if ([reader read]) {
@@ -221,7 +222,7 @@
 
 - (NSDictionary *)qimDB_selectFriendInfoWithXmppId:(NSString *)xmppId {
     __block NSMutableDictionary *resultDic = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select UserId,XmppId,Name,DescInfo,HeaderSrc,UserInfo From IM_Friend_List Where XmppId=:XmppId;";
         DataReader *reader = [database executeReader:sql withParameters:@[xmppId]];
         if ([reader read]) {
@@ -247,7 +248,7 @@
 }
 
 - (void)qimDB_bulkInsertNotifyList:(NSArray *)notifyList {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Insert Or Replace Into IM_Friend_Notify(UserId,XmppId,Name,DescInfo,HeaderSrc,SearchIndex,UserInfo,Version,State,LastUpdateTime) values(:UserId,:XmppId,:Name,:DescInfo,:HeaderSrc,:SearchIndex,:UserInfo,:Version,:State,:LastUpdateTime);";
         NSMutableArray *params = [[NSMutableArray alloc] init];
         for (NSDictionary *dic in notifyList) {
@@ -284,7 +285,7 @@
 }
 
 - (void)qimDB_bulkInsertFriendNotifyList:(NSArray *)notifyList {
-    [[self dbInstance] usingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Insert Or Replace Into IM_Friend_Notify(UserId,XmppId,Name,DescInfo,HeaderSrc,SearchIndex,UserInfo,Version,State,LastUpdateTime) values(:UserId,:XmppId,:Name,:DescInfo,:HeaderSrc,:SearchIndex,:UserInfo,:Version,:State,:LastUpdateTime);";
         NSMutableArray *params = [[NSMutableArray alloc] init];
         for (NSDictionary *userInfoDic in notifyList) {
@@ -329,7 +330,7 @@
                                WithVersion:(int)version
                                  WithState:(int)state
                         WithLastUpdateTime:(long long)lastUpdateTime {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Insert Or Replace Into IM_Friend_Notify(UserId,XmppId,Name,DescInfo,HeaderSrc,SearchIndex,UserInfo,Version,State,LastUpdateTime) values(:UserId,:XmppId,:Name,:DescInfo,:HeaderSrc,:SearchIndex,:UserInfo,:Version,:State,:LastUpdateTime);";
         NSMutableArray *params = [[NSMutableArray alloc] init];
         [params addObject:userId?userId:@":NULL"];
@@ -352,7 +353,7 @@
 }
 
 - (void)qimDB_deleteFriendNotifyWithUserId:(NSString *)userId {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Delete From IM_Friend_Notify Where UserId=:UserId;";
         [database executeNonQuery:sql withParameters:@[userId]];
     }];
@@ -361,7 +362,7 @@
 
 - (NSMutableArray *)qimDB_selectFriendNotifys {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select UserId,XmppId,Name,DescInfo,HeaderSrc,UserInfo,State,LastUpdateTime From IM_Friend_Notify Order By LastUpdateTime Desc;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -396,7 +397,7 @@
 
 - (NSDictionary *)qimDB_getLastFriendNotify {
     __block NSMutableDictionary *friendNotify = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select UserId,XmppId,Name,DescInfo,HeaderSrc,UserInfo,State,LastUpdateTime From IM_Friend_Notify Order By LastUpdateTime DESC Limit 1;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
@@ -431,7 +432,7 @@
 - (int)qimDB_getFriendNotifyCount {
     
     __block int FriendNotifyCount = 0;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select UserId,XmppId,Name,DescInfo,HeaderSrc,UserInfo,State,LastUpdateTime From IM_Friend_Notify Order By LastUpdateTime Desc;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -446,7 +447,7 @@
 }
 
 - (void)qimDB_updateFriendNotifyWithXmppId:(NSString *)xmppId WithState:(int)state {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Update IM_Friend_Notify Set State = :State Where XmppId=:XmppId;";
         [database executeNonQuery:sql withParameters:@[@(state),xmppId]];
     }];
@@ -455,7 +456,7 @@
 
 - (long long)qimDB_getMaxTimeFriendNotify {
     __block long long maxTime = 0;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select Max(LastUpdateTime) From IM_Friend_Notify;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {

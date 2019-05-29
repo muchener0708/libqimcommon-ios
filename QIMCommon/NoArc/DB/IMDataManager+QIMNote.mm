@@ -7,7 +7,7 @@
 //
 
 #import "IMDataManager+QIMNote.h"
-#import "Database.h"
+#import "QIMDataBase.h"
 
 @implementation IMDataManager (QIMNote)
 
@@ -18,7 +18,7 @@
     if (cid < 1) {
         cid = [[IMDataManager qimDB_SharedInstance] getMaxQTNoteMainItemCid] + 1;
     }
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select Count(*) From qcloud_main Where q_id = :q_id Or c_id = :c_id;";
         DataReader *reader = [database executeReader:sql withParameters:@[@(qid), @(cid)]];
         if ([reader read]) {
@@ -41,7 +41,7 @@
     if (cid < 1) {
         cid = [[IMDataManager qimDB_SharedInstance]getMaxQTNoteMainItemCid] + 1;
     }
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Insert Or Replace into qcloud_main(q_id, c_id, q_type, q_title, q_introduce, q_content, q_time, q_state, q_ExtendedFlag) Values(:q_id, :c_id, :q_type, :q_title, :q_introduce, :q_content, :q_time, :q_state, :q_ExtendedFlag);";
         NSMutableArray *parames = [[NSMutableArray alloc] init];
         [parames addObject:@(qid)];
@@ -69,7 +69,7 @@
     if (cid < 1) {
         cid = [[IMDataManager qimDB_SharedInstance]getMaxQTNoteMainItemCid] + 1;
     }
-    [[self dbInstance] usingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Update qcloud_main Set q_id = :q_id, q_title = :q_title, q_introduce = :q_introduce, q_content = :q_content, q_time = :q_time, q_state = :q_state, q_ExtendedFlag = :q_ExtendedFlag Where q_id = :q_id2 OR c_id = :c_id;";
         NSMutableArray *parames = [[NSMutableArray alloc] init];
         [parames addObject:@(qid)];
@@ -87,7 +87,7 @@
 
 - (void)updateToMainItemWithDicts:(NSArray *)mainItemList {
     
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         //q_ExtendedFlag = 3为远程更新过
         NSString *sql = @"Update qcloud_main Set q_id = :q_id, q_time = :q_time, q_ExtendedFlag = 3 Where c_id = :c_id;";
         NSMutableArray *params = [[NSMutableArray alloc] init];
@@ -107,7 +107,7 @@
 
 - (void)deleteToMainWithQid:(NSInteger)qid {
     
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Delete From qcloud_main Where q_id = :q_id;";
         [database executeNonQuery:sql withParameters:@[@(qid)]];
     }];
@@ -115,7 +115,7 @@
 
 - (void)deleteToMainWithCid:(NSInteger)cid {
     
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Delete From qcloud_main Where c_id = :c_id;";
         [database executeNonQuery:sql withParameters:@[@(cid)]];
         sql = @"Delete From qcloud_sub Where c_id = :c_id;";
@@ -126,7 +126,7 @@
 - (void)updateToMainItemTimeWithQId:(NSInteger)qid
                           WithQTime:(NSInteger)qTime
                   WithQExtendedFlag:(NSInteger)qExtendedFlag {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Update qcloud_main Set q_time = :q_time Where q_id = :q_id;";
         [database executeNonQuery:sql withParameters:@[@(qTime), @(qid)]];
     }];
@@ -136,7 +136,7 @@
                        WithCid:(NSInteger)cid
                     WithQState:(NSInteger)qstate
              WithQExtendedFlag:(NSInteger)qExtendedFlag {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Update qcloud_main Set q_id = :q_id, q_state = :q_state, q_ExtendedFlag = :q_ExtendedFlag Where c_id = :c_id;";
         NSMutableArray *parames = [[NSMutableArray alloc] init];
         [parames addObject:@(qid)];
@@ -186,7 +186,7 @@
 - (NSArray *)getQTNotesMainItemWithQExtendedFlag:(NSInteger)qExtendedFlag needConvertToString:(BOOL)flag {
     __block NSMutableArray *resultList = nil;
     __block BOOL needConvertToStringFlag = flag;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *param = [NSString stringWithFormat:@"q_ExtendedFlag = %ld", (long)qExtendedFlag];
         NSMutableString *sql = [NSMutableString stringWithFormat:@"Select *from qcloud_main Where %@ Order By q_time Desc;", param];
         DataReader *reader = [database executeReader:sql withParameters:nil];
@@ -225,7 +225,7 @@
 
 - (NSArray *)getQTNotesMainItemWithParams:(NSString *)param {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSMutableString *sql = [NSMutableString stringWithFormat:@"Select *from qcloud_main Where %@ Order By q_time Desc;", param];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -259,7 +259,7 @@
 
 - (NSInteger)getQTNoteMainItemMaxTimeWithQType:(NSInteger)qType {
     __block NSInteger maxTime = -1;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select MAX(q_time) From qcloud_main Where q_type = :q_type;";
         DataReader *reader = [database executeReader:sql withParameters:@[@(qType)]];
         if ([reader read]) {
@@ -271,7 +271,7 @@
 
 - (NSInteger)getMaxQTNoteMainItemCid {
     __block NSInteger maxCId = -1;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         
         NSString *sql = @"Select MAX(c_id) From qcloud_main;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
@@ -289,7 +289,7 @@
     if (csid < 1) {
         csid = [[IMDataManager qimDB_SharedInstance]getMaxQTNoteSubItemCSid] + 1;
     }
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select Count(*) From qcloud_sub Where qs_id = :qs_id Or cs_id = :cs_id;";
         DataReader *reader = [database executeReader:sql withParameters:@[@(qsid), @(csid)]];
         if ([reader read]) {
@@ -312,7 +312,7 @@
     if (csid < 1) {
         csid = [[IMDataManager qimDB_SharedInstance] getMaxQTNoteSubItemCSid] + 1;
     }
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Insert Or Replace into qcloud_sub(c_id, qs_id, cs_id, qs_type, qs_title, qs_introduce, qs_content, qs_time, qs_state, qs_ExtendedFlag) Values(:c_id, :qs_id, :cs_id, :qs_type, :qs_title, :qs_introduce, :qs_content, :qs_time, :qs_state, :qs_ExtendedFlag);";
         NSMutableArray *parames = [NSMutableArray arrayWithCapacity:3];
         [parames addObject:@(cid)];
@@ -341,7 +341,7 @@
     if (csid < 1) {
         csid = [[IMDataManager qimDB_SharedInstance] getMaxQTNoteSubItemCSid] + 1;
     }
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         
         NSString *sql = @"Update qcloud_sub Set c_id = :c_id, qs_id = :qs_id, qs_title = :qs_title, qs_introduce = :qs_introduce, qs_content = :qs_content, qs_time = :qs_time, qs_state = :qs_state, qs_ExtendedFlag = :qs_ExtendedFlag Where cs_id = :cs_id;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
@@ -360,7 +360,7 @@
 
 - (void)updateToSubItemWithDicts:(NSArray *)subItemList {
     
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Update qcloud_sub Set qs_id = :qs_id, qs_time = :qs_time, qs_ExtendedFlag = 3 Where cs_id = :cs_id;";
         NSMutableArray *params = [[NSMutableArray alloc] init];
         for (NSDictionary *subItem in subItemList) {
@@ -378,7 +378,7 @@
 }
 
 - (void)deleteToSubWithCId:(NSInteger)cid {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Delete From qcloud_sub Where c_id = :c_id;";
         [database executeNonQuery:sql withParameters:@[@(cid)]];
     }];
@@ -386,7 +386,7 @@
 
 - (void)deleteToSubWithCSId:(NSInteger)Csid {
     
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Delete From qcloud_sub Where cs_id = :cs_id;";
         [database executeNonQuery:sql withParameters:@[@(Csid)]];
     }];
@@ -395,7 +395,7 @@
 - (void)updateSubStateWithCSId:(NSInteger)Csid
                    WithQSState:(NSInteger)qsState
             WithQsExtendedFlag:(NSInteger)qsExtendedFlag {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Update qcloud_sub Set qs_state = :qs_state, qs_ExtendedFlag = :qs_ExtendedFlag Where cs_id = :cs_id;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:@(qsState)];
@@ -408,7 +408,7 @@
 - (void)updateToSubItemTimeWithCSId:(NSInteger)csid
                          WithQSTime:(NSInteger)qsTime
                  WithQsExtendedFlag:(NSInteger)qsExtendedFlag {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Update qcloud_sub Set qs_time = :qs_time, qs_ExtendedFlag = :qs_ExtendedFlag Where cs_id = :cs_id;";
         [database executeNonQuery:sql withParameters:@[@(qsTime), @(qsExtendedFlag), @(csid)]];
     }];
@@ -422,7 +422,7 @@
     __block NSMutableArray *resultList = nil;
     __block BOOL needConvertToStringFlag = flag;
     __block NSString *Qid = qid;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *param = [NSString stringWithFormat:@"qs_ExtendedFlag = %ld", (long)qsExtendedFlag];
         NSMutableString *sql = [NSMutableString stringWithFormat:@"Select *from qcloud_sub Where %@ Order By qs_time Desc;", param];
         DataReader *reader = [database executeReader:sql withParameters:nil];
@@ -509,7 +509,7 @@
 
 - (NSArray *)getQTNotesSubItemWithParams:(NSString *)param {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSMutableString *sql = [NSMutableString stringWithFormat:@"Select *from qcloud_sub Where %@ Order By qs_time Desc;", param];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -546,7 +546,7 @@
 - (NSInteger)getQTNoteSubItemMaxTimeWithCid:(NSInteger)cid
                                  WithQSType:(NSInteger)qsType {
     __block NSInteger maxTime = -1;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select MAX(qs_time) From qcloud_sub Where c_id = :c_id AND qs_type = :qs_type;";
         DataReader *reader = [database executeReader:sql withParameters:@[@(cid), @(qsType)]];
         if ([reader read]) {
@@ -573,7 +573,7 @@
 
 - (NSInteger)getMaxQTNoteSubItemCSid {
     __block NSInteger maxCSId = -1;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         
         NSString *sql = @"Select MAX(cs_id) From qcloud_sub;";
         DataReader *reader = [database executeReader:sql withParameters:nil];

@@ -10,7 +10,8 @@
 #import "QIMCommonEnum.h"
 #import "QIMPublicRedefineHeader.h"
 #import <QIMCommonCategories/QIMCommonCategories.h>
-#import "QIMDataBaseQueueManager.h"
+#import "QIMDatabasePool.h"
+#import "QIMDataBase.h"
 
 @class UserInfo;
 
@@ -28,8 +29,7 @@
 
 @property (nonatomic, strong) NSDateFormatter *timeSmtapFormatter;
 
-@property (nonatomic, strong) QIMDataBaseQueueManager *dataBasePoolManager;
-
+@property (nonatomic, strong) QIMDatabasePool *databasePool;
 
 + (IMDataManager *) qimDB_SharedInstance;
 + (IMDataManager *) qimDB_sharedInstanceWithDBPath:(NSString *)dbPath withDBFullJid:(NSString *)dbOwnerFullJid;

@@ -7,7 +7,7 @@
 //
 
 #import "IMDataManager+QIMDBQuickReply.h"
-#import "Database.h"
+#import "QIMDataBase.h"
 
 @implementation IMDataManager (QIMDBQuickReply)
 
@@ -15,7 +15,7 @@
 
 - (long)qimDB_getQuickReplyGroupVersion {
     __block long version = 0;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"select max(version) from IM_QUICK_REPLY_GROUP";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
@@ -26,7 +26,7 @@
 }
 
 - (void)qimDB_clearQuickReplyGroup {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"delete from IM_QUICK_REPLY_GROUP";
         [database executeNonQuery:sql withParameters:nil];
     }];
@@ -36,7 +36,7 @@
     if (groupItems.count <= 0) {
         return;
     }
-    [[self dbInstance] usingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"insert or replace into IM_QUICK_REPLY_GROUP(sid, groupname, groupseq, version) values(:sid, :groupname, :groupseq, :version)";
         NSMutableArray *params = [[NSMutableArray alloc] init];
         for (NSDictionary * info in groupItems) {
@@ -61,7 +61,7 @@
     if (groupItems.count <= 0) {
         return;
     }
-    [[self dbInstance] usingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSMutableString *groupSql = [NSMutableString stringWithString:@"delete from IM_QUICK_REPLY_GROUP where sid in ("];
         NSMutableString *contentSql = [NSMutableString stringWithString:@"delete from IM_QUICK_REPLY_CONTENT where gid in ("];
         int index = 0;
@@ -85,7 +85,7 @@
 
 - (NSInteger)qimDB_getQuickReplyGroupCount  {
     __block NSInteger count = 0;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"select count(*) from IM_QUICK_REPLY_GROUP;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
@@ -97,7 +97,7 @@
 
 - (NSArray *)qimDB_getQuickReplyGroup {
     __block NSMutableArray *result = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = [NSString stringWithFormat:@"select *from IM_QUICK_REPLY_GROUP order by groupseq;"];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if (result == nil) {
@@ -123,7 +123,7 @@
 
 - (long)qimDB_getQuickReplyContentVersion {
     __block long version = 0;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"select max(version) from IM_QUICK_REPLY_CONTENT";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
@@ -134,7 +134,7 @@
 }
 
 - (void)qimDB_clearQuickReplyContents {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"delete from IM_QUICK_REPLY_CONTENT";
         [database executeNonQuery:sql withParameters:nil];
     }];
@@ -144,7 +144,7 @@
     if (contentItems.count <= 0) {
         return;
     }
-    [[self dbInstance] usingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"insert or replace into IM_QUICK_REPLY_CONTENT(sid, gid, content, contentseq, version) values(:sid, :gid, :content, :contentseq, :version)";
         NSMutableArray *params = [[NSMutableArray alloc] init];
         for (NSDictionary * info in contentItems) {
@@ -171,7 +171,7 @@
     if (contentItems.count <= 0) {
         return;
     }
-    [[self dbInstance] usingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSMutableString *contentSql = [NSMutableString stringWithString:@"delete from IM_QUICK_REPLY_CONTENT where sid in ("];
         int index = 0;
         for (NSNumber *contentIdNum in contentItems) {
@@ -191,7 +191,7 @@
 - (NSArray *)qimDB_getQuickReplyContentWithGroupId:(long)groupId {
     
     __block NSMutableArray *result = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = [NSString stringWithFormat:@"select *from IM_QUICK_REPLY_CONTENT where gid=%ld order by contentseq;", groupId];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if (result == nil) {

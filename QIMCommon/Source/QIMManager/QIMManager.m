@@ -54,7 +54,7 @@
 
 #import "ASIDataCompressor.h"
 #import "ASIDataDecompressor.h"
-#import "Database.h"
+//#import "Database.h"
 
 #import "QIMAppInfo.h"
 #import "QIMUserCacheManager.h"

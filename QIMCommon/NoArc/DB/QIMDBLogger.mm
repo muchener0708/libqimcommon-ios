@@ -7,7 +7,7 @@
 //
 
 #import "QIMDBLogger.h"
-#import "DataBase.h"
+//#import "DataBase.h"
 #import "QIMPublicRedefineHeader.h"
 
 @interface QIMDBLogger ()
@@ -134,7 +134,8 @@
         // The superclass won't likely call us if this is the case, but we're being cautious.
         return;
     }
-    [dbOperator syncUsingTransaction:^(Database *database) {
+    /* Mark DBUpadte
+    [dbOperator syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *cmd = @"INSERT INTO logs (context, level, message, timestamp) VALUES (?, ?, ?, ?)";
         NSMutableArray *params = [[NSMutableArray alloc] init];
         for (QIMDBLogEntry *logEntry in self->pendingLogEntries) {
@@ -152,6 +153,7 @@
             QIMVerboseLog(@"Error inserting log entries");
         }
     }];
+    */
     
     /*
     BOOL saveOnlyTransaction = ![database inTransaction];
@@ -195,11 +197,13 @@
         // The superclass won't likely call us if this is the case, but we're being cautious.
         return;
     }
-    [dbOperator syncUsingTransaction:^(Database *database) {
+    /* Mark DBUpdate
+    [dbOperator syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSDate *maxDate = [NSDate dateWithTimeIntervalSinceNow:(-1.0 * _maxAge)];
         NSString *deleteCMD = [NSString stringWithFormat:@"DELETE FROM logs WHERE timestamp < ?", maxDate];
         [database executeNonQuery:deleteCMD withParameters:nil];
     }];
+    */
 }
 
 - (void)db_saveAndDelete

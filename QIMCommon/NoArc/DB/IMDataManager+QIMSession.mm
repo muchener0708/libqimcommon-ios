@@ -7,13 +7,13 @@
 //
 
 #import "IMDataManager+QIMSession.h"
-#import "Database.h"
+#import "QIMDataBase.h"
 
 @implementation IMDataManager (QIMSession)
 
 - (void)qimDB_updateSessionLastMsgIdWithSessionId:(NSString *)sessionId
                                     WithLastMsgId:(NSString *)lastMsgId{
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Update IM_SessionList Set LastMessageId = :LastMessageId Where XmppId = :XmppId;";
         [database executeNonQuery:sql withParameters:[NSArray arrayWithObjects:lastMsgId,sessionId, nil]];
     }];
@@ -77,7 +77,7 @@
 
 - (BOOL)qimDB_checkSession:(NSString *)sessionId withRealJid:(NSString *)realJid withChatType:(int)chatType {
     __block BOOL flag = NO;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select 1 From IM_SessionList Where XmppId = :XmppId and RealJid = :RealJid and ChatType = :ChatType;";
         DataReader *reader = [database executeReader:sql withParameters:@[sessionId, realJid, @(chatType)]];
         if ([reader read]) {
@@ -97,7 +97,7 @@
     
     BOOL checkExist = [self qimDB_checkSession:sessinId withRealJid:realJid withChatType:ChatType];
     if (checkExist) {
-        [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
             NSString *sql = @"Update IM_SessionList Set LastMessageId = :LastMessageId, LastUpdateTime = :LastUpdateTime Where XmppId = :XmppId and RealJid = :RealJid and ChatType = :ChatType";
             NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:5];
             [param addObject:lastMsgId?lastMsgId:@":NULL"];
@@ -108,7 +108,7 @@
             [database executeNonQuery:sql withParameters:param];
         }];
     } else {
-        [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
             NSString *sql = @"insert or ignore into IM_SessionList(XmppId, UserId, LastMessageId,LastUpdateTime,ChatType,RealJid) Values(:XmppId, :UserId, :LastMessageId,:LastUpdateTime,:ChatType,:RealJid);";
             NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:5];
             [param addObject:sessinId?sessinId:@":NULL"];
@@ -124,7 +124,7 @@
 }
 
 - (void)qimDB_deleteSession:(NSString *)xmppId RealJid:(NSString *)realJid{
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Delete From IM_SessionList Where XmppId=:XmppId AND RealJid=:RealJid;";
         [database executeNonQuery:sql withParameters:@[xmppId, realJid]];
     }];
@@ -132,11 +132,11 @@
 }
 
 - (void)qimDB_deleteSession:(NSString *)xmppId{
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Delete From IM_SessionList Where XmppId=:XmppId;";
         [database executeNonQuery:sql withParameters:@[xmppId]];
     }];
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = [NSString stringWithFormat:@"Delete From IM_Message Where XmppId Like '%%%@%%'", xmppId];
         [database executeNonQuery:sql withParameters:nil];
     }];
@@ -145,7 +145,7 @@
 
 - (NSDictionary *)qimDB_getLastedSingleChatSession {
     __block NSMutableDictionary *result = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         
         NSString *sql = [NSString stringWithFormat:@"SELECT XmppId, UserId, LastMessageId, LastUpdateTime, ChatType, ExtendedFlag FROM IM_SessionList WHERE ChatType = %d ORDER BY LastUpdateTime DESC LIMIT 1;", ChatType_SingleChat];
         DataReader *reader = [database executeReader:sql withParameters:nil];
@@ -166,7 +166,7 @@
 - (NSArray *)qimDB_getFullSessionListWithSingleChatType:(int)singleChatType {
     __block NSMutableArray *result = nil;
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         
         NSNumber *pMaxLastTime = nil;
         NSMutableDictionary *dic = nil;
@@ -231,7 +231,7 @@
 - (NSArray *)qimDB_getNotReadSessionList {
     __block NSMutableArray *result = nil;
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         
         NSNumber *pMaxLastTime = nil;
         NSMutableDictionary *dic = nil;
@@ -308,7 +308,7 @@
 - (NSArray *)qimDB_getSessionListWithSingleChatType:(int)singleChatType {
     __block NSMutableArray *result = nil;
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         
         NSNumber *pMaxLastTime = nil;
         NSMutableDictionary *dic = nil;
@@ -384,7 +384,7 @@
 - (NSArray *)qimDB_getSessionListXMPPIDWithSingleChatType:(int)singleChatType {
     
     __block NSMutableArray *result = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = [NSString stringWithFormat:@"SELECT XmppId FROM IM_SessionList WHERE ChatType = %d", ChatType_SingleChat];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         result = [[NSMutableArray alloc] initWithCapacity:30];
@@ -405,7 +405,7 @@
 - (NSDictionary *)qimDB_getChatSessionWithUserId:(NSString *)userId chatType:(int)chatType{
     
     __block NSMutableDictionary *chatSession = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         
         NSString *sql = [NSString stringWithFormat:@"Select a.XmppId, a.UserId, case a.ChatType When %d THEN (Select Name From IM_Users WHERE UserId = a.UserId) ELSE (SELECT Name From IM_Group WHERE GroupId = a.XmppId) END as Name, case a.ChatType When %d THEN (Select HeaderSrc From IM_Users WHERE UserId = a.UserId) ELSE (SELECT HeaderSrc From IM_Group WHERE GroupId=a.XmppId) END as HeaderSrc, a.LastMessageId, b.Content, b.Type, b.State, b.Direction, b.LastUpdateTime, a.ChatType, case a.ChatType When %d THEN '' ELSE b.\"From\" END as NickName,(Select count(*) From IM_Message Where XmppId = a.XmppId And ReadedTag = 0) as NotReadCount From IM_SessionList as a left join IM_Message as b on (a.LastMessageId = b.MsgId ) Where a.XmppId=:XmppId Order by b.LastUpdateTime DESC;",chatType,chatType+1,chatType];
         NSMutableArray *param = [[NSMutableArray alloc] init];
@@ -447,7 +447,7 @@
 
 - (NSDictionary *)qimDB_getChatSessionWithUserId:(NSString *)userId WithRealJid:(NSString *)realJid {
     __block NSMutableDictionary *chatSession = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         
         NSString *sql = @"select XmppId, UserId, LastMessageId, LastUpdateTime, ChatType, RealJid from IM_SessionList where XmppId=:XmppId And RealJid=:RealJid;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
@@ -479,7 +479,7 @@
 - (NSDictionary *)qimDB_getChatSessionWithUserId:(NSString *)userId{
     
     __block NSMutableDictionary *chatSession = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         
         NSString *sql = @"Select a.XmppId, a.UserId, case a.ChatType When 0 THEN (Select Name From IM_Users WHERE UserId = a.UserId) ELSE (SELECT Name From IM_Group WHERE GroupId = a.XmppId) END as Name, case a.ChatType When 0 THEN (Select HeaderSrc From IM_Users WHERE UserId = a.UserId) ELSE (SELECT HeaderSrc From IM_Group WHERE GroupId=a.XmppId) END as HeaderSrc, a.LastMessageId, b.Content, b.Type, b.State, b.Direction, b.LastUpdateTime, a.ChatType,(Select count(*) From IM_Message Where XmppId = a.XmppId) as NotReadCount From IM_SessionList as a left join IM_Message as b on (a.LastMessageId = b.MsgId ) Where a.XmppId=:XmppId Order by b.LastUpdateTime DESC;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
@@ -520,7 +520,7 @@
 - (NSInteger)qimDB_getAppNotReadCount {
     __block NSInteger count = 0;
     //    [[QIMWatchDog sharedInstance] start];
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"SELECT sum(UnreadCount) FROM IM_SessionList";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {

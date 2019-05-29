@@ -139,12 +139,10 @@
             
             [param addObject:tripRemark?tripRemark:@":NULL"];
             [param addObject:canceled?canceled:@":NULL"];
-            
-            [database executeBulkInsert:sql withParameters:param];
-//            [paramList addObject:param];
+            [paramList addObject:param];
         }
-//        BOOL result = [database executeBulkInsert:sql withParameters:paramList];
-//        QIMVerboseLog(@"result = :%d", result);
+        BOOL result = [database executeBulkInsert:sql withParameters:paramList];
+        QIMVerboseLog(@"result = :%d", result);
     }];
     QIMVerboseLog(@"");
 }

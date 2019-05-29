@@ -173,8 +173,7 @@ static dispatch_once_t _onceDBToken;
         [parames addObject:@(type)];
         [parames addObject:value?value:@":NULL"];
         [parames addObject:@(valueInt)];
-//        Mark
-//        [database executeUpdate:sql withParameters:parames];
+        [database executeNonQuery:sql withParameters:parames];
     }];
 }
 

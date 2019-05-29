@@ -475,6 +475,22 @@
     QIMVerboseLog(@"");
 }
 
+- (void)qimDB_bulkDeleteGroups:(NSArray *)groupIdList {
+    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull db, BOOL * _Nonnull rollback) {
+        NSString *deleteGroupSql = @"Delete From IM_Group Where GroupId = :GroupId;";
+        NSString *deleteGroupMemberSql = @"Delete From IM_Group_Member Where GroupId = :GroupId;";
+        NSMutableArray *params = [[NSMutableArray alloc] init];
+        for (NSString *groupId in groupIdList) {
+            
+            NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:4];
+            [param addObject:groupId];
+            [params addObject:param];
+        }
+        [db executeBulkInsert:deleteGroupSql withParameters:params];
+        [db executeBulkInsert:deleteGroupMemberSql withParameters:params];
+    }];
+}
+
 - (void)qimDB_deleteGroup:(NSString *)groupId{
     [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Delete From IM_Group Where GroupId = :GroupId;";

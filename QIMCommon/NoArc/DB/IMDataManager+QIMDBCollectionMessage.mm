@@ -57,8 +57,7 @@
                 [paramList addObject:params];
             }
         }
-        //Mark DBUpadte
-//        [database executeBulkInsert:sql withParameters:paramList];
+        [database executeBulkInsert:sql withParameters:paramList];
     }];
     QIMVerboseLog(@"");
 }

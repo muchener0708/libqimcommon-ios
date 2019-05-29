@@ -1374,10 +1374,9 @@
             [param addObject:msgRaw?msgRaw:@":NULL"];
             [param addObject:realJid?realJid:(from?from:@":NULL")];
             [param addObject:extendInfo?extendInfo:@":NULL"];
-//            [params addObject:param];
-            [database executeBulkInsert:sql withParameters:param];
+            [params addObject:param];
         }
-//        isSuccessed = [database executeBulkInsert:sql withParameters:params];
+        isSuccessed = [database executeBulkInsert:sql withParameters:params];
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
@@ -2436,11 +2435,10 @@
             [param addObject:groupId?groupId:@""];
             [param addObject:@(mucLastReadFlagTime)];
             [param addObject:@(mucMaxReadFlagTime)];
-//            [params addObject:param];
-            [database executeBulkInsert:sql2 withParameters:param];
+            [params addObject:param];
         }
         QIMVerboseLog(@"在线DB更新群阅读指针参数 ：%@", params);
-//        [database executeBulkInsert:sql2 withParameters:params];
+        [database executeBulkInsert:sql2 withParameters:params];
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"在线DB更新群阅读指针%ld条数据 耗时 = %f s", groupReadList.count, end - start); //s

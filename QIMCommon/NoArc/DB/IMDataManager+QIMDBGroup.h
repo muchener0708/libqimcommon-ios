@@ -72,6 +72,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)qimDB_updateGroup:(NSString *)groupId WithHeaderSrc:(NSString *)headerSrc;
 
+- (void)qimDB_bulkDeleteGroups:(NSArray *)groupIdList;
+
 - (void)qimDB_deleteGroup:(NSString *)groupId;
 
 - (NSDictionary *)qimDB_getGroupMemberInfoByNickName:(NSString *)nickName;

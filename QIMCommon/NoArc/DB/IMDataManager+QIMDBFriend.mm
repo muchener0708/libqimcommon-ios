@@ -92,8 +92,7 @@
         [param addObject:userInfoData?userInfoData:@":NULL"];
         [param addObject:@(incrementVersion)];
         [param addObject:@(lastUpdateTime)];
-        //Mark DBUpadte
-//        [database executeNonQuery:sql withParameters:param];
+        [database executeNonQuery:sql withParameters:param];
     }];
     QIMVerboseLog(@"");
 }

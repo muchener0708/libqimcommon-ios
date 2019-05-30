@@ -14,7 +14,7 @@
 
 - (NSInteger)qimDB_getRNSearchEjabHost2GroupChatListByKeyStr:(NSString *)keyStr {
     __block NSInteger count = 0;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = [NSString stringWithFormat:@"SELECT COUNT(*), a.GroupId, a.Name, a.Introduce, a.HeaderSrc, b.Topic, b.LastUpdateTime, b.ExtendedFlag FROM IM_Group as a Left Join (Select GroupId, Topic, ExtendedFlag, LastUpdateTime From IM_Group Order By LastUpdateTime Desc Limit 1) as b On (a.GroupId=b.GroupId) Where (a.GroupId Like '%%%@') And (a.GroupId Like '%%%@%%' Or a.Name Like '%%%@%%' Or a.Introduce Like '%%%@%%' Or a.Topic Like '%%%@%%') Order By b.LastUpdateTime Desc;", @"ejabhost2", keyStr, keyStr,keyStr, keyStr];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
@@ -28,7 +28,7 @@
 - (NSArray *)qimDB_rnSearchEjabHost2GroupChatListByKeyStr:(NSString *)keyStr limit:(NSInteger)limit offset:(NSInteger)offset {
     
     __block NSMutableArray *ejabHost2GroupList = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         
         NSString *sql = [NSString stringWithFormat:@"SELECT a.GroupId, a.Name, a.Introduce, a.HeaderSrc, b.Topic, b.LastUpdateTime, b.ExtendedFlag FROM IM_Group as a Left Join (Select GroupId, Topic, ExtendedFlag, LastUpdateTime From IM_Group Order By LastUpdateTime Desc Limit 1) as b On (a.GroupId=b.GroupId) Where (a.GroupId Like '%%%@') And (a.GroupId Like '%%%@%%' Or a.Name Like '%%%@%%' Or a.Introduce Like '%%%@%%' Or a.Topic Like '%%%@%%') Order By b.LastUpdateTime Desc LIMIT %ld OFFSET %ld;", @"ejabhost2", keyStr, keyStr,keyStr, keyStr, (long)limit, (long)offset];
         DataReader *reader = [database executeReader:sql withParameters:nil];
@@ -63,7 +63,7 @@
 - (NSInteger)qimDB_getLocalGroupTotalCountByUserIds:(NSArray *)userIds{
     __block NSInteger count = 0;
     
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         
         NSMutableString *sqlGroupId = [NSMutableString stringWithFormat:@"Select GroupId From IM_Group_Member WHERE"];
         NSMutableString *sqlGroup = [NSMutableString stringWithFormat:@"Select GroupId From IM_Group WHERE "];
@@ -89,7 +89,7 @@
 - (NSArray *)qimDB_searchGroupByUserIds:(NSArray *)userIds WithLimit:(NSInteger)limit WithOffset:(NSInteger)offset {
     __block NSMutableArray *groupList = nil;
     
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         
         NSMutableString *sqlGroupId = [NSMutableString stringWithFormat:@"Select GroupId From IM_Group_Member WHERE"];
         NSMutableString *sqlGroup = [NSMutableString stringWithFormat:@"Select GroupId From IM_Group WHERE "];
@@ -135,7 +135,7 @@
 
 - (NSArray *)qimDB_getGroupIdList {
     __block NSMutableArray *groupList = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select GroupId From IM_Group";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -157,7 +157,7 @@
 
 - (NSArray *)qimDB_getGroupList {
     __block NSMutableArray *groupList = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select GroupId, Name, Introduce, HeaderSrc, Topic, LastUpdateTime,ExtendedFlag ,(SELECT max(LastUpdateTime) FROM IM_Message WHERE GroupId = XmppId) AS MsgTime From IM_Group ORDER By MsgTime Desc,Name ASC;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -195,7 +195,7 @@
     }
 //    [[QIMWatchDog sharedInstance] start];
     __block NSMutableDictionary *groupCardDic = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select GroupId, Name, Introduce, HeaderSrc, Topic, LastUpdateTime From IM_Group Where GroupId = :GroupId;";
         DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
         if ([reader read]) {
@@ -228,7 +228,7 @@
         return nil;
     }
     __block NSMutableArray *groupList = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSMutableString *sql = [NSMutableString stringWithString:@"Select GroupId, Name, Introduce, HeaderSrc, Topic, LastUpdateTime From IM_Group Where GroupId in ("];
         int index = 0;
         for (NSString *groupId in groupIds) {
@@ -271,7 +271,7 @@
 - (NSArray *)qimDB_getGroupListMaxLastUpdateTime {
     
     __block NSMutableArray *Im_groupList = [NSMutableArray arrayWithCapacity:5];
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select GroupId, LastUpdateTime FROM IM_Group Order By LastUpdateTime DESC;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -291,7 +291,7 @@
 
 - (NSArray *)qimDB_getGroupListMsgMaxTime{
     __block NSMutableArray *groupList = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select a.GroupId,max(b.LastUpdateTime) FROM IM_Group as a Left join IM_Message as b on a.GroupId = b.XmppId Group by a.GroupId;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -314,7 +314,7 @@
 
 - (BOOL)qimDB_needUpdateGroupImage:(NSString *)groupId{
     __block BOOL flag = YES;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select ExtendedFlag From IM_Group Where GroupId = :GroupId;";
         NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:1];
         [param addObject:groupId];
@@ -330,7 +330,7 @@
 - (NSString *)qimDB_getGroupHeaderSrc:(NSString *)groupId{
     
     __block NSString *groupHeaderSrc = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select HeaderSrc From IM_Group Where GroupId = :GroupId;";
         NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:1];
         [param addObject:groupId];
@@ -346,7 +346,7 @@
 
 - (BOOL)qimDB_checkGroup:(NSString *)groupId{
     __block BOOL flag = NO;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select 1 From IM_Group Where GroupId = :GroupId;";
         DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
         if ([reader read]) {
@@ -358,14 +358,14 @@
 }
 
 - (void)qimDB_bulkinsertGroups:(NSArray *)groups {
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         [database executeBulkInsert:@"insert or IGNORE into IM_Group(GroupId, LastUpdateTime) values(:GroupId, :LastUpdateTime);" withParameters:groups];
     }];
     QIMVerboseLog(@"");
 }
 
 - (void)qimDB_insertGroup:(NSString *)groupId {
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"insert or IGNORE into IM_Group(GroupId, LastUpdateTime) values(:GroupId, :LastUpdateTime);";
         NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:3];
         [param addObject:groupId];
@@ -376,7 +376,7 @@
 }
 
 - (void)qimDB_updateGroup:(NSString *)groupId WithTopic:(NSString *)topic{
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Update IM_Group Set Topic=:Topic Where GroupId = :GroupId;";
         NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:2];
         [param addObject:topic?topic:@":NULL"];
@@ -387,7 +387,7 @@
 }
 
 - (void)qimDB_bulkUpdateGroupCards:(NSArray *)array{
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Update IM_Group Set Name=(CASE WHEN :Name ISNULL then Name else :Name1 end),Introduce=(CASE WHEN :Introduce ISNULL then Introduce else :Introduce1 end), HeaderSrc=(CASE WHEN :HeaderSrc ISNULL then HeaderSrc else :HeaderSrc1 end),Topic=(CASE WHEN :Topic ISNULL then Topic else :Topic1 end), LastUpdateTime=:LastUpdateTime,ExtendedFlag=:ExtendedFlag Where GroupId = :GroupId;";
         NSMutableArray *paramList = [[NSMutableArray alloc] initWithCapacity:2];
         for (NSMutableDictionary *infoDic in array) {
@@ -422,7 +422,7 @@
                  WithDesc:(NSString *)desc
             WithHeaderSrc:(NSString *)headerSrc
               WithVersion:(NSString *)version{
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Update IM_Group Set Name=(CASE WHEN :Name ISNULL then Name else :Name1 end),Introduce=(CASE WHEN :Introduce ISNULL then Introduce else :Introduce1 end), HeaderSrc=(CASE WHEN :HeaderSrc ISNULL then HeaderSrc else :HeaderSrc1 end),Topic=(CASE WHEN :Topic ISNULL then Topic else :Topic1 end), LastUpdateTime=:LastUpdateTime Where GroupId = :GroupId;";
         NSMutableArray *param = [NSMutableArray array];
         [param addObject:nickName.length > 0?nickName:@":NULL"];
@@ -442,7 +442,7 @@
 
 - (void)qimDB_updateGroup:(NSString *)groupId WithNickName:(NSString *)nickName{
     
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Update IM_Group Set Name=:Name Where GroupId = :GroupId;";
         NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:2];
         [param addObject:nickName];
@@ -454,7 +454,7 @@
 
 - (void)qimDB_updateGroup:(NSString *)groupId WithDesc:(NSString *)desc{
     
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Update IM_Group Set Introduce=:Introduce Where GroupId = :GroupId;";
         NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:2];
         [param addObject:desc];
@@ -465,7 +465,7 @@
 }
 
 - (void)qimDB_updateGroup:(NSString *)groupId WithHeaderSrc:(NSString *)headerSrc{
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Update IM_Group Set HeaderSrc=:HeaderSrc Where GroupId = :GroupId;";
         NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:2];
         [param addObject:headerSrc];
@@ -476,7 +476,7 @@
 }
 
 - (void)qimDB_bulkDeleteGroups:(NSArray *)groupIdList {
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull db, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull db, BOOL * _Nonnull rollback) {
         NSString *deleteGroupSql = @"Delete From IM_Group Where GroupId = :GroupId;";
         NSString *deleteGroupMemberSql = @"Delete From IM_Group_Member Where GroupId = :GroupId;";
         NSMutableArray *params = [[NSMutableArray alloc] init];
@@ -492,7 +492,7 @@
 }
 
 - (void)qimDB_deleteGroup:(NSString *)groupId{
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Delete From IM_Group Where GroupId = :GroupId;";
         [database executeNonQuery:sql withParameters:@[groupId]];
         sql = @"Delete From IM_Group_Member Where GroupId = :GroupId;";
@@ -504,7 +504,7 @@
 - (NSDictionary *)qimDB_getGroupMemberInfoByNickName:(NSString *)nickName{
     __block NSMutableDictionary *infoDic = nil;
     if (nickName) {
-        [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+        [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
             NSString *sql = @"Select  MemberJid, GroupId, Name, Affiliation From IM_Group_Member Where Name = :Name;";
             DataReader *reader = [database executeReader:sql withParameters:@[nickName]];
             if ([reader read]) {
@@ -524,7 +524,7 @@
 
 - (NSDictionary *)qimDB_getGroupMemberInfoByJid:(NSString *)jid WithGroupId:(NSString *)groupId{
     __block NSMutableDictionary *infoDic = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select  MemberId, GroupId, Name, Affiliation From IM_Group_Member Where MemberJid = :MemberJid And GroupId = :GroupId;";
         DataReader *reader = [database executeReader:sql withParameters:@[jid,groupId]];
         if ([reader read]) {
@@ -543,7 +543,7 @@
 
 - (BOOL)qimDB_checkGroupMember:(NSString *)nickName WithGroupId:(NSString *)groupId{
     __block BOOL flag = NO;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select 1 From IM_Group_Member Where MemberId = :MemberId;";
         NSString *memId = [groupId stringByAppendingFormat:@"/%@",nickName];
         DataReader *reader = [database executeReader:sql withParameters:@[memId]];
@@ -556,7 +556,7 @@
 }
 
 - (void)qimDB_insertGroupMember:(NSDictionary *)memberDic WithGroupId:(NSString *)groupId{
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"insert or Replace into IM_Group_Member(MemberId, GroupId, Name, MemberJid, Affiliation, LastUpdateTime) values(:MemberId, :GroupId, :Name, :MemberJid, :Affiliation, :LastUpdateTime);";
         NSString *memId = [groupId stringByAppendingFormat:@"/%@",[memberDic objectForKey:@"name"]];
         NSString *name = [memberDic objectForKey:@"name"];
@@ -580,7 +580,7 @@
         return;
     }
     groupId = [groupId copy];
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSMutableString *deleteSql = [NSMutableString stringWithString: @"Delete From IM_Group_Member Where MemberId not in ("];
         NSMutableArray *params = [[NSMutableArray alloc] init];
         
@@ -617,7 +617,7 @@
 
 - (NSArray *)qimDB_getQChatGroupMember:(NSString *)groupId{
     __block NSMutableArray *members = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select a.MemberId, b.Name, b.XmppId as Jid, a.Affiliation, a.LastUpdateTime From IM_Group_Member a left join IM_Users b on a.MemberJid = b.XmppId Where GroupId = ? Order By a.Name;";
         DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
         while ([reader read]) {
@@ -645,7 +645,7 @@
 
 - (NSArray *)qimDB_getQChatGroupMember:(NSString *)groupId BySearchStr:(NSString *)searchStr{
     __block NSMutableArray *members = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = [NSString stringWithFormat:@"Select a.MemberId, b.Name, b.XmppId as Jid, a.Affiliation, a.LastUpdateTime From IM_Group_Member a left join IM_Users b on a.MemberJid = b.XmppId Where GroupId = ? and (b.UserId like '%%%@%%' OR b.Name like '%%%@%%' OR b.SearchIndex like '%%%@%%' COLLATE NOCASE) Order By a.Name;",searchStr,searchStr,searchStr];
         DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
         while ([reader read]) {
@@ -673,7 +673,7 @@
 
 - (NSArray *)qimDB_getGroupMember:(NSString *)groupId BySearchStr:(NSString *)searchStr{
     __block NSMutableArray *members = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = [NSString stringWithFormat:@"Select a.MemberId, a.Name, b.XmppId as Jid, a.Affiliation, a.LastUpdateTime From IM_Group_Member a left join IM_Users b on a.MemberJid = b.XmppId Where GroupId = :GroupId and (b.UserId like \"%%%@%%\" OR b.Name like \"%%%@%%\" OR b.SearchIndex like \"%%%@%%\" COLLATE NOCASE) Order By a.Name;",searchStr,searchStr,searchStr];
         DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
         while ([reader read]) {
@@ -709,7 +709,7 @@
     } else {
         
     }
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSMutableString *sql = [NSMutableString stringWithFormat:@"Select a.MemberId, a.Name, b.XmppId as Jid, a.Affiliation, a.LastUpdateTime From IM_Group_Member a left join IM_Users b on a.MemberJid = b.XmppId Where GroupId = :GroupId and a.Affiliation in (", identityArray];
         if (identityArray.count) {
             for (NSString *affiliation in identityArray) {
@@ -747,7 +747,7 @@
 
 - (NSArray *)qimDB_getGroupMember:(NSString *)groupId{
     __block NSMutableArray *members = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select MemberJid, Name, Affiliation From IM_Group_Member Where GroupId = :GroupId Order By Name;";
         DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
         while ([reader read]) {
@@ -778,7 +778,7 @@
         return nil;
     }
     __block NSDictionary *user = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"SELECT b.* FROM IM_Group_Member as a LEFT JOIN IM_Users as b on a.MemberJid = b.XmppId WHERE GroupId = :GroupId And Affiliation = 'owner';";
         DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
         if ([reader read]) {
@@ -806,7 +806,7 @@
 }
 
 - (void)qimDB_deleteGroupMemberWithGroupId:(NSString *)groupId{
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Delete From IM_Group_Member Where GroupId=:GroupId;";
         [database executeNonQuery:sql withParameters:@[groupId]];
     }];
@@ -814,7 +814,7 @@
 }
 
 - (void)qimDB_deleteGroupMemberJid:(NSString *)memberJid WithGroupId:(NSString *)groupId{
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Delete From IM_Group_Member Where GroupId=:GroupId and MemberJid = :MemberJid;";
         [database executeNonQuery:sql withParameters:@[groupId,memberJid]];
     }];
@@ -822,7 +822,7 @@
 }
 
 - (void)qimDB_deleteGroupMember:(NSString *)nickname WithGroupId:(NSString *)groupId{
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Delete From IM_Group_Member Where MemberId = :MemberId;";
         NSString *memId = [groupId stringByAppendingFormat:@"/%@",nickname];
         [database executeNonQuery:sql withParameters:@[memId]];
@@ -833,7 +833,7 @@
 
 - (void)qimDB_bulkUpdateGroupPushState:(NSArray *)stateList{
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Update IM_Group Set PushState = :PushState Where GroupId = :GroupId;";
         NSMutableArray *params = nil;
         for (NSDictionary *stateDic in stateList) {
@@ -860,7 +860,7 @@
         return 1;
     }
     __block int state = 1;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select PushState From IM_Group Where GroupId = :GroupId;";
         DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
         if ([reader read]) {
@@ -875,7 +875,7 @@
 }
 
 - (void)qimDB_updateGroup:(NSString *)groupId WithPushState:(int)pushState{
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Update IM_Group Set PushState = :PushState Where GroupId = :GroupId;";
         [database executeNonQuery:sql withParameters:@[@(pushState),groupId]];
     }];

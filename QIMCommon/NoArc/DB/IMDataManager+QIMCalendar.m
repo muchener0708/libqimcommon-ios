@@ -14,7 +14,7 @@
 
 - (NSArray *)qimDB_SelectTripByYearMonth:(NSString *)date {
     __block NSMutableArray *areaList = [[NSMutableArray alloc] init];
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = [NSString stringWithFormat:@"select * from IM_TRIP_INFO where (tripDate Between '%@' and '%@') and canceled = '%@';", [date stringByAppendingString:@"-01"], [date stringByAppendingString:@"-31"], @"0"];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -80,7 +80,7 @@
     if (trips.count <= 0) {
         return;
     }
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = [NSString stringWithFormat:@"INSERT OR REPLACE INTO IM_TRIP_INFO (tripId, tripName, tripDate, tripType, tripIntr, tripInviter, beginTime, endTime, scheduleTime, appointment, tripLocale, tripLocaleNumber, tripRoom, tripRoomNumber, memberList, tripRemark, canceled) VALUES (:tripId, :tripName, :tripDate, :tripType, :tripIntr, :tripInviter, :beginTime, :endTime, :scheduleTime, :appointment, :tripLocale, :tripLocaleNumber, :tripRoom, :tripRoomNumber, :memberList, :tripRemark, :canceled);"];
         NSMutableArray *paramList = [NSMutableArray array];
         for (NSDictionary *tripItem in trips) {
@@ -149,7 +149,7 @@
 
 - (NSArray *)qimDB_getLocalArea {
     __block NSMutableArray *areaList = [[NSMutableArray alloc] init];
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"select *from IM_TRIP_AREA where Enable = 1";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -181,7 +181,7 @@
     if (areaList.count <= 0) {
         return;
     }
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = [NSString stringWithFormat:@"INSERT OR REPLACE INTO IM_TRIP_AREA (areaId,areaName,Enable,MorningStarts,EveningEnds, Description) VALUES (:areaId,:areaName,:Enable,:MorningStarts,:EveningEnds,:Description);"];
         NSMutableArray *paramList = [NSMutableArray array];
         for (NSDictionary *areaItem in areaList) {

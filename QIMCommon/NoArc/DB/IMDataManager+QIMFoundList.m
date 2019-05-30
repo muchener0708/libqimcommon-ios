@@ -13,7 +13,7 @@
 @implementation IMDataManager (QIMFoundList)
 
 - (void)qimDB_insertFoundListWithAppVersion:(NSString *)version withFoundList:(NSString *)foundListStr {
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"insert or replace into IM_Found_List(version, foundList) Values(:version, :foundList)";
         NSMutableArray *parames = [[NSMutableArray alloc] init];
         [parames addObject:version];
@@ -25,12 +25,13 @@
 
 - (NSString *)qimDB_getFoundListWithAppVersion:(NSString *)version {
     __block NSString *result = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"SELECT foundList FROM IM_Found_List WHERE version = :version";
         DataReader *reader = [database executeReader:sql withParameters:@[version]];
         if ([reader read]) {
             result = [reader objectForColumnIndex:0];
         }
+        
     }];
     return result;
 }

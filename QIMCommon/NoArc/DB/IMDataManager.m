@@ -44,7 +44,8 @@ static dispatch_once_t _onceDBToken;
         [__global_data_manager setdbPath:dbPath];
         [__global_data_manager setDBOwnerFullJid:dbOwnerFullJid];
         [__global_data_manager setDomain:[[dbOwnerFullJid componentsSeparatedByString:@"@"] lastObject]];
-        __global_data_manager.databasePool = [QIMDatabasePool databasePoolWithPath:dbPath];
+//        __global_data_manager.databasePool = [QIMDataBasePool databasePoolWithPath:dbPath];
+        __global_data_manager.dataBaseQueue = [QIMDataBaseQueue databaseQueueWithPath:dbPath];
         [__global_data_manager openDB];
     });
     return __global_data_manager;
@@ -122,10 +123,13 @@ static dispatch_once_t _onceDBToken;
     if (notCheckCreateDataBase || [currentValue isEqualToString:dbValue] == NO) {
         QIMVerboseLog(@"reCreateDB");
         __block BOOL result = NO;
-        [_databasePool inDatabase:^(QIMDatabase * _Nonnull db) {
+        [_dataBaseQueue inDatabase:^(QIMDataBase * _Nonnull db) {
             result = [self createDb:db];
         }];
-//        [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+//        [_databasePool inDatabase:^(QIMDataBase* _Nonnull db) {
+//            result = [self createDb:db];
+//        }];
+//        [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
 //            result = [self createDb:database];
 //        }];
         if (result) {
@@ -166,7 +170,7 @@ static dispatch_once_t _onceDBToken;
 }
 
 - (void)qimDB_InsertUserCacheDataWithKey:(NSString *)key withType:(NSInteger)type withValue:(NSString *)value withValueInt:(long long)valueInt {
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"insert or IGNORE into IM_Cache_Data(key, type, value, valueInt) Values(:key, :type, :value, :valueInt);";
         NSMutableArray *parames = [[NSMutableArray alloc] init];
         [parames addObject:key];
@@ -178,7 +182,7 @@ static dispatch_once_t _onceDBToken;
 }
 
 - (void)qimDB_UpdateUserCacheDataWithKey:(NSString *)key withType:(NSInteger)type withValue:(NSString *)value withValueInt:(long long)valueInt {
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"insert or replace into IM_Cache_Data(key, type, value, valueInt) Values(:key, :type, :value, :valueInt);";
         NSMutableArray *parames = [[NSMutableArray alloc] init];
         [parames addObject:key];
@@ -191,22 +195,22 @@ static dispatch_once_t _onceDBToken;
 
 - (long long)qimDB_getUserCacheDataWithKey:(NSString *)key withType:(NSInteger)type {
     __block long long maxRemoteTime = 0;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+//    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase * _Nonnull database) {
         NSString *newSql = [NSString stringWithFormat:@"select valueInt from IM_Cache_Data Where key == '%@' and type == %d", key, type];
         DataReader *newReader = [database executeReader:newSql withParameters:nil];
         if ([newReader read]) {
             maxRemoteTime = [[newReader objectForColumnIndex:0] longLongValue];
         }
     }];
+
+//    }];
     return maxRemoteTime;
 }
 
 - (BOOL)qimDB_checkExistUserCacheDataWithKey:(NSString *)key withType:(NSInteger)type {
     __block BOOL exist = NO;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
-        
-    }];
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = [NSString stringWithFormat:@"select 1 from IM_Cache_Data Where key == '%@' and type == %d", key, type];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
@@ -216,8 +220,8 @@ static dispatch_once_t _onceDBToken;
     return exist;
 }
 
-- (QIMDatabasePool *)dbInstance {
-    return _databasePool;
+- (QIMDataBaseQueue *)dbInstance {
+    return _dataBaseQueue;
 //    return [self.dat getDatabaseOperator];
 }
 
@@ -227,7 +231,7 @@ static dispatch_once_t _onceDBToken;
     }
 }
 
-- (BOOL)createDb:(QIMDatabase *)database {
+- (BOOL)createDb:(QIMDataBase*)database {
     BOOL result = NO;
     
     //创建用户表
@@ -929,7 +933,7 @@ static dispatch_once_t _onceDBToken;
 
 - (void)qimDB_dbCheckpoint {
     /* Mark DBUpdate
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         [database dbCheckpoint];
     }];
     */

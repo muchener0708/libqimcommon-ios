@@ -13,7 +13,7 @@
 
 - (NSArray *)qimDB_getUserMedalsWithXmppId:(NSString *)xmppId {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Select XmppId, Type, URL, URLDesc, LastUpdateTime From IM_Users_Medal Where XmppId=:XmppId Order By LastUpdateTime Desc;";
         DataReader *reader = [database executeReader:sql withParameters:@[xmppId]];
         while ([reader read]) {
@@ -34,6 +34,7 @@
             [IMDataManager safeSaveForDic:paramDic setObject:LastUpdateTime forKey:@"LastUpdateTime"];
             [resultList addObject:paramDic];
         }
+        
     }];
     return resultList;
 }
@@ -42,7 +43,7 @@
     if (userMedals.count <= 0) {
         return;
     }
-    [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSMutableArray *params = [[NSMutableArray alloc] init];
         NSString *sql = [NSString stringWithFormat:@"insert or Replace into IM_Users_Medal(XmppId, Type, URL, URLDesc, LastUpdateTime) values(:XmppId, :Type, :URL, :URLDesc, :LastUpdateTime);"];
         for (NSDictionary *dic in userMedals) {

@@ -119,29 +119,27 @@
 
 #warning 这里更新本地数据库已接收的消息状态 ，告诉对方已送达，readFlag=3，更新成功之后更新本地数据库状态
 - (void)sendRecevieMessageState {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-        NSArray *msgs = [[IMDataManager qimDB_SharedInstance] qimDB_getReceiveMsgIdListWithMsgReadFlag:QIMMessageRemoteReadStateDidReaded withChatType:ChatType_SingleChat withMsgDirection:QIMMessageDirection_Received];
-        if (msgs.count > 0) {
-            NSMutableArray *resultArray = [NSMutableArray arrayWithCapacity:5];
-            NSMutableArray *faildArray = [NSMutableArray arrayWithCapacity:5];
-            for (NSDictionary *msg in msgs) {
-                NSString *msgId = [msg objectForKey:@"MsgIds"];
-                NSString *xmppId = [msg objectForKey:@"XmppId"];
-                NSArray *msgIds = [msgId componentsSeparatedByString:@","];
-                NSMutableArray *reusltMessageIds = [NSMutableArray arrayWithCapacity:5];
-                for (NSString *messageId in msgIds) {
-                    [reusltMessageIds addObject:@{@"id":messageId}];
-                }
-                NSString *jsonString = [[QIMJSONSerializer sharedInstance] serializeObject:reusltMessageIds];
-                BOOL success = [self sendReadStateWithMessagesIdArray:msgIds WithMessageReadFlag:QIMMessageReadFlagDidSend WithXmppId:xmppId];
-                if (success) {
-                    QIMVerboseLog(@"这里告诉对方%@消息【%@】已送到 成功", xmppId, msgIds);
-                } else {
-                    QIMVerboseLog(@"这里告诉对方%@消息【%@】已送到 失败", xmppId, msgIds);
-                }
+    NSArray *msgs = [[IMDataManager qimDB_SharedInstance] qimDB_getReceiveMsgIdListWithMsgReadFlag:QIMMessageRemoteReadStateDidReaded withChatType:ChatType_SingleChat withMsgDirection:QIMMessageDirection_Received];
+    if (msgs.count > 0) {
+        NSMutableArray *resultArray = [NSMutableArray arrayWithCapacity:5];
+        NSMutableArray *faildArray = [NSMutableArray arrayWithCapacity:5];
+        for (NSDictionary *msg in msgs) {
+            NSString *msgId = [msg objectForKey:@"MsgIds"];
+            NSString *xmppId = [msg objectForKey:@"XmppId"];
+            NSArray *msgIds = [msgId componentsSeparatedByString:@","];
+            NSMutableArray *reusltMessageIds = [NSMutableArray arrayWithCapacity:5];
+            for (NSString *messageId in msgIds) {
+                [reusltMessageIds addObject:@{@"id":messageId}];
+            }
+            NSString *jsonString = [[QIMJSONSerializer sharedInstance] serializeObject:reusltMessageIds];
+            BOOL success = [self sendReadStateWithMessagesIdArray:msgIds WithMessageReadFlag:QIMMessageReadFlagDidSend WithXmppId:xmppId];
+            if (success) {
+                QIMVerboseLog(@"这里告诉对方%@消息【%@】已送到 成功", xmppId, msgIds);
+            } else {
+                QIMVerboseLog(@"这里告诉对方%@消息【%@】已送到 失败", xmppId, msgIds);
             }
         }
-    });
+    }
 }
 
 - (BOOL)updateOfflineMessagesV2 {

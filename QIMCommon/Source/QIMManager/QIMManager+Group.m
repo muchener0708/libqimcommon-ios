@@ -752,6 +752,7 @@
 }
 
 - (void)getIncrementMucList:(NSTimeInterval)lastTime {
+    lastTime = 0;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         QIMVerboseLog(@" ======= 开始通过增量群列表拉群列表数据 =========");
         
@@ -797,11 +798,13 @@
         NSString *newGroupId = [NSString stringWithFormat:@"%@@%@", groupId, groupDomain];
         //flag 为 Ture 新增，NO 为销毁或退出
         if (flag) {
+            NSArray *tempGroup = @[newGroupId, @(0)];
 //            [self.updateGroupList addObject:newGroupId];
-            [updateGroupList addObject:newGroupId];
+            [updateGroupList addObject:tempGroup];
 //            [[IMDataManager qimDB_SharedInstance] qimDB_insertGroup:newGroupId];
         } else {
-            [deleteGroupList addObject:newGroupId];
+            NSArray *tempGroup = @[newGroupId];
+            [deleteGroupList addObject:tempGroup];
             /*
             NSMutableArray *tempMyGroups = [NSMutableArray arrayWithArray:[self getMyGroupList]];
             for (NSDictionary *myGroup in tempMyGroups) {
@@ -825,7 +828,11 @@
         [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteGroups:deleteGroupList];
     }
     for (NSInteger i = 0; i < deleteGroupList.count; i++) {
-        NSString *groupId = [deleteGroupList objectAtIndex:i];
+        NSArray *groupArray = [deleteGroupList objectAtIndex:i];
+        NSString *groupId = nil;
+        if ([groupArray isKindOfClass:[NSArray class]]) {
+            groupId = [groupArray firstObject];
+        }
         [self removeSessionById:groupId];
     }
     [[IMDataManager qimDB_SharedInstance] qimDB_UpdateUserCacheDataWithKey:kGetIncrementMucListVersion withType:11 withValue:@"群列表时间戳" withValueInt:self.lastMaxGroupVersion];

@@ -357,9 +357,9 @@
     return flag;
 }
 
-- (void)qimDB_bulkinsertGroups:(NSArray *) groups {
+- (void)qimDB_bulkinsertGroups:(NSArray *)groups {
     [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
-        [database executeBulkInsert:@"insert or IGNORE into IM_Group(GroupId, Name, LastUpdateTime) values(:GroupId, :Name, :LastUpdateTime);" withParameters:groups];
+        [database executeBulkInsert:@"insert or IGNORE into IM_Group(GroupId, LastUpdateTime) values(:GroupId, :LastUpdateTime);" withParameters:groups];
     }];
     QIMVerboseLog(@"");
 }

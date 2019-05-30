@@ -133,8 +133,8 @@
 
 - (void)qimDB_deleteSession:(NSString *)xmppId{
     [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
-        NSString *sql = @"Delete From IM_SessionList Where XmppId=:XmppId;";
-        [database executeNonQuery:sql withParameters:@[xmppId]];
+        NSString *sql = [NSString stringWithFormat:@"Delete From IM_Message Where XmppId Like '%%%@%%'", xmppId];
+        [database executeNonQuery:sql withParameters:nil];
     }];
     [[self dbInstance] syncUsingTransaction:^(QIMDatabase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = [NSString stringWithFormat:@"Delete From IM_Message Where XmppId Like '%%%@%%'", xmppId];
@@ -158,6 +158,7 @@
             [IMDataManager safeSaveForDic:result setObject:userId forKey:@"UserId"];
             [IMDataManager safeSaveForDic:result setObject:chatType forKey:@"ChatType"];
         }
+        [reader close];
     }];
     QIMVerboseLog(@"");
     return result;
@@ -182,6 +183,7 @@
             [IMDataManager safeSaveForDic:dic setObject:@(ChatType_PublicNumber) forKey:@"ChatType"];
             pMaxLastTime = [pReader objectForColumnIndex:4];
         }
+        [pReader close];
         NSString *sql = [NSString stringWithFormat:@"select a.XmppId, a.UserId, case a.ChatType WHEN %d THEN (select name from IM_Users where IM_Users.XmppId = a.XmppId) ELSE (select name from IM_Group where IM_Group.GroupId = a.XmppId) end as Name, case a.ChatType When %d THEN (Select HeaderSrc From IM_Users WHERE UserId = a.UserId) ELSE (SELECT HeaderSrc From IM_Group WHERE GroupId=a.XmppId) END as HeaderSrc, b.MsgId, b.Content, b.Type, b.State, b.Direction,CASE b.LastUpdateTime  When NULL THEN a.LastUpdateTime ELSE b.LastUpdateTime END as orderTime, a.ChatType, case a.ChatType When %d THEN '' ELSE b.[From] END as NickName, 0 as NotReadCount,a.RealJid from IM_SessionList as a left join IM_Message as b on a.XmppId = b.XmppId and b.MsgId = (SELECT MsgId FROM IM_Message WHERE XmppId = a.XmppId  AND (case When a.ChatType = %d or a.ChatType = %d THEN RealJid = a.RealJid ELSE RealJid is null END) Order by LastUpdateTime DESC LIMIT 1) order by OrderTime desc;", singleChatType, singleChatType+1,singleChatType, ChatType_Consult, ChatType_ConsultServer];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         
@@ -223,6 +225,7 @@
                 [result addObject:sessionDic];
             }
         }
+        [reader close];
     }];
     QIMVerboseLog(@"");
     return result;

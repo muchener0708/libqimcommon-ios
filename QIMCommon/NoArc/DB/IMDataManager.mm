@@ -222,7 +222,7 @@ static dispatch_once_t _onceDBToken;
 }
 
 + (void)safeSaveForDic:(NSMutableDictionary *)dic setObject:(id)value forKey:(id)key{
-    if (dic && value && key) {
+    if (dic && value && key && ![value isKindOfClass:[NSNull class]] && ![value isKindOfClass:[NSNull class]]) {
         [dic setObject:value forKey:key];
     }
 }

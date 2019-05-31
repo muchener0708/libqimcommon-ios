@@ -60,6 +60,7 @@ Pod::Spec.new do |s|
   s.dependency 'ProtocolBuffers'
   s.dependency 'CocoaAsyncSocket'
   s.dependency 'UICKeyChainStore'
+  s.dependency 'YYDispatchQueuePool'
   # 避免崩溃
   s.dependency 'AvoidCrash'
   

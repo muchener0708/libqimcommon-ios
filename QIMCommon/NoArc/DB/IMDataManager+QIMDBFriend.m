@@ -131,7 +131,7 @@
 
 - (NSMutableArray *)qimDB_selectFriendList {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"Select UserId,XmppId,Name,DescInfo,HeaderSrc,UserInfo,SearchIndex From IM_Friend_List Order By Name Desc;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -167,7 +167,7 @@
         return nil;
     }
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = [NSString stringWithFormat:@"select a.UserId,a.XmppId,b.Name,b.HeaderSrc,b.SearchIndex from IM_Friend_List as a join IM_Users as b where a.XmppId = b.XmppId and a.XmppId NOT IN(select MemberJid from IM_Group_Member where GroupId = '%@');", groupId];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -194,7 +194,7 @@
 
 - (NSDictionary *)qimDB_selectFriendInfoWithUserId:(NSString *)userId {
     __block NSMutableDictionary *resultDic = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"Select UserId,XmppId,Name,DescInfo,HeaderSrc,UserInfo From IM_Friend_List Where XmppId=:XmppId;";
         DataReader *reader = [database executeReader:sql withParameters:@[userId]];
         if ([reader read]) {
@@ -214,6 +214,7 @@
                 [IMDataManager safeSaveForDic:resultDic setObject:[NSKeyedUnarchiver unarchiveObjectWithData:userInfoData] forKey:@"UserInfo"];
             }
         }
+        [reader close];
     }];
     QIMVerboseLog(@"");
     return resultDic;
@@ -221,7 +222,7 @@
 
 - (NSDictionary *)qimDB_selectFriendInfoWithXmppId:(NSString *)xmppId {
     __block NSMutableDictionary *resultDic = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"Select UserId,XmppId,Name,DescInfo,HeaderSrc,UserInfo From IM_Friend_List Where XmppId=:XmppId;";
         DataReader *reader = [database executeReader:sql withParameters:@[xmppId]];
         if ([reader read]) {
@@ -241,6 +242,7 @@
                 [IMDataManager safeSaveForDic:resultDic setObject:[NSKeyedUnarchiver unarchiveObjectWithData:userInfoData] forKey:@"UserInfo"];
             }
         }
+        [reader close];
     }];
     QIMVerboseLog(@"");
     return resultDic;
@@ -361,7 +363,7 @@
 
 - (NSMutableArray *)qimDB_selectFriendNotifys {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"Select UserId,XmppId,Name,DescInfo,HeaderSrc,UserInfo,State,LastUpdateTime From IM_Friend_Notify Order By LastUpdateTime Desc;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -396,7 +398,7 @@
 
 - (NSDictionary *)qimDB_getLastFriendNotify {
     __block NSMutableDictionary *friendNotify = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"Select UserId,XmppId,Name,DescInfo,HeaderSrc,UserInfo,State,LastUpdateTime From IM_Friend_Notify Order By LastUpdateTime DESC Limit 1;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
@@ -423,6 +425,7 @@
             [IMDataManager safeSaveForDic:friendNotify setObject:state forKey:@"State"];
             [IMDataManager safeSaveForDic:friendNotify setObject:lastUpdateTime forKey:@"LastUpdateTime"];
         }
+        [reader close];
     }];
     QIMVerboseLog(@"");
     return friendNotify;
@@ -431,7 +434,7 @@
 - (int)qimDB_getFriendNotifyCount {
     
     __block int FriendNotifyCount = 0;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"Select UserId,XmppId,Name,DescInfo,HeaderSrc,UserInfo,State,LastUpdateTime From IM_Friend_Notify Order By LastUpdateTime Desc;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -455,12 +458,13 @@
 
 - (long long)qimDB_getMaxTimeFriendNotify {
     __block long long maxTime = 0;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"Select Max(LastUpdateTime) From IM_Friend_Notify;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             maxTime = [[reader objectForColumnIndex:0] longLongValue];
         }
+        [reader close];
     }];
     QIMVerboseLog(@"");
     return maxTime;

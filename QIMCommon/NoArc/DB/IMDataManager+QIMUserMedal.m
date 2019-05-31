@@ -13,7 +13,7 @@
 
 - (NSArray *)qimDB_getUserMedalsWithXmppId:(NSString *)xmppId {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"Select XmppId, Type, URL, URLDesc, LastUpdateTime From IM_Users_Medal Where XmppId=:XmppId Order By LastUpdateTime Desc;";
         DataReader *reader = [database executeReader:sql withParameters:@[xmppId]];
         while ([reader read]) {

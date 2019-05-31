@@ -17,7 +17,7 @@
 
 - (NSDictionary *)qimDB_getPublicNumberSession {
     __block NSMutableDictionary *result = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *psql = @"Select b.XmppId,A.Name,b.Content,b.Type,b.LastUpdateTime From (Select XmppId,Content,Type,LastUpdateTime From IM_Public_Number_Message Order By LastUpdateTime Desc Limit 1) as b Left Join IM_Public_Number as a On a.XmppId=b.XmppId;";
         DataReader *pReader = [database executeReader:psql withParameters:nil];
         if ([pReader read]) {
@@ -35,12 +35,13 @@
 
 - (BOOL)qimDB_checkPublicNumberMsgById:(NSString *)msgId {
     __block BOOL flag = NO;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"Select 1 From IM_Public_Number_Message Where MsgId = :MsgId;";
         DataReader *reader = [database executeReader:sql withParameters:@[msgId]];
         if ([reader read]) {
             flag = YES;
         }
+        [reader close];
     }];
     return flag;
 }
@@ -142,7 +143,7 @@
 
 - (NSArray *)qimDB_getPublicNumberVersionList {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"SELECT PublicNumberId,LastUpdateTime FROM IM_Public_Number;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -165,7 +166,7 @@
 
 - (NSArray *)qimDB_getPublicNumberList {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"SELECT a.XmppId,a.PublicNumberId,a.PublicNumberType,a.Name,a.DescInfo,a.HeaderSrc,a.SearchIndex,a.PublicNumberInfo,b.LastUpdateTime,b.Content,b.Type FROM IM_Public_Number as a Left Join (Select XmppId,Content,Type,LastUpdateTime From IM_Public_Number_Message Order By LastUpdateTime Desc Limit 1) as b On a.XmppId=b.XmppId Order By b.LastUpdateTime Desc;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -208,7 +209,7 @@
 
 - (NSArray *)qimDB_searchPublicNumberListByKeyStr:(NSString *)keyStr {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = [NSString stringWithFormat:@"SELECT a.XmppId,a.PublicNumberId,a.PublicNumberType,a.Name,a.DescInfo,a.HeaderSrc,a.SearchIndex,a.PublicNumberInfo,b.LastUpdateTime,b.Content,b.Type FROM IM_Public_Number as a Left Join (Select XmppId,Content,Type,LastUpdateTime From IM_Public_Number_Message Order By LastUpdateTime Desc Limit 1) as b On a.XmppId=b.XmppId Where a.PublicNumberId Like '%%%@%%' Or a.Name Like '%%%@%%' Or a.SearchIndex Like '%%%@%%' Order By b.LastUpdateTime Desc;",keyStr,keyStr,keyStr];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -250,19 +251,20 @@
 
 - (NSInteger)qimDB_getRnSearchPublicNumberListByKeyStr:(NSString *)keyStr {
     __block NSInteger count = 0;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = [NSString stringWithFormat:@"SELECT COUNT(*) a.XmppId,a.PublicNumberId,a.PublicNumberType,a.Name,a.DescInfo,a.HeaderSrc,a.SearchIndex,a.PublicNumberInfo,b.LastUpdateTime,b.Content,b.Type FROM IM_Public_Number as a Left Join (Select XmppId,Content,Type,LastUpdateTime From IM_Public_Number_Message Order By LastUpdateTime Desc Limit 1) as b On a.XmppId=b.XmppId Where a.PublicNumberId Like '%%%@%%' Or a.Name Like '%%%@%%' Or a.SearchIndex Like '%%%@%%' Order By b.LastUpdateTime Desc;",keyStr,keyStr,keyStr];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             count = [[reader objectForColumnIndex:0] intValue];
         }
+        [reader close];
     }];
     return count;
 }
 
 - (NSArray *)qimDB_rnSearchPublicNumberListByKeyStr:(NSString *)keyStr limit:(NSInteger)limit offset:(NSInteger)offset {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = [NSString stringWithFormat:@"SELECT a.XmppId,a.PublicNumberId,a.PublicNumberType,a.Name,a.DescInfo,a.HeaderSrc,a.SearchIndex,a.PublicNumberInfo,b.LastUpdateTime,b.Content,b.Type FROM IM_Public_Number as a Left Join (Select XmppId,Content,Type,LastUpdateTime From IM_Public_Number_Message Order By LastUpdateTime Desc Limit 1) as b On a.XmppId=b.XmppId Where a.PublicNumberId Like '%%%@%%' Or a.Name Like '%%%@%%' Or a.SearchIndex Like '%%%@%%' Order By b.LastUpdateTime Desc LIMIT %ld OFFSET %ld;",keyStr,keyStr,keyStr, (long)limit, (long)offset];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -289,7 +291,7 @@
 
 - (NSDictionary *)qimDB_getPublicNumberCardByJId:(NSString *)jid {
     __block NSMutableDictionary *resultDic = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"SELECT XmppId,PublicNumberId,PublicNumberType,Name,DescInfo,HeaderSrc,SearchIndex,PublicNumberInfo,LastUpdateTime FROM IM_Public_Number Where XmppId=:XmppId;";
         DataReader *reader = [database executeReader:sql withParameters:@[jid]];
         if ([reader read]) {
@@ -315,7 +317,7 @@
             [IMDataManager safeSaveForDic:resultDic setObject:pInfo forKey:@"PublicNumberInfo"];
             [IMDataManager safeSaveForDic:resultDic setObject:lastUpdateTime forKey:@"LastUpdateTime"];
         }
-        
+        [reader close];
     }];
     return resultDic;
 }
@@ -355,7 +357,7 @@
                                    WithOffset:(int)offset
                                WithFilterType:(NSArray *)actionTypes {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSMutableString *sql = [NSMutableString stringWithString:@"SELECT MsgId,XmppId,\"From\",\"To\",Content,Type,State,Direction,ReadedTag,LastUpdateTime From IM_Public_Number_Message Where XmppId=:XmppId and Type not in ("];
         for (NSNumber *type in actionTypes) {
             if ([type isEqual:actionTypes.lastObject]) {

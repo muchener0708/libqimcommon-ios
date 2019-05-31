@@ -31,6 +31,10 @@
 
 - (dispatch_queue_t)getLoadGroupCardFromDBQueue;
 
+- (dispatch_queue_t)getLoadMsgNickNameQueue;
+
+- (dispatch_queue_t)getLoad_msgHeaderImageQueue;
+
 - (NSString *)getOpsFoundRNDebugUrl;
 
 - (void)setOpsFoundRNDebugUrl:(NSString *)opsFoundRNDebugUrl;

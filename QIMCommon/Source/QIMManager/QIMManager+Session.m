@@ -51,8 +51,8 @@
 
 - (void)removeSessionById:(NSString *)sid {
     
-    [self clearNotReadMsgByGroupId:sid];
-    [self clearNotReadMsgByJid:sid];
+//    [self clearNotReadMsgByGroupId:sid];
+//    [self clearNotReadMsgByJid:sid];
     [[IMDataManager qimDB_SharedInstance] qimDB_deleteSession:sid];
     [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationSessionListRemove object:sid];
 }

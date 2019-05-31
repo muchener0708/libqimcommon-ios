@@ -513,6 +513,8 @@
 		2CB8DB742149502F00B57B8D /* Activity_default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Activity_default.png; sourceTree = "<group>"; };
 		2CC8AB1B2186A8AA0055415F /* IMDataManager+QIMNote.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "IMDataManager+QIMNote.h"; sourceTree = "<group>"; };
 		2CC8AB1C2186A8AA0055415F /* IMDataManager+QIMNote.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IMDataManager+QIMNote.m"; sourceTree = "<group>"; };
+		2CD3CF7122A033CD00B65446 /* ss.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ss.h; sourceTree = "<group>"; };
+		2CD3CF7222A033CD00B65446 /* ss.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ss.m; sourceTree = "<group>"; };
 		CAFC17F7E3C83EB275405581 /* libPods-QIMCommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-QIMCommon.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D13CC9115C6C9C049DE1929D /* Pods-QIMCommon.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-QIMCommon.release.xcconfig"; path = "Pods/Target Support Files/Pods-QIMCommon/Pods-QIMCommon.release.xcconfig"; sourceTree = "<group>"; };
 		FDAEFB566F27EE8C94093452 /* Pods-QIMCommon.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-QIMCommon.debug.xcconfig"; path = "Pods/Target Support Files/Pods-QIMCommon/Pods-QIMCommon.debug.xcconfig"; sourceTree = "<group>"; };
@@ -672,6 +674,7 @@
 			isa = PBXGroup;
 			children = (
 				2CB8D9E421494B1D00B57B8D /* QIMCommon */,
+				2CD3CF7022A033CD00B65446 /* ss */,
 				2CB8D9E321494B1D00B57B8D /* Products */,
 				1F98424CB687FF6F59E5FFFD /* Pods */,
 				47D61FA6D567EECE539E68B2 /* Frameworks */,
@@ -918,6 +921,15 @@
 				2CB8DB742149502F00B57B8D /* Activity_default.png */,
 			);
 			path = QIMKitCommonResource;
+			sourceTree = "<group>";
+		};
+		2CD3CF7022A033CD00B65446 /* ss */ = {
+			isa = PBXGroup;
+			children = (
+				2CD3CF7122A033CD00B65446 /* ss.h */,
+				2CD3CF7222A033CD00B65446 /* ss.m */,
+			);
+			path = ss;
 			sourceTree = "<group>";
 		};
 		47D61FA6D567EECE539E68B2 /* Frameworks */ = {

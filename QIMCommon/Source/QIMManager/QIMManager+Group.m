@@ -752,7 +752,6 @@
 }
 
 - (void)getIncrementMucList:(NSTimeInterval)lastTime {
-    lastTime = 0;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         QIMVerboseLog(@" ======= 开始通过增量群列表拉群列表数据 =========");
         
@@ -827,6 +826,7 @@
         //这里删除
         [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteGroups:deleteGroupList];
     }
+    /* Mark DBUPdate
     for (NSInteger i = 0; i < deleteGroupList.count; i++) {
         NSArray *groupArray = [deleteGroupList objectAtIndex:i];
         NSString *groupId = nil;
@@ -835,6 +835,7 @@
         }
         [self removeSessionById:groupId];
     }
+    */
     [[IMDataManager qimDB_SharedInstance] qimDB_UpdateUserCacheDataWithKey:kGetIncrementMucListVersion withType:11 withValue:@"群列表时间戳" withValueInt:self.lastMaxGroupVersion];
 }
 

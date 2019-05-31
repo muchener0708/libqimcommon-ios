@@ -216,6 +216,7 @@ static dispatch_once_t _onceDBToken;
         if ([reader read]) {
             exist = YES;
         }
+        [reader close];
     }];
     return exist;
 }

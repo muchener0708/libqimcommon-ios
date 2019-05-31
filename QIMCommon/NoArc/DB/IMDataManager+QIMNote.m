@@ -18,13 +18,13 @@
     if (cid < 1) {
         cid = [[IMDataManager qimDB_SharedInstance] getMaxQTNoteMainItemCid] + 1;
     }
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"Select Count(*) From qcloud_main Where q_id = :q_id Or c_id = :c_id;";
         DataReader *reader = [database executeReader:sql withParameters:@[@(qid), @(cid)]];
         if ([reader read]) {
             existFlag = [[reader objectForColumnIndex:0] integerValue];
         }
-        
+        [reader close];
     }];
     return existFlag;
 }
@@ -187,7 +187,7 @@
 - (NSArray *)getQTNotesMainItemWithQExtendedFlag:(NSInteger)qExtendedFlag needConvertToString:(BOOL)flag {
     __block NSMutableArray *resultList = nil;
     __block BOOL needConvertToStringFlag = flag;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *param = [NSString stringWithFormat:@"q_ExtendedFlag = %ld", (long)qExtendedFlag];
         NSMutableString *sql = [NSMutableString stringWithFormat:@"Select *from qcloud_main Where %@ Order By q_time Desc;", param];
         DataReader *reader = [database executeReader:sql withParameters:nil];
@@ -227,7 +227,7 @@
 
 - (NSArray *)getQTNotesMainItemWithParams:(NSString *)param {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSMutableString *sql = [NSMutableString stringWithFormat:@"Select *from qcloud_main Where %@ Order By q_time Desc;", param];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -262,27 +262,27 @@
 
 - (NSInteger)getQTNoteMainItemMaxTimeWithQType:(NSInteger)qType {
     __block NSInteger maxTime = -1;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"Select MAX(q_time) From qcloud_main Where q_type = :q_type;";
         DataReader *reader = [database executeReader:sql withParameters:@[@(qType)]];
         if ([reader read]) {
             maxTime = ceil([[reader objectForColumnIndex:0] integerValue]);
         }
-        
+        [reader close];
     }];
     return maxTime;
 }
 
 - (NSInteger)getMaxQTNoteMainItemCid {
     __block NSInteger maxCId = -1;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         
         NSString *sql = @"Select MAX(c_id) From qcloud_main;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             maxCId = ceil([[reader objectForColumnIndex:0] doubleValue]);
         }
-        
+        [reader close];
     }];
     return maxCId;
 }
@@ -294,13 +294,13 @@
     if (csid < 1) {
         csid = [[IMDataManager qimDB_SharedInstance]getMaxQTNoteSubItemCSid] + 1;
     }
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"Select Count(*) From qcloud_sub Where qs_id = :qs_id Or cs_id = :cs_id;";
         DataReader *reader = [database executeReader:sql withParameters:@[@(qsid), @(csid)]];
         if ([reader read]) {
             existFlag = [[reader objectForColumnIndex:0] integerValue];
         }
-        
+        [reader close];
     }];
     return existFlag;
 }
@@ -428,7 +428,7 @@
     __block NSMutableArray *resultList = nil;
     __block BOOL needConvertToStringFlag = flag;
     __block NSString *Qid = qid;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *param = [NSString stringWithFormat:@"qs_ExtendedFlag = %ld", (long)qsExtendedFlag];
         NSMutableString *sql = [NSMutableString stringWithFormat:@"Select *from qcloud_sub Where %@ Order By qs_time Desc;", param];
         DataReader *reader = [database executeReader:sql withParameters:nil];
@@ -516,7 +516,7 @@
 
 - (NSArray *)getQTNotesSubItemWithParams:(NSString *)param {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSMutableString *sql = [NSMutableString stringWithFormat:@"Select *from qcloud_sub Where %@ Order By qs_time Desc;", param];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -554,13 +554,13 @@
 - (NSInteger)getQTNoteSubItemMaxTimeWithCid:(NSInteger)cid
                                  WithQSType:(NSInteger)qsType {
     __block NSInteger maxTime = -1;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"Select MAX(qs_time) From qcloud_sub Where c_id = :c_id AND qs_type = :qs_type;";
         DataReader *reader = [database executeReader:sql withParameters:@[@(cid), @(qsType)]];
         if ([reader read]) {
             maxTime = ceil([[reader objectForColumnIndex:0] integerValue]);
         }
-        
+        [reader close];
     }];
     return maxTime;
 }
@@ -582,14 +582,14 @@
 
 - (NSInteger)getMaxQTNoteSubItemCSid {
     __block NSInteger maxCSId = -1;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         
         NSString *sql = @"Select MAX(cs_id) From qcloud_sub;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             maxCSId = ceil([[reader objectForColumnIndex:0] integerValue]);
         }
-        
+        [reader close];
     }];
     return maxCSId;
 }

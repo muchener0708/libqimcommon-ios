@@ -70,7 +70,7 @@
         }
         NSString *tempMarkupName = [self.userMarkupNameDic objectForKey:userId];
         if (!tempMarkupName.length) {
-            tempMarkupName = [[QIMManager sharedInstance] getClientConfigInfoWithType:QIMClientConfigTypeKMarkupNames WithSubKey:userId];
+//            tempMarkupName = [[QIMManager sharedInstance] getClientConfigInfoWithType:QIMClientConfigTypeKMarkupNames WithSubKey:userId];
             if (!tempMarkupName) {
                 tempMarkupName = [[self getUserInfoByUserId:userId] objectForKey:@"Name"];
             }

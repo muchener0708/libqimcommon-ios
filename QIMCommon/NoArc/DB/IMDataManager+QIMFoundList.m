@@ -25,13 +25,13 @@
 
 - (NSString *)qimDB_getFoundListWithAppVersion:(NSString *)version {
     __block NSString *result = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"SELECT foundList FROM IM_Found_List WHERE version = :version";
         DataReader *reader = [database executeReader:sql withParameters:@[version]];
         if ([reader read]) {
             result = [reader objectForColumnIndex:0];
         }
-        
+        [reader close];
     }];
     return result;
 }

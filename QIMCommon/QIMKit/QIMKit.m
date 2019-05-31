@@ -89,6 +89,14 @@ static QIMKit *__global_QIMKit = nil;
     return [[[QIMManager sharedInstance] load_groupDB_VCard] queue];
 }
 
+- (dispatch_queue_t)getLoadMsgNickNameQueue {
+    return [[[QIMManager sharedInstance] load_msgNickName] queue];
+}
+
+- (dispatch_queue_t)getLoad_msgHeaderImageQueue {
+    return [[[QIMManager sharedInstance] load_msgHeaderImage] queue];
+}
+
 - (NSString *)getOpsFoundRNDebugUrl {
     return [[QIMManager sharedInstance] opsFoundRNDebugUrl];
 }

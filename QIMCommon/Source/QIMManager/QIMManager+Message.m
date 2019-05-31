@@ -972,7 +972,9 @@
     }
     
     NSArray *msgList = [[IMDataManager qimDB_SharedInstance] qimDB_getNotReadMsgListForUserId:jid];
-    [self sendReadStateWithMessagesIdArray:msgList WithMessageReadFlag:QIMMessageReadFlagDidRead WithXmppId:jid];
+    if (msgList.count > 0) {
+        [self sendReadStateWithMessagesIdArray:msgList WithMessageReadFlag:QIMMessageReadFlagDidRead WithXmppId:jid];
+    }
 }
 
 - (void)clearNotReadMsgByGroupId:(NSString *)groupId {

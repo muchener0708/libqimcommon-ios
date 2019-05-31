@@ -182,11 +182,11 @@
         return nil;
     }
     __block NSMutableDictionary *user = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         
         NSString *sql = @"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime, SearchIndex, Mood, Sex from IM_Users Where XmppId = :XmppId;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
-        [param addObject:jid];
+        [param addObject:@[jid]];
         DataReader *reader = [database executeReader:sql withParameters:param];
         if ([reader read]) {
             user = [[NSMutableDictionary alloc] init];
@@ -212,7 +212,7 @@
             [IMDataManager safeSaveForDic:user setObject:mood forKey:@"Mood"];
             [IMDataManager safeSaveForDic:user setObject:sex forKey:@"Sex"];
         }
-        
+        [reader close];
     }];
     return user;
 }
@@ -340,7 +340,7 @@
         return nil;
     }
     __block NSString *headerSrc = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"Select HeaderSrc From IM_Users Where XmppId=:XmppId;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:userId];
@@ -349,7 +349,7 @@
         if ([reader read]) {
             headerSrc = [reader objectForColumnIndex:0];
         }
-        
+        [reader close];
     }];
     return headerSrc;
 }
@@ -359,7 +359,7 @@
         return nil;
     }
     __block NSMutableDictionary *user = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         
         NSString *sql = @"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime, Mood, Sex from IM_Users Where UserId = :UserId;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
@@ -387,7 +387,7 @@
             [IMDataManager safeSaveForDic:user setObject:mood forKey:@"Mood"];
             [IMDataManager safeSaveForDic:user setObject:sex forKey:@"Sex"];
         }
-        
+        [reader close];
     }];
     return user;
 }
@@ -397,7 +397,7 @@
         return nil;
     }
     __block NSMutableDictionary *userBackInfo = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"SELECT *from IM_UsersWorkInfo Where XmppId = :XmppId;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:xmppId];
@@ -409,7 +409,7 @@
             [IMDataManager safeSaveForDic:userBackInfo setObject:workInfo forKey:@"UserWorkInfo"];
             [IMDataManager safeSaveForDic:userBackInfo setObject:dateTime forKey:@"LastUpdateTime"];
         }
-        
+        [reader close];
     }];
     return userBackInfo;
 }
@@ -419,7 +419,7 @@
         return nil;
     }
     __block NSMutableDictionary *user = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         
         NSString *sql = @"Select UserId, XmppId, Name, DescInfo, HeaderSrc, SearchIndex, LastUpdateTime, Mood, Sex from IM_Users Where Name = :Name OR UserId = :UserId OR XmppId = :XmppId;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
@@ -449,14 +449,14 @@
             [IMDataManager safeSaveForDic:user setObject:mood forKey:@"Mood"];
             [IMDataManager safeSaveForDic:user setObject:sex forKey:@"Sex"];
         }
-        
+        [reader close];
     }];
     return user;
 }
 
 - (NSArray *)qimDB_selectXmppIdList{
     __block NSMutableArray *list = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"Select XmppId From IM_Users;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -472,7 +472,7 @@
 
 - (NSArray *)qimDB_selectUserIdList{
     __block NSMutableArray *list = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"Select UserId From IM_Users;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -488,7 +488,7 @@
 
 - (NSArray *)qimDB_getOrganUserList {
     __block NSMutableArray *list = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"Select UserId, XmppId, Name, DescInfo, HeaderSrc, SearchIndex, UserInfo, Mood, LastUpdateTime From IM_Users;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -525,7 +525,7 @@
 
 - (NSArray *)qimDB_selectUserListBySearchStr:(NSString *)searchStr inGroup:(NSString *) groupId {
     __block NSMutableArray *list = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = [NSString stringWithFormat:@"Select a.UserId, a.XmppId, a.Name, a.DescInfo, a.HeaderSrc, a.UserInfo, a.LastUpdateTime from IM_Group_Member as b left join IM_Users as a on a.XmppId = b.MemberJid and (a.UserId like '%%%@%%' OR a.Name like '%%%@%%' OR a.SearchIndex like '%%%@%%') WHERE GroupId = ?;",searchStr,searchStr,searchStr];
         DataReader *reader = [database executeReader:sql withParameters:[NSArray arrayWithObject:groupId]];
         if (list == nil) {
@@ -556,7 +556,7 @@
 
 - (NSArray *)qimDB_searchUserBySearchStr:(NSString *)searchStr notInGroup:(NSString *)groupId {
     __block NSMutableArray *list = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = [NSString stringWithFormat:@"select *from IM_Users as a where a.XmppId not in (select MemberJid from IM_Group_Member where GroupId='%@') and (a.UserId like '%%%@%%' OR a.Name like '%%%@%%' OR a.SearchIndex like '%%%@%%');", groupId, searchStr,searchStr,searchStr];
         
         DataReader *reader = [database executeReader:sql withParameters:nil];
@@ -597,7 +597,7 @@
 - (NSArray *)qimDB_selectUserListExMySelfBySearchStr:(NSString *)searchStr WithLimit:(NSInteger)limit WithOffset:(NSInteger)offset {
     __block NSMutableArray *list = nil;
     __block NSMutableArray *firstlist = [NSMutableArray array];
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         
         NSString *sql = [NSString stringWithFormat:@"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime,SearchIndex from IM_Users as a LEFT JOIN (select *from IM_Client_Config where ConfigValue like '%%%@%%' and ConfigKey='kMarkupNames') as b where (a.XmppId=b.ConfigSubKey or a.UserId like '%%%@%%' OR a.Name like '%%%@%%' OR a.SearchIndex like '%%%@%%')", searchStr, searchStr, searchStr, searchStr];
         if (limit != -1 && offset != -1) {
@@ -644,7 +644,7 @@
 - (NSArray *)qimDB_selectUserListBySearchStr:(NSString *)searchStr WithLimit:(NSInteger)limit WithOffset:(NSInteger)offset {
     __block NSMutableArray *list = nil;
     __block NSMutableArray *firstlist = [NSMutableArray array];
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         
         NSString *sql = [NSString stringWithFormat:@"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime,SearchIndex from IM_Users as a LEFT JOIN (select *from IM_Client_Config where ConfigValue like '%%%@%%' and ConfigKey='kMarkupNames') as b where (a.XmppId=b.ConfigSubKey or a.UserId like '%%%@%%' OR a.Name like '%%%@%%' OR a.SearchIndex like '%%%@%%')", searchStr, searchStr, searchStr, searchStr];
         if (limit != -1 && offset != -1) {
@@ -687,7 +687,7 @@
 
 - (NSDictionary *)qimDB_selectUsersDicByXmppIds:(NSArray *)xmppIds{
     __block NSMutableDictionary *usersDic = nil;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSMutableString *sql = [NSMutableString stringWithFormat:@"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime,SearchIndex, Sex from IM_Users Where XmppId in ("];
         NSString *lastXmppId = [xmppIds lastObject];
         for (NSString *xmppId in xmppIds) {
@@ -736,7 +736,7 @@
     if (userIds.count <= 0) {
         return nil;
     }
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSMutableString *sql = [NSMutableString stringWithFormat:@"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime,SearchIndex, Sex from IM_Users Where UserId in ("];
         NSString *lastUserId = [userIds lastObject];
         for (NSString *userId in userIds) {
@@ -782,13 +782,13 @@
 
 - (BOOL)qimDB_checkExitsUser {
     __block BOOL exits = NO;
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"Select UserId From IM_Users Limit 1;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             exits = YES;
         }
-        
+        [reader close];
     }];
     return exits;
 }

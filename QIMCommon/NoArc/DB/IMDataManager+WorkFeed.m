@@ -95,6 +95,16 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
     }];
 }
 
+- (void)qimDB_bulkdeleteMomentsWithXmppId:(NSString *)xmppId {
+    if (xmppId.length <= 0) {
+        return;
+    }
+    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+        NSString *sql = [NSString stringWithFormat:@"delete from IM_Work_World where owner = '%@' and ownerHost = '%@';", [[xmppId componentsSeparatedByString:@"@"] firstObject], [[xmppId componentsSeparatedByString:@"@"] lastObject]];
+        [database executeBulkInsert:sql withParameters:nil];
+    }];
+}
+
 - (void)qimDB_bulkdeleteMoments:(NSArray *)moments {
     if (moments.count <= 0) {
         return;

@@ -202,7 +202,11 @@
                     [[IMDataManager qimDB_SharedInstance] qimDB_bulkdeleteMoments:deletePosts];
                 }
                 if ([newPosts isKindOfClass:[NSArray class]]) {
-                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertMoments:newPosts];
+                    if (newPosts.count <= 0) {
+                        [[IMDataManager qimDB_SharedInstance] qimDB_bulkdeleteMomentsWithXmppId:xmppId];
+                    } else {
+                        [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertMoments:newPosts];
+                    }
                     dispatch_async(dispatch_get_main_queue(), ^{
                         if (callback) {
                             callback(newPosts);
@@ -1184,7 +1188,7 @@
     } else {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
             [[QIMManager sharedInstance] getMomentHistoryWithLastUpdateTime:lastMomentTime withOwnerXmppId:xmppId withPostType:7 withCallBack:^(NSArray *moments) {
-                if (moments.count > 0) {
+                if (moments) {
                     dispatch_async(dispatch_get_main_queue(), ^{
                         complete(moments);
                     });
@@ -1203,7 +1207,7 @@
     if (firstLocal) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
             NSArray *array = [[IMDataManager qimDB_SharedInstance] qimDB_getWorkMomentWithXmppId:xmppId WithLimit:limit WithOffset:offset];
-            if (array.count > 0) {
+            if (array.count) {
                 __block NSMutableArray *list = [NSMutableArray arrayWithArray:array];
                 if (list.count >= limit) {
                     dispatch_async(dispatch_get_main_queue(), ^{
@@ -1231,7 +1235,7 @@
     } else {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
             [[QIMManager sharedInstance] getMomentHistoryWithLastUpdateTime:lastMomentTime withOwnerXmppId:xmppId withPostType:1 withCallBack:^(NSArray *moments) {
-                if (moments.count > 0) {
+                if (moments) {
                     dispatch_async(dispatch_get_main_queue(), ^{
                         complete(moments);
                     });

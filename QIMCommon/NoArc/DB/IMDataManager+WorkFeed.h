@@ -18,6 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSDictionary *)qimDB_getWorkMomentWithMomentId:(NSString *)momentId;
 
+- (void)qimDB_bulkdeleteMomentsWithXmppId:(NSString *)xmppId;
+
 - (void)qimDB_bulkdeleteMoments:(NSArray *)moments;
 
 - (NSDictionary *)qimDB_getLastWorkMoment;

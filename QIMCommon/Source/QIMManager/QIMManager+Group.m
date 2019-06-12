@@ -782,6 +782,10 @@
     if (self.updateGroupList == nil) {
         self.updateGroupList = [NSMutableArray arrayWithCapacity:[newGroupList count]];
     }
+    NSMutableArray *updateGroupList = [NSMutableArray arrayWithCapacity:3];
+    NSMutableArray *deleteGroupList = [NSMutableArray arrayWithCapacity:3];
+    NSMutableArray *removeSessionList = [NSMutableArray arrayWithCapacity:3];
+    NSMutableArray *deleteGroupMemberList = [NSMutableArray arrayWithCapacity:3];
     for (NSDictionary *group in newGroupList) {
         NSString *groupId = [group objectForKey:@"M"];
         NSString *groupDomain = [group objectForKey:@"D"];
@@ -793,9 +797,14 @@
         NSString *newGroupId = [NSString stringWithFormat:@"%@@%@", groupId, groupDomain];
         //flag 为 Ture 新增，NO 为销毁或退出
         if (flag) {
-            [self.updateGroupList addObject:newGroupId];
-            [[IMDataManager qimDB_SharedInstance] qimDB_insertGroup:newGroupId];
+            NSArray *tempGroup = @[newGroupId, @(0)];
+//            [self.updateGroupList addObject:newGroupId];
+            [updateGroupList addObject:tempGroup];
+//            [[IMDataManager qimDB_SharedInstance] qimDB_insertGroup:newGroupId];
         } else {
+            NSArray *tempGroup = @[newGroupId];
+            [deleteGroupList addObject:tempGroup];
+            /*
             NSMutableArray *tempMyGroups = [NSMutableArray arrayWithArray:[self getMyGroupList]];
             for (NSDictionary *myGroup in tempMyGroups) {
                 NSString *groupId = [myGroup objectForKey:@"GroupId"];
@@ -806,8 +815,27 @@
                     [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroupMemberWithGroupId:groupId];
                 }
             }
+            */
         }
     }
+    if (updateGroupList.count > 0) {
+        //这里更新
+        [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertGroups:updateGroupList];
+    }
+    if (deleteGroupMemberList.count > 0) {
+        //这里删除
+        [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteGroups:deleteGroupList];
+    }
+    /* Mark DBUPdate
+    for (NSInteger i = 0; i < deleteGroupList.count; i++) {
+        NSArray *groupArray = [deleteGroupList objectAtIndex:i];
+        NSString *groupId = nil;
+        if ([groupArray isKindOfClass:[NSArray class]]) {
+            groupId = [groupArray firstObject];
+        }
+        [self removeSessionById:groupId];
+    }
+    */
     [[IMDataManager qimDB_SharedInstance] qimDB_UpdateUserCacheDataWithKey:kGetIncrementMucListVersion withType:11 withValue:@"群列表时间戳" withValueInt:self.lastMaxGroupVersion];
 }
 

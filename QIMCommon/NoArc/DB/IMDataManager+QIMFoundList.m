@@ -8,32 +8,32 @@
 //
 
 #import "IMDataManager+QIMFoundList.h"
-#import "Database.h"
+#import "QIMDataBase.h"
 
 @implementation IMDataManager (QIMFoundList)
 
 - (void)qimDB_insertFoundListWithAppVersion:(NSString *)version withFoundList:(NSString *)foundListStr {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"insert or replace into IM_Found_List(version, foundList) Values(:version, :foundList)";
         NSMutableArray *parames = [[NSMutableArray alloc] init];
         [parames addObject:version];
         [parames addObject:foundListStr?foundListStr:@":NULL"];
         [database executeNonQuery:sql withParameters:parames];
-        [parames release];
         parames = nil;
     }];
 }
 
 - (NSString *)qimDB_getFoundListWithAppVersion:(NSString *)version {
     __block NSString *result = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"SELECT foundList FROM IM_Found_List WHERE version = :version";
         DataReader *reader = [database executeReader:sql withParameters:@[version]];
         if ([reader read]) {
-            result = [[reader objectForColumnIndex:0] retain];
+            result = [reader objectForColumnIndex:0];
         }
+        [reader close];
     }];
-    return [result autorelease];
+    return result;
 }
 
 @end

@@ -972,7 +972,9 @@
     }
     
     NSArray *msgList = [[IMDataManager qimDB_SharedInstance] qimDB_getNotReadMsgListForUserId:jid];
-    [self sendReadStateWithMessagesIdArray:msgList WithMessageReadFlag:QIMMessageReadFlagDidRead WithXmppId:jid];
+    if (msgList.count > 0) {
+        [self sendReadStateWithMessagesIdArray:msgList WithMessageReadFlag:QIMMessageReadFlagDidRead WithXmppId:jid];
+    }
 }
 
 - (void)clearNotReadMsgByGroupId:(NSString *)groupId {
@@ -1325,9 +1327,7 @@
                 QIMMessageModel *msg = [self getMessageModelWithByDBMsgDic:infoDic];
                 [list addObject:msg];
             }
-//            dispatch_async(dispatch_get_main_queue(), ^{
-                complete(list);
-//            });
+            complete(list);
             if (list.count < limit) {
                 if (self.load_history_msg == nil) {
                     self.load_history_msg = dispatch_queue_create("Load History", 0);
@@ -1398,13 +1398,9 @@
                             QIMMessageModel *msg = [self getMessageModelWithByDBMsgDic:infoDic];
                             [list addObject:msg];
                         }
-//                        dispatch_async(dispatch_get_main_queue(), ^{
-                            complete(list);
-//                        });
+                        complete(list);
                     } else {
-//                        dispatch_async(dispatch_get_main_queue(), ^{
-                            complete(@[]);
-//                        });
+                        complete(@[]);
                     }
                 } else {
                     NSArray *result = [self getUserChatlogWithFrom:userId to:[self getLastJid] version:[[IMDataManager qimDB_SharedInstance] qimDB_getMinMsgTimeStampByXmppId:userId] count:limit direction:0];
@@ -1430,13 +1426,9 @@
                         if (cctextInfo.length > 0) {
                             [self setAppendInfo:@{@"cctext":cctextInfo} ForUserId:userId];
                         }
-//                        dispatch_async(dispatch_get_main_queue(), ^{
-                            complete(list);
-//                        });
+                        complete(list);
                     } else {
-//                        dispatch_async(dispatch_get_main_queue(), ^{
-                            complete(@[]);
-//                        });
+                        complete(@[]);
                     }
                 }
             });

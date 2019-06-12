@@ -54,7 +54,7 @@
 
 #import "ASIDataCompressor.h"
 #import "ASIDataDecompressor.h"
-#import "Database.h"
+//#import "Database.h"
 
 #import "QIMAppInfo.h"
 #import "QIMUserCacheManager.h"
@@ -195,10 +195,13 @@ static QIMManager *__IMManager = nil;
     self.receive_notify_queue = dispatch_queue_create("Receive Presence Notify Msg", DISPATCH_QUEUE_PRIORITY_DEFAULT);
     self.load_user_header = [[YYDispatchQueuePool alloc] initWithName:@"Load User Header" queueCount:2 qos:NSQualityOfServiceUserInitiated];
 //    dispatch_queue_create("Load User Header", DISPATCH_QUEUE_PRIORITY_DEFAULT);
-    self.load_session_content = [[YYDispatchQueuePool alloc] initWithName:@"load_session_content" queueCount:2 qos:NSQualityOfServiceUserInitiated];
-    self.load_session_name = [[YYDispatchQueuePool alloc] initWithName:@"load_session_name" queueCount:2 qos:NSQualityOfServiceUserInitiated];
+    self.load_session_content = [[YYDispatchQueuePool alloc] initWithName:@"load_session_content" queueCount:2 qos:NSQualityOfServiceBackground];
+    self.load_session_name = [[YYDispatchQueuePool alloc] initWithName:@"load_session_name" queueCount:2 qos:NSQualityOfServiceBackground];
     self.load_session_unreadcount = [[YYDispatchQueuePool alloc] initWithName:@"load_session_unreadcount" queueCount:2 qos:NSQualityOfServiceBackground];
-    self.load_groupDB_VCard = [[YYDispatchQueuePool alloc] initWithName:@"load group card from DB" queueCount:2 qos:NSQualityOfServiceUserInitiated];
+    self.load_groupDB_VCard = [[YYDispatchQueuePool alloc] initWithName:@"load group card from DB" queueCount:2 qos:NSQualityOfServiceBackground];
+    self.load_msgNickName = [[YYDispatchQueuePool alloc] initWithName:@"load msg nickName" queueCount:2 qos:NSQualityOfServiceBackground];
+    self.load_msgHeaderImage = [[YYDispatchQueuePool alloc] initWithName:@"load msg headerImage" queueCount:2 qos:NSQualityOfServiceBackground];
+
 //    dispatch_queue_create("Load Session Content", DISPATCH_QUEUE_PRIORITY_DEFAULT);
     self.lastReceiveGroupMsgTimeDic = [[NSMutableDictionary alloc] init];
     self.load_customEvent_queue = dispatch_queue_create("Load CustomEvent Queue", DISPATCH_QUEUE_SERIAL);
@@ -309,9 +312,6 @@ static QIMManager *__IMManager = nil;
             }
         }
     }
-    _opsFoundRNDebugUrl = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"opsFoundRNDebugUrl"];
-    _qtalkFoundRNDebugUrl = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"qtalkFoundRNDebugUrl"];
-    _qtalkSearchRNDebugUrl = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"qtalkSearchRNDebugUrl"];
 }
 
 @end
@@ -481,6 +481,7 @@ static QIMManager *__IMManager = nil;
     QIMVerboseLog(@"同步服务端漫游的个人配置2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime6]);
     QIMVerboseLog(@"同步服务端漫游的个人配置完成2");
     
+    /*
     if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
         QIMVerboseLog(@"开始获取我的关联账户2");
         CFAbsoluteTime startTime7 = [[QIMWatchDog sharedInstance] startTime];
@@ -493,6 +494,7 @@ static QIMManager *__IMManager = nil;
         QIMVerboseLog(@"同步公众号列表2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime8]);
         QIMVerboseLog(@"同步公众号列表完成2");
     }
+    */
     
     QIMVerboseLog(@"开始Check组织架构2");
     CFAbsoluteTime startTime9 = [[QIMWatchDog sharedInstance] startTime];
@@ -531,13 +533,13 @@ static QIMManager *__IMManager = nil;
     QIMVerboseLog(@"注册Token1loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime13]);
     
     // 更新好友列表
-    CFAbsoluteTime startTime14 = [[QIMWatchDog sharedInstance] startTime];
-    [self updateFriendList];
-    QIMVerboseLog(@"更新好友列表loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime14]);
+//    CFAbsoluteTime startTime14 = [[QIMWatchDog sharedInstance] startTime];
+//    [self updateFriendList];
+//    QIMVerboseLog(@"更新好友列表loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime14]);
     
-    CFAbsoluteTime startTime15 = [[QIMWatchDog sharedInstance] startTime];
-    [self updateFriendInviteList];
-    QIMVerboseLog(@"邀请好友申请loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime15]);
+//    CFAbsoluteTime startTime15 = [[QIMWatchDog sharedInstance] startTime];
+//    [self updateFriendInviteList];
+//    QIMVerboseLog(@"邀请好友申请loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime15]);
     
     if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
         QIMVerboseLog(@"客服获取快捷回复");
@@ -793,6 +795,7 @@ static QIMManager *__IMManager = nil;
     if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
         myNickName = [QIMManager getLastUserName];
     } else {
+        /*
         NSDictionary *myProfile = [self getUserInfoByUserId:[self getLastJid]];
         if (myProfile.count) {
             NSString *nickName = [myProfile objectForKey:@"Name"];
@@ -800,6 +803,7 @@ static QIMManager *__IMManager = nil;
                 myNickName = nickName;
             }
         }
+        */
     }
     return myNickName;
 }
@@ -1098,6 +1102,36 @@ static QIMManager *__IMManager = nil;
     [[QIMUserCacheManager sharedInstance] setUserObject:@(flag) forKey:@"pickerPixelOriginal"];
 }
 
+//OPS发现页RN调试
+- (NSString *)opsFoundRNDebugUrl {
+    NSString *opsFoundRNDebugUrl = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"opsFoundRNDebugUrl"];
+    return opsFoundRNDebugUrl;
+}
+
+- (void)setOpsFoundRNDebugUrl:(NSString *)opsFoundRNDebugUrl {
+    [[QIMUserCacheManager sharedInstance] setUserObject:opsFoundRNDebugUrl forKey:@"opsFoundRNDebugUrl"];
+}
+
+//qtalk发现页测试地址
+- (NSString *)qtalkFoundRNDebugUrl {
+    NSString *qtalkFoundRNDebugUrl = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"qtalkFoundRNDebugUrl"];
+    return qtalkFoundRNDebugUrl;
+}
+
+- (void)setQtalkFoundRNDebugUrl:(NSString *)qtalkFoundRNDebugUrl {
+    [[QIMUserCacheManager sharedInstance] setUserObject:qtalkFoundRNDebugUrl forKey:@"qtalkFoundRNDebugUrl"];
+}
+
+//qtalk搜索测试地址
+- (NSString *)qtalkSearchRNDebugUrl {
+    NSString *qtalkSearchRNDebugUrl = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"qtalkSearchRNDebugUrl"];
+    return qtalkSearchRNDebugUrl;
+}
+
+- (void)setQtalkSearchRNDebugUrl:(NSString *)qtalkSearchRNDebugUrl {
+    [[QIMUserCacheManager sharedInstance] setUserObject:qtalkSearchRNDebugUrl forKey:@"qtalkSearchRNDebugUrl"];
+}
+
 //是否优先展示对方个性签名
 - (BOOL)moodshow {
     NSNumber *flagNum = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"moodshow"];
@@ -1183,7 +1217,7 @@ static QIMManager *__IMManager = nil;
 - (void)addAtMeMessageByJid:(NSString *)groupId withType:(QIMAtType)atType withMsgId:(NSString *)msgId withMsgTime:(long long)msgTime {
     dispatch_block_t block = ^{
         
-        NSMutableArray *arr = [_hasAtMeDic objectForKey:groupId];
+        NSMutableArray *arr = [NSMutableArray arrayWithArray:[_hasAtMeDic objectForKey:groupId]];
         if (arr == nil) {
             
             arr = [NSMutableArray arrayWithArray:[[IMDataManager qimDB_SharedInstance] qimDB_getAtMessageWithGroupId:groupId]];

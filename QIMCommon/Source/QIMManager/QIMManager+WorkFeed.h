@@ -97,8 +97,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventTypes:(NSArray *)eventTypes;
 
-- (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset;
-
 - (void)updateLocalWorkNoticeMsgReadStateWithTime:(long long)time;
 
 @end

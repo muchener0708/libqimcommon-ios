@@ -7,13 +7,13 @@
 //
 
 #import "IMDataManager+QIMUserMedal.h"
-#import "Database.h"
+#import "QIMDataBase.h"
 
 @implementation IMDataManager (QIMUserMedal)
 
 - (NSArray *)qimDB_getUserMedalsWithXmppId:(NSString *)xmppId {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"Select XmppId, Type, URL, URLDesc, LastUpdateTime From IM_Users_Medal Where XmppId=:XmppId Order By LastUpdateTime Desc;";
         DataReader *reader = [database executeReader:sql withParameters:@[xmppId]];
         while ([reader read]) {
@@ -33,18 +33,17 @@
             [IMDataManager safeSaveForDic:paramDic setObject:URLDesc forKey:@"desc"];
             [IMDataManager safeSaveForDic:paramDic setObject:LastUpdateTime forKey:@"LastUpdateTime"];
             [resultList addObject:paramDic];
-            [paramDic release];
-            paramDic = nil;
         }
+        
     }];
-    return [resultList autorelease];
+    return resultList;
 }
 
 - (void)qimDB_bulkInsertUserMedalsWithData:(NSArray *)userMedals {
     if (userMedals.count <= 0) {
         return;
     }
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSMutableArray *params = [[NSMutableArray alloc] init];
         NSString *sql = [NSString stringWithFormat:@"insert or Replace into IM_Users_Medal(XmppId, Type, URL, URLDesc, LastUpdateTime) values(:XmppId, :Type, :URL, :URLDesc, :LastUpdateTime);"];
         for (NSDictionary *dic in userMedals) {
@@ -63,11 +62,8 @@
             [param addObject:urldesc ? urldesc : @""];
             [param addObject:updateTime ? updateTime : @(0)];
             [params addObject:param];
-            [param release];
-            param = nil;
         }
         [database executeBulkInsert:sql withParameters:params];
-        [params release];
     }];
 }
 

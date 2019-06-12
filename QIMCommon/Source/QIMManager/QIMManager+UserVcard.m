@@ -70,7 +70,7 @@
     }
     NSString *tempMarkupName = [self.userMarkupNameDic objectForKey:userId];
     if (!tempMarkupName.length) {
-        tempMarkupName = [[QIMManager sharedInstance] getClientConfigInfoWithType:QIMClientConfigTypeKMarkupNames WithSubKey:userId];
+//            tempMarkupName = [[QIMManager sharedInstance] getClientConfigInfoWithType:QIMClientConfigTypeKMarkupNames WithSubKey:userId];
         if (!tempMarkupName) {
             tempMarkupName = [[self getUserInfoByUserId:userId] objectForKey:@"Name"];
         }
@@ -83,6 +83,14 @@
         else
             dispatch_sync(self.cacheQueue, block);
     }
+    dispatch_block_t block = ^{
+
+        [self.userMarkupNameDic setQIMSafeObject:tempMarkupName forKey:userId];
+    };
+    if (dispatch_get_specific(self.cacheTag))
+        block();
+    else
+        dispatch_sync(self.cacheQueue, block);
     if (tempMarkupName.length > 0) {
         result = tempMarkupName;
     } else {

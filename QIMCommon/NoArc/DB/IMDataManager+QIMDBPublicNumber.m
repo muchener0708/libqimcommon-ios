@@ -7,7 +7,7 @@
 //
 
 #import "IMDataManager+QIMDBPublicNumber.h"
-#import "Database.h"
+#import "QIMDataBase.h"
 #import "QIMPublicRedefineHeader.h"
 
 @implementation IMDataManager (QIMDBPublicNumber)
@@ -17,7 +17,7 @@
 
 - (NSDictionary *)qimDB_getPublicNumberSession {
     __block NSMutableDictionary *result = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *psql = @"Select b.XmppId,A.Name,b.Content,b.Type,b.LastUpdateTime From (Select XmppId,Content,Type,LastUpdateTime From IM_Public_Number_Message Order By LastUpdateTime Desc Limit 1) as b Left Join IM_Public_Number as a On a.XmppId=b.XmppId;";
         DataReader *pReader = [database executeReader:psql withParameters:nil];
         if ([pReader read]) {
@@ -30,23 +30,24 @@
             [IMDataManager safeSaveForDic:result setObject:@(ChatType_PublicNumber) forKey:@"ChatType"];
         }
     }];
-    return [result autorelease];
+    return result;
 }
 
 - (BOOL)qimDB_checkPublicNumberMsgById:(NSString *)msgId {
     __block BOOL flag = NO;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"Select 1 From IM_Public_Number_Message Where MsgId = :MsgId;";
         DataReader *reader = [database executeReader:sql withParameters:@[msgId]];
         if ([reader read]) {
             flag = YES;
         }
+        [reader close];
     }];
     return flag;
 }
 
 - (void)qimDB_checkPublicNumbers:(NSArray *)publicNumberIds {
-    [[self dbInstance] usingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
         if (publicNumberIds.count > 0) {
             NSString *sql = @"INSERT OR IGNORE INTO IM_Public_Number(XmppId,PublicNumberId,LastUpdateTime) VALUES(:XmppId,:PublicNumberId,:LastUpdateTime);";
@@ -68,7 +69,7 @@
 }
 
 - (void)qimDB_bulkInsertPublicNumbers:(NSArray *)publicNumberList {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"INSERT OR REPLACE INTO IM_Public_Number(XmppId,PublicNumberId,PublicNumberType,Name,DescInfo,HeaderSrc,SearchIndex,PublicNumberInfo,LastUpdateTime) VALUES(:XmppId,:PublicNumberId,:PublicNumberType,:Name,:DescInfo,:HeaderSrc,:SearchIndex,:PublicNumberInfo,:LastUpdateTime);";
         
         NSMutableArray *paramList = [NSMutableArray array];
@@ -117,7 +118,7 @@
     if (xmppId == nil) {
         return;
     }
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"INSERT OR REPLACE INTO IM_Public_Number(XmppId,PublicNumberId,PublicNumberType,Name,DescInfo,HeaderSrc,SearchIndex,PublicNumberInfo,LastUpdateTime) VALUES(:XmppId,:PublicNumberId,:PublicNumberType,:Name,:DescInfo,:HeaderSrc,:SearchIndex,:PublicNumberInfo,:LastUpdateTime);";
         NSMutableArray *params = [NSMutableArray array];
         [params addObject:xmppId];
@@ -134,7 +135,7 @@
 }
 
 - (void)qimDB_deletePublicNumberId:(NSString *)publicNumberId {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSString *sql = @"Delete From IM_Public_Number Where PublicNumberId=:PublicNumberId;";
         [database executeNonQuery:sql withParameters:@[publicNumberId]];
     }];
@@ -142,7 +143,7 @@
 
 - (NSArray *)qimDB_getPublicNumberVersionList {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"SELECT PublicNumberId,LastUpdateTime FROM IM_Public_Number;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -158,17 +159,14 @@
             [IMDataManager safeSaveForDic:value setObject:xmppId forKey:@"robot_name"];
             [IMDataManager safeSaveForDic:value setObject:lastUpdateTime forKey:@"version"];
             [resultList addObject:value];
-            [value release];
-            value = nil;
         }
-        
     }];
-    return [resultList autorelease];
+    return resultList;
 }
 
 - (NSArray *)qimDB_getPublicNumberList {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"SELECT a.XmppId,a.PublicNumberId,a.PublicNumberType,a.Name,a.DescInfo,a.HeaderSrc,a.SearchIndex,a.PublicNumberInfo,b.LastUpdateTime,b.Content,b.Type FROM IM_Public_Number as a Left Join (Select XmppId,Content,Type,LastUpdateTime From IM_Public_Number_Message Order By LastUpdateTime Desc Limit 1) as b On a.XmppId=b.XmppId Order By b.LastUpdateTime Desc;";
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -203,17 +201,15 @@
             [IMDataManager safeSaveForDic:value setObject:content forKey:@"Content"];
             [IMDataManager safeSaveForDic:value setObject:msgType forKey:@"MsgType"];
             [resultList addObject:value];
-            [value release];
-            value = nil;
         }
         
     }];
-    return [resultList autorelease];
+    return resultList;
 }
 
 - (NSArray *)qimDB_searchPublicNumberListByKeyStr:(NSString *)keyStr {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = [NSString stringWithFormat:@"SELECT a.XmppId,a.PublicNumberId,a.PublicNumberType,a.Name,a.DescInfo,a.HeaderSrc,a.SearchIndex,a.PublicNumberInfo,b.LastUpdateTime,b.Content,b.Type FROM IM_Public_Number as a Left Join (Select XmppId,Content,Type,LastUpdateTime From IM_Public_Number_Message Order By LastUpdateTime Desc Limit 1) as b On a.XmppId=b.XmppId Where a.PublicNumberId Like '%%%@%%' Or a.Name Like '%%%@%%' Or a.SearchIndex Like '%%%@%%' Order By b.LastUpdateTime Desc;",keyStr,keyStr,keyStr];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -248,29 +244,27 @@
             [IMDataManager safeSaveForDic:value setObject:content forKey:@"Content"];
             [IMDataManager safeSaveForDic:value setObject:msgType forKey:@"MsgType"];
             [resultList addObject:value];
-            [value release];
-            value = nil;
         }
-        
     }];
-    return [resultList autorelease];
+    return resultList;
 }
 
 - (NSInteger)qimDB_getRnSearchPublicNumberListByKeyStr:(NSString *)keyStr {
     __block NSInteger count = 0;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = [NSString stringWithFormat:@"SELECT COUNT(*) a.XmppId,a.PublicNumberId,a.PublicNumberType,a.Name,a.DescInfo,a.HeaderSrc,a.SearchIndex,a.PublicNumberInfo,b.LastUpdateTime,b.Content,b.Type FROM IM_Public_Number as a Left Join (Select XmppId,Content,Type,LastUpdateTime From IM_Public_Number_Message Order By LastUpdateTime Desc Limit 1) as b On a.XmppId=b.XmppId Where a.PublicNumberId Like '%%%@%%' Or a.Name Like '%%%@%%' Or a.SearchIndex Like '%%%@%%' Order By b.LastUpdateTime Desc;",keyStr,keyStr,keyStr];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             count = [[reader objectForColumnIndex:0] intValue];
         }
+        [reader close];
     }];
     return count;
 }
 
 - (NSArray *)qimDB_rnSearchPublicNumberListByKeyStr:(NSString *)keyStr limit:(NSInteger)limit offset:(NSInteger)offset {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = [NSString stringWithFormat:@"SELECT a.XmppId,a.PublicNumberId,a.PublicNumberType,a.Name,a.DescInfo,a.HeaderSrc,a.SearchIndex,a.PublicNumberInfo,b.LastUpdateTime,b.Content,b.Type FROM IM_Public_Number as a Left Join (Select XmppId,Content,Type,LastUpdateTime From IM_Public_Number_Message Order By LastUpdateTime Desc Limit 1) as b On a.XmppId=b.XmppId Where a.PublicNumberId Like '%%%@%%' Or a.Name Like '%%%@%%' Or a.SearchIndex Like '%%%@%%' Order By b.LastUpdateTime Desc LIMIT %ld OFFSET %ld;",keyStr,keyStr,keyStr, (long)limit, (long)offset];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
@@ -290,16 +284,14 @@
             [IMDataManager safeSaveForDic:value setObject:content forKey:@"content"];
             [IMDataManager safeSaveForDic:value setObject:(icon.length > 0) ? icon : @":NULL" forKey:@"icon"];
             [resultList addObject:value];
-            [value release];
-            value = nil;
         }
     }];
-    return [resultList autorelease];
+    return resultList;
 }
 
 - (NSDictionary *)qimDB_getPublicNumberCardByJId:(NSString *)jid {
     __block NSMutableDictionary *resultDic = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql = @"SELECT XmppId,PublicNumberId,PublicNumberType,Name,DescInfo,HeaderSrc,SearchIndex,PublicNumberInfo,LastUpdateTime FROM IM_Public_Number Where XmppId=:XmppId;";
         DataReader *reader = [database executeReader:sql withParameters:@[jid]];
         if ([reader read]) {
@@ -325,9 +317,9 @@
             [IMDataManager safeSaveForDic:resultDic setObject:pInfo forKey:@"PublicNumberInfo"];
             [IMDataManager safeSaveForDic:resultDic setObject:lastUpdateTime forKey:@"LastUpdateTime"];
         }
-        
+        [reader close];
     }];
-    return [resultDic autorelease];
+    return resultDic;
 }
 
 - (void)qimDB_insetPublicNumberMsgWithMsgId:(NSString *)msgId
@@ -341,7 +333,7 @@
                            WithMsgDirection:(int)msgDirection
                                 WithMsgDate:(long long)msgDate
                               WithReadedTag:(int)readedTag {
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         
         NSString *sql = @"INSERT OR IGNORE INTO IM_Public_Number_Message(MsgId,XmppId,'From','To',Content,Type,State,Direction,ReadedTag,LastUpdateTime) VALUES(:MsgId,:XmppId,:From,:To,:Content,:Type,:State,:Direction,:ReadedTag,:LastUpdateTime);";
         
@@ -357,9 +349,6 @@
         [params addObject:@(readedTag)];
         [params addObject:@(msgDate)];
         [database executeNonQuery:sql withParameters:params];
-        [params release];
-        params = nil;
-        
     }];
 }
 
@@ -368,7 +357,7 @@
                                    WithOffset:(int)offset
                                WithFilterType:(NSArray *)actionTypes {
     __block NSMutableArray *resultList = nil;
-    [[self dbInstance] syncUsingTransaction:^(Database *database) {
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSMutableString *sql = [NSMutableString stringWithString:@"SELECT MsgId,XmppId,\"From\",\"To\",Content,Type,State,Direction,ReadedTag,LastUpdateTime From IM_Public_Number_Message Where XmppId=:XmppId and Type not in ("];
         for (NSNumber *type in actionTypes) {
             if ([type isEqual:actionTypes.lastObject]) {
@@ -405,11 +394,9 @@
             [IMDataManager safeSaveForDic:value setObject:readedTag forKey:@"ReadedTag"];
             [IMDataManager safeSaveForDic:value setObject:lastUpdateTime forKey:@"LastUpdateTime"];
             [resultList addObject:value];
-            [value release];
-            value = nil;
         }
     }];
-    return [resultList autorelease];
+    return resultList;
 }
 
 @end

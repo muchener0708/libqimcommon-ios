@@ -142,7 +142,7 @@ static QIMManager *__IMManager = nil;
     
     _webName = nil;
     
-    _clinetConfigDic = nil;
+    self.clientConfigDic = nil;
     
     _shareLocationDic = nil;
     _shareLocationFromIdDic = nil;
@@ -277,11 +277,11 @@ static QIMManager *__IMManager = nil;
         [_notSendTextDic setDictionary:dic];
     }
     
-    _clinetConfigDic = [NSMutableDictionary dictionary];
+    self.clientConfigDic = [NSMutableDictionary dictionary];
     {
         NSDictionary *dic = [[QIMUserCacheManager sharedInstance] userObjectForKey:kNewClinetConfigDic];
         if (dic) {
-            [_clinetConfigDic setDictionary:dic];
+            self.clientConfigDic = [NSMutableDictionary dictionaryWithDictionary:dic];
         }
     }
     
@@ -1014,13 +1014,13 @@ static QIMManager *__IMManager = nil;
             if (resDic.count > 0) {
                 NSInteger errcode = [[resDic objectForKey:@"errcode"] integerValue];
                 if (errcode == 0) {
-                    if (!self->_clinetConfigDic) {
-                        self->_clinetConfigDic = [NSMutableDictionary dictionaryWithCapacity:5];
+                    if (nil == self.clientConfigDic) {
+                        self.clientConfigDic = [NSMutableDictionary dictionaryWithCapacity:3];
                     }
                     NSDictionary *dataDic = [resDic objectForKey:@"data"];
                     if (dataDic.count) {
-                        [self->_clinetConfigDic setDictionary:dataDic];
-                        [[QIMUserCacheManager sharedInstance] setUserObject:self->_clinetConfigDic forKey:kNewClinetConfigDic];
+                        self.clientConfigDic = [NSMutableDictionary dictionaryWithDictionary:dataDic];
+                        [[QIMUserCacheManager sharedInstance] setUserObject:self.clientConfigDic forKey:kNewClinetConfigDic];
                         NSInteger cvVersion = [dataDic objectForKey:@"version"];
                         [[QIMUserCacheManager sharedInstance] setUserObject:@(cvVersion) forKey:kCheckConfigVersion];
                     }
@@ -1033,30 +1033,30 @@ static QIMManager *__IMManager = nil;
 }
 
 - (NSArray *)trdExtendInfo {
-    return [_clinetConfigDic objectForKey:@"trdextendmsg"];
+    return [self.clientConfigDic objectForKey:@"trdextendmsg"];
 }
 
 - (NSString *)getCompany {
-    return [_clinetConfigDic objectForKey:@"company"];
+    return [self.clientConfigDic objectForKey:@"company"];
 }
 
 - (NSString *)aaCollectionUrlHost {
-    NSDictionary *otherConfig = [_clinetConfigDic objectForKey:@"otherconfig"];
+    NSDictionary *otherConfig = [self.clientConfigDic objectForKey:@"otherconfig"];
     return [otherConfig objectForKey:@"aacollectionurl"];
 }
 
 - (NSString *)redPackageUrlHost {
-    NSDictionary *otherConfig = [_clinetConfigDic objectForKey:@"otherconfig"];
+    NSDictionary *otherConfig = [self.clientConfigDic objectForKey:@"otherconfig"];
     return [otherConfig objectForKey:@"redpackageurl"];
 }
 
 - (NSString *)redPackageBalanceUrl {
-    NSDictionary *otherConfig = [_clinetConfigDic objectForKey:@"otherconfig"];
+    NSDictionary *otherConfig = [self.clientConfigDic objectForKey:@"otherconfig"];
     return [otherConfig objectForKey:@"balanceurl"];
 }
 
 - (NSString *)myRedpackageUrl {
-    NSDictionary *otherConfig = [_clinetConfigDic objectForKey:@"otherconfig"];
+    NSDictionary *otherConfig = [self.clientConfigDic objectForKey:@"otherconfig"];
     return [otherConfig objectForKey:@"myredpackageurl"];
 }
 

@@ -195,7 +195,7 @@
 
 @property (nonatomic, copy) NSString *webName;                  //Qunar账户webName
 
-@property (atomic, strong) NSMutableDictionary *clinetConfigDic;     //CheckConfig缓存
+@property (nonatomic, strong) NSMutableDictionary *clientConfigDic;     //CheckConfig缓存
 
 @property (atomic, strong) NSMutableDictionary *shareLocationDic;
 @property (atomic, strong) NSMutableDictionary *shareLocationFromIdDic;

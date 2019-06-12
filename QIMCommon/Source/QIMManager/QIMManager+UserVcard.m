@@ -65,24 +65,24 @@
         return nil;
     }
     __block NSString *result = nil;
-        if (!self.userMarkupNameDic) {
-            self.userMarkupNameDic = [NSMutableDictionary dictionaryWithCapacity:3];
+    if (!self.userMarkupNameDic) {
+        self.userMarkupNameDic = [NSMutableDictionary dictionaryWithCapacity:3];
+    }
+    NSString *tempMarkupName = [self.userMarkupNameDic objectForKey:userId];
+    if (!tempMarkupName.length) {
+        tempMarkupName = [[QIMManager sharedInstance] getClientConfigInfoWithType:QIMClientConfigTypeKMarkupNames WithSubKey:userId];
+        if (!tempMarkupName) {
+            tempMarkupName = [[self getUserInfoByUserId:userId] objectForKey:@"Name"];
         }
-        NSString *tempMarkupName = [self.userMarkupNameDic objectForKey:userId];
-        if (!tempMarkupName.length) {
-            tempMarkupName = [[QIMManager sharedInstance] getClientConfigInfoWithType:QIMClientConfigTypeKMarkupNames WithSubKey:userId];
-            if (!tempMarkupName) {
-                tempMarkupName = [[self getUserInfoByUserId:userId] objectForKey:@"Name"];
-            }
-            dispatch_block_t block = ^{
+        dispatch_block_t block = ^{
 
-                [self.userMarkupNameDic setQIMSafeObject:tempMarkupName forKey:userId];
-            };
-            if (dispatch_get_specific(self.cacheTag))
-                block();
-            else
-                dispatch_sync(self.cacheQueue, block);
-        }
+            [self.userMarkupNameDic setQIMSafeObject:tempMarkupName forKey:userId];
+        };
+        if (dispatch_get_specific(self.cacheTag))
+            block();
+        else
+            dispatch_sync(self.cacheQueue, block);
+    }
     if (tempMarkupName.length > 0) {
         result = tempMarkupName;
     } else {

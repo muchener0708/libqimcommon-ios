@@ -118,7 +118,6 @@
 - (NSString *)getUserHeaderSrcByUserId:(NSString *)userId;
 //- (void)updateUser:(NSString *)userId WithVersion:(int)version;
 - (BOOL)checkExitsUser;
-- (int)getMaxUserIncrementVersion;
 
 - (void)updateMessageWithExtendInfo:(NSString *)extendInfo ForMsgId:(NSString *)msgId;
 - (void)deleteMessageWithXmppId:(NSString *)xmppId;

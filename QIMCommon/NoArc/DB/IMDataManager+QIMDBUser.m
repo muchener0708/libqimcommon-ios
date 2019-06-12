@@ -184,10 +184,8 @@
     __block NSMutableDictionary *user = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         
-        NSString *sql = @"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime, SearchIndex, Mood, Sex from IM_Users Where XmppId = :XmppId;";
-        NSMutableArray *param = [[NSMutableArray alloc] init];
-        [param addObject:@[jid]];
-        DataReader *reader = [database executeReader:sql withParameters:param];
+        NSString *sql = [NSString stringWithFormat:@"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime, SearchIndex, Mood, Sex from IM_Users Where XmppId = '%@';", jid];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             user = [[NSMutableDictionary alloc] init];
             NSString *userId = [reader objectForColumnIndex:0];

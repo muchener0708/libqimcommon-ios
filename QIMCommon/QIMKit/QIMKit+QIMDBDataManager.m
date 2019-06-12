@@ -294,11 +294,6 @@
     return [[IMDataManager qimDB_SharedInstance] qimDB_checkExitsUser];
 }
 
-- (int)getMaxUserIncrementVersion {
-    return 0;
-//    return [[IMDataManager qimDB_SharedInstance] qimDB_getMaxUserIncrementVersion];
-}
-
 - (void)updateMessageWithExtendInfo:(NSString *)extendInfo ForMsgId:(NSString *)msgId {
     [[IMDataManager qimDB_SharedInstance] qimDB_updateMessageWithExtendInfo:extendInfo ForMsgId:msgId];
 }

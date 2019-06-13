@@ -798,44 +798,23 @@
         //flag 为 Ture 新增，NO 为销毁或退出
         if (flag) {
             NSArray *tempGroup = @[newGroupId, @(0)];
-//            [self.updateGroupList addObject:newGroupId];
             [updateGroupList addObject:tempGroup];
-//            [[IMDataManager qimDB_SharedInstance] qimDB_insertGroup:newGroupId];
         } else {
             NSArray *tempGroup = @[newGroupId];
             [deleteGroupList addObject:tempGroup];
-            /*
-            NSMutableArray *tempMyGroups = [NSMutableArray arrayWithArray:[self getMyGroupList]];
-            for (NSDictionary *myGroup in tempMyGroups) {
-                NSString *groupId = [myGroup objectForKey:@"GroupId"];
-                if ([newGroupId isEqualToString:groupId]) {
-                    [self.groupList removeObject:myGroup];
-                    [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroup:groupId];
-                    [self removeSessionById:groupId];
-                    [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroupMemberWithGroupId:groupId];
-                }
-            }
-            */
         }
     }
     if (updateGroupList.count > 0) {
-        //这里更新
+        //更新群组
         [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertGroups:updateGroupList];
     }
-    if (deleteGroupMemberList.count > 0) {
-        //这里删除
+    if (deleteGroupList.count > 0) {
+        //删除群组
         [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteGroups:deleteGroupList];
     }
-    /* Mark DBUPdate
-    for (NSInteger i = 0; i < deleteGroupList.count; i++) {
-        NSArray *groupArray = [deleteGroupList objectAtIndex:i];
-        NSString *groupId = nil;
-        if ([groupArray isKindOfClass:[NSArray class]]) {
-            groupId = [groupArray firstObject];
-        }
-        [self removeSessionById:groupId];
-    }
-    */
+    //删除session
+    [[IMDataManager qimDB_SharedInstance] qimDB_deleteSessionList:deleteGroupList];
+    
     [[IMDataManager qimDB_SharedInstance] qimDB_UpdateUserCacheDataWithKey:kGetIncrementMucListVersion withType:11 withValue:@"群列表时间戳" withValueInt:self.lastMaxGroupVersion];
 }
 

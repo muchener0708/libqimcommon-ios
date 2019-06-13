@@ -26,6 +26,8 @@
  */
 - (NSString *)getUserMarkupNameWithUserId:(NSString *)userId;
 
+- (void)updateUserCard:(NSString *)xmppId withCache:(BOOL)cache;
+
 /**
  更新用户名片
 
@@ -99,8 +101,6 @@
  XmppId = "lilulucas.li@ejabhost1";
  }
  */
-//TODO 先本地获取名片，若无再取数据库
-- (NSDictionary *)getUserInfoByName:(NSString *)nickName;
 
 #pragma mark - 用户头像
 

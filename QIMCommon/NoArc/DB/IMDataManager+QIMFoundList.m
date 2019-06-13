@@ -26,8 +26,8 @@
 - (NSString *)qimDB_getFoundListWithAppVersion:(NSString *)version {
     __block NSString *result = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"SELECT foundList FROM IM_Found_List WHERE version = :version";
-        DataReader *reader = [database executeReader:sql withParameters:@[version]];
+        NSString *sql = [NSString stringWithFormat:@"SELECT foundList FROM IM_Found_List WHERE version = %@", version];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             result = [reader objectForColumnIndex:0];
         }

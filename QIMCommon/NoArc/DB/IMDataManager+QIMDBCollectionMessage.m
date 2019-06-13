@@ -69,10 +69,8 @@
     __block NSMutableDictionary *user = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         
-        NSString *sql = @"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime,SearchIndex from IM_Collection_User_Card Where XmppId = :XmppId;";
-        NSMutableArray *param = [[NSMutableArray alloc] init];
-        [param addObject:jid];
-        DataReader *reader = [database executeReader:sql withParameters:param];
+        NSString *sql = [NSString stringWithFormat:@"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime,SearchIndex from IM_Collection_User_Card Where XmppId = '%@';", jid];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             user = [[NSMutableDictionary alloc] init];
             NSString *userId = [reader objectForColumnIndex:0];
@@ -147,8 +145,8 @@
 - (NSDictionary *)qimDB_getCollectionGroupCardByGroupId:(NSString *)groupId{
     __block NSMutableDictionary *groupCardDic = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select GroupId, Name, Introduce, HeaderSrc, Topic, LastUpdateTime From IM_Collection_Group_Card Where GroupId = :GroupId;";
-        DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
+        NSString *sql = [NSString stringWithFormat:@"Select GroupId, Name, Introduce, HeaderSrc, Topic, LastUpdateTime From IM_Collection_Group_Card Where GroupId = '%@';", groupId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             if (groupCardDic == nil) {
                 groupCardDic = [[NSMutableDictionary alloc] init];
@@ -269,10 +267,8 @@
     __block NSMutableArray *result = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         
-        NSString *sql = @"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime, ExtendInfo From IM_Message Where \"To\" = :to;";
-        NSMutableArray *param = [[NSMutableArray alloc] init];
-        [param addObject:bindId];
-        DataReader *reader = [database executeReader:sql withParameters:param];
+        NSString *sql = [NSString stringWithFormat:@"Select MsgId, \"From\", \"To\", Content, Platform, Type, State, Direction,LastUpdateTime, ExtendInfo From IM_Message Where \"To\" = '%@';", bindId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         result = [[NSMutableArray alloc] initWithCapacity:100];
         while ([reader read]) {
             if (result == nil) {
@@ -310,8 +306,8 @@
 - (BOOL)qimDB_checkCollectionMsgById:(NSString *)msgId {
     __block BOOL flag = NO;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select 1 From IM_Message_Collection Where MsgId = :MsgId;";
-        DataReader *reader = [database executeReader:sql withParameters:@[msgId]];
+        NSString *sql = [NSString stringWithFormat:@"Select 1 From IM_Message_Collection Where MsgId = '%@';", msgId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             flag = YES;
         }

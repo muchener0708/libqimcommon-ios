@@ -195,7 +195,6 @@ static dispatch_once_t _onceDBToken;
 
 - (long long)qimDB_getUserCacheDataWithKey:(NSString *)key withType:(NSInteger)type {
     __block long long maxRemoteTime = 0;
-//    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
     [[self dbInstance] inDatabase:^(QIMDataBase * _Nonnull database) {
         NSString *newSql = [NSString stringWithFormat:@"select valueInt from IM_Cache_Data Where key == '%@' and type == %d", key, type];
         DataReader *newReader = [database executeReader:newSql withParameters:nil];
@@ -203,8 +202,6 @@ static dispatch_once_t _onceDBToken;
             maxRemoteTime = [[newReader objectForColumnIndex:0] longLongValue];
         }
     }];
-
-//    }];
     return maxRemoteTime;
 }
 
@@ -933,11 +930,9 @@ static dispatch_once_t _onceDBToken;
 }
 
 - (void)qimDB_dbCheckpoint {
-    /* Mark DBUpdate
     [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
-        [database dbCheckpoint];
+        [database checkpoint:QIMDBCheckpointModeFull error:nil];
     }];
-    */
 }
 
 - (NSInteger)qimDB_parserplatForm:(NSString *)platFormStr {

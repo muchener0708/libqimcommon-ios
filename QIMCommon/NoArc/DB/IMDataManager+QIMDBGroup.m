@@ -198,8 +198,8 @@
 //    [[QIMWatchDog sharedInstance] start];
     __block NSMutableDictionary *groupCardDic = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select GroupId, Name, Introduce, HeaderSrc, Topic, LastUpdateTime From IM_Group Where GroupId = :GroupId;";
-        DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
+        NSString *sql = [NSString stringWithFormat:@"Select GroupId, Name, Introduce, HeaderSrc, Topic, LastUpdateTime From IM_Group Where GroupId = '%@';", groupId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             if (groupCardDic == nil) {
                 groupCardDic = [[NSMutableDictionary alloc] init];
@@ -318,10 +318,8 @@
 - (BOOL)qimDB_needUpdateGroupImage:(NSString *)groupId{
     __block BOOL flag = YES;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select ExtendedFlag From IM_Group Where GroupId = :GroupId;";
-        NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:1];
-        [param addObject:groupId];
-        DataReader *reader = [database executeReader:sql withParameters:param];
+        NSString *sql = [NSString stringWithFormat:@"Select ExtendedFlag From IM_Group Where GroupId = '%@';", groupId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             flag = ![[reader objectForColumnIndex:0] boolValue];
         }
@@ -335,11 +333,8 @@
     
     __block NSString *groupHeaderSrc = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select HeaderSrc From IM_Group Where GroupId = :GroupId;";
-        NSMutableArray *param = [[NSMutableArray alloc] initWithCapacity:1];
-        [param addObject:groupId];
-        DataReader *reader = [database executeReader:sql withParameters:param];
-        param = nil;
+        NSString *sql = [NSString stringWithFormat:@"Select HeaderSrc From IM_Group Where GroupId = '%@';", groupId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             groupHeaderSrc = [reader objectForColumnIndex:0];
         }
@@ -352,8 +347,8 @@
 - (BOOL)qimDB_checkGroup:(NSString *)groupId{
     __block BOOL flag = NO;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select 1 From IM_Group Where GroupId = :GroupId;";
-        DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
+        NSString *sql = [NSString stringWithFormat:@"Select 1 From IM_Group Where GroupId = '%@';", groupId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             flag = YES;
         }
@@ -511,8 +506,8 @@
     __block NSMutableDictionary *infoDic = nil;
     if (nickName) {
         [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-            NSString *sql = @"Select  MemberJid, GroupId, Name, Affiliation From IM_Group_Member Where Name = :Name;";
-            DataReader *reader = [database executeReader:sql withParameters:@[nickName]];
+            NSString *sql = [NSString stringWithFormat:@"Select MemberJid, GroupId, Name, Affiliation From IM_Group_Member Where Name = '%@';", nickName];
+            DataReader *reader = [database executeReader:sql withParameters:nil];
             if ([reader read]) {
                 NSString *memberId = [reader objectForColumnIndex:0];
                 NSString *name = [reader objectForColumnIndex:2];
@@ -532,8 +527,8 @@
 - (NSDictionary *)qimDB_getGroupMemberInfoByJid:(NSString *)jid WithGroupId:(NSString *)groupId{
     __block NSMutableDictionary *infoDic = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select  MemberId, GroupId, Name, Affiliation From IM_Group_Member Where MemberJid = :MemberJid And GroupId = :GroupId;";
-        DataReader *reader = [database executeReader:sql withParameters:@[jid,groupId]];
+        NSString *sql = [NSString stringWithFormat:@"Select MemberId, GroupId, Name, Affiliation From IM_Group_Member Where MemberJid = '%@' And GroupId = '%@';", jid, groupId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             NSString *memberId = [reader objectForColumnIndex:0];
             NSString *name = [reader objectForColumnIndex:2];
@@ -552,9 +547,9 @@
 - (BOOL)qimDB_checkGroupMember:(NSString *)nickName WithGroupId:(NSString *)groupId{
     __block BOOL flag = NO;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select 1 From IM_Group_Member Where MemberId = :MemberId;";
         NSString *memId = [groupId stringByAppendingFormat:@"/%@",nickName];
-        DataReader *reader = [database executeReader:sql withParameters:@[memId]];
+        NSString *sql = [NSString stringWithFormat:@"Select 1 From IM_Group_Member Where MemberId = :MemberId;", memId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             flag = YES;
         }
@@ -627,8 +622,8 @@
 - (NSArray *)qimDB_getQChatGroupMember:(NSString *)groupId{
     __block NSMutableArray *members = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select a.MemberId, b.Name, b.XmppId as Jid, a.Affiliation, a.LastUpdateTime From IM_Group_Member a left join IM_Users b on a.MemberJid = b.XmppId Where GroupId = ? Order By a.Name;";
-        DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
+        NSString *sql = [NSString stringWithFormat:@"Select a.MemberId, b.Name, b.XmppId as Jid, a.Affiliation, a.LastUpdateTime From IM_Group_Member a left join IM_Users b on a.MemberJid = b.XmppId Where GroupId = '%@' Order By a.Name;", groupId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
             if (members == nil) {
                 members = [[NSMutableArray alloc] init];
@@ -655,8 +650,8 @@
 - (NSArray *)qimDB_getQChatGroupMember:(NSString *)groupId BySearchStr:(NSString *)searchStr{
     __block NSMutableArray *members = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = [NSString stringWithFormat:@"Select a.MemberId, b.Name, b.XmppId as Jid, a.Affiliation, a.LastUpdateTime From IM_Group_Member a left join IM_Users b on a.MemberJid = b.XmppId Where GroupId = ? and (b.UserId like '%%%@%%' OR b.Name like '%%%@%%' OR b.SearchIndex like '%%%@%%' COLLATE NOCASE) Order By a.Name;",searchStr,searchStr,searchStr];
-        DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
+        NSString *sql = [NSString stringWithFormat:@"Select a.MemberId, b.Name, b.XmppId as Jid, a.Affiliation, a.LastUpdateTime From IM_Group_Member a left join IM_Users b on a.MemberJid = b.XmppId Where GroupId = '%@' and (b.UserId like '%%%@%%' OR b.Name like '%%%@%%' OR b.SearchIndex like '%%%@%%' COLLATE NOCASE) Order By a.Name;", groupId, searchStr,searchStr,searchStr];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
             if (members == nil) {
                 members = [[NSMutableArray alloc] init];
@@ -683,8 +678,8 @@
 - (NSArray *)qimDB_getGroupMember:(NSString *)groupId BySearchStr:(NSString *)searchStr{
     __block NSMutableArray *members = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = [NSString stringWithFormat:@"Select a.MemberId, a.Name, b.XmppId as Jid, a.Affiliation, a.LastUpdateTime From IM_Group_Member a left join IM_Users b on a.MemberJid = b.XmppId Where GroupId = :GroupId and (b.UserId like \"%%%@%%\" OR b.Name like \"%%%@%%\" OR b.SearchIndex like \"%%%@%%\" COLLATE NOCASE) Order By a.Name;",searchStr,searchStr,searchStr];
-        DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
+        NSString *sql = [NSString stringWithFormat:@"Select a.MemberId, a.Name, b.XmppId as Jid, a.Affiliation, a.LastUpdateTime From IM_Group_Member a left join IM_Users b on a.MemberJid = b.XmppId Where GroupId = '%@' and (b.UserId like \"%%%@%%\" OR b.Name like \"%%%@%%\" OR b.SearchIndex like \"%%%@%%\" COLLATE NOCASE) Order By a.Name;", groupId, searchStr,searchStr,searchStr];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
             if (members == nil) {
                 members = [[NSMutableArray alloc] init];
@@ -719,7 +714,7 @@
         
     }
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSMutableString *sql = [NSMutableString stringWithFormat:@"Select a.MemberId, a.Name, b.XmppId as Jid, a.Affiliation, a.LastUpdateTime From IM_Group_Member a left join IM_Users b on a.MemberJid = b.XmppId Where GroupId = :GroupId and a.Affiliation in (", identityArray];
+        NSMutableString *sql = [NSMutableString stringWithFormat:@"Select a.MemberId, a.Name, b.XmppId as Jid, a.Affiliation, a.LastUpdateTime From IM_Group_Member a left join IM_Users b on a.MemberJid = b.XmppId Where GroupId = '%@' and a.Affiliation in (", groupId, identityArray];
         if (identityArray.count) {
             for (NSString *affiliation in identityArray) {
                 if ([affiliation isEqual:identityArray.lastObject]) {
@@ -732,7 +727,7 @@
             [sql appendFormat:@"'%@') Order By a.Name;"];
         }
 
-        DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
             if (members == nil) {
                 members = [[NSMutableArray alloc] init];
@@ -757,8 +752,8 @@
 - (NSArray *)qimDB_getGroupMember:(NSString *)groupId{
     __block NSMutableArray *members = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select MemberJid, Name, Affiliation From IM_Group_Member Where GroupId = :GroupId Order By Name;";
-        DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
+        NSString *sql = [NSString stringWithFormat:@"Select MemberJid, Name, Affiliation From IM_Group_Member Where GroupId = '%@' Order By Name;", groupId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
             if (members == nil) {
                 members = [[NSMutableArray alloc] init];
@@ -788,8 +783,8 @@
     }
     __block NSDictionary *user = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"SELECT b.* FROM IM_Group_Member as a LEFT JOIN IM_Users as b on a.MemberJid = b.XmppId WHERE GroupId = :GroupId And Affiliation = 'owner';";
-        DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
+        NSString *sql = [NSString stringWithFormat:@"SELECT b.* FROM IM_Group_Member as a LEFT JOIN IM_Users as b on a.MemberJid = b.XmppId WHERE GroupId = '%@' And Affiliation = 'owner';", groupId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             user = [[NSMutableDictionary alloc] init];
             NSString *userId = [reader objectForColumnIndex:0];
@@ -836,59 +831,6 @@
         NSString *sql = @"Delete From IM_Group_Member Where MemberId = :MemberId;";
         NSString *memId = [groupId stringByAppendingFormat:@"/%@",nickname];
         [database executeNonQuery:sql withParameters:@[memId]];
-    }];
-    QIMVerboseLog(@"");
-}
-
-
-- (void)qimDB_bulkUpdateGroupPushState:(NSArray *)stateList{
-    CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
-        NSString *sql = @"Update IM_Group Set PushState = :PushState Where GroupId = :GroupId;";
-        NSMutableArray *params = nil;
-        for (NSDictionary *stateDic in stateList) {
-            NSString *groupName = [stateDic objectForKey:@"muc_name"];
-            NSString *domain = [stateDic objectForKey:@"domain"];
-            NSString *groupId = [NSString stringWithFormat:@"%@@%@",groupName,domain];
-            int state = [[stateDic objectForKey:@"subscribe_flag"] intValue];
-            if (params == nil) {
-                params = [NSMutableArray array];
-            }
-            NSMutableArray *param = [NSMutableArray array];
-            [param addObject:@(state)];
-            [param addObject:groupId];
-            [params addObject:param];
-        }
-        [database executeBulkInsert:sql withParameters:params];
-    }];
-    CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
-    QIMVerboseLog(@"更新群勿扰模式列表%ld条数据 耗时 = %f s", stateList.count, end - start); //s
-}
-
-- (int)qimDB_getGroupPushStateWithGroupId:(NSString *)groupId{
-    if (groupId == nil) {
-        return 1;
-    }
-    __block int state = 1;
-    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select PushState From IM_Group Where GroupId = :GroupId;";
-        DataReader *reader = [database executeReader:sql withParameters:@[groupId]];
-        if ([reader read]) {
-            NSNumber *stateNum = [reader objectForColumnIndex:0];
-            if (stateNum) {
-                state = [stateNum intValue];
-            }
-        }
-        [reader close];
-    }];
-    QIMVerboseLog(@"");
-    return state;
-}
-
-- (void)qimDB_updateGroup:(NSString *)groupId WithPushState:(int)pushState{
-    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
-        NSString *sql = @"Update IM_Group Set PushState = :PushState Where GroupId = :GroupId;";
-        [database executeNonQuery:sql withParameters:@[@(pushState),groupId]];
     }];
     QIMVerboseLog(@"");
 }

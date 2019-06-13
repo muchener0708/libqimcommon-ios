@@ -1028,6 +1028,7 @@
 //更新群消息阅读状态
 - (void)updateLocalGroupMessageRemoteState:(NSInteger)remoteState withXmppId:(NSString *)xmppId ByReadList:(NSArray *)readList {
     
+    //TODO 清除未读时候，清除一下艾特消息
     [[IMDataManager qimDB_SharedInstance] qimDB_updateGroupMessageRemoteState:remoteState ByGroupReadList:readList];
     dispatch_async(dispatch_get_main_queue(), ^{
 //        [[NSNotificationCenter defaultCenter] postNotificationName:kMsgNotReadCountChange object:@{@"ForceRefresh":@(YES)}];

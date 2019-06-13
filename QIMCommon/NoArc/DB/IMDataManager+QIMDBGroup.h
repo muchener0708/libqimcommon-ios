@@ -104,12 +104,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)qimDB_deleteGroupMember:(NSString *)nickname WithGroupId:(NSString *)groupId;
 
-- (void)qimDB_bulkUpdateGroupPushState:(NSArray *)stateList;
-
-- (int)qimDB_getGroupPushStateWithGroupId:(NSString *)groupId;
-
-- (void)qimDB_updateGroup:(NSString *)groupId WithPushState:(int)pushState;
-
 @end
 
 NS_ASSUME_NONNULL_END

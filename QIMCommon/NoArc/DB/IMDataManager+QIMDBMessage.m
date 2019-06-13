@@ -99,8 +99,8 @@
     __block long long timeStamp = 0;
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select min(LastUpdateTime) From IM_Message Where XmppId = :XmppId And RealJid = :RealJid;";
-        DataReader *reader = [database executeReader:sql withParameters:@[xmppId, realJid]];
+        NSString *sql = [NSString stringWithFormat:@"Select min(LastUpdateTime) From IM_Message Where XmppId = '%@' And RealJid = '%@';", xmppId, realJid];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             id value = [reader objectForColumnIndex:0];
             if (value) {
@@ -122,8 +122,8 @@
     __block long long timeStamp = 0;
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select min(LastUpdateTime) From IM_Message Where XmppId = :XmppId;";
-        DataReader *reader = [database executeReader:sql withParameters:@[xmppId]];
+        NSString *sql = [NSString stringWithFormat:@"Select min(LastUpdateTime) From IM_Message Where XmppId = '%@';", xmppId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             id value = [reader objectForColumnIndex:0];
             if (value) {
@@ -145,8 +145,8 @@
     __block long long timeStamp = 0;
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select max(LastUpdateTime) From IM_Message Where XmppId = :XmppId;";
-        DataReader *reader = [database executeReader:sql withParameters:@[xmppId]];
+        NSString *sql = [NSString stringWithFormat:@"Select max(LastUpdateTime) From IM_Message Where XmppId = '%@';", xmppId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             timeStamp = ceil([[reader objectForColumnIndex:0] doubleValue]);
         }
@@ -161,8 +161,8 @@
     __block long long timeStamp = 0;
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select max(LastUpdateTime) From IM_Message Where XmppId = :XmppId and RealJid = :RealJid;";
-        DataReader *reader = [database executeReader:sql withParameters:@[xmppId, realJid]];
+        NSString *sql = [NSString stringWithFormat:@"Select max(LastUpdateTime) From IM_Message Where XmppId = '%@' and RealJid = '%@';", xmppId, realJid];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             timeStamp = ceil([[reader objectForColumnIndex:0] doubleValue]);
         }
@@ -375,8 +375,8 @@
     __block BOOL flag = NO;
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select 1 From IM_Message Where MsgId = :MsgId;";
-        DataReader *reader = [database executeReader:sql withParameters:@[msgId]];
+        NSString *sql = [NSString stringWithFormat:@"Select 1 From IM_Message Where MsgId = '%@';", msgId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             flag = YES;
         }
@@ -1486,7 +1486,7 @@
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     __block long long timeStamp = 0;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = [NSString stringWithFormat:@"Select LastUpdateTime From IM_Message Where XmppId = :XmppId And RealJid = :RealJid And Direction = :MsgDirection And Type <> 101 order by LastUpdateTime desc limit 1 offset %d;", unReadCount];
+        NSString *sql = [NSString stringWithFormat:@"Select LastUpdateTime From IM_Message Where XmppId = ? And RealJid = ? And Direction = ? And Type <> 101 order by LastUpdateTime desc limit 1 offset %d;", unReadCount];
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:userId];
         [param addObject:realJid];
@@ -1509,10 +1509,8 @@
     __block NSMutableArray *result = nil;
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select MsgId, XmppId, Platform, \"From\", \"To\", Content, ExtendInfo, Type, ChatType, State, Direction, ContentResolve, ReadState,LastUpdateTime, MessageRaw, RealJid Where XmppId = :XmppId;";
-        NSMutableArray *param = [[NSMutableArray alloc] init];
-        [param addObject:sesId];
-        DataReader *reader = [database executeReader:sql withParameters:param];
+        NSString *sql = [NSString stringWithFormat:@"Select MsgId, XmppId, Platform, \"From\", \"To\", Content, ExtendInfo, Type, ChatType, State, Direction, ContentResolve, ReadState,LastUpdateTime, MessageRaw, RealJid Where XmppId = '%@';", sesId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
             
             if (result == nil) {
@@ -1570,10 +1568,8 @@
     __block NSMutableDictionary *result = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         
-        NSString *sql =@"Select MsgId, XmppId, Platform, \"From\", \"To\", Content, ExtendInfo, Type, ChatType, State, Direction, ContentResolve, ReadState,LastUpdateTime, MessageRaw, RealJid From IM_Message Where MsgId=:MsgId;";
-        NSMutableArray *param = [[NSMutableArray alloc] init];
-        [param addObject:msgId];
-        DataReader *reader = [database executeReader:sql withParameters:param];
+        NSString *sql = [NSString stringWithFormat:@"Select MsgId, XmppId, Platform, \"From\", \"To\", Content, ExtendInfo, Type, ChatType, State, Direction, ContentResolve, ReadState,LastUpdateTime, MessageRaw, RealJid From IM_Message Where MsgId= '%@';", msgId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if (!result) {
             result = [[NSMutableDictionary alloc] init];
         }
@@ -1699,7 +1695,7 @@
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         
-        NSString *sql =@"Select MsgId, XmppId, Platform, \"From\", \"To\", Content, ExtendInfo, Type, ChatType, State, Direction, ContentResolve, ReadState,LastUpdateTime, MessageRaw, RealJid From IM_Message Where Type=:Type And XmppId=:Xmppid Order By LastUpdateTime DESC;";
+        NSString *sql =@"Select MsgId, XmppId, Platform, \"From\", \"To\", Content, ExtendInfo, Type, ChatType, State, Direction, ContentResolve, ReadState,LastUpdateTime, MessageRaw, RealJid From IM_Message Where Type = ? And XmppId = ? Order By LastUpdateTime DESC;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:[NSNumber numberWithInt:msgType]];
         [param addObject:xmppId];
@@ -1754,7 +1750,7 @@
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         
-        NSString *sql =@"Select MsgId, XmppId, Platform, \"From\", \"To\", Content, ExtendInfo, Type, ChatType, State, Direction, ContentResolve, ReadState,LastUpdateTime, MessageRaw, RealJid From IM_Message Where Type=:Type Order By LastUpdateTime DESC;";
+        NSString *sql =@"Select MsgId, XmppId, Platform, \"From\", \"To\", Content, ExtendInfo, Type, ChatType, State, Direction, ContentResolve, ReadState,LastUpdateTime, MessageRaw, RealJid From IM_Message Where Type = ? Order By LastUpdateTime DESC;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:[NSNumber numberWithInt:msgType]];
         DataReader *reader = [database executeReader:sql withParameters:param];
@@ -1813,9 +1809,9 @@
         NSString *sql = nil;
         NSMutableArray *param = [[NSMutableArray alloc] init];
         if (limit) {
-            sql = [NSString stringWithFormat:@"Select MsgId, XmppId, Platform, \"From\", \"To\", Content, ExtendInfo, Type, ChatType, State, Direction, ContentResolve, ReadState,LastUpdateTime, MessageRaw, RealJid From IM_Message Where XmppId = :XmppId And RealJid = :RealJid Order By LastUpdateTime DESC Limit %d OFFSET %d;",limit,offset];
+            sql = [NSString stringWithFormat:@"Select MsgId, XmppId, Platform, \"From\", \"To\", Content, ExtendInfo, Type, ChatType, State, Direction, ContentResolve, ReadState,LastUpdateTime, MessageRaw, RealJid From IM_Message Where XmppId = ? And RealJid = ? Order By LastUpdateTime DESC Limit %d OFFSET %d;",limit,offset];
         } else {
-            sql = [NSString stringWithFormat:@"Select MsgId, XmppId, Platform, \"From\", \"To\", Content, ExtendInfo, Type, ChatType, State, Direction, ContentResolve, ReadState,LastUpdateTime, MessageRaw, RealJid From IM_Message Where XmppId = :XmppId And RealJid = :RealJid Order By LastUpdateTime DESC;"];
+            sql = [NSString stringWithFormat:@"Select MsgId, XmppId, Platform, \"From\", \"To\", Content, ExtendInfo, Type, ChatType, State, Direction, ContentResolve, ReadState,LastUpdateTime, MessageRaw, RealJid From IM_Message Where XmppId = ? And RealJid = ? Order By LastUpdateTime DESC;"];
         }
         [param addObject:sesId];
         [param addObject:realJid?realJid:@":NULL"];
@@ -1907,7 +1903,7 @@
             [param addObject:realJid];
             [param addObject:@(timeStamp)];
         } else {
-            sql =[NSString stringWithFormat:@"Select MsgId, XmppId, Platform, \"From\", \"To\", Content, ExtendInfo, Type, ChatType, State, Direction, ContentResolve, ReadState,LastUpdateTime, MessageRaw, RealJid From IM_Message Where XmppId = :XmppId And RealJid is null And LastUpdateTime >= :LastUpdateTime Order By LastUpdateTime DESC;"];
+            sql =[NSString stringWithFormat:@"Select MsgId, XmppId, Platform, \"From\", \"To\", Content, ExtendInfo, Type, ChatType, State, Direction, ContentResolve, ReadState,LastUpdateTime, MessageRaw, RealJid From IM_Message Where XmppId = ? And RealJid is null And LastUpdateTime >= ? Order By LastUpdateTime DESC;"];
             param = [[NSMutableArray alloc] init];
             [param addObject:xmppId];
             [param addObject:@(timeStamp)];
@@ -1977,7 +1973,7 @@
     __block NSMutableArray *result = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         
-        NSString *sql =[NSString stringWithFormat:@"Select MsgId, XmppId, Platform, \"From\", \"To\", Content, ExtendInfo, Type, ChatType, State, Direction, ContentResolve, ReadState,LastUpdateTime, MessageRaw, RealJid From IM_Message Where XmppId = :XmppId And LastUpdateTime >= :LastUpdateTime Order By LastUpdateTime DESC;"];
+        NSString *sql =[NSString stringWithFormat:@"Select MsgId, XmppId, Platform, \"From\", \"To\", Content, ExtendInfo, Type, ChatType, State, Direction, ContentResolve, ReadState,LastUpdateTime, MessageRaw, RealJid From IM_Message Where XmppId = ? And LastUpdateTime >= ? Order By LastUpdateTime DESC;"];
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:xmppId];
         [param addObject:@(timeStamp)];
@@ -2058,7 +2054,7 @@
     __block NSInteger count = 0;
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"SELECT UnreadCount FROM IM_SessionList Where XmppId = :XmppId And RealJid = :RealJid And ChatType = :ChatType;";
+        NSString *sql = @"SELECT UnreadCount FROM IM_SessionList Where XmppId = ? And RealJid = ? And ChatType = ?;";
         DataReader *reader = [database executeReader:sql withParameters:@[jid, realJid, @(chatType)]];
         if ([reader read]) {
             count = [[reader objectForColumnIndex:0] integerValue];
@@ -2074,8 +2070,8 @@
     __block NSInteger count = 0;
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"SELECT UnreadCount FROM IM_SessionList Where XmppId = :XmppId And RealJid = :RealJid;";
-        DataReader *reader = [database executeReader:sql withParameters:@[jid, realJid]];
+        NSString *sql = [NSString stringWithFormat:@"SELECT UnreadCount FROM IM_SessionList Where XmppId = '%@' And RealJid = '%@';", jid, realJid];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             count = [[reader objectForColumnIndex:0] integerValue];
         }
@@ -2132,8 +2128,8 @@
     __block NSMutableArray *resultList = nil;
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select MsgId From IM_Message Where State = :State And Direction=:Direction;";
-        DataReader *reader = [database executeReader:sql withParameters:@[@(msgState),@(msgDirection)]];
+        NSString *sql = [NSString stringWithFormat:@"Select MsgId From IM_Message Where State = %d And Direction=%d;", msgState, msgDirection];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
             if (resultList == nil) {
                 resultList = [[NSMutableArray alloc] init];
@@ -2153,8 +2149,8 @@
     __block NSString *lastMsgId = nil;
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"select MsgId from IM_Message Where XmppId=:XmppId And Type != 101 order by LastUpdateTime desc limit 1";
-        DataReader *reader = [database executeReader:sql withParameters:@[jid]];
+        NSString *sql = [NSString stringWithFormat:@"select MsgId from IM_Message Where XmppId = '%@' And Type != 101 order by LastUpdateTime desc limit 1", jid];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             lastMsgId = [reader objectForColumnIndex:0];
         }
@@ -2172,8 +2168,8 @@
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     __block long long maxRemoteTime = 0;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"select LastUpdateTime from IM_Message Where MsgId=:MsgId";
-        DataReader *reader = [database executeReader:sql withParameters:@[msgId]];
+        NSString *sql = [NSString stringWithFormat:@"select LastUpdateTime from IM_Message Where MsgId= '%@'", msgId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             maxRemoteTime = [[reader objectForColumnIndex:0] longLongValue];
         }
@@ -2238,12 +2234,8 @@
     }
     __block NSMutableArray *result = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = [NSString stringWithFormat:@"Select MsgId From IM_Message Where XmppId = :XmppId And RealJid = :RealJid And ReadState & %d != %d And Direction = :MsgDirection;", QIMMessageRemoteReadStateDidReaded, QIMMessageRemoteReadStateDidReaded];
-        NSMutableArray *param = [[NSMutableArray alloc] init];
-        [param addObject:userId];
-        [param addObject:realJid];
-        [param addObject:@(QIMMessageDirection_Received)];
-        DataReader *reader = [database executeReader:sql withParameters:param];
+        NSString *sql = [NSString stringWithFormat:@"Select MsgId From IM_Message Where XmppId = '%@' And RealJid = '%@' And ReadState & %d != %d And Direction = %d;", userId, realJid, QIMMessageRemoteReadStateDidReaded, QIMMessageRemoteReadStateDidReaded, QIMMessageDirection_Received];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
             
             if (result == nil) {
@@ -2356,24 +2348,26 @@
     }
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     __block NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
-    /* Mark DBUpdate
+    __block NSMutableArray *groupIdParams = [NSMutableArray arrayWithCapacity:3];
+    
     for (NSDictionary *mucDic in mucArray) {
         NSString *domain = [mucDic objectForKey:@"domain"];
         NSString *mucName = [mucDic objectForKey:@"muc_name"];
         NSString *groupId = [mucName stringByAppendingFormat:@"@%@", domain];
-        [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-            NSString *sql1 = [NSString stringWithFormat:@"select XmppId, LastUpdateTime from IM_Message where XmppId = :XmppId and ReadState & %d = %d and Direction = %d order by LastUpdateTime asc LIMIT 1;", QIMMessageRemoteReadStateDidReaded, QIMMessageRemoteReadStateDidReaded, QIMMessageDirection_Received];
-            DataReader *reader = [database executeReader:sql1 withParameters:@[groupId]];
-            QIMVerboseLog(@"DB获取群阅读指针参数 ：%@", @[groupId]);
-            if ([reader read]) {
-                NSString *xmppId = [reader objectForColumnIndex:0];
-                NSNumber *lastupdateTime = [reader objectForColumnIndex:1];
-                [dict setObject:lastupdateTime forKey:xmppId];
-            }
-            
-        }];
+        [groupIdParams addObject:groupId];
     }
-    */
+    
+    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
+        NSString *sql1 = [NSString stringWithFormat:@"select XmppId, LastUpdateTime from IM_Message where XmppId in %@ and ReadState & %d = %d and Direction = %d order by LastUpdateTime asc LIMIT 1;", groupIdParams, QIMMessageRemoteReadStateDidReaded, QIMMessageRemoteReadStateDidReaded, QIMMessageDirection_Received];
+        DataReader *reader = [database executeReader:sql1 withParameters:nil];
+        QIMVerboseLog(@"DB获取群阅读指针参数 ：%@", sql1);
+        while ([reader read]) {
+            NSString *xmppId = [reader objectForColumnIndex:0];
+            NSNumber *lastupdateTime = [reader objectForColumnIndex:1];
+            [dict setObject:lastupdateTime forKey:xmppId];
+        }        
+    }];
+    
     QIMVerboseLog(@"DB获取群阅读指针结果 ：%@", dict);
     NSString *sql2 = [NSString stringWithFormat:@"UPDATE IM_Message SET ReadState = (ReadState|%d) WHERE XmppId = :XmppId and LastUpdateTime <= :LastUpdateTime1 and LastUpdateTime >= :LastUpdateTime2;", QIMMessageRemoteReadStateDidReaded];
     __block long long maxRemarkUpdateTime = 0;
@@ -2428,42 +2422,26 @@
     }
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     __block NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
-    /*
+    NSMutableArray *groupIdParams = [NSMutableArray arrayWithCapacity:3];
     for (NSDictionary *mucDic in groupReadList) {
         NSString *domain = [mucDic objectForKey:@"domain"];
         NSString *mucName = [mucDic objectForKey:@"id"];
         NSString *groupId = [mucName stringByAppendingFormat:@"@%@", domain];
-        [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
-            NSString *sql1 = [NSString stringWithFormat:@"select XmppId, LastUpdateTime from IM_Message where XmppId = :XmppId and ReadState & %d = %d order by LastUpdateTime desc LIMIT 1;", QIMMessageRemoteReadStateDidReaded, QIMMessageRemoteReadStateDidReaded];
-            DataReader *reader = [database executeReader:sql1 withParameters:@[groupId]];
-            QIMVerboseLog(@"在线DB获取群阅读指针参数 ：%@", @[groupId]);
-            if ([reader read]) {
-                NSString *xmppId = [reader objectForColumnIndex:0];
-                NSNumber *lastupdateTime = [reader objectForColumnIndex:1];
-                [dict setObject:lastupdateTime forKey:xmppId];
-            }
-        }];
-    } */
-    for (NSDictionary *mucDic in groupReadList) {
-        NSString *domain = [mucDic objectForKey:@"domain"];
-        NSString *mucName = [mucDic objectForKey:@"id"];
-        NSString *groupId = [mucName stringByAppendingFormat:@"@%@", domain];
-        /* Mark DBUpdate
-        [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
-            NSString *sql1 = [NSString stringWithFormat:@"select XmppId, Min(LastUpdateTime) from IM_Message where XmppId = :XmppId and ReadState & %d != %d;", QIMMessageRemoteReadStateDidReaded, QIMMessageRemoteReadStateDidReaded, QIMMessageDirection_Received];
-            DataReader *reader = [database executeReader:sql1 withParameters:@[groupId]];
-            QIMVerboseLog(@"在线DB获取群阅读指针参数 ：%@", @[groupId]);
-            if ([reader read]) {
-                NSString *xmppId = [reader objectForColumnIndex:0];
-                NSNumber *lastupdateTime = [reader objectForColumnIndex:1];
-                if (xmppId.length > 0) {
-                    [dict setObject:lastupdateTime?lastupdateTime:@(0) forKey:xmppId];
-                }
-            }
-            
-        }];
-        */
+        [groupIdParams addObject:groupId];
     }
+    [[self dbInstance] inDatabase:^(QIMDataBase * _Nonnull database) {
+        NSString *sql1 = [NSString stringWithFormat:@"select XmppId, Min(LastUpdateTime) from IM_Message where XmppId in %@ and ReadState & %d != %d;", groupIdParams, QIMMessageRemoteReadStateDidReaded, QIMMessageRemoteReadStateDidReaded, QIMMessageDirection_Received];
+        DataReader *reader = [database executeReader:sql1 withParameters:nil];
+        QIMVerboseLog(@"在线DB获取群阅读指针参数 ：%@", sql1);
+        while ([reader read]) {
+            NSString *xmppId = [reader objectForColumnIndex:0];
+            NSNumber *lastupdateTime = [reader objectForColumnIndex:1];
+            if (xmppId.length > 0) {
+                [dict setObject:lastupdateTime?lastupdateTime:@(0) forKey:xmppId];
+            }
+        }
+
+    }];
     QIMVerboseLog(@"在线DB获取群阅读指针结果 ：%@", dict);
     NSString *sql2 = [NSString stringWithFormat:@"UPDATE IM_Message SET ReadState = (ReadState|%d) WHERE XmppId = :XmppId and LastUpdateTime <= :LastUpdateTime1 and LastUpdateTime >= :LastUpdateTime2;", QIMMessageRemoteReadStateDidReaded];
     __block long long maxRemarkUpdateTime = 0;
@@ -2518,8 +2496,8 @@
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     __block NSMutableArray *contactList = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select XmppId from IM_Message WHERE Content like :key and Type = 1 group by XmppId;";
-        DataReader *reader = [database executeReader:sql withParameters:@[[NSString stringWithFormat:@"%%%@%%",key]]];
+        NSString *sql = [NSString stringWithFormat:@"Select XmppId from IM_Message WHERE Content like '%%@%' and Type = 1 group by XmppId;", [NSString stringWithFormat:@"%%%@%%",key]];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
             if (contactList == nil) {
                 contactList = [[NSMutableArray alloc] init];
@@ -2538,8 +2516,8 @@
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     __block NSMutableArray *result = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select MsgId,Content from IM_Message WHERE Content like :key and Type = 1 and XmppId = :XmppId;";
-        DataReader *reader = [database executeReader:sql withParameters:@[[NSString stringWithFormat:@"%%%@%%",key],xmppId]];
+        NSString *sql = [NSString stringWithFormat:@"Select MsgId,Content from IM_Message WHERE Content like '%%@%' and Type = 1 and XmppId = '%@';", [NSString stringWithFormat:@"%%%@%%",key], xmppId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
             if (result == nil) {
                 result = [[NSMutableArray alloc] init];
@@ -2722,19 +2700,53 @@
     }
 }
 
+- (NSDictionary *)qimDB_getTotalAtMessageDic {
+    CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
+    __block NSMutableDictionary *resultDic = [NSMutableDictionary dictionaryWithCapacity:3];
+    [[self dbInstance] inDatabase:^(QIMDataBase * _Nonnull db) {
+        NSString *sql = [NSString stringWithFormat:@"SELECT GroupId, MsgId, Type, MsgTime, ReadState FROM IM_AT_Message;"];
+        DataReader *reader = [db executeReader:sql withParameters:nil];
+        while ([reader read]) {
+            
+            NSString *groupId = [reader objectForColumnIndex:0];
+            NSString *msgId = [reader objectForColumnIndex:1];
+            NSNumber *Type = [reader objectForColumnIndex:2];
+            NSNumber *msgDate = [reader objectForColumnIndex:3];
+            NSNumber *readState = [reader objectForColumnIndex:4];
+            if ([readState boolValue] == NO) {
+                NSMutableDictionary *msgDic = [[NSMutableDictionary alloc] init];
+                [IMDataManager safeSaveForDic:msgDic setObject:groupId forKey:@"GroupId"];
+                [IMDataManager safeSaveForDic:msgDic setObject:msgId forKey:@"MsgId"];
+                [IMDataManager safeSaveForDic:msgDic setObject:Type forKey:@"Type"];
+                [IMDataManager safeSaveForDic:msgDic setObject:msgDate forKey:@"MsgDate"];
+                [IMDataManager safeSaveForDic:msgDic setObject:readState forKey:@"ReadState"];
+                
+                NSMutableArray *groupArray = [resultDic objectForKey:groupId];
+                if (!groupArray) {
+                    groupArray = [NSMutableArray arrayWithCapacity:1];
+                }
+                [groupArray addObject:msgDic];
+                [resultDic setQIMSafeObject:groupArray forKey:groupId];
+            } else {
+                
+            }
+        }
+    }];
+    CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
+    QIMVerboseLog(@"耗时 = %f s", end - start); //
+    return resultDic;
+}
+
 - (NSArray *)qimDB_getAtMessageWithGroupId:(NSString *)groupId {
-    return @[];
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     if (groupId.length > 0) {
         __block NSMutableArray *atMessageArray = nil;
         [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-            NSString *sql = [NSString stringWithFormat:@"SELECT GroupId, MsgId, Type, MsgTime, ReadState FROM IM_AT_Message WHERE GroupId = :GroupId"];
-            NSMutableArray *parames = [[NSMutableArray alloc] init];
-            [parames addObject:groupId];
+            NSString *sql = [NSString stringWithFormat:@"SELECT GroupId, MsgId, Type, MsgTime, ReadState FROM IM_AT_Message WHERE GroupId = '%@'", groupId];
             if (atMessageArray == nil) {
                 atMessageArray = [[NSMutableArray alloc] initWithCapacity:3];
             }
-            DataReader *reader = [database executeReader:sql withParameters:parames];
+            DataReader *reader = [database executeReader:sql withParameters:nil];
             while ([reader read]) {
                 NSString *groupId = [reader objectForColumnIndex:0];
                 NSString *msgId = [reader objectForColumnIndex:1];

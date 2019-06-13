@@ -469,12 +469,6 @@
 /*********************** Group Message State **************************/
 - (long long)qimDB_bulkUpdateGroupMessageReadFlag:(NSArray *)mucArray;
 
-- (void)qimDB_bulkUpdateGroupPushState:(NSArray *)stateList;
-
-- (int)getGroupPushStateWithGroupId:(NSString *)groupId;
-
-- (void)updateGroup:(NSString *)groupId WithPushState:(int)pushState;
-
 /*********************** QTNotes **********************/
 
 //Main

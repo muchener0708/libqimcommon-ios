@@ -196,6 +196,7 @@
                 NSString *subkey = [markupInfo objectForKey:@"subkey"];
                 [self.userMarkupNameDic removeObjectForKey:subkey];
             }
+            self.userMarkupNameDic = nil;
         } else if ([key isEqualToString:@"kChatColorInfo"]) {
             NSDictionary *newColorInfoDic = [configInfoData firstObject];
             NSString *configInfo = [newColorInfoDic objectForKey:@"configinfo"];

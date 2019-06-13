@@ -36,8 +36,8 @@
 - (BOOL)qimDB_checkPublicNumberMsgById:(NSString *)msgId {
     __block BOOL flag = NO;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select 1 From IM_Public_Number_Message Where MsgId = :MsgId;";
-        DataReader *reader = [database executeReader:sql withParameters:@[msgId]];
+        NSString *sql = [NSString stringWithFormat:@"Select 1 From IM_Public_Number_Message Where MsgId = '%@';", msgId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             flag = YES;
         }
@@ -292,8 +292,8 @@
 - (NSDictionary *)qimDB_getPublicNumberCardByJId:(NSString *)jid {
     __block NSMutableDictionary *resultDic = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"SELECT XmppId,PublicNumberId,PublicNumberType,Name,DescInfo,HeaderSrc,SearchIndex,PublicNumberInfo,LastUpdateTime FROM IM_Public_Number Where XmppId=:XmppId;";
-        DataReader *reader = [database executeReader:sql withParameters:@[jid]];
+        NSString *sql = [NSString stringWithFormat:@"SELECT XmppId,PublicNumberId,PublicNumberType,Name,DescInfo,HeaderSrc,SearchIndex,PublicNumberInfo,LastUpdateTime FROM IM_Public_Number Where XmppId= '%@';", jid];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             NSString *xmppId = [reader objectForColumnIndex:0];
             NSString *publicNumberId = [reader objectForColumnIndex:1];
@@ -358,7 +358,7 @@
                                WithFilterType:(NSArray *)actionTypes {
     __block NSMutableArray *resultList = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSMutableString *sql = [NSMutableString stringWithString:@"SELECT MsgId,XmppId,\"From\",\"To\",Content,Type,State,Direction,ReadedTag,LastUpdateTime From IM_Public_Number_Message Where XmppId=:XmppId and Type not in ("];
+        NSMutableString *sql = [NSMutableString stringWithString:[NSString stringWithFormat:@"SELECT MsgId,XmppId,\"From\",\"To\",Content,Type,State,Direction,ReadedTag,LastUpdateTime From IM_Public_Number_Message Where XmppId= '%@' and Type not in (", publicNumberId]];
         for (NSNumber *type in actionTypes) {
             if ([type isEqual:actionTypes.lastObject]) {
                 [sql appendFormat:@"%d) ",type.intValue];
@@ -367,7 +367,7 @@
             }
         }
         [sql appendFormat:@" Order By LastUpdateTime Desc Limit %d offset %d;",limit,offset];
-        DataReader *reader = [database executeReader:sql withParameters:@[publicNumberId]];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
             if (resultList == nil) {
                 resultList = [[NSMutableArray alloc] init];

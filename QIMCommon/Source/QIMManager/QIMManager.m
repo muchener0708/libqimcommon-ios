@@ -216,8 +216,8 @@ static QIMManager *__IMManager = nil;
     dispatch_queue_set_specific(self.atMeCacheQueue, self.atMeCacheTag, self.atMeCacheTag, NULL);
     
     _timeStempDic = [[NSMutableDictionary alloc] init];
-    _hasAtMeDic = [[NSMutableDictionary alloc] init];
-    _hasAtAllDic = [[NSMutableDictionary alloc] init];
+//    _hasAtMeDic = [[NSMutableDictionary alloc] init];
+//    _hasAtAllDic = [[NSMutableDictionary alloc] init];
     _friendDescDic = [[NSMutableDictionary alloc] init];
     _friendInfoDic = [[NSMutableDictionary alloc] init];
     _groupList = [[NSMutableArray alloc] init];
@@ -1165,12 +1165,10 @@ static QIMManager *__IMManager = nil;
     
     __block NSArray *array = nil;
     dispatch_block_t block = ^{
-        
-        array = [_hasAtMeDic objectForKey:jid];
-        if (!array.count) {
-            array = [[IMDataManager qimDB_SharedInstance] qimDB_getAtMessageWithGroupId:jid];
-            [_hasAtMeDic setQIMSafeObject:array forKey:jid];
+        if (!_hasAtMeDic) {
+            _hasAtMeDic = [[IMDataManager qimDB_SharedInstance] qimDB_getTotalAtMessageDic];
         }
+        array = [_hasAtMeDic objectForKey:jid];
     };
     
     if (dispatch_get_specific(_atMeCacheTag))

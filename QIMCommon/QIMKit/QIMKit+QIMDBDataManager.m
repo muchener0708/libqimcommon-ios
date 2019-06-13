@@ -886,18 +886,6 @@
     return [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateGroupMessageReadFlag:mucArray];
 }
 
-- (void)qimDB_bulkUpdateGroupPushState:(NSArray *)stateList {
-    [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateGroupPushState:stateList];
-}
-
-- (int)getGroupPushStateWithGroupId:(NSString *)groupId {
-    return [[IMDataManager qimDB_SharedInstance] qimDB_getGroupPushStateWithGroupId:groupId];
-}
-
-- (void)updateGroup:(NSString *)groupId WithPushState:(int)pushState {
-    [[IMDataManager qimDB_SharedInstance] qimDB_updateGroup:groupId WithPushState:pushState];
-}
-
 /*********************** QTNotes **********************/
 
 //Main

@@ -215,6 +215,21 @@
     return user;
 }
 
+- (NSDictionary *)qimDB_getUserMarkNameDic {
+    __block NSMutableDictionary *resultDic = [[NSMutableDictionary alloc] initWithCapacity:1];
+    [[self dbInstance] inDatabase:^(QIMDataBase * _Nonnull db) {
+        NSString *sql = [NSString stringWithFormat:@"select ConfigSubKey, ConfigValue from IM_Client_Config where ConfigKey = 'kMarkupNames';"];
+        DataReader *reader = [db executeReader:sql withParameters:nil];
+        while ([reader read]) {
+            NSString *xmppId = [reader objectForColumnIndex:0];
+            NSString *userMarkName = [reader objectForColumnIndex:1];
+            
+            [resultDic setQIMSafeObject:userMarkName forKey:xmppId];
+        }
+    }];
+    return resultDic;
+}
+
 - (void)qimDB_clearUserList {
     [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
         NSMutableString *deleteSql = [NSMutableString stringWithString:@"Delete From IM_Users"];
@@ -339,7 +354,7 @@
     }
     __block NSString *headerSrc = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select HeaderSrc From IM_Users Where XmppId=:XmppId;";
+        NSString *sql = @"Select HeaderSrc From IM_Users Where XmppId = ?;";
         NSMutableArray *param = [[NSMutableArray alloc] init];
         [param addObject:userId];
         DataReader *reader = [database executeReader:sql withParameters:param];
@@ -359,10 +374,8 @@
     __block NSMutableDictionary *user = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         
-        NSString *sql = @"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime, Mood, Sex from IM_Users Where UserId = :UserId;";
-        NSMutableArray *param = [[NSMutableArray alloc] init];
-        [param addObject:userId];
-        DataReader *reader = [database executeReader:sql withParameters:param];
+        NSString *sql = [NSString stringWithFormat:@"Select UserId, XmppId, Name, DescInfo, HeaderSrc, UserInfo,LastUpdateTime, Mood, Sex from IM_Users Where UserId = '%@';", userId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             user = [[NSMutableDictionary alloc] init];
             NSString *userId = [reader objectForColumnIndex:0];
@@ -396,10 +409,8 @@
     }
     __block NSMutableDictionary *userBackInfo = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"SELECT *from IM_UsersWorkInfo Where XmppId = :XmppId;";
-        NSMutableArray *param = [[NSMutableArray alloc] init];
-        [param addObject:xmppId];
-        DataReader *reader = [database executeReader:sql withParameters:param];
+        NSString *sql = [NSString stringWithFormat:@"SELECT *from IM_UsersWorkInfo Where XmppId = '%@';", xmppId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             userBackInfo = [[NSMutableDictionary alloc] init];
             NSString *workInfo = [reader objectForColumnName:@"UserWorkInfo"];
@@ -419,12 +430,8 @@
     __block NSMutableDictionary *user = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         
-        NSString *sql = @"Select UserId, XmppId, Name, DescInfo, HeaderSrc, SearchIndex, LastUpdateTime, Mood, Sex from IM_Users Where Name = :Name OR UserId = :UserId OR XmppId = :XmppId;";
-        NSMutableArray *param = [[NSMutableArray alloc] init];
-        [param addObject:index];
-        [param addObject:index];
-        [param addObject:index];
-        DataReader *reader = [database executeReader:sql withParameters:param];
+        NSString *sql = [NSString stringWithFormat:@"Select UserId, XmppId, Name, DescInfo, HeaderSrc, SearchIndex, LastUpdateTime, Mood, Sex from IM_Users Where Name = '%@' OR UserId = '%@' OR XmppId = '%';", index, index, index];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             user = [[NSMutableDictionary alloc] init];
             NSString *userId = [reader objectForColumnIndex:0];
@@ -524,8 +531,8 @@
 - (NSArray *)qimDB_selectUserListBySearchStr:(NSString *)searchStr inGroup:(NSString *) groupId {
     __block NSMutableArray *list = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = [NSString stringWithFormat:@"Select a.UserId, a.XmppId, a.Name, a.DescInfo, a.HeaderSrc, a.UserInfo, a.LastUpdateTime from IM_Group_Member as b left join IM_Users as a on a.XmppId = b.MemberJid and (a.UserId like '%%%@%%' OR a.Name like '%%%@%%' OR a.SearchIndex like '%%%@%%') WHERE GroupId = ?;",searchStr,searchStr,searchStr];
-        DataReader *reader = [database executeReader:sql withParameters:[NSArray arrayWithObject:groupId]];
+        NSString *sql = [NSString stringWithFormat:@"Select a.UserId, a.XmppId, a.Name, a.DescInfo, a.HeaderSrc, a.UserInfo, a.LastUpdateTime from IM_Group_Member as b left join IM_Users as a on a.XmppId = b.MemberJid and (a.UserId like '%%%@%%' OR a.Name like '%%%@%%' OR a.SearchIndex like '%%%@%%') WHERE GroupId = '%@';",searchStr,searchStr,searchStr, groupId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if (list == nil) {
             list = [[NSMutableArray alloc] init];
         }

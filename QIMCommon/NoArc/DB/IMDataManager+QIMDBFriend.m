@@ -195,8 +195,8 @@
 - (NSDictionary *)qimDB_selectFriendInfoWithUserId:(NSString *)userId {
     __block NSMutableDictionary *resultDic = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select UserId,XmppId,Name,DescInfo,HeaderSrc,UserInfo From IM_Friend_List Where XmppId=:XmppId;";
-        DataReader *reader = [database executeReader:sql withParameters:@[userId]];
+        NSString *sql = [NSString stringWithFormat:@"Select UserId,XmppId,Name,DescInfo,HeaderSrc,UserInfo From IM_Friend_List Where XmppId= '%@';", userId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             NSString *userId = [reader objectForColumnIndex:0];
             NSString *xmppId = [reader objectForColumnIndex:1];
@@ -223,8 +223,8 @@
 - (NSDictionary *)qimDB_selectFriendInfoWithXmppId:(NSString *)xmppId {
     __block NSMutableDictionary *resultDic = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select UserId,XmppId,Name,DescInfo,HeaderSrc,UserInfo From IM_Friend_List Where XmppId=:XmppId;";
-        DataReader *reader = [database executeReader:sql withParameters:@[xmppId]];
+        NSString *sql = [NSString stringWithFormat:@"Select UserId,XmppId,Name,DescInfo,HeaderSrc,UserInfo From IM_Friend_List Where XmppId='%@';", xmppId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             NSString *userId = [reader objectForColumnIndex:0];
             NSString *xmppId = [reader objectForColumnIndex:1];

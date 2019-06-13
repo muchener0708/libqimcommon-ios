@@ -15,8 +15,8 @@
 - (BOOL)qimDB_checkMomentWithMomentId:(NSString *)momentId {
     __block BOOL isExist = NO;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"Select 1 From IM_Work_World Where uuid = :uuid;";
-        DataReader *reader = [database executeReader:sql withParameters:@[momentId]];
+        NSString *sql = [NSString stringWithFormat:@"Select 1 From IM_Work_World Where uuid = '%@';", momentId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             isExist = YES;
         }
@@ -127,8 +127,8 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
 - (NSDictionary *)qimDB_getWorkMomentWithMomentId:(NSString *)momentId {
     __block NSMutableDictionary *result = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = @"select id, uuid, owner, ownerHost, isAnonymous, anonymousName, anonymousPhoto, createTime, updateTime, content, atList, isDelete, isLike, likeNum, commentsNum, review_status, attachCommentList from IM_Work_World where uuid = :uuid";
-        DataReader *reader = [database executeReader:sql withParameters:@[momentId]];
+        NSString *sql = [NSString stringWithFormat:@"select id, uuid, owner, ownerHost, isAnonymous, anonymousName, anonymousPhoto, createTime, updateTime, content, atList, isDelete, isLike, likeNum, commentsNum, review_status, attachCommentList from IM_Work_World where uuid = '%@'", momentId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if (result == nil) {
             result = [[NSMutableDictionary alloc] init];
         }
@@ -295,8 +295,8 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
 
 - (void)qimDB_deleteMomentWithRId:(NSInteger)rId {
     [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
-        NSString *sql = @"delete from IM_Work_World where id = :id";
-        DataReader *reader = [database executeReader:sql withParameters:@[@(rId)]];
+        NSString *sql = [NSString stringWithFormat:@"delete from IM_Work_World where id = %ld", rId];
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             
         }
@@ -656,9 +656,8 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
         NSString *commentUUID = [parentCommentDic objectForKey:@"commentUUID"];
         __block NSMutableArray *childComments = nil;
         [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-            NSString *sql = [NSString stringWithFormat:@"select anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, parentCommentUUID, superParentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime, atList from IM_Work_CommentV2 where isDelete=0 and (parentCommentUUID=:parentCommentUUID Or superParentUUID=:superParentUUID) order by createTime desc;"];
-            NSLog(@"child sql : %@ - %@", sql, @[commentUUID, commentUUID]);
-            DataReader *reader = [database executeReader:sql withParameters:@[commentUUID, commentUUID]];
+            NSString *sql = [NSString stringWithFormat:@"select anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, parentCommentUUID, superParentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime, atList from IM_Work_CommentV2 where isDelete=0 and (parentCommentUUID=:'%@' Or superParentUUID='%@') order by createTime desc;", commentUUID, commentUUID];
+            DataReader *reader = [database executeReader:sql withParameters:nil];
             if (childComments == nil) {
                 childComments = [[NSMutableArray alloc] init];
             }
@@ -729,9 +728,9 @@ result = [database executeNonQuery:@"CREATE TABLE IM_Work_World (\
 - (NSArray *)qimDB_getWorkChildCommentsWithParentCommentUUID:(NSString *)commentUUID {
     __block NSMutableArray *childComments = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = [NSString stringWithFormat:@"select anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, parentCommentUUID, superParentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime, atList from IM_Work_CommentV2 where isDelete=0 and (parentCommentUUID=:parentCommentUUID Or superParentUUID=:superParentUUID) order by createTime desc;"];
-        NSLog(@"child sql : %@ - %@", sql, @[commentUUID, commentUUID]);
-        DataReader *reader = [database executeReader:sql withParameters:@[commentUUID, commentUUID]];
+        NSString *sql = [NSString stringWithFormat:@"select anonymousName, anonymousPhoto, commentUUID, content, createTime, fromHost, fromUser, id, isAnonymous, isDelete, isLike, likeNum, parentCommentUUID, superParentUUID, postUUID, reviewStatus, toAnonymousName, toAnonymousPhoto, toHost, toUser, toisAnonymous, updateTime, atList from IM_Work_CommentV2 where isDelete=0 and (parentCommentUUID='%@' Or superParentUUID='%@') order by createTime desc;", commentUUID, commentUUID];
+        NSLog(@"child sql : %@", sql);
+        DataReader *reader = [database executeReader:sql withParameters:nil];
         if (childComments == nil) {
             childComments = [[NSMutableArray alloc] init];
         }

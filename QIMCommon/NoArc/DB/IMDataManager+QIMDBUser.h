@@ -39,6 +39,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSDictionary *)qimDB_selectUserByJID:(NSString *)jid;
 
+
+/**
+ 获取所有的用户备注
+
+ @return 用户备注
+ */
+- (NSDictionary *)qimDB_getUserMarkNameDic;
+
 - (void)qimDB_clearUserList;
 
 - (void)qimDB_clearUserListForList:(NSArray *)userInfos;

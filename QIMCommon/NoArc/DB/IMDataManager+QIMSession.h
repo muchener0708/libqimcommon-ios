@@ -39,6 +39,8 @@
 
 - (void)qimDB_deleteSession:(NSString *)xmppId RealJid:(NSString *)realJid;
 
+- (void)qimDB_deleteSessionList:(NSArray *)xmppIds;
+
 - (void)qimDB_deleteSession:(NSString *)xmppId;
 
 - (NSDictionary *)qimDB_getLastedSingleChatSession;

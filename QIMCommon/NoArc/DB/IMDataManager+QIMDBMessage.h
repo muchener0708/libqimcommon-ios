@@ -207,6 +207,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)qimDB_UpdateAtMessageReadStateWithGroupId:(NSString *)groupId withMsgIds:(NSArray *)msgIds withReadState:(QIMAtMsgReadState)readState;
 
+- (NSDictionary *)qimDB_getTotalAtMessageDic;
+
 - (NSArray *)qimDB_getAtMessageWithGroupId:(NSString *)groupId;
 
 - (void)qimDB_clearAtMessageWithGroupReadMarkArray:(NSArray *)groupReadMarkArray;

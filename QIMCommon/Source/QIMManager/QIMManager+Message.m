@@ -1329,6 +1329,7 @@
                 [list addObject:msg];
             }
             complete(list);
+            /*
             if (list.count < limit) {
                 if (self.load_history_msg == nil) {
                     self.load_history_msg = dispatch_queue_create("Load History", 0);
@@ -1372,6 +1373,7 @@
                     }
                 });
             }
+            */
         }
         else {
             

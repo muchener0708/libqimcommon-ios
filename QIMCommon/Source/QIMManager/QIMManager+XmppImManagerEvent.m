@@ -1138,7 +1138,8 @@
 
 //更新消息发送状态
 - (void)onMessageStateUpdate:(NSDictionary *)msgDic {
-    
+    //Mark DBupdate
+    return;
     dispatch_async(self.receive_msgSendState_queue, ^{
         QIMVerboseLog(@"更新消息发送状态 : %@", msgDic);
         NSString *msgId = [msgDic objectForKey:@"messageId"];

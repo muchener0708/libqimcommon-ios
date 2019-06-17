@@ -2408,8 +2408,8 @@
 
 - (void)qimDB_updateAllMsgWithMsgRemoteState:(int)msgRemoteFlag ByMsgDirection:(int)msgDirection ByReadMarkT:(long long)readMarkT {
     [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
-        NSString *sql = @"Update IM_Message Set ReadState=:ReadState Where Direction = :Direction;";
-        [database executeNonQuery:sql withParameters:@[@(msgRemoteFlag),@(msgDirection)]];
+        NSString *sql = @"Update IM_SessionList Set UnreadCount=0;";
+        [database executeNonQuery:sql withParameters:nil];
     }];
     QIMVerboseLog(@"");
 }

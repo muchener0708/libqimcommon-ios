@@ -1141,25 +1141,28 @@
     dispatch_async(self.receive_msgSendState_queue, ^{
         QIMVerboseLog(@"更新消息发送状态 : %@", msgDic);
         NSString *msgId = [msgDic objectForKey:@"messageId"];
-        BOOL msgSuccess = [[msgDic objectForKey:@"msgSuccess"] boolValue];
-        if (msgSuccess) {
-            //发送消息成功
-            long long receivedTime = [[msgDic objectForKey:@"receivedTime"] longLongValue];
-            [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgState:QIMMessageSendState_Success WithMsgId:msgId];
-            
-            [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgDate:receivedTime WithMsgId:msgId];
-            [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgWithMsgRemoteState:QIMMessageRemoteReadStateNotSent ByMsgIdList:@[@{@"id":msgId}]];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageSendStateUpdate object:@{@"MsgSendState":@(QIMMessageSendState_Success), @"messageId":msgId}];
-            });
-        } else {
-            //发送消息失败
-            
-            [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgState:QIMMessageSendState_Faild WithMsgId:msgId];
-            [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgWithMsgRemoteState:QIMMessageRemoteReadStateNotSent ByMsgIdList:@[@{@"id":msgId}]];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageSendStateUpdate object:@{@"MsgSendState":@(QIMMessageSendState_Faild), @"messageId":msgId}];
-            });
+        BOOL check = [[IMDataManager qimDB_SharedInstance] qimDB_checkMsgId:msgId];
+        if (check == YES) {
+            BOOL msgSuccess = [[msgDic objectForKey:@"msgSuccess"] boolValue];
+            if (msgSuccess) {
+                //发送消息成功
+                long long receivedTime = [[msgDic objectForKey:@"receivedTime"] longLongValue];
+                [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgState:QIMMessageSendState_Success WithMsgId:msgId];
+                
+                [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgDate:receivedTime WithMsgId:msgId];
+                [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgWithMsgRemoteState:QIMMessageRemoteReadStateNotSent ByMsgIdList:@[@{@"id":msgId}]];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageSendStateUpdate object:@{@"MsgSendState":@(QIMMessageSendState_Success), @"messageId":msgId}];
+                });
+            } else {
+                //发送消息失败
+                
+                [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgState:QIMMessageSendState_Faild WithMsgId:msgId];
+                [[IMDataManager qimDB_SharedInstance] qimDB_updateMsgWithMsgRemoteState:QIMMessageRemoteReadStateNotSent ByMsgIdList:@[@{@"id":msgId}]];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationMessageSendStateUpdate object:@{@"MsgSendState":@(QIMMessageSendState_Faild), @"messageId":msgId}];
+                });
+            }
         }
     });
 }

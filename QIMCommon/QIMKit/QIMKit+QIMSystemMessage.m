@@ -24,8 +24,8 @@
     [[QIMManager sharedInstance] updateOfflineSystemNoticeMessages];
 }
 
-- (void)getSystemMsgLisByUserId:(NSString *)userId WithFromHost:(NSString *)fromHost WithLimit:(int)limit WithOffset:(int)offset WithComplete:(void (^)(NSArray *))complete {
-    [[QIMManager sharedInstance] getSystemMsgLisByUserId:userId WithFromHost:fromHost WithLimit:limit WithOffset:offset WithComplete:complete];
+- (void)getSystemMsgLisByUserId:(NSString *)userId WithFromHost:(NSString *)fromHost WithLimit:(int)limit WithOffset:(int)offset withLoadMore:(BOOL)loadMore WithComplete:(void (^)(NSArray *))complete {
+    [[QIMManager sharedInstance] getSystemMsgLisByUserId:userId WithFromHost:fromHost WithLimit:limit WithOffset:offset withLoadMore:loadMore WithComplete:complete];
 }
 
 @end

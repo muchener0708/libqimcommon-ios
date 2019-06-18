@@ -15,6 +15,6 @@
 
 - (void)updateOfflineSystemNoticeMessages;
 
-- (void)getSystemMsgLisByUserId:(NSString *)userId WithFromHost:(NSString *)fromHost WithLimit:(int)limit WithOffset:(int)offset WithComplete:(void (^)(NSArray *))complete;
+- (void)getSystemMsgLisByUserId:(NSString *)userId WithFromHost:(NSString *)fromHost WithLimit:(int)limit WithOffset:(int)offset withLoadMore:(BOOL)loadMore WithComplete:(void (^)(NSArray *))complete;
 
 @end

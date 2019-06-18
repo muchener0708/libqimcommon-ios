@@ -2819,4 +2819,14 @@
     return clearATSuccess;
 }
 
+- (BOOL)qimDB_clearAtMessage {
+    __block BOOL clearATSuccess = NO;
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
+        NSString *sql = [NSString stringWithFormat:@"delete from IM_AT_Message;"];
+        NSMutableArray *parames = [[NSMutableArray alloc] init];
+        clearATSuccess = [database executeNonQuery:sql withParameters:parames];
+    }];
+    return clearATSuccess;
+}
+
 @end

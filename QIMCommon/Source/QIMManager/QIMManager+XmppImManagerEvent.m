@@ -1101,6 +1101,7 @@
             NSDictionary *readMarkTDic = [[QIMJSONSerializer sharedInstance] deserializeObject:infoStr error:nil];
             long long readMarkT = [[readMarkTDic objectForKey:@"T"] longLongValue];
             [[IMDataManager qimDB_SharedInstance] qimDB_updateAllMsgWithMsgRemoteState:remoteState ByMsgDirection:QIMMessageDirection_Received ByReadMarkT:readMarkT / 1000];
+            [[IMDataManager qimDB_SharedInstance] qimDB_clearAtMessage];
             [self.hasAtAllDic removeAllObjects];
             dispatch_async(dispatch_get_main_queue(), ^{
                 QIMVerboseLog(@"clearAllNoRead: 抛出通知 kMsgNotReadCountChange");

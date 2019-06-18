@@ -217,6 +217,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)qimDB_clearAtMessageWithGroupId:(NSString *)groupId;
 
+- (BOOL)qimDB_clearAtMessage;
 
 @end
 

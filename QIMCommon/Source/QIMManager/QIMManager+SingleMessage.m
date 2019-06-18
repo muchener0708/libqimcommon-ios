@@ -119,8 +119,6 @@
 
 #warning 这里更新本地数据库已接收的消息状态 ，告诉对方已送达，readFlag=3，更新成功之后更新本地数据库状态
 - (void)sendRecevieMessageState {
-    //Mark DBUpdate
-    return;
     NSArray *msgs = [[IMDataManager qimDB_SharedInstance] qimDB_getReceiveMsgIdListWithMsgReadFlag:QIMMessageRemoteReadStateDidReaded withChatType:ChatType_SingleChat withMsgDirection:QIMMessageDirection_Received];
     if (msgs.count > 0) {
         NSMutableArray *resultArray = [NSMutableArray arrayWithCapacity:5];

@@ -239,6 +239,8 @@ static QIMAppInfo *__globalAppInfo = nil;
 }
 
 - (BOOL)getIsIpad {
+#if __has_include("QIMIPadWindowManager.h")
+
     NSString *deviceType = [UIDevice currentDevice].model;
     
     if([deviceType isEqualToString:@"iPhone"]) {
@@ -254,6 +256,9 @@ static QIMAppInfo *__globalAppInfo = nil;
         return YES;
     }
     return NO;
+#else
+    return NO;
+#endif
 }
 
 - (NSString *)SystemVersion {

@@ -481,7 +481,6 @@ static QIMManager *__IMManager = nil;
     QIMVerboseLog(@"同步服务端漫游的个人配置2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime6]);
     QIMVerboseLog(@"同步服务端漫游的个人配置完成2");
     
-    /*
     if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
         QIMVerboseLog(@"开始获取我的关联账户2");
         CFAbsoluteTime startTime7 = [[QIMWatchDog sharedInstance] startTime];
@@ -494,7 +493,6 @@ static QIMManager *__IMManager = nil;
         QIMVerboseLog(@"同步公众号列表2loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime8]);
         QIMVerboseLog(@"同步公众号列表完成2");
     }
-    */
     
     QIMVerboseLog(@"开始Check组织架构2");
     CFAbsoluteTime startTime9 = [[QIMWatchDog sharedInstance] startTime];
@@ -533,13 +531,13 @@ static QIMManager *__IMManager = nil;
     QIMVerboseLog(@"注册Token1loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime13]);
     
     // 更新好友列表
-//    CFAbsoluteTime startTime14 = [[QIMWatchDog sharedInstance] startTime];
-//    [self updateFriendList];
-//    QIMVerboseLog(@"更新好友列表loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime14]);
+    CFAbsoluteTime startTime14 = [[QIMWatchDog sharedInstance] startTime];
+    [self updateFriendList];
+    QIMVerboseLog(@"更新好友列表loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime14]);
     
-//    CFAbsoluteTime startTime15 = [[QIMWatchDog sharedInstance] startTime];
-//    [self updateFriendInviteList];
-//    QIMVerboseLog(@"邀请好友申请loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime15]);
+    CFAbsoluteTime startTime15 = [[QIMWatchDog sharedInstance] startTime];
+    [self updateFriendInviteList];
+    QIMVerboseLog(@"邀请好友申请loginComplate耗时 : %llf", [[QIMWatchDog sharedInstance] escapedTimewithStartTime:startTime15]);
     
     if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
         QIMVerboseLog(@"客服获取快捷回复");

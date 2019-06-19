@@ -2360,7 +2360,7 @@
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
         NSString *sql1 = [NSString stringWithFormat:@"select XmppId, LastUpdateTime from IM_Message where XmppId in %@ and ReadState & %d = %d and Direction = %d order by LastUpdateTime asc LIMIT 1;", groupIdParams, QIMMessageRemoteReadStateDidReaded, QIMMessageRemoteReadStateDidReaded, QIMMessageDirection_Received];
         DataReader *reader = [database executeReader:sql1 withParameters:nil];
-        QIMVerboseLog(@"DB获取群阅读指针参数 ：%@", sql1);
+        QIMVerboseLog(@"离线DB获取群阅读指针参数 ：%@", sql1);
         while ([reader read]) {
             NSString *xmppId = [reader objectForColumnIndex:0];
             NSNumber *lastupdateTime = [reader objectForColumnIndex:1];
@@ -2368,7 +2368,7 @@
         }        
     }];
     
-    QIMVerboseLog(@"DB获取群阅读指针结果 ：%@", dict);
+    QIMVerboseLog(@"离线DB获取群阅读指针结果 ：%@", dict);
     NSString *sql2 = [NSString stringWithFormat:@"UPDATE IM_Message SET ReadState = (ReadState|%d) WHERE XmppId = :XmppId and LastUpdateTime <= :LastUpdateTime1 and LastUpdateTime >= :LastUpdateTime2;", QIMMessageRemoteReadStateDidReaded];
     __block long long maxRemarkUpdateTime = 0;
     [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
@@ -2391,17 +2391,17 @@
             [param addObject:@(mucMaxReadFlagTime)];
             [params addObject:param];
         }
-        QIMVerboseLog(@"DB更新群阅读指针参数 ：%@", params);
+        QIMVerboseLog(@"离线DB更新群阅读指针参数 ：%@", params);
         [database executeBulkInsert:sql2 withParameters:params];
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
-    QIMVerboseLog(@"DB更新群阅读指针%ld条数据 耗时 = %f s", mucArray.count, end - start); //s
+    QIMVerboseLog(@"离线DB更新群阅读指针%ld条数据 耗时 = %f s", mucArray.count, end - start); //s
     
     CFAbsoluteTime start2 = CFAbsoluteTimeGetCurrent();
-    QIMVerboseLog(@"DB根据群阅读指针更新艾特消息 开始"); //s
+    QIMVerboseLog(@"离线DB根据群阅读指针更新艾特消息 开始"); //s
     [self qimDB_clearAtMessageWithGroupReadMarkArray:mucArray];
     CFAbsoluteTime end2 = CFAbsoluteTimeGetCurrent();
-    QIMVerboseLog(@"DB根据群阅读指针更新艾特消息 耗时 = %f s", end2 - start2); //s
+    QIMVerboseLog(@"离线DB根据群阅读指针更新艾特消息 耗时 = %f s", end2 - start2); //s
 
     return maxRemarkUpdateTime;
 }

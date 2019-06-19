@@ -1111,6 +1111,10 @@
             });
         } else if (readType == QIMMessageReadFlagGroupReaded) {
             //群已读
+            long long maxMucReadMarkTime = ([[NSDate date] timeIntervalSince1970] - self.serverTimeDiff) * 1000;
+            QIMVerboseLog(@"收到onReadState之后设置群阅读指针时间戳 : %lld", maxMucReadMarkTime);
+            [[IMDataManager qimDB_SharedInstance] qimDB_UpdateUserCacheDataWithKey:kGetGroupReadMarkVersion withType:8 withValue:@"群阅读指针时间戳V2" withValueInt:maxMucReadMarkTime];
+            
             remoteState = QIMMessageRemoteReadStateDidReaded | QIMMessageRemoteReadStateGroupReaded;
             [self updateLocalGroupMessageRemoteState:remoteState withXmppId:jid ByReadList:readStateMsgList];
         } else {

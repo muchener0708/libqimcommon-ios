@@ -52,6 +52,10 @@
     return [[QIMAppInfo sharedInstance] deviceName];
 }
 
+- (void)setCustomDeviceModel:(NSString *)customDeviceModel {
+    [[QIMAppInfo sharedInstance] setCustomDeviceModel:customDeviceModel];
+}
+
 - (BOOL)getIsIpad {
     return [[QIMAppInfo sharedInstance] getIsIpad];
 }

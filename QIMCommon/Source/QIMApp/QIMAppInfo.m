@@ -239,26 +239,31 @@ static QIMAppInfo *__globalAppInfo = nil;
 }
 
 - (BOOL)getIsIpad {
-#if __has_include("QIMIPadWindowManager.h")
-
-    NSString *deviceType = [UIDevice currentDevice].model;
-    
-    if([deviceType isEqualToString:@"iPhone"]) {
-        //iPhone
+    if (self.customDeviceModel.length > 0) {
+        if ([self.customDeviceModel isEqualToString:@"iPhone"]) {
+            return NO;
+        } else if ([self.customDeviceModel isEqualToString:@"iPad"]) {
+            return YES;
+        } else {
+            return NO;
+        }
+    } else {
+        NSString *deviceType = [UIDevice currentDevice].model;
+        
+        if([deviceType isEqualToString:@"iPhone"]) {
+            //iPhone
+            return NO;
+        }
+        else if([deviceType isEqualToString:@"iPod touch"]) {
+            //iPod Touch
+            return NO;
+        }
+        else if([deviceType isEqualToString:@"iPad"]) {
+            //iPad
+            return YES;
+        }
         return NO;
     }
-    else if([deviceType isEqualToString:@"iPod touch"]) {
-        //iPod Touch
-        return NO;
-    }
-    else if([deviceType isEqualToString:@"iPad"]) {
-        //iPad
-        return YES;
-    }
-    return NO;
-#else
-    return NO;
-#endif
 }
 
 - (NSString *)SystemVersion {

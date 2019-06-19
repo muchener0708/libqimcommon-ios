@@ -32,6 +32,7 @@
 #import "QIMManager+SystemMessage.h"
 #import "QIMManager+UserVcard.h"
 #import "QIMManager+Found.h"
+#import "QIMManager+Search.h"
 #import "QIMManager+XmppImManagerEvent.h"
 
 #import "XmppImManager.h"

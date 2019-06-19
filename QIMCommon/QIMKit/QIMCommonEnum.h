@@ -388,4 +388,7 @@ typedef void(^QIMKitSetMucVCardBlock)(BOOL successed);
 typedef void(^QIMKitSearchRobotBlock)(NSArray *robotList);
 typedef void(^QIMKitUpdateSignatureBlock)(BOOL successed);
 
+typedef void(^QIMKitSearchSuccessBlock)(BOOL successed, NSString *responseJson);
+typedef void(^QIMKitSearchFaildBlock)(BOOL successed, NSString *errmsg);
+
 #endif /* QIMCommonEnum_h */

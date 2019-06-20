@@ -2392,7 +2392,6 @@
     for (NSDictionary *mucDic in mucArray) {
         NSString *domain = [mucDic objectForKey:@"domain"];
         NSString *mucName = [mucDic objectForKey:@"muc_name"];
-        mucName = @"e60319357f804d8ead3fdd25e68b7234";
         NSString *groupId = [mucName stringByAppendingFormat:@"@%@", domain];
         [[self dbInstance] syncUsingTransaction:^(Database *database) {
             NSString *sql1 = [NSString stringWithFormat:@"select XmppId, LastUpdateTime from IM_Message where XmppId = :XmppId and ReadState & %d = %d and Direction = %d order by LastUpdateTime asc LIMIT 1;", QIMMessageRemoteReadStateDidReaded, QIMMessageRemoteReadStateDidReaded, QIMMessageDirection_Received];

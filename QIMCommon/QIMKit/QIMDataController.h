@@ -31,6 +31,10 @@
 
 - (void)clearLogFiles;
 
-- (long long) sizeofImagePath;
+- (long long)sizeofImagePath;
+
+- (long long)sizeOfDBPath;
+
+- (NSString *)transfromTotalSize:(long long)totalSize;
 
 @end

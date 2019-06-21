@@ -88,6 +88,32 @@ static QIMDataController *__globalDataController = nil;
     return [QIMUtility sizeofPath:cachePath] + [QIMUtility sizeofPath:newcachePath] + [QIMUtility sizeofPath:logDirectory];
 }
 
+- (long long)sizeOfDBPath {
+    NSString *dbPath = [UserCachesPath stringByAppendingPathComponent:[NSString stringWithFormat:@"/QIMNewDataBase/"]];
+    return [QIMUtility sizeofPath:dbPath];
+}
+
+- (NSString *)transfromTotalSize:(long long)totalSize {
+    NSString *str = nil;
+    if (totalSize < 1048576) {
+        // 1024 * 1024
+        double total = (double)totalSize;
+        float result = total / 1024.0;
+        str = [NSString stringWithFormat:@"%.2fKB", result];
+    } else if (totalSize < 1073741824) {
+        // 1024 * 1024 * 1024
+        double total = (double)totalSize;
+        float result = total / 1048576.0;
+        str = [NSString stringWithFormat:@"%.2fMB", result];
+    } else if (totalSize < 1099511627776) {
+        // 1024 * 1024 * 1024
+        double total = (double)totalSize;
+        float result = total / 1073741824.0;
+        str = [NSString stringWithFormat:@"%.2fGB", result];
+    }
+    return str;
+}
+
 - (void) deleteAllFilesAtPath:(NSString *) cachePath {
     NSFileManager *fileManager = [NSFileManager defaultManager];
     

@@ -323,8 +323,7 @@
 - (NSArray *)qimDB_getSessionListWithSingleChatType:(int)singleChatType {
     __block NSMutableArray *result = nil;
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
-    [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        
+    [[self dbInstance] syncUsingTransaction:^(QIMDataBase * _Nonnull database, BOOL * _Nonnull rollback) {
         NSNumber *pMaxLastTime = nil;
         NSMutableDictionary *dic = nil;
         NSString *psql = @"Select b.XmppId,A.Name,b.Content,b.Type,b.LastUpdateTime From (Select XmppId,Content,Type,LastUpdateTime From IM_Public_Number_Message Order By LastUpdateTime Desc Limit 1) as b Left Join IM_Public_Number as a On a.XmppId=b.XmppId;";
@@ -340,7 +339,7 @@
             pMaxLastTime = [pReader objectForColumnIndex:4];
         }
         [pReader close];
-
+        
         NSString *sql = [NSString stringWithFormat:@"select a.XmppId, a.UserId, case a.ChatType WHEN %d THEN (select name from IM_Users where IM_Users.XmppId = a.XmppId) ELSE (select name from IM_Group where IM_Group.GroupId = a.XmppId) end as Name, case a.ChatType When %d THEN (Select HeaderSrc From IM_Users WHERE UserId = a.UserId) ELSE (SELECT HeaderSrc From IM_Group WHERE GroupId=a.XmppId) END as HeaderSrc, b.MsgId, b.Content, b.Type, b.State, b.Direction, a.ChatType, a.RealJid, a.LastUpdateTime, (case when (select count(*) from IM_Client_Config where DeleteFlag =0 and ConfigKey ='kStickJidDic' and ConfigSubKey=(a.XmppId ||'<>'||a.RealJid))=1 Then 1 ELSE 0 END) as StickState, (case when (select count(*) from IM_Client_Config where ConfigKey='kNoticeStickJidDic'and DeleteFlag=0 and ConfigSubKey=a.XmppId)=1 Then 1 ELSE 0 END) as Reminded, (case when (select count(*) from IM_Client_Config where ConfigKey='kMarkupNames' and DeleteFlag=0 and ConfigSubKey=a.XmppId)=1 Then (select ConfigValue from IM_Client_Config where ConfigKey='kMarkupNames' and DeleteFlag=0 and ConfigSubKey=a.XmppId) ELSE NULL END) as MarkupName, b.'From', a.UnreadCount from IM_SessionList as a left join IM_Message as b on a.LastMessageId = b.MsgId order by StickState desc, a.LastUpdateTime desc;", singleChatType, singleChatType];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         
@@ -391,7 +390,6 @@
             }
         }
         
-
         long long endTime = [[NSDate date] timeIntervalSince1970] * 1000;
         CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
         NSLog(@"生成%ld条会话列表 耗时 = %f s", result.count, end - start); //s

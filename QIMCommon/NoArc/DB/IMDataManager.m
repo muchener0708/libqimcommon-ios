@@ -44,8 +44,8 @@ static dispatch_once_t _onceDBToken;
         [__global_data_manager setdbPath:dbPath];
         [__global_data_manager setDBOwnerFullJid:dbOwnerFullJid];
         [__global_data_manager setDomain:[[dbOwnerFullJid componentsSeparatedByString:@"@"] lastObject]];
-//        __global_data_manager.databasePool = [QIMDataBasePool databasePoolWithPath:dbPath];
-        __global_data_manager.dataBaseQueue = [QIMDataBaseQueue databaseQueueWithPath:dbPath];
+        __global_data_manager.databasePool = [QIMDataBasePool databasePoolWithPath:dbPath];
+//        __global_data_manager.dataBaseQueue = [QIMDataBaseQueue databaseQueueWithPath:dbPath];
         [__global_data_manager openDB];
     });
     return __global_data_manager;
@@ -123,12 +123,12 @@ static dispatch_once_t _onceDBToken;
     if (notCheckCreateDataBase || [currentValue isEqualToString:dbValue] == NO) {
         QIMVerboseLog(@"reCreateDB");
         __block BOOL result = NO;
-        [_dataBaseQueue inDatabase:^(QIMDataBase * _Nonnull db) {
-            result = [self createDb:db];
-        }];
-//        [_databasePool inDatabase:^(QIMDataBase* _Nonnull db) {
+//        [_dataBaseQueue inDatabase:^(QIMDataBase * _Nonnull db) {
 //            result = [self createDb:db];
 //        }];
+        [_databasePool inDatabase:^(QIMDataBase* _Nonnull db) {
+            result = [self createDb:db];
+        }];
 //        [[self dbInstance] syncUsingTransaction:^(QIMDataBase* _Nonnull database, BOOL * _Nonnull rollback) {
 //            result = [self createDb:database];
 //        }];
@@ -219,8 +219,8 @@ static dispatch_once_t _onceDBToken;
 }
 
 - (id)dbInstance {
-    return _dataBaseQueue;
-//    return _databasePool;
+//    return _dataBaseQueue;
+    return _databasePool;
 //    return [self getDatabaseOperator];
 }
 

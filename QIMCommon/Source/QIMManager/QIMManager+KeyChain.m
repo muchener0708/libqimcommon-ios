@@ -68,7 +68,8 @@
 }
 
 + (void)updateRequestURL {
-    [QIMUUIDTools setRequestURL:[[[QIMNavConfigManager sharedInstance] httpHost] dataUsingEncoding:NSUTF8StringEncoding]];
+    NSLog(@"[[[QIMNavConfigManager sharedInstance] newerHttpUrl] : %@", [[QIMNavConfigManager sharedInstance] newerHttpUrl]);
+    [QIMUUIDTools setRequestURL:[[[QIMNavConfigManager sharedInstance] newerHttpUrl] dataUsingEncoding:NSUTF8StringEncoding]];
 }
 
 + (void)updateNewHttpRequestURL {

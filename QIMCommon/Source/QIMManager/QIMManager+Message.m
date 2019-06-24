@@ -358,29 +358,25 @@
 }
 
 - (void)sendWlanMessage:(NSString *)content to:(NSString *)targetID extendInfo:(NSString *)extendInfo msgType:(int)msgType completionHandler:(void (^)(NSData *, NSURLResponse *, NSError *))completionHandler {
-    
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@/send_wlan_msg", [self getWlanRequestURL]]];
+    NSHTTPCookieStorage *sharedHTTPCookieStorage = [NSHTTPCookieStorage sharedHTTPCookieStorage];
+    for (NSHTTPCookie *cookie in [sharedHTTPCookieStorage cookies]) {
+        [sharedHTTPCookieStorage deleteCookie:cookie];
+    }
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@/nck/send_wlan_msg.qunar", [self getWlanRequestURL]]];
     [self loadWlanCookie];
     
     int time = [[NSDate date] timeIntervalSince1970];
     NSString *key = [self getWlanKeyByTime:time];
     NSString *params = nil;
     BOOL isGroup = [targetID rangeOfString:@"conference."].location != NSNotFound;
-    NSString *domain = [targetID componentsSeparatedByString:@"@"].lastObject;
-    domain = domain.length ? domain:[[QIMManager sharedInstance] getDomain];
-    targetID = [targetID componentsSeparatedByString:@"@"].firstObject;
-    
     NSMutableDictionary *resultParams = [NSMutableDictionary dictionary];
     
     [resultParams setQIMSafeObject:content forKey:@"body"];
-    NSString *username = [NSString stringWithFormat:@"%@@%@", [QIMManager getLastUserName], [self getWlanRequestDomain]];
-    if ([[self getWlanRequestDomain] isEqualToString:@"ejabhost1"] || [[self getWlanRequestDomain] isEqualToString:@"ejabhost2"]) {
-        username = [QIMManager getLastUserName];
-    }
-    [resultParams setQIMSafeObject:username forKey:@"from"];
-    [resultParams setQIMSafeObject:@[@{@"user" : targetID }] forKey:@"to"];
+    [resultParams setQIMSafeObject:[[QIMManager sharedInstance] getLastJid] forKey:@"from"];
+    NSDictionary *channelId = @{@"cn":@"consult", @"d":@"send", @"usrType":@"usr"};
+    [resultParams setQIMSafeObject:@[@{@"user" : targetID}] forKey:@"to"];
     [resultParams setQIMSafeObject:[NSString stringWithFormat:@"%d", msgType] forKey:@"msg_type"];
-    [resultParams setQIMSafeObject:@"groupchat" forKey:@"type"];
+    //    [resultParams setQIMSafeObject:@"groupchat" forKey:@"type"];
     [resultParams setQIMSafeObject:key forKey:@"key"];
     [resultParams setQIMSafeObject:[NSString stringWithFormat:@"%d", time] forKey:@"count"];
     [resultParams setQIMSafeObject:extendInfo?extendInfo:@"" forKey:@"extend_info"];
@@ -388,29 +384,32 @@
     if (isGroup) {
         //群聊
         [resultParams setQIMSafeObject:@"groupchat" forKey:@"type"];
-        [resultParams setQIMSafeObject:[NSString stringWithFormat:@"%@", domain] forKey:@"domain"];
         
-    }else{
+    } else {
         [resultParams setQIMSafeObject:@"chat" forKey:@"type"];
-        [resultParams setQIMSafeObject:domain forKey:@"host"];
     }
     
-    NSString *paramsStr = [[QIMJSONSerializer sharedInstance] serializeObject:resultParams];
+    NSString *paramsStr = [[QIMJSONSerializer sharedInstance] serializeObject:@[resultParams]];
     QIMVerboseLog(@"快捷回复 URL : %@, 参数 : %@", url, paramsStr);
     NSError *error = nil;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:resultParams options:NSJSONWritingPrettyPrinted error:&error];
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:@[resultParams] options:NSJSONWritingPrettyPrinted error:&error];
     params = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-        
+    
     QIMHTTPRequest *request = [[QIMHTTPRequest alloc] initWithURL:url];
     [request setHTTPMethod:QIMHTTPMethodPOST];
     [request setHTTPBody:[params dataUsingEncoding:NSUTF8StringEncoding]];
+    NSMutableDictionary *cookieProperties = [[NSMutableDictionary alloc] init];
+    [cookieProperties setObject:@"application/json;" forKey:@"Content-type"];
+    
+    [request setHTTPRequestHeaders:cookieProperties];
+    
     [QIMHTTPClient sendRequest:request complete:^(QIMHTTPResponse *response) {
         QIMInfoLog(@"快捷回复返回结果： %@", response);
     } failure:^(NSError *error) {
         QIMErrorLog(@"快捷回复错误 : %@", error);
     }];
 }
-
+ 
 #pragma mark - SendMsg
 
 /**

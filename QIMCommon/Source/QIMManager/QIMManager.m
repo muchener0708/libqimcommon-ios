@@ -588,6 +588,11 @@ static QIMManager *__IMManager = nil;
         [self getRemoteFoundNavigation];
     }
     
+    if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeStartalk) {
+        QIMVerboseLog(@"请求新版本");
+        [self findNewestClient];
+    }
+
     QIMVerboseLog(@"登录之后主动上报日志");
     Class autoTracker = NSClassFromString(@"QIMAutoTrackerOperation");
     id autoTrackerObject = [[autoTracker alloc] init];
@@ -1514,6 +1519,26 @@ http://url/push/qtapi/token/setmsgsettings.qunar?username=hubo.hu&domain=ejabhos
         [self clearcache];
         [[QIMUserCacheManager sharedInstance] setUserObject:@(kClearCacheVersion) forKey:kClearCacheCheck];
     }
+}
+
+- (void)findNewestClient {
+    NSString *destUrl = [NSString stringWithFormat:@"http://l-im3.vc.beta.cn0.qunar.com:8099/qtalk/findNewestClient"];
+    NSDictionary *param = @{@"clientType":@"ios", @"version":@"0"};
+    NSData *data = [[QIMJSONSerializer sharedInstance] serializeObject:param error:nil];
+
+    [[QIMManager sharedInstance] sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:data withSuccessCallBack:^(NSData *responseData) {
+        NSDictionary *responseDic = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
+        BOOL ret = [[responseDic objectForKey:@"ret"] boolValue];
+        NSInteger errcode = [[responseDic objectForKey:@"errcode"] integerValue];
+        if (ret && errcode==0) {
+            NSDictionary *data = [responseDic objectForKey:@"data"];
+            if ([data isKindOfClass:[NSDictionary class]] && data.count > 0) {
+                
+            }
+        }
+    } withFailedCallBack:^(NSError *error) {
+        
+    }];
 }
 
 @end

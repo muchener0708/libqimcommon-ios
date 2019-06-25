@@ -402,6 +402,8 @@
 
 - (BOOL)sendPushTokenWithMyToken:(NSString *)myToken WithDeleteFlag:(BOOL)deleteFlag;
 
+- (void)findNewestClient;
+
 - (void)checkClearCache;
 
 @end

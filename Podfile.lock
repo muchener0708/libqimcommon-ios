@@ -101,7 +101,13 @@ PODS:
     - ZipArchive
   - QIMOpenSSL (1.0.0)
   - Reachability (3.2)
+  - SQLiteRepairKit (1.2.2):
+    - WCDBOptimizedSQLCipher (~> 1.2.0)
   - UICKeyChainStore (2.1.2)
+  - WCDB (1.0.7.5):
+    - SQLiteRepairKit (~> 1.2.0)
+    - WCDBOptimizedSQLCipher (~> 1.2.0)
+  - WCDBOptimizedSQLCipher (1.2.1)
   - YYCache (1.0.4)
   - YYDispatchQueuePool (1.0)
   - YYModel (1.0.4)
@@ -118,6 +124,7 @@ DEPENDENCIES:
   - QIMKitVendor (~> 3.0)
   - QIMOpenSSL
   - UICKeyChainStore
+  - WCDB
   - YYCache
   - YYDispatchQueuePool
   - YYModel
@@ -135,7 +142,10 @@ SPEC REPOS:
     - CocoaLumberjack
     - ProtocolBuffers
     - Reachability
+    - SQLiteRepairKit
     - UICKeyChainStore
+    - WCDB
+    - WCDBOptimizedSQLCipher
     - YYCache
     - YYDispatchQueuePool
     - YYModel
@@ -152,12 +162,15 @@ SPEC CHECKSUMS:
   QIMKitVendor: b9c6ee673851a9ea66d4ac2855cc3e1f065894ad
   QIMOpenSSL: bc85392a133e93273e7b9e7be9bd1a3b29c24461
   Reachability: 33e18b67625424e47b6cde6d202dce689ad7af96
+  SQLiteRepairKit: 35aaae5a8838adb85f5b1eb4d796055be6060a4b
   UICKeyChainStore: 85db518bb1d294366d15ec9b92a416c4e670518f
+  WCDB: 8e90babdeb7784c569353a4bd22a66c0a175a882
+  WCDBOptimizedSQLCipher: baf44493b0c7a3d49e97bc5b64a3856f6428ddd1
   YYCache: 8105b6638f5e849296c71f331ff83891a4942952
   YYDispatchQueuePool: 3dfb2274bcc74207688dde8ac6f7bdd46871dd7b
   YYModel: 2a7fdd96aaa4b86a824e26d0c517de8928c04b30
   ZipArchive: e25a4373192673e3229ac8d6e9f64a3e5713c966
 
-PODFILE CHECKSUM: 88b9953ffc0f46b60e8553447d4ed470d6988c5f
+PODFILE CHECKSUM: a324fbfad592932d87f45d5089d803ca3f135d5d
 
 COCOAPODS: 1.6.0

@@ -7,6 +7,19 @@
 //
 
 #import "IMDataManager.h"
+#import "IMDataManager+QIMSession.h"
+#import "IMDataManager+QIMCalendar.h"
+#import "IMDataManager+WorkFeed.h"
+#import "IMDataManager+QIMDBClientConfig.h"
+#import "IMDataManager+QIMDBQuickReply.h"
+#import "IMDataManager+QIMNote.h"
+#import "IMDataManager+QIMDBGroup.h"
+#import "IMDataManager+QIMDBFriend.h"
+#import "IMDataManager+QIMDBCollectionMessage.h"
+#import "IMDataManager+QIMDBPublicNumber.h"
+#import "IMDataManager+QIMDBUser.h"
+#import "IMDataManager+QIMUserMedal.h"
+#import "IMDataManager+QIMFoundList.h"
 #import "QIMPublicRedefineHeader.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -194,6 +207,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)qimDB_UpdateAtMessageReadStateWithGroupId:(NSString *)groupId withMsgIds:(NSArray *)msgIds withReadState:(QIMAtMsgReadState)readState;
 
+- (NSDictionary *)qimDB_getTotalAtMessageDic;
+
 - (NSArray *)qimDB_getAtMessageWithGroupId:(NSString *)groupId;
 
 - (void)qimDB_clearAtMessageWithGroupReadMarkArray:(NSArray *)groupReadMarkArray;
@@ -202,6 +217,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)qimDB_clearAtMessageWithGroupId:(NSString *)groupId;
 
+- (BOOL)qimDB_clearAtMessage;
 
 @end
 

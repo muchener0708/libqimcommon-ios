@@ -81,8 +81,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSInteger)getWorkNoticeMessagesCountWithEventType:(NSArray *)eventTypes;
 
-- (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset;
-
 - (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventTypes:(NSArray *)eventTypes readState:(int)readState;
 
 - (NSArray *)getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventTypes:(NSArray *)eventTypes;

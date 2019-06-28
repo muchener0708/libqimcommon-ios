@@ -7,6 +7,19 @@
 //
 
 #import "IMDataManager.h"
+#import "IMDataManager+QIMSession.h"
+#import "IMDataManager+QIMCalendar.h"
+#import "IMDataManager+WorkFeed.h"
+#import "IMDataManager+QIMDBClientConfig.h"
+#import "IMDataManager+QIMDBQuickReply.h"
+#import "IMDataManager+QIMNote.h"
+#import "IMDataManager+QIMDBFriend.h"
+#import "IMDataManager+QIMDBMessage.h"
+#import "IMDataManager+QIMDBCollectionMessage.h"
+#import "IMDataManager+QIMDBPublicNumber.h"
+#import "IMDataManager+QIMDBUser.h"
+#import "IMDataManager+QIMUserMedal.h"
+#import "IMDataManager+QIMFoundList.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -59,6 +72,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)qimDB_updateGroup:(NSString *)groupId WithHeaderSrc:(NSString *)headerSrc;
 
+- (void)qimDB_bulkDeleteGroups:(NSArray *)groupIdList;
+
 - (void)qimDB_deleteGroup:(NSString *)groupId;
 
 - (NSDictionary *)qimDB_getGroupMemberInfoByNickName:(NSString *)nickName;
@@ -88,12 +103,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)qimDB_deleteGroupMemberJid:(NSString *)memberJid WithGroupId:(NSString *)groupId;
 
 - (void)qimDB_deleteGroupMember:(NSString *)nickname WithGroupId:(NSString *)groupId;
-
-- (void)qimDB_bulkUpdateGroupPushState:(NSArray *)stateList;
-
-- (int)qimDB_getGroupPushStateWithGroupId:(NSString *)groupId;
-
-- (void)qimDB_updateGroup:(NSString *)groupId WithPushState:(int)pushState;
 
 @end
 

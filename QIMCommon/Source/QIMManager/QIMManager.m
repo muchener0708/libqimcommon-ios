@@ -55,7 +55,7 @@
 
 #import "ASIDataCompressor.h"
 #import "ASIDataDecompressor.h"
-#import "Database.h"
+//#import "Database.h"
 
 #import "QIMAppInfo.h"
 #import "QIMUserCacheManager.h"
@@ -196,10 +196,13 @@ static QIMManager *__IMManager = nil;
     self.receive_notify_queue = dispatch_queue_create("Receive Presence Notify Msg", DISPATCH_QUEUE_PRIORITY_DEFAULT);
     self.load_user_header = [[YYDispatchQueuePool alloc] initWithName:@"Load User Header" queueCount:2 qos:NSQualityOfServiceUserInitiated];
 //    dispatch_queue_create("Load User Header", DISPATCH_QUEUE_PRIORITY_DEFAULT);
-    self.load_session_content = [[YYDispatchQueuePool alloc] initWithName:@"load_session_content" queueCount:2 qos:NSQualityOfServiceUserInitiated];
-    self.load_session_name = [[YYDispatchQueuePool alloc] initWithName:@"load_session_name" queueCount:2 qos:NSQualityOfServiceUserInitiated];
+    self.load_session_content = [[YYDispatchQueuePool alloc] initWithName:@"load_session_content" queueCount:2 qos:NSQualityOfServiceBackground];
+    self.load_session_name = [[YYDispatchQueuePool alloc] initWithName:@"load_session_name" queueCount:2 qos:NSQualityOfServiceBackground];
     self.load_session_unreadcount = [[YYDispatchQueuePool alloc] initWithName:@"load_session_unreadcount" queueCount:2 qos:NSQualityOfServiceBackground];
-    self.load_groupDB_VCard = [[YYDispatchQueuePool alloc] initWithName:@"load group card from DB" queueCount:2 qos:NSQualityOfServiceUserInitiated];
+    self.load_groupDB_VCard = [[YYDispatchQueuePool alloc] initWithName:@"load group card from DB" queueCount:2 qos:NSQualityOfServiceBackground];
+    self.load_msgNickName = [[YYDispatchQueuePool alloc] initWithName:@"load msg nickName" queueCount:2 qos:NSQualityOfServiceBackground];
+    self.load_msgHeaderImage = [[YYDispatchQueuePool alloc] initWithName:@"load msg headerImage" queueCount:2 qos:NSQualityOfServiceBackground];
+
 //    dispatch_queue_create("Load Session Content", DISPATCH_QUEUE_PRIORITY_DEFAULT);
     self.lastReceiveGroupMsgTimeDic = [[NSMutableDictionary alloc] init];
     self.load_customEvent_queue = dispatch_queue_create("Load CustomEvent Queue", DISPATCH_QUEUE_SERIAL);
@@ -214,8 +217,8 @@ static QIMManager *__IMManager = nil;
     dispatch_queue_set_specific(self.atMeCacheQueue, self.atMeCacheTag, self.atMeCacheTag, NULL);
     
     _timeStempDic = [[NSMutableDictionary alloc] init];
-    _hasAtMeDic = [[NSMutableDictionary alloc] init];
-    _hasAtAllDic = [[NSMutableDictionary alloc] init];
+//    _hasAtMeDic = [[NSMutableDictionary alloc] init];
+//    _hasAtAllDic = [[NSMutableDictionary alloc] init];
     _friendDescDic = [[NSMutableDictionary alloc] init];
     _friendInfoDic = [[NSMutableDictionary alloc] init];
     _groupList = [[NSMutableArray alloc] init];
@@ -310,9 +313,6 @@ static QIMManager *__IMManager = nil;
             }
         }
     }
-    _opsFoundRNDebugUrl = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"opsFoundRNDebugUrl"];
-    _qtalkFoundRNDebugUrl = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"qtalkFoundRNDebugUrl"];
-    _qtalkSearchRNDebugUrl = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"qtalkSearchRNDebugUrl"];
 }
 
 @end
@@ -799,6 +799,7 @@ static QIMManager *__IMManager = nil;
     if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeQChat) {
         myNickName = [QIMManager getLastUserName];
     } else {
+        /*
         NSDictionary *myProfile = [self getUserInfoByUserId:[self getLastJid]];
         if (myProfile.count) {
             NSString *nickName = [myProfile objectForKey:@"Name"];
@@ -806,6 +807,7 @@ static QIMManager *__IMManager = nil;
                 myNickName = nickName;
             }
         }
+        */
     }
     return myNickName;
 }
@@ -1106,6 +1108,36 @@ static QIMManager *__IMManager = nil;
     [[QIMUserCacheManager sharedInstance] setUserObject:@(flag) forKey:@"pickerPixelOriginal"];
 }
 
+//OPS发现页RN调试
+- (NSString *)opsFoundRNDebugUrl {
+    NSString *opsFoundRNDebugUrl = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"opsFoundRNDebugUrl"];
+    return opsFoundRNDebugUrl;
+}
+
+- (void)setOpsFoundRNDebugUrl:(NSString *)opsFoundRNDebugUrl {
+    [[QIMUserCacheManager sharedInstance] setUserObject:opsFoundRNDebugUrl forKey:@"opsFoundRNDebugUrl"];
+}
+
+//qtalk发现页测试地址
+- (NSString *)qtalkFoundRNDebugUrl {
+    NSString *qtalkFoundRNDebugUrl = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"qtalkFoundRNDebugUrl"];
+    return qtalkFoundRNDebugUrl;
+}
+
+- (void)setQtalkFoundRNDebugUrl:(NSString *)qtalkFoundRNDebugUrl {
+    [[QIMUserCacheManager sharedInstance] setUserObject:qtalkFoundRNDebugUrl forKey:@"qtalkFoundRNDebugUrl"];
+}
+
+//qtalk搜索测试地址
+- (NSString *)qtalkSearchRNDebugUrl {
+    NSString *qtalkSearchRNDebugUrl = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"qtalkSearchRNDebugUrl"];
+    return qtalkSearchRNDebugUrl;
+}
+
+- (void)setQtalkSearchRNDebugUrl:(NSString *)qtalkSearchRNDebugUrl {
+    [[QIMUserCacheManager sharedInstance] setUserObject:qtalkSearchRNDebugUrl forKey:@"qtalkSearchRNDebugUrl"];
+}
+
 //是否优先展示对方个性签名
 - (BOOL)moodshow {
     NSNumber *flagNum = [[QIMUserCacheManager sharedInstance] userObjectForKey:@"moodshow"];
@@ -1139,12 +1171,10 @@ static QIMManager *__IMManager = nil;
     
     __block NSArray *array = nil;
     dispatch_block_t block = ^{
-        
-        array = [_hasAtMeDic objectForKey:jid];
-        if (!array.count) {
-            array = [[IMDataManager qimDB_SharedInstance] qimDB_getAtMessageWithGroupId:jid];
-            [_hasAtMeDic setQIMSafeObject:array forKey:jid];
+        if (!_hasAtMeDic) {
+            _hasAtMeDic = [[IMDataManager qimDB_SharedInstance] qimDB_getTotalAtMessageDic];
         }
+        array = [_hasAtMeDic objectForKey:jid];
     };
     
     if (dispatch_get_specific(_atMeCacheTag))
@@ -1191,7 +1221,7 @@ static QIMManager *__IMManager = nil;
 - (void)addAtMeMessageByJid:(NSString *)groupId withType:(QIMAtType)atType withMsgId:(NSString *)msgId withMsgTime:(long long)msgTime {
     dispatch_block_t block = ^{
         
-        NSMutableArray *arr = [_hasAtMeDic objectForKey:groupId];
+        NSMutableArray *arr = [NSMutableArray arrayWithArray:[_hasAtMeDic objectForKey:groupId]];
         if (arr == nil) {
             
             arr = [NSMutableArray arrayWithArray:[[IMDataManager qimDB_SharedInstance] qimDB_getAtMessageWithGroupId:groupId]];

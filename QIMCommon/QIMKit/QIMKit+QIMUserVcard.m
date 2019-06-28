@@ -18,6 +18,10 @@
     return [[QIMManager sharedInstance] getUserMarkupNameWithUserId:userId];
 }
 
+- (void)updateUserCard:(NSString *)xmppId withCache:(BOOL)cache {
+    [[QIMManager sharedInstance] updateUserCard:xmppId withCache:cache];
+}
+
 - (void)updateUserCard:(NSArray *)xmppIds {
     [[QIMManager sharedInstance] updateUserCard:xmppIds];
 }
@@ -53,10 +57,6 @@
 
 - (void)getPhoneNumberWithUserId:(NSString *)qtalkId withCallBack:(QIMKitGetPhoneNumberBlock)callback{
     [[QIMManager sharedInstance] getPhoneNumberWithUserId:qtalkId withCallBack:callback];
-}
-
-- (NSDictionary *)getUserInfoByName:(NSString *)nickName {
-    return [[QIMManager sharedInstance] getUserInfoByName:nickName];
 }
 
 #pragma mark - 用户头像

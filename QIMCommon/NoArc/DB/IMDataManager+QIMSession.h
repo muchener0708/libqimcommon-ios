@@ -7,6 +7,19 @@
 //
 
 #import "IMDataManager.h"
+#import "IMDataManager+QIMCalendar.h"
+#import "IMDataManager+WorkFeed.h"
+#import "IMDataManager+QIMDBClientConfig.h"
+#import "IMDataManager+QIMDBQuickReply.h"
+#import "IMDataManager+QIMNote.h"
+#import "IMDataManager+QIMDBGroup.h"
+#import "IMDataManager+QIMDBFriend.h"
+#import "IMDataManager+QIMDBMessage.h"
+#import "IMDataManager+QIMDBCollectionMessage.h"
+#import "IMDataManager+QIMDBPublicNumber.h"
+#import "IMDataManager+QIMDBUser.h"
+#import "IMDataManager+QIMUserMedal.h"
+#import "IMDataManager+QIMFoundList.h"
 
 @interface IMDataManager (QIMSession)
 
@@ -25,6 +38,8 @@
                              WithRealJid:(id)realJid;
 
 - (void)qimDB_deleteSession:(NSString *)xmppId RealJid:(NSString *)realJid;
+
+- (void)qimDB_deleteSessionList:(NSArray *)xmppIds;
 
 - (void)qimDB_deleteSession:(NSString *)xmppId;
 

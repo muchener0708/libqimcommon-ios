@@ -118,7 +118,6 @@
 - (NSString *)getUserHeaderSrcByUserId:(NSString *)userId;
 //- (void)updateUser:(NSString *)userId WithVersion:(int)version;
 - (BOOL)checkExitsUser;
-- (int)getMaxUserIncrementVersion;
 
 - (void)updateMessageWithExtendInfo:(NSString *)extendInfo ForMsgId:(NSString *)msgId;
 - (void)deleteMessageWithXmppId:(NSString *)xmppId;
@@ -469,12 +468,6 @@
 
 /*********************** Group Message State **************************/
 - (long long)qimDB_bulkUpdateGroupMessageReadFlag:(NSArray *)mucArray;
-
-- (void)qimDB_bulkUpdateGroupPushState:(NSArray *)stateList;
-
-- (int)getGroupPushStateWithGroupId:(NSString *)groupId;
-
-- (void)updateGroup:(NSString *)groupId WithPushState:(int)pushState;
 
 /*********************** QTNotes **********************/
 

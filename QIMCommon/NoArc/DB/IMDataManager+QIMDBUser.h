@@ -7,6 +7,19 @@
 //
 
 #import "IMDataManager.h"
+#import "IMDataManager+QIMSession.h"
+#import "IMDataManager+QIMCalendar.h"
+#import "IMDataManager+WorkFeed.h"
+#import "IMDataManager+QIMDBClientConfig.h"
+#import "IMDataManager+QIMDBQuickReply.h"
+#import "IMDataManager+QIMNote.h"
+#import "IMDataManager+QIMDBGroup.h"
+#import "IMDataManager+QIMDBFriend.h"
+#import "IMDataManager+QIMDBMessage.h"
+#import "IMDataManager+QIMDBCollectionMessage.h"
+#import "IMDataManager+QIMDBPublicNumber.h"
+#import "IMDataManager+QIMUserMedal.h"
+#import "IMDataManager+QIMFoundList.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -25,6 +38,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)qimDB_InsertOrUpdateUserInfos:(NSArray *)userInfos;
 
 - (NSDictionary *)qimDB_selectUserByJID:(NSString *)jid;
+
+
+/**
+ 获取所有的用户备注
+
+ @return 用户备注
+ */
+- (NSDictionary *)qimDB_getUserMarkNameDic;
 
 - (void)qimDB_clearUserList;
 

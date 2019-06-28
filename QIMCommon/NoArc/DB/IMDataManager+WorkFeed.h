@@ -7,6 +7,19 @@
 //
 
 #import "IMDataManager.h"
+#import "IMDataManager+QIMSession.h"
+#import "IMDataManager+QIMCalendar.h"
+#import "IMDataManager+QIMDBClientConfig.h"
+#import "IMDataManager+QIMDBQuickReply.h"
+#import "IMDataManager+QIMNote.h"
+#import "IMDataManager+QIMDBGroup.h"
+#import "IMDataManager+QIMDBFriend.h"
+#import "IMDataManager+QIMDBMessage.h"
+#import "IMDataManager+QIMDBCollectionMessage.h"
+#import "IMDataManager+QIMDBPublicNumber.h"
+#import "IMDataManager+QIMDBUser.h"
+#import "IMDataManager+QIMUserMedal.h"
+#import "IMDataManager+QIMFoundList.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -65,14 +78,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 //新加
 - (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventTypes:(NSArray *)eventTypes;
-
-//临时
-- (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset;
-
-- (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventType1:(int)eventType1 eventType2:(int)eventType2 readState:(int)readState;
-
-//驼圈数据库取数据库带参数方法
-- (NSArray *)qimDB_getWorkNoticeMessagesWithLimit:(int)limit WithOffset:(int)offset eventType:(int)eventType readState:(int)readState;
 
 //我的驼圈儿根据uuid 数组删除deleteListArr
 - (void)qimDB_deleteWorkNoticeMessageWithUUid:(NSArray *)deleteListArr;

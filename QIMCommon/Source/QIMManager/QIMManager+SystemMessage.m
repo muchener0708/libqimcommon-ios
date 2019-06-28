@@ -53,7 +53,7 @@
     [self getSystemMsgHistoryListWithUserId:from WithDomain:[[QIMManager sharedInstance] getDomain] WithVersion:self.lastSingleMsgTime];
 }
 
-- (void)getSystemMsgLisByUserId:(NSString *)userId WithFromHost:(NSString *)fromHost WithLimit:(int)limit WithOffset:(int)offset WithComplete:(void (^)(NSArray *))complete {
+- (void)getSystemMsgLisByUserId:(NSString *)userId WithFromHost:(NSString *)fromHost WithLimit:(int)limit WithOffset:(int)offset withLoadMore:(BOOL)loadMore WithComplete:(void (^)(NSArray *))complete {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSArray *array = [[IMDataManager qimDB_SharedInstance] qimDB_getMgsListBySessionId:userId WithRealJid:userId WithLimit:limit WithOffset:offset];
         if (array.count > 0) {
@@ -65,7 +65,7 @@
             dispatch_async(dispatch_get_main_queue(), ^{
                 complete(list);
             });
-            if (list.count < limit) {
+            if (list.count < limit && loadMore == YES) {
                 if (self.load_history_msg == nil) {
                     self.load_history_msg = dispatch_queue_create("Load History", 0);
                 }
@@ -79,29 +79,35 @@
                 });
             }
         } else {
-            if (self.load_history_msg == nil) {
-                self.load_history_msg = dispatch_queue_create("Load History", 0);
-            }
-            dispatch_async(self.load_history_msg, ^{
-                long long version = [[IMDataManager qimDB_SharedInstance] qimDB_getMinMsgTimeStampByXmppId:userId] - timeChange;
-                NSArray *resultList = [self getSystemMsgListWithDirection:0 WithUserId:userId WithFromHost:fromHost WithLimit:limit withTimeVersion:version toId:[QIMManager getLastUserName] toHost:fromHost];
-                if (resultList.count > 0) {
-                    [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:resultList];
-                    NSArray *datas = [[IMDataManager qimDB_SharedInstance] qimDB_getMgsListBySessionId:userId WithRealJid:nil WithLimit:(int)(resultList.count) WithOffset:offset];
-                    NSMutableArray *list = [NSMutableArray array];
-                    for (NSDictionary *infoDic in datas) {
-                        QIMMessageModel *msg = [self getMessageModelWithByDBMsgDic:infoDic];
-                        [list addObject:msg];
-                    }
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        complete(list);
-                    });
-                } else {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        complete(@[]);
-                    });
+            if (loadMore == YES) {
+                if (self.load_history_msg == nil) {
+                    self.load_history_msg = dispatch_queue_create("Load History", 0);
                 }
-            });
+                dispatch_async(self.load_history_msg, ^{
+                    long long version = [[IMDataManager qimDB_SharedInstance] qimDB_getMinMsgTimeStampByXmppId:userId] - timeChange;
+                    NSArray *resultList = [self getSystemMsgListWithDirection:0 WithUserId:userId WithFromHost:fromHost WithLimit:limit withTimeVersion:version toId:[QIMManager getLastUserName] toHost:fromHost];
+                    if (resultList.count > 0) {
+                        [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertHistoryChatJSONMsg:resultList];
+                        NSArray *datas = [[IMDataManager qimDB_SharedInstance] qimDB_getMgsListBySessionId:userId WithRealJid:nil WithLimit:(int)(resultList.count) WithOffset:offset];
+                        NSMutableArray *list = [NSMutableArray array];
+                        for (NSDictionary *infoDic in datas) {
+                            QIMMessageModel *msg = [self getMessageModelWithByDBMsgDic:infoDic];
+                            [list addObject:msg];
+                        }
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            complete(list);
+                        });
+                    } else {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            complete(@[]);
+                        });
+                    }
+                });
+            } else {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    complete(@[]);
+                });
+            }
         }
     });
 }

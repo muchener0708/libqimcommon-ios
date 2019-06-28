@@ -157,62 +157,61 @@
 }
 
 - (void)insertNewClientConfigInfoWithData:(NSDictionary *)result {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSDictionary *data = [[result objectForKey:@"data"] objectForKey:@"clientConfigInfos"];
-        NSInteger version = [[[result objectForKey:@"data"] objectForKey:@"version"] integerValue];
+    NSDictionary *data = [[result objectForKey:@"data"] objectForKey:@"clientConfigInfos"];
+    NSInteger version = [[[result objectForKey:@"data"] objectForKey:@"version"] integerValue];
 #warning 循环中尽可能避免操作db，汇总之后批量插入
-        
-        for (NSDictionary *configInfo in data) {
-            NSArray *configInfoData = [configInfo objectForKey:@"infos"];
-            NSString *key = [configInfo objectForKey:@"key"];
-            [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertConfigArrayWithConfigKey:key WithConfigVersion:version ConfigArray:configInfoData];
-            if ([key isEqualToString:@"kStickJidDic"]) {
-                self.stickJidDic = nil;
-                for (NSDictionary *stickInfo in configInfoData) {
-                    NSString *subkey = [stickInfo objectForKey:@"subkey"];
-                    NSString *chatId = [[subkey componentsSeparatedByString:@"<>"] firstObject];
-                    NSString *stickValue = [stickInfo objectForKey:@"configinfo"];
-                    NSDictionary *stickValueDic = [[QIMJSONSerializer sharedInstance] deserializeObject:stickValue error:nil];
-                    ChatType chatType = (ChatType)[[stickValueDic objectForKey:@"chatType"] unsignedIntegerValue];
-                    NSInteger isDel = [[stickInfo objectForKey:@"isdel"] integerValue];
-                    if (isDel == NO) {
-                        [self addSessionByType:chatType ById:chatId ByMsgId:nil WithMsgTime:0 WithNeedUpdate:YES];
-                    }
+    
+    for (NSDictionary *configInfo in data) {
+        NSArray *configInfoData = [configInfo objectForKey:@"infos"];
+        NSString *key = [configInfo objectForKey:@"key"];
+        [[IMDataManager qimDB_SharedInstance] qimDB_bulkInsertConfigArrayWithConfigKey:key WithConfigVersion:version ConfigArray:configInfoData];
+        if ([key isEqualToString:@"kStickJidDic"]) {
+            self.stickJidDic = nil;
+            for (NSDictionary *stickInfo in configInfoData) {
+                NSString *subkey = [stickInfo objectForKey:@"subkey"];
+                NSString *chatId = [[subkey componentsSeparatedByString:@"<>"] firstObject];
+                NSString *stickValue = [stickInfo objectForKey:@"configinfo"];
+                NSDictionary *stickValueDic = [[QIMJSONSerializer sharedInstance] deserializeObject:stickValue error:nil];
+                ChatType chatType = (ChatType)[[stickValueDic objectForKey:@"chatType"] unsignedIntegerValue];
+                NSInteger isDel = [[stickInfo objectForKey:@"isdel"] integerValue];
+                if (isDel == NO) {
+                    [self addSessionByType:chatType ById:chatId ByMsgId:nil WithMsgTime:0 WithNeedUpdate:YES];
                 }
-            } else if ([key isEqualToString:@"kNoticeStickJidDic"]) {
-                if (!self.notMindGroupDic) {
-                    self.notMindGroupDic = [NSMutableArray arrayWithCapacity:3];
-                }
-                for (NSDictionary *noticeStickInfo in configInfoData) {
-                    NSString *subkey = [noticeStickInfo objectForKey:@"subkey"];
-                    [self.notMindGroupDic removeObjectForKey:subkey];
-                }
-                self.notMindGroupDic = nil;
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:kRemindStateChange object:nil];
-                    [[NSNotificationCenter defaultCenter] postNotificationName:kRemindStateChange object:@"ForceRefresh"];
-                });
-            } else if ([key isEqualToString:@"kMarkupNames"]) {
-                for (NSDictionary *markupInfo in configInfoData) {
-                    NSString *subkey = [markupInfo objectForKey:@"subkey"];
-                    [self.userMarkupNameDic removeObjectForKey:subkey];
-                }
-            } else if ([key isEqualToString:@"kChatColorInfo"]) {
-                NSDictionary *newColorInfoDic = [configInfoData firstObject];
-                NSString *configInfo = [newColorInfoDic objectForKey:@"configinfo"];
-                NSDictionary *colorConfigInfoDic = [[QIMJSONSerializer sharedInstance] deserializeObject:configInfo error:nil];
-                [[QIMUserCacheManager sharedInstance] setUserObject:colorConfigInfoDic forKey:kChatColorInfo];
-            } else if ([key isEqualToString:@"kCurrentFontInfo"]) {
-                NSDictionary *newFontInfoDic = [configInfoData firstObject];
-                NSString *configInfo = [newFontInfoDic objectForKey:@"configinfo"];
-                NSDictionary *fontConfigInfoDic = [[QIMJSONSerializer sharedInstance] deserializeObject:configInfo error:nil];
-                [[QIMUserCacheManager sharedInstance] setUserObject:fontConfigInfoDic forKey:kCurrentFontInfo];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationCurrentFontUpdate object:nil];
-                });
             }
+        } else if ([key isEqualToString:@"kNoticeStickJidDic"]) {
+            if (!self.notMindGroupDic) {
+                self.notMindGroupDic = [NSMutableArray arrayWithCapacity:3];
+            }
+            for (NSDictionary *noticeStickInfo in configInfoData) {
+                NSString *subkey = [noticeStickInfo objectForKey:@"subkey"];
+                [self.notMindGroupDic removeObjectForKey:subkey];
+            }
+            self.notMindGroupDic = nil;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:kRemindStateChange object:nil];
+                [[NSNotificationCenter defaultCenter] postNotificationName:kRemindStateChange object:@"ForceRefresh"];
+            });
+        } else if ([key isEqualToString:@"kMarkupNames"]) {
+            for (NSDictionary *markupInfo in configInfoData) {
+                NSString *subkey = [markupInfo objectForKey:@"subkey"];
+                [self.userMarkupNameDic removeObjectForKey:subkey];
+            }
+            self.userMarkupNameDic = nil;
+        } else if ([key isEqualToString:@"kChatColorInfo"]) {
+            NSDictionary *newColorInfoDic = [configInfoData firstObject];
+            NSString *configInfo = [newColorInfoDic objectForKey:@"configinfo"];
+            NSDictionary *colorConfigInfoDic = [[QIMJSONSerializer sharedInstance] deserializeObject:configInfo error:nil];
+            [[QIMUserCacheManager sharedInstance] setUserObject:colorConfigInfoDic forKey:kChatColorInfo];
+        } else if ([key isEqualToString:@"kCurrentFontInfo"]) {
+            NSDictionary *newFontInfoDic = [configInfoData firstObject];
+            NSString *configInfo = [newFontInfoDic objectForKey:@"configinfo"];
+            NSDictionary *fontConfigInfoDic = [[QIMJSONSerializer sharedInstance] deserializeObject:configInfo error:nil];
+            [[QIMUserCacheManager sharedInstance] setUserObject:fontConfigInfoDic forKey:kCurrentFontInfo];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationCurrentFontUpdate object:nil];
+            });
         }
-    });
+    }
 }
 
 - (BOOL)updateRemoteClientConfigWithType:(QIMClientConfigType)type BatchProcessConfigInfo:(NSArray *)configInfoArray WithDel:(BOOL)delFlag {
@@ -334,9 +333,7 @@
             NSData *responseData = [response data];
             NSDictionary *result = [[QIMJSONSerializer sharedInstance] deserializeObject:responseData error:nil];
             if ([[result objectForKey:@"ret"] boolValue]) {
-                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                    [strongSelf insertNewClientConfigInfoWithData:result];
-                });
+                [strongSelf insertNewClientConfigInfoWithData:result];
             }
         }
     } failure:^(NSError *error) {

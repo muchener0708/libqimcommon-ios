@@ -782,6 +782,10 @@
     if (self.updateGroupList == nil) {
         self.updateGroupList = [NSMutableArray arrayWithCapacity:[newGroupList count]];
     }
+    NSMutableArray *updateGroupList = [NSMutableArray arrayWithCapacity:3];
+    NSMutableArray *deleteGroupList = [NSMutableArray arrayWithCapacity:3];
+    NSMutableArray *removeSessionList = [NSMutableArray arrayWithCapacity:3];
+    NSMutableArray *deleteGroupMemberList = [NSMutableArray arrayWithCapacity:3];
     for (NSDictionary *group in newGroupList) {
         NSString *groupId = [group objectForKey:@"M"];
         NSString *groupDomain = [group objectForKey:@"D"];
@@ -793,21 +797,24 @@
         NSString *newGroupId = [NSString stringWithFormat:@"%@@%@", groupId, groupDomain];
         //flag 为 Ture 新增，NO 为销毁或退出
         if (flag) {
-            [self.updateGroupList addObject:newGroupId];
-            [[IMDataManager qimDB_SharedInstance] qimDB_insertGroup:newGroupId];
+            NSArray *tempGroup = @[newGroupId, @(0)];
+            [updateGroupList addObject:tempGroup];
         } else {
-            NSMutableArray *tempMyGroups = [NSMutableArray arrayWithArray:[self getMyGroupList]];
-            for (NSDictionary *myGroup in tempMyGroups) {
-                NSString *groupId = [myGroup objectForKey:@"GroupId"];
-                if ([newGroupId isEqualToString:groupId]) {
-                    [self.groupList removeObject:myGroup];
-                    [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroup:groupId];
-                    [self removeSessionById:groupId];
-                    [[IMDataManager qimDB_SharedInstance] qimDB_deleteGroupMemberWithGroupId:groupId];
-                }
-            }
+            NSArray *tempGroup = @[newGroupId];
+            [deleteGroupList addObject:tempGroup];
         }
     }
+    if (updateGroupList.count > 0) {
+        //更新群组
+        [[IMDataManager qimDB_SharedInstance] qimDB_bulkinsertGroups:updateGroupList];
+    }
+    if (deleteGroupList.count > 0) {
+        //删除群组
+        [[IMDataManager qimDB_SharedInstance] qimDB_bulkDeleteGroups:deleteGroupList];
+    }
+    //删除session
+    [[IMDataManager qimDB_SharedInstance] qimDB_deleteSessionList:deleteGroupList];
+    
     [[IMDataManager qimDB_SharedInstance] qimDB_UpdateUserCacheDataWithKey:kGetIncrementMucListVersion withType:11 withValue:@"群列表时间戳" withValueInt:self.lastMaxGroupVersion];
 }
 

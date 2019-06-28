@@ -310,17 +310,20 @@
             [autoManagerObject performSelectorInBackground:@selector(addCATTraceData:) withObject:logDic];
             
             
-             QIMVerboseLog(@"获取群阅读指针结果 : %@", response);
+             QIMVerboseLog(@"http请求获取群阅读指针结果 : %@", response);
              result = [[QIMJSONSerializer sharedInstance] deserializeObject:response.data error:nil];
              BOOL errcode = [[result objectForKey:@"ret"] boolValue];
              NSString *errmsg = [result objectForKey:@"errmsg"];
              if (errcode != 0 && result.count > 0 && response.code == 200) {
                  NSMutableArray *mucData = [result objectForKey:@"data"];
              
-                 long long maxMucReadMarkTime = [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateGroupMessageReadFlag:mucData];
+                 [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateGroupMessageReadFlag:mucData];
+                 /*
                  if (maxMucReadMarkTime > self.lastMaxMucReadMarkTime) {
-                     [[IMDataManager qimDB_SharedInstance] qimDB_UpdateUserCacheDataWithKey:kGetGroupReadMarkVersion withType:8 withValue:@"群阅读指针时间戳" withValueInt:maxMucReadMarkTime];
+                     QIMVerboseLog(@"插入本地群阅读指针zuida时间戳 : %lld", maxMucReadMarkTime);
+                     [[IMDataManager qimDB_SharedInstance] qimDB_UpdateUserCacheDataWithKey:kGetGroupReadMarkVersion withType:8 withValue:@"群阅读指针时间戳V2" withValueInt:maxMucReadMarkTime];
                  }
+                 */
                  self.hasAtMeDic = nil;
                  dispatch_async(dispatch_get_main_queue(), ^{
                      QIMVerboseLog(@"获取群阅读指针之后强制刷新NavBar未读数");

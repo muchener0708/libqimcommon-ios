@@ -326,7 +326,7 @@
 
 static const NSString *kGetIncrementMucListVersion = @"kGetIncrementMucListVersion";
 static const NSString *kGetUpdateUsersV2Version = @"kGetUpdateUsersV2Version";
-static const NSString *kGetGroupReadMarkVersion = @"kGetGroupReadMarkVersion";
+static const NSString *kGetGroupReadMarkVersion = @"kGetGroupReadMarkVersionV2";
 static const NSString *kWorkMomentNotifySwitchConfig = @"kWorkMomentNotifySwitchConfig";
 
 #endif /* QIMNotificationKeys_h */

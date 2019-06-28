@@ -66,14 +66,12 @@
     }
     __block NSString *result = nil;
     if (!self.userMarkupNameDic) {
-        self.userMarkupNameDic = [NSMutableDictionary dictionaryWithCapacity:3];
+        NSDictionary *userMarkNameDics = [[IMDataManager qimDB_SharedInstance] qimDB_getUserMarkNameDic];
+        self.userMarkupNameDic = [NSMutableDictionary dictionaryWithDictionary:userMarkNameDics];
     }
     NSString *tempMarkupName = [self.userMarkupNameDic objectForKey:userId];
     if (!tempMarkupName.length) {
-        tempMarkupName = [[QIMManager sharedInstance] getClientConfigInfoWithType:QIMClientConfigTypeKMarkupNames WithSubKey:userId];
-        if (!tempMarkupName) {
-            tempMarkupName = [[self getUserInfoByUserId:userId] objectForKey:@"Name"];
-        }
+        tempMarkupName = [[self getUserInfoByUserId:userId] objectForKey:@"Name"];
         dispatch_block_t block = ^{
 
             [self.userMarkupNameDic setQIMSafeObject:tempMarkupName forKey:userId];
@@ -229,48 +227,6 @@
     return result;
 }
 
-- (NSDictionary *)getUserInfoByName:(NSString *)nickName {
-    if (!nickName) {
-        return nil;
-    }
-    __block NSDictionary *result = nil;
-    __block BOOL fileExists = NO;
-    dispatch_block_t block = ^{
-        
-        NSDictionary *memUserInfo = [self.userInfoDic objectForKey:nickName];
-        NSString *userHeaderSrc = [memUserInfo objectForKey:@"HeaderSrc"];
-        if (memUserInfo.count && userHeaderSrc.length > 0) {
-            result = memUserInfo;
-        } else {
-            NSDictionary *tempDic = [[IMDataManager qimDB_SharedInstance] qimDB_selectUserByIndex:nickName];
-            if (tempDic) {
-                
-                if (!self.userInfoDic) {
-                    self.userInfoDic = [NSMutableDictionary dictionaryWithCapacity:5];
-                }
-                [self.userInfoDic setObject:tempDic forKey:nickName];
-                NSMutableDictionary *dic = [NSMutableDictionary dictionaryWithDictionary:tempDic];
-                if ([[QIMAppInfo sharedInstance] appType] != QIMProjectTypeQChat) {
-                    
-                    NSString *rtxId = [dic objectForKey:@"UserId"];
-                    NSString *desc = [self.friendDescDic objectForKey:rtxId];
-                    if (desc) {
-                        
-                        [dic setObject:desc forKey:@"DescInfo"];
-                    }
-                }
-                result = dic;
-            }
-        }
-    };
-    
-    if (dispatch_get_specific(self.cacheTag))
-        block();
-    else
-        dispatch_sync(self.cacheQueue, block);
-    return result;
-}
-
 #pragma mark - 用户原始尺寸头像
 
 - (NSString *)getUserBigHeaderImageUrlWithUserId:(NSString *)userId {
@@ -306,6 +262,23 @@
 }
 
 #pragma mark - 分割线-----------
+
+static NSMutableArray *cacheUserCardHttpList = nil;
+- (void)updateUserCard:(NSString *)xmppId withCache:(BOOL)cache {
+    if (YES == cache) {
+        if (!cacheUserCardHttpList) {
+            cacheUserCardHttpList = [NSMutableArray arrayWithCapacity:3];
+        }
+        if ([cacheUserCardHttpList containsObject:xmppId]) {
+            return;
+        } else {
+            [cacheUserCardHttpList addObject:xmppId];
+            [self updateUserCard:@[xmppId]];
+        }
+    } else {
+        [self updateUserCard:@[xmppId]];
+    }
+}
 
 - (void)updateUserCard:(NSArray *)xmppIds {
     if (xmppIds.count <= 0) {
@@ -581,40 +554,6 @@
             }
         });
     }];
-    
-    /*
-    ASIHTTPRequest *request = [[ASIHTTPRequest alloc] initWithURL:[NSURL URLWithString:destUrl]];
-    [request addRequestHeader:@"Content-type" value:@"application/json;"];
-    [request setRequestMethod:@"POST"];
-    
-    [request setPostBody:[NSMutableData dataWithData:requestData]];
-    [request setCachePolicy:ASIDoNotReadFromCacheCachePolicy];
-    [request startSynchronous];
-    NSError *error = [request error];
-    if (!error && [request responseStatusCode] == 200) {
-        NSData *data = [request responseData];
-        NSDictionary *dic = [[QIMJSONSerializer sharedInstance] deserializeObject:data error:nil];
-        BOOL errcode = [[dic objectForKey:@"errcode"] integerValue];
-        if (errcode == 0) {
-            NSDictionary *data = [dic objectForKey:@"data"];
-            QIMVerboseLog(@"查看用户%@直属领导结果 ： %@", userId, dic);
-            if (data.count) {
-                //插入数据库IM_UsersWorkInfo
-                NSString *workInfo = [[QIMJSONSerializer sharedInstance] serializeObject:data];
-                NSDictionary *userBackInfo = @{@"UserWorkInfo":workInfo?workInfo:@""};
-                [[IMDataManager qimDB_SharedInstance] qimDB_bulkUpdateUserBackInfo:userBackInfo WithXmppId:userId];
-                
-                userWorkInfo = [NSDictionary dictionaryWithDictionary:data];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:kUpdateUserLeaderCard object:@{@"UserId":userId, @"LeaderInfo":workInfo}];
-                });
-            }
-        }
-    } else {
-        QIMVerboseLog(@"查看用户%@直属领导 失败 ： %ld, Error : %@", userId, [request responseStatusCode], error);
-    }
-    return userWorkInfo;
-    */
 }
 
 - (void)getPhoneNumberWithUserId:(NSString *)qtalkId withCallBack:(QIMKitGetPhoneNumberBlock)callback{
@@ -670,29 +609,6 @@
             callback(nil);
         }
     }];
-    /*
-    ASIHTTPRequest *request = [[ASIHTTPRequest alloc] initWithURL:[NSURL URLWithString:destUrl]];
-    [request addRequestHeader:@"Content-type" value:@"application/json;"];
-    [request setRequestMethod:@"POST"];
-    
-    [request setPostBody:[NSMutableData dataWithData:requestData]];
-    [request setCachePolicy:ASIDoNotReadFromCacheCachePolicy];
-    [request startSynchronous];
-    NSError *error = [request error];
-    if (!error && [request responseStatusCode] == 200) {
-        NSData *data = [request responseData];
-        NSDictionary *dic = [[QIMJSONSerializer sharedInstance] deserializeObject:data error:nil];
-        QIMVerboseLog(@"查看用户%@手机号结果 : %@", qtalkId, dic);
-        BOOL errcode = [[dic objectForKey:@"errcode"] integerValue];
-        if (errcode == 0) {
-            NSDictionary *data = [dic objectForKey:@"data"];
-            phoneNumber = [data objectForKey:@"phone"];
-        }
-    } else {
-        QIMVerboseLog(@"查看用户%@手机号失败 ： %ld, Error : %@", qtalkId, [request responseStatusCode], error);
-    }
-    return phoneNumber;
-    */
 }
 
 #pragma mark - 跨域搜索

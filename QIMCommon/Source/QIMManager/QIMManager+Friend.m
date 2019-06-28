@@ -253,13 +253,13 @@
 }
 
 - (NSDictionary *)getLastFriendNotify {
+    return nil;
     return [[IMDataManager qimDB_SharedInstance] qimDB_getLastFriendNotify];
 }
 
 - (NSInteger)getFriendNotifyCount {
-    
+    return 0;
     return [[IMDataManager qimDB_SharedInstance] qimDB_getFriendNotifyCount];
 }
-
 
 @end

@@ -895,10 +895,17 @@ static dispatch_once_t _onceDBToken;
         result = [database executeNonQuery:@"CREATE INDEX IF NOT EXISTS IM_AT_MESSAGE_GROUPID ON IM_At_Message (GroupId);" withParameters:nil];
     }
     
+    //创建发现页应用表
     result = [database executeNonQuery:@"create table IF NOT EXISTS IM_Found_List(\
               version                  TEXT PRIMARY KEY,\
               foundList     TEXT);" withParameters:nil];
     
+    //创建搜索关键字历史表
+    result = [database executeNonQuery:@"create table IF NOT EXISTS IM_SearchHistory(\
+              searchKey         TEXT,\
+              searchType        INTEGER DEFAULT 0,\
+              searchTime        INTEGER DEFAULT 0,\
+              primary key (searchKey,searchType));" withParameters:nil];
     return result;
 }
 

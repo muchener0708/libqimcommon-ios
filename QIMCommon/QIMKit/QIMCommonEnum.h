@@ -356,6 +356,11 @@ typedef enum : NSUInteger {
     QIMWorkFeedContentTypeLink = 2,    //驼圈LinkUrl
 } QIMWorkFeedContentType;
 
+typedef enum : NSUInteger {
+    QIMSearchTypeAll,
+    QIMSearchTypeWorkMoment,
+} QIMSearchType;
+
 static const NSString *QIMNavNameKey = @"title";
 static const NSString *QIMNavUrlKey = @"NavUrl";
 

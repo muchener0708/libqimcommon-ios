@@ -66,6 +66,7 @@
 
 #import "IMDataManager.h"
 #import "IMDataManager+QIMSession.h"
+#import "IMDataManager+QIMSearchKeyHistory.h"
 #import "IMDataManager+QIMCalendar.h"
 #import "IMDataManager+WorkFeed.h"
 #import "IMDataManager+QIMDBClientConfig.h"

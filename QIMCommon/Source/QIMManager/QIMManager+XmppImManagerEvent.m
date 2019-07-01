@@ -197,6 +197,7 @@
                 BOOL forceUpdate = [[notifyMsg objectForKey:@"force"] boolValue];
                 BOOL forceQuickReplyUpdate = [[notifyMsg objectForKey:@"forcequickreply"] boolValue];
                 BOOL forceRNUpdate = [[notifyMsg objectForKey:@"forceRN"] boolValue];
+                NSNumber *forceOldSearch = [notifyMsg objectForKey:@"forceOldSearch"];
                 if ([[IMDataManager qimDB_SharedInstance] qimDB_getConfigVersion] < version && ![resource isEqualToString:[[XmppImManager sharedInstance] resource]]) {
                     [self getRemoteClientConfig];
                 } else if (forceUpdate) {
@@ -219,6 +220,11 @@
                     } else {
                         QIMVerboseLog(@"清空RN包缓存失败 : %@", latestJSCodeURLString);
                     }
+                } else if (forceOldSearch) {
+                    QIMVerboseLog(@"强制切换老版本搜索");
+                    [[QIMUserCacheManager sharedInstance] setUserObject:forceOldSearch forKey:@"forceOldSearch"];
+                } else {
+                    
                 }
             }
                 break;

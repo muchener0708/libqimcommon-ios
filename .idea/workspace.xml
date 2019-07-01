@@ -1,15 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="34f790a6-77b6-4b28-91de-90c83b96dbdb" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/libQIMCommon-iOS.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/xcode.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/QIMCommon/NoArc/DB/IMDataManager+QIMSearchKeyHistory.m" beforeDir="false" afterPath="$PROJECT_DIR$/QIMCommon/NoArc/DB/IMDataManager+QIMSearchKeyHistory.m" afterDir="false" />
-    </list>
+    <list default="true" id="34f790a6-77b6-4b28-91de-90c83b96dbdb" name="Default Changelist" comment="" />
     <ignored path="$USER_HOME$/Library/Caches/AppCode2019.1/DerivedData/QIMCommon-glqcjigiwphuvifsbymbwfcidylo/Build/Intermediates.noindex/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,7 +9,7 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="iphoneos_00008020-000910A10C84002E" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="iphoneos_5eac8e80de3ed7767bc134003eb750ddb38c1e01" />
   <component name="FileEditorManager">
     <leaf>
       <file pinned="false" current-in-tab="false">

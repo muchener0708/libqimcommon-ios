@@ -20,6 +20,7 @@ QIMCommon/PrivateCommon/.DS_Store
 xcuserdata/
 
 ## Other
+.idea/
 *.moved-aside
 *.xccheckout
 *.xcscmblueprint

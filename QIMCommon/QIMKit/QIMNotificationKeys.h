@@ -324,6 +324,9 @@
 //退出搜索App
 #define kNotify_RN_QTALK_SEARCH_GO_BACK @"kNotify_RN_QTALK_SEARCH_GO_BACK"
 
+//更新App
+#define kNotifyUpdateAppVersion                    @"kNotifyUpdateAppVersion"
+
 static const NSString *kGetIncrementMucListVersion = @"kGetIncrementMucListVersion";
 static const NSString *kGetUpdateUsersV2Version = @"kGetUpdateUsersV2Version";
 static const NSString *kGetGroupReadMarkVersion = @"kGetGroupReadMarkVersionV2";

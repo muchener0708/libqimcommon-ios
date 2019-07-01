@@ -19,6 +19,14 @@
     return [[QIMAppInfo sharedInstance] appType];
 }
 
++ (void)setQIMApplicationState:(QIMApplicationState)appState {
+    [[QIMAppInfo sharedInstance] setApplicationState:appState];
+}
+
++ (QIMApplicationState)getQIMApplicationState {
+    return [[QIMAppInfo sharedInstance] applicationState];
+}
+
 + (void)setQIMProjectTitleName:(NSString *)appName {
     [[QIMAppInfo sharedInstance] setAppName:appName];
 }

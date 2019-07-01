@@ -14,6 +14,10 @@
     
 + (QIMProjectType)getQIMProjectType;
 
++ (void)setQIMApplicationState:(QIMApplicationState)appState;
+
++ (QIMApplicationState)getQIMApplicationState;
+
 + (void)setQIMProjectTitleName:(NSString *)appName;
 
 + (NSString *)getQIMProjectTitleName;

@@ -588,7 +588,7 @@ static QIMManager *__IMManager = nil;
         [self getRemoteFoundNavigation];
     }
     
-    if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeStartalk) {
+    if ([[QIMAppInfo sharedInstance] appType] == QIMProjectTypeStartalk && [[QIMAppInfo sharedInstance] applicationState] == QIMApplicationStateLaunch) {
         QIMVerboseLog(@"请求新版本");
         [self findNewestClient];
     }
@@ -1552,8 +1552,14 @@ http://url/push/qtapi/token/setmsgsettings.qunar?username=hubo.hu&domain=ejabhos
 }
 
 - (void)findNewestClient {
-    NSString *destUrl = [NSString stringWithFormat:@"http://l-im3.vc.beta.cn0.qunar.com:8099/qtalk/findNewestClient"];
-    NSDictionary *param = @{@"clientType":@"ios", @"version":@"0"};
+    NSString *destUrl = [NSString stringWithFormat:@"https://03682da0-c9cb-4f53-a918-22903cb93bc3.mock.pstmn.io/qtalk/findNewestClient"];
+    NSInteger updateAppVersion = [[[QIMUserCacheManager sharedInstance] userObjectForKey:@"updateAppVersion"] integerValue];
+    if (updateAppVersion > 0 && updateAppVersion > [[[QIMAppInfo sharedInstance] AppBuildVersion] integerValue]) {
+        
+    } else {
+        updateAppVersion = [[[QIMAppInfo sharedInstance] AppBuildVersion] integerValue];
+    }
+    NSDictionary *param = @{@"clientType":@"ios", @"version":@(updateAppVersion)};
     NSData *data = [[QIMJSONSerializer sharedInstance] serializeObject:param error:nil];
 
     [[QIMManager sharedInstance] sendTPPOSTRequestWithUrl:destUrl withRequestBodyData:data withSuccessCallBack:^(NSData *responseData) {
@@ -1563,7 +1569,7 @@ http://url/push/qtapi/token/setmsgsettings.qunar?username=hubo.hu&domain=ejabhos
         if (ret && errcode==0) {
             NSDictionary *data = [responseDic objectForKey:@"data"];
             if ([data isKindOfClass:[NSDictionary class]] && data.count > 0) {
-                
+                [[NSNotificationCenter defaultCenter] postNotificationName:kNotifyUpdateAppVersion object:data];
             }
         }
     } withFailedCallBack:^(NSError *error) {

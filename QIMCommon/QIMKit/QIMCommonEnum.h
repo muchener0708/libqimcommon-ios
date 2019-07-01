@@ -16,6 +16,11 @@ typedef enum : NSUInteger {
     QIMProjectTypeStartalk = 2
 } QIMProjectType;
 
+typedef enum : NSUInteger {
+    QIMApplicationStateLaunch,  //应用重新启动
+    QIMApplicationStateActive,  //应用从后台回到前台
+} QIMApplicationState;
+
 typedef enum {
     QDDealState_None = 0,
     QDDealState_True,

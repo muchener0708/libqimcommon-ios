@@ -12,6 +12,7 @@
 @interface QIMAppInfo : NSObject
 
 @property (nonatomic, copy) NSString *pushToken;
+@property (nonatomic, assign) QIMApplicationState applicationState;
 @property (nonatomic, assign) QIMProjectType appType;
 @property (nonatomic, copy) NSString *appName;
 @property (nonatomic, copy) NSString *customDeviceModel;

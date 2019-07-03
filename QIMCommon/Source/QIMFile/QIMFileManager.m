@@ -814,6 +814,57 @@ typedef enum {
     return nil;
 }
 
+- (void)uploadAsynchronousForFileData:(NSData *)fileData fileKey:(NSString *)fileKey fileName:(NSString *)fileName progressDelegate:(id)delegate isFile:(BOOL)flag completeblock:(void(^)(NSString * resultUrl))completeblock progressBlock:(void(^)(CGFloat progress))progressBlock{
+    long long size = ceil(fileData.length / 1024.0 / 1024.0);
+    NSString * method = [NSString  stringWithFormat:@"file/v2/upload/%@",flag?@"file":@"img"];
+    NSString * destUrl = [NSString stringWithFormat:@"%@/%@?name=%@&p=iphone&u=%@&k=%@&v=%@&key=%@&size=%lld",
+                          [QIMNavConfigManager sharedInstance].innerFileHttpHost, method, fileName,
+                          [[QIMManager getLastUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
+                          [[QIMManager sharedInstance] myRemotelogginKey],
+                          [[QIMAppInfo sharedInstance] AppBuildVersion],fileKey,size];
+    NSURL * requestUrl = [[NSURL alloc] initWithString:destUrl];
+    
+    ASIFormDataRequest *request = [ASIFormDataRequest requestWithURL:requestUrl];
+    [request setRequestMethod:@"POST"];
+    request.showAccurateProgress = YES;
+    [request setData:fileData withFileName:fileName andContentType:nil forKey:fileKey];
+    [request buildRequestHeaders];
+    [request startAsynchronous];
+    if (delegate) {
+        [request setUploadProgressDelegate:delegate];
+    }
+    __weak typeof (request) weakRequest = request;
+    [request setCompletionBlock:^{
+        if ([weakRequest responseStatusCode] == 200) {
+            NSDictionary *result = [[QIMJSONSerializer sharedInstance] deserializeObject:weakRequest.responseData error:nil];
+            BOOL ret = [[result objectForKey:@"ret"] boolValue];
+            if (ret) {
+                NSString *resultUrl = [result objectForKey:@"data"];
+                if (completeblock) {
+                    completeblock(resultUrl);
+                }
+            }
+        }
+    }];
+    
+    __block float newProgress;
+    
+    __block float totalSize = 0;
+    
+    __block float theSize = 0;
+    
+    
+    [request setUploadSizeIncrementedBlock:^(long long size) {
+        totalSize = totalSize + size;
+    }];
+    [request setBytesSentBlock:^(unsigned long long size, unsigned long long total) {
+        theSize += size;
+        newProgress = theSize/totalSize;
+        if (progressBlock) {
+            progressBlock(newProgress);
+        }
+    }];
+}
 - (void)uploadFileForData:(NSData *)fileData forCacheType:(QIMFileCacheType)type isFile:(BOOL)flag completionBlock:(QIMFileManagerUploadCompletionBlock)completionBlock {
     [self uploadFileForData:fileData forCacheType:type isFile:flag fileExt:flag?nil:[self getImageFileExt:fileData] completionBlock:completionBlock];
 }
@@ -836,6 +887,30 @@ typedef enum {
             [[QIMFileManager sharedInstance] saveFileData:fileData url:resultUrl forCacheType:QIMFileCacheTypeColoction];
             
             completionBlock([UIImage imageWithData:fileData],nil,type,resultUrl);
+        }
+    });
+}
+
+- (void)uploadFileForData:(NSData *)fileData
+             forCacheType:(QIMFileCacheType)type
+                  fileExt:(NSString *)fileExt
+                   isFile:(BOOL)flag
+   uploadProgressDelegate:(id)delegate
+          completionBlock:(QIMFileManagerUploadCompletionBlock)completionBlock
+            progressBlock:(void (^)(CGFloat))progressBlock{
+    dispatch_async(_file_queue, ^{
+        NSString * fileKey = [self getMD5FromFileData:fileData];
+        NSString *fileName = fileExt ? [fileKey stringByAppendingFormat:@".%@", fileExt] : fileKey;
+        NSString * resultUrl = [self checkForFileData:fileData fileKey:fileKey fileName:fileName isFile:flag];
+        if (resultUrl) {
+//            [[QIMFileManager sharedInstance] saveFileData:fileData url:resultUrl forCacheType:QIMFileCacheTypeColoction];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completionBlock([UIImage imageWithData:fileData],nil,type,resultUrl);
+            });
+        }else{
+            [self uploadAsynchronousForFileData:fileData fileKey:fileKey fileName:fileName progressDelegate:delegate isFile:YES completeblock:^(NSString *resultUrl) {
+                completionBlock([UIImage imageWithData:fileData],nil,type,resultUrl);
+            } progressBlock:progressBlock];
         }
     });
 }

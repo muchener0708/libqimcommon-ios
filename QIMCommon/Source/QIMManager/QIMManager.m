@@ -990,7 +990,6 @@ static QIMManager *__IMManager = nil;
     
     NSString *url = [NSString stringWithFormat:@"%@/config/check_config.qunar", [[QIMNavConfigManager sharedInstance] newerHttpUrl]];
     NSURL *requestUrl = [NSURL URLWithString:url];
-    
     QIMHTTPRequest *request = [[QIMHTTPRequest alloc] initWithURL:requestUrl];
     
     NSMutableDictionary *cookieProperties = [NSMutableDictionary dictionary];

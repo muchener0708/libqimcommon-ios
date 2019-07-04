@@ -91,4 +91,12 @@ typedef void(^QIMFileManagerUploadCompletionBlock)(UIImage *image, NSError *erro
 
 - (NSString *)qim_cachedFileNameForKey:(NSString *)key;
 
+
+//拷贝文件
+- (void)uploadFileForData:(NSData *)fileData
+             forCacheType:(QIMFileCacheType)type
+                  fileExt:(NSString *)fileExt
+                   isFile:(BOOL)flag
+   uploadProgressDelegate:(id)delegate
+          completionBlock:(QIMFileManagerUploadCompletionBlock)completionBlock progressBlock:(void(^)(CGFloat progress))progressBlock;
 @end

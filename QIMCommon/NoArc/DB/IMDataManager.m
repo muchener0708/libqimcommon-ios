@@ -910,6 +910,15 @@ static dispatch_once_t _onceDBToken;
               version                  TEXT PRIMARY KEY,\
               foundList     TEXT);"];
     
+    /*
+     searchKey, searchType, searchTime
+     */
+    
+    result = [database executeUpdate:@"create table IF NOT EXISTS IM_SearchHistory(\
+              searchKey         TEXT,\
+              searchType        INTEGER DEFAULT 0,\
+              searchTime        INTEGER DEFAULT 0,\
+              primary key (searchKey, searchType));"];
     return result;
 }
 

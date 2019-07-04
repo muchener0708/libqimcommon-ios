@@ -248,6 +248,17 @@
 - (BOOL)removeGroupMemberWithName:(NSString *)name WithJid:(NSString *)memberJid ForGroupId:(NSString *)groupId;
 
 /**
+ 设置群管理
+ 
+ @param groupId 群Id
+ @param isAdmin 设置群管理/取消群管理
+ @param nickName 群管理的昵称
+ @param memberJid 群管理XmppJid
+ @return 是否成功
+ */
+- (BOOL)setGroupAdminWithGroupId:(NSString *)groupId withIsAdmin:(BOOL)isAdmin WithAdminNickName:(NSString *)nickName ForJid:(NSString *)memberJid;
+
+/**
  邀请成员进群
  
  @param members 成员列表

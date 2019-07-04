@@ -60,7 +60,6 @@
 }
 
 - (NSString *)getUserMarkupNameWithUserId:(NSString *)userId {
-    
     if (userId.length <= 0) {
         return nil;
     }

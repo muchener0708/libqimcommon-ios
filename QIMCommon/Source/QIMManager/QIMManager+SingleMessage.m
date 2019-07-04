@@ -364,8 +364,8 @@
 
 #pragma mark - 单人历史消息（下拉加载）
 
-- (NSArray *)getUserChatlogWithFrom:(NSString *)from to:(NSString *)to version:(long long)version count:(int)count direction:(int)direction {
-    
+- (NSArray *)getUserChatlogWithFrom:(NSString *)from to:(NSString *)to version:(long long)version count:(int)count direction:(int)direction include:(BOOL)include {
+
     CFAbsoluteTime startTime = [[QIMWatchDog sharedInstance] startTime];
 
     NSArray *fromComs = [from componentsSeparatedByString:@"@"];
@@ -380,6 +380,9 @@
     [params setObject:fromComs.lastObject forKey:@"fhost"];
     [params setObject:toComs.lastObject forKey:@"thost"];
     [params setObject:@"t" forKey:@"f"];
+    if (include == YES) {
+        [params setObject:@"t" forKey:@"include"];
+    }
     
     NSString *destUrl = [NSString stringWithFormat:@"%@/qtapi/getmsgs.qunar?server=%@&c=qtalk&u=%@&k=%@&p=iphone&v=%@&f=t",
                          [[QIMNavConfigManager sharedInstance] javaurl],

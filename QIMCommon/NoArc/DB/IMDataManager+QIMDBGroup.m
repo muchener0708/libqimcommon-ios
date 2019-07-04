@@ -752,7 +752,7 @@
 - (NSArray *)qimDB_getGroupMember:(NSString *)groupId{
     __block NSMutableArray *members = nil;
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = [NSString stringWithFormat:@"Select MemberJid, Name, Affiliation From IM_Group_Member Where GroupId = '%@' Order By Name;", groupId];
+        NSString *sql = [NSString stringWithFormat:@"Select MemberJid, Name, Affiliation From IM_Group_Member Where GroupId = '%@' Order By Affiliation = 'owner' Desc, Affiliation = 'admin' Desc, Affiliation = 'none' Desc;", groupId];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         while ([reader read]) {
             if (members == nil) {

@@ -144,6 +144,10 @@
     return [[QIMManager sharedInstance] removeGroupMemberWithName:name WithJid:memberJid ForGroupId:groupId];
 }
 
+- (BOOL)setGroupAdminWithGroupId:(NSString *)groupId withIsAdmin:(BOOL)isAdmin WithAdminNickName:(NSString *)nickName ForJid:(NSString *)memberJid {
+    return [[QIMManager sharedInstance] setGroupAdminWithGroupId:groupId withIsAdmin:isAdmin WithAdminNickName:nickName ForJid:memberJid];
+}
+
 - (BOOL)inviteMember:(NSArray *)members ToGroupId:(NSString *)groupId {
     return [[QIMManager sharedInstance] inviteMember:members ToGroupId:groupId];
 }

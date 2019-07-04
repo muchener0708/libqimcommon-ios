@@ -395,6 +395,20 @@
 
 - (NSArray *)getNotReadMsgIdListByUserId:(NSString *)userId WithRealJid:(NSString *)realJid;
 
+
+/**
+ 搜索时候
+
+ @param userId 用户名
+ @param realJid 真实jid
+ @param lastUpdateTime 时间戳
+ @param direction 获取方向
+ @param limit 获取条数
+ @param offset 偏移量
+ @param complete 回调block
+ */
+- (void)getRemoteSearchMsgListByUserId:(NSString *)userId WithRealJid:(NSString *)realJid withVersion:(long long)lastUpdateTime withDirection:(QIMGetMsgDirection)direction WithLimit:(int)limit WithOffset:(int)offset WithComplete:(void (^)(NSArray *))complete;
+
 /**
  获取消息列表
  

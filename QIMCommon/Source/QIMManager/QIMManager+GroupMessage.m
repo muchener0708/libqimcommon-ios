@@ -227,7 +227,7 @@
 }
 
 //拉取群翻页历史记录
-- (NSArray *)getMucMsgListWithGroupId:(NSString *)groupId WithDirection:(int)direction WithLimit:(int)limit WithVersion:(long long)version {
+- (NSArray *)getMucMsgListWithGroupId:(NSString *)groupId WithDirection:(int)direction WithLimit:(int)limit WithVersion:(long long)version include:(BOOL)include {
     NSMutableDictionary *params = [NSMutableDictionary dictionary];
     NSArray *coms = [groupId componentsSeparatedByString:@"@"];
     NSString *groupC = @"conference.";
@@ -240,6 +240,9 @@
     [params setQIMSafeObject:@"1" forKey:@"type"];
     [params setQIMSafeObject:[QIMManager getLastUserName] forKey:@"u"];
     [params setQIMSafeObject:[NSString stringWithFormat:@"%d", direction] forKey:@"direction"];
+    if (YES == include) {
+        [params setQIMSafeObject:@"t" forKey:@"include"];
+    }
     NSData *requestData = [[QIMJSONSerializer sharedInstance] serializeObject:params error:nil];
     NSString *destUrl = [NSString stringWithFormat:@"%@/qtapi/getmucmsgs.qunar?u=%@&k=%@&platform=iphone&version=%@", [[QIMNavConfigManager sharedInstance] javaurl], [[QIMManager getLastUserName] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding], self.remoteKey, [[QIMAppInfo sharedInstance] AppBuildVersion]];
     QIMVerboseLog(@"JSON请求群翻页历史记录URL为:%@", destUrl);

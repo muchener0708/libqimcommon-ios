@@ -589,8 +589,8 @@
     }
 }
 
-//群翻页消息
-- (NSArray *)qimDB_bulkInsertIphoneMucPageJSONMsg:(NSArray *)list {
+//群翻页消息,是否入库
+- (NSArray *)qimDB_bulkInsertIphoneMucPageJSONMsg:(NSArray *)list withInsertDBFlag:(BOOL)flag {
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     NSMutableArray *msgList = [[NSMutableArray alloc] init];
     NSMutableArray *updateMsgList = [[NSMutableArray alloc] init];
@@ -622,7 +622,7 @@
                 [updateMsgList addObject:@{@"messageId":msgId?msgId:@"", @"message":msg?msg:@"该消息被撤回"}];
             }
             //翻页消息Check下
-            if ([self qimDB_checkMsgId:msgId]) {
+            if ([self qimDB_checkMsgId:msgId] && flag == YES) {
                 continue;
             }
             NSString *xmppId = [message objectForKey:@"to"];
@@ -679,13 +679,21 @@
             [msgList addObject:msgDic];
         }
     }
-    [self qimDB_bulkInsertMessage:msgList];
-    if (updateMsgList.count > 0) {
-        [self qimDB_revokeMessageByMsgList:updateMsgList];
+    if (flag == YES) {
+        [self qimDB_bulkInsertMessage:msgList];
+        if (updateMsgList.count > 0) {
+            [self qimDB_revokeMessageByMsgList:updateMsgList];
+        }
     }
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
     return msgList;
+}
+
+//群翻页消息
+- (NSArray *)qimDB_bulkInsertIphoneMucPageJSONMsg:(NSArray *)list {
+    
+    return [self qimDB_bulkInsertIphoneMucPageJSONMsg:list withInsertDBFlag:YES];
 }
 
 /**
@@ -1067,6 +1075,12 @@
 #pragma mark - 单人JSON历史消息翻页
 - (NSArray *)qimDB_bulkInsertPageHistoryChatJSONMsg:(NSArray *)list
                                          WithXmppId:(NSString *)xmppId {
+    return [self qimDB_bulkInsertPageHistoryChatJSONMsg:list WithXmppId:xmppId withInsertDBFlag:YES];
+}
+
+- (NSArray *)qimDB_bulkInsertPageHistoryChatJSONMsg:(NSArray *)list
+                                         WithXmppId:(NSString *)xmppId
+                                   withInsertDBFlag:(BOOL)flag {
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
 #pragma mark - bulkInsertHistoryChatJSONMsg JSOn
     NSMutableArray *msgList = [[NSMutableArray alloc] init];
@@ -1350,7 +1364,9 @@
             [msgList addObject:msgDic];
         }
     }
-    [self qimDB_bulkInsertMessage:msgList WithSessionId:xmppId];
+    if (flag == YES) {
+        [self qimDB_bulkInsertMessage:msgList WithSessionId:xmppId];
+    }
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     QIMVerboseLog(@"%s-%s 耗时 = %f s", __FILE__, __func__, end - start);
     return msgList;

@@ -55,6 +55,7 @@
     [request setHTTPMethod:QIMHTTPMethodPOST];
     [request setHTTPBody:bodyData];
     [request setShouldASynchronous:YES];
+    [request setTimeoutInterval:10];
     NSMutableDictionary *cookieProperties = [NSMutableDictionary dictionary];
     NSString *requestHeaders = [NSString stringWithFormat:@"q_ckey=%@", [[QIMManager sharedInstance] thirdpartKeywithValue]];
     [cookieProperties setObject:requestHeaders forKey:@"Cookie"];

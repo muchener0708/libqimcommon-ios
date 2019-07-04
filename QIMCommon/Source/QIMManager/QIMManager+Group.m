@@ -639,6 +639,14 @@
     return [[XmppImManager sharedInstance] removeGroupId:groupId ForMemberJid:memberJid WithNickName:name];
 }
 
+- (BOOL)setGroupAdminWithGroupId:(NSString *)groupId withIsAdmin:(BOOL)isAdmin WithAdminNickName:(NSString *)nickName ForJid:(NSString *)memberJid {
+    if (YES == isAdmin) {
+        return [[XmppImManager sharedInstance] setGroupId:groupId WithAdminNickName:nickName ForJid:memberJid];
+    } else {
+        return [[XmppImManager sharedInstance] setGroupId:groupId WithMemberNickName:nickName ForJid:memberJid];
+    }
+}
+
 #pragma mark - SearchGroup
 
 - (NSInteger)searchGroupTotalCountBySearchStr:(NSString *)searchStr {

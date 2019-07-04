@@ -292,6 +292,10 @@
     return [[QIMManager sharedInstance] getNotReadMsgIdListByUserId:userId WithRealJid:realJid];
 }
 
+- (void)getRemoteSearchMsgListByUserId:(NSString *)userId WithRealJid:(NSString *)realJid withVersion:(long long)lastUpdateTime withDirection:(QIMGetMsgDirection)direction WithLimit:(int)limit WithOffset:(int)offset WithComplete:(void (^)(NSArray *))complete {
+    [[QIMManager sharedInstance] getRemoteSearchMsgListByUserId:userId WithRealJid:realJid withVersion:lastUpdateTime withDirection:direction WithLimit:limit WithOffset:offset WithComplete:complete];
+}
+
 - (void)getMsgListByUserId:(NSString *)userId WithRealJid:(NSString *)realJid WithLimit:(int)limit WithOffset:(int)offset withLoadMore:(BOOL)loadMore WithComplete:(void (^)(NSArray *))complete{
     [[QIMManager sharedInstance] getMsgListByUserId:userId WithRealJid:realJid WithLimit:limit WithOffset:offset withLoadMore:loadMore WithComplete:complete];
 }

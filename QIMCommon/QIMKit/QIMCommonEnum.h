@@ -11,9 +11,9 @@
 #import <Foundation/Foundation.h>
 
 typedef enum : NSUInteger {
-    QIMProjectTypeQTalk = 0,
-    QIMProjectTypeQChat,
-    QIMProjectTypeStartalk = 2
+    QIMProjectTypeStartalk = 0,
+    QIMProjectTypeQChat = 1,
+    QIMProjectTypeQTalk = 2,
 } QIMProjectType;
 
 typedef enum : NSUInteger {
@@ -365,6 +365,11 @@ typedef enum : NSUInteger {
     QIMSearchTypeAll,
     QIMSearchTypeWorkMoment,
 } QIMSearchType;
+
+typedef enum : NSUInteger {
+    QIMGetMsgDirectionDown, //下拉，从下向上
+    QIMGetMsgDirectionUp, //上翻，从上向下
+} QIMGetMsgDirection;
 
 static const NSString *QIMNavNameKey = @"title";
 static const NSString *QIMNavUrlKey = @"NavUrl";

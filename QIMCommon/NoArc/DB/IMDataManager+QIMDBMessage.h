@@ -92,6 +92,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (long long)qimDB_bulkInsertIphoneHistoryGroupJSONMsg:(NSArray *)list WithAtAllMsgList:(NSMutableArray<NSDictionary *> **)atAllMsgList WithNormaleAtMsgList:(NSMutableArray <NSDictionary *> **)normalMsgList;
 
 //群翻页消息
+- (NSArray *)qimDB_bulkInsertIphoneMucPageJSONMsg:(NSArray *)list withInsertDBFlag:(BOOL)flag;
 - (NSArray *)qimDB_bulkInsertIphoneMucPageJSONMsg:(NSArray *)list;
 
 - (NSDictionary *)dictionaryWithJsonString:(NSString *)jsonString;
@@ -111,6 +112,10 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - 单人JSON历史消息翻页
 - (NSArray *)qimDB_bulkInsertPageHistoryChatJSONMsg:(NSArray *)list
                                          WithXmppId:(NSString *)xmppId;
+
+- (NSArray *)qimDB_bulkInsertPageHistoryChatJSONMsg:(NSArray *)list
+                                         WithXmppId:(NSString *)xmppId
+                                   withInsertDBFlag:(BOOL)flag;
 
 - (BOOL)qimDB_bulkInsertMessage:(NSArray *)msgList;
 

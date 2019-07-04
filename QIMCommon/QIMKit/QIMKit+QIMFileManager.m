@@ -151,4 +151,14 @@
     return [[QIMFileManager sharedInstance] qim_cachedFileNameForKey:key];
 }
 
+//拷贝文件
+- (void)uploadFileForData:(NSData *)fileData
+             forCacheType:(QIMFileCacheType)type
+                  fileExt:(NSString *)fileExt
+                   isFile:(BOOL)flag
+   uploadProgressDelegate:(id)delegate
+          completionBlock:(QIMFileManagerUploadCompletionBlock)completionBlock progressBlock:(void(^)(CGFloat progress))progressBlock{
+    [[QIMFileManager sharedInstance] uploadFileForData:fileData forCacheType:type fileExt:fileExt isFile:flag uploadProgressDelegate:delegate completionBlock:completionBlock progressBlock:progressBlock];
+}
+
 @end

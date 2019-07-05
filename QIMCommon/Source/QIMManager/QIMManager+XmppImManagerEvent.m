@@ -197,7 +197,8 @@
                 BOOL forceUpdate = [[notifyMsg objectForKey:@"force"] boolValue];
                 BOOL forceQuickReplyUpdate = [[notifyMsg objectForKey:@"forcequickreply"] boolValue];
                 BOOL forceRNUpdate = [[notifyMsg objectForKey:@"forceRN"] boolValue];
-                NSNumber *forceOldSearch = [notifyMsg objectForKey:@"forceOldSearch"];
+//                NSNumber *forceOldSearch = [notifyMsg objectForKey:@"forceOldSearch"];
+                BOOL forceOldSearch = [[notifyMsg allKeys] containsObject:@"forceOldSearch"];
                 if ([[IMDataManager qimDB_SharedInstance] qimDB_getConfigVersion] < version && ![resource isEqualToString:[[XmppImManager sharedInstance] resource]]) {
                     [self getRemoteClientConfig];
                 } else if (forceUpdate) {
@@ -222,7 +223,8 @@
                     }
                 } else if (forceOldSearch) {
                     QIMVerboseLog(@"强制切换老版本搜索");
-                    [[QIMUserCacheManager sharedInstance] setUserObject:forceOldSearch forKey:@"forceOldSearch"];
+                    NSNumber *forceOldSearchNumber = [notifyMsg objectForKey:@"forceOldSearch"];
+                    [[QIMUserCacheManager sharedInstance] setUserObject:forceOldSearchNumber forKey:@"forceOldSearch"];
                 } else {
                     
                 }

@@ -271,9 +271,7 @@
 #define kNotifyBeginToPlay                @"kNotifyBeginToPlay"
 #define kNotifyEndPlay                    @"kNotifyEndPlay"
 
-#define kNotifySubmitLogSuccessed         @"kNotifySubmitLogSuccessed"
-#define kNotifySubmitLogFaild             @"kNotifySubmitLogFaild"
-
+#define kNotifySubmitLog                  @"kNotifySubmitLog"
 
 #define timeChange 3
 

@@ -2050,11 +2050,14 @@
     return result;
 }
 
-- (NSInteger)qimDB_getSumNotReaderMsgCountByXmppIds:(NSString *)xmppIds {
+- (NSInteger)qimDB_getSumNotReaderMsgCountByXmppIds:(NSArray *)xmppIds {
     __block NSInteger count = 0;
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     [[self dbInstance] inDatabase:^(QIMDataBase* _Nonnull database) {
-        NSString *sql = [NSString stringWithFormat:@"SELECT Sum(UnreadCount) FROM IM_SessionList Where XmppId in %@ And RealJid in %@;", xmppIds, xmppIds];
+        NSString *xmppIdsStr = [NSString stringWithFormat:@"%@",xmppIds];
+        const char *xmppIdCString = [xmppIdsStr UTF8String];
+        NSString *xmppIdstringTrans = [[NSString alloc] initWithCString:xmppIdCString encoding:NSNonLossyASCIIStringEncoding];
+        NSString *sql = [NSString stringWithFormat:@"SELECT Sum(UnreadCount) FROM IM_SessionList Where XmppId in %@ And RealJid in %@;", xmppIdstringTrans, xmppIdstringTrans];
         DataReader *reader = [database executeReader:sql withParameters:nil];
         if ([reader read]) {
             count = [[reader objectForColumnIndex:0] integerValue];
@@ -2062,7 +2065,7 @@
         [reader close];
     }];
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
-    QIMVerboseLog(@"qimDB_getSumNotReaderMsgCountByXmppIds:(NSString *)xmppIds 耗时 = %f s", end - start); //s
+    QIMVerboseLog(@"qimDB_getSumNotReaderMsgCountByXmppIds:(NSArray *)xmppIds 耗时 = %f s", end - start); //s
     return count;
 }
 

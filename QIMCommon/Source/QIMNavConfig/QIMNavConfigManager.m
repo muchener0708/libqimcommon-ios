@@ -374,6 +374,7 @@
         _resetpwd = [abilityDict objectForKey:@"resetpwd"];
         _mconfig = [abilityDict objectForKey:@"mconfig"];
         _searchUrl = [abilityDict objectForKey:@"searchurl"];
+        _qSearchUrl = [abilityDict objectForKey:@"new_searchurl"];
         _qcGrabOrder = [abilityDict objectForKey:@"qcGrabOrder"];
         _qcOrderManager = [abilityDict objectForKey:@"qcOrderManager"];
         _newPush = [[abilityDict objectForKey:@"newPush"] boolValue];
@@ -385,6 +386,7 @@
         _resetpwd = nil;
         _mconfig = nil;
         _searchUrl = nil;
+        _qSearchUrl = nil;
         _qcGrabOrder = nil;
         _qcOrderManager = nil;
         _newPush = NO;

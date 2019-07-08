@@ -58,6 +58,7 @@
 @property (nonatomic, readonly, copy)  NSString *resetpwd;
 @property (nonatomic, readonly, copy)  NSString *mconfig;
 @property (nonatomic, readonly, copy)  NSString *searchUrl;
+@property (nonatomic, readonly, copy)  NSString *qSearchUrl;
 @property (nonatomic, readonly, copy)  NSString *qcGrabOrder;
 @property (nonatomic, readonly, copy)  NSString *qcOrderManager;
 @property (nonatomic, readonly, assign) BOOL newPush;

@@ -109,6 +109,7 @@
 - (NSString *)qimNav_Resetpwd;
 - (NSString *)qimNav_Mconfig;
 - (NSString *)qimNav_SearchUrl;
+- (NSString *)qimNav_New_SearchUrl;
 - (NSString *)qimNav_QcGrabOrder;
 - (NSString *)qimNav_QcOrderManager;
 - (BOOL)qimNav_NewPush;

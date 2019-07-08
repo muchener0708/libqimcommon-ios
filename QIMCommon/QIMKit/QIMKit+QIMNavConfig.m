@@ -174,6 +174,10 @@
     return [[QIMNavConfigManager sharedInstance] searchUrl];
 }
 
+- (NSString *)qimNav_New_SearchUrl {
+    return [[QIMNavConfigManager sharedInstance] qSearchUrl];
+}
+
 - (NSString *)qimNav_QcGrabOrder {
     return [[QIMNavConfigManager sharedInstance] qcGrabOrder];
 }
